@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -17,15 +16,9 @@ namespace MSpawner
 		public override string Version => "1.0.0";
 
 		// Variables.
+
+		// Logging variables.
 		private string logFile = "";
-		private bool show = false;
-		private bool enabled = false;
-		private GUIStyle style = new GUIStyle();
-		private GUIStyle smallStyle = new GUIStyle();
-		private Dictionary<string, GameObject> items = new Dictionary<string, GameObject>();
-		private Dictionary<string, GameObject> vehicles = new Dictionary<string, GameObject>();
-		private Color color = new Color(255f, 255f, 255f);
-		private int condition = 0;
 		private enum LogLevel
 		{
 			Debug,
@@ -33,6 +26,53 @@ namespace MSpawner
 			Warning,
 			Error,
 			Critical
+		}
+
+		// Menu control.
+		private bool show = false;
+		private bool enabled = false;
+
+		private float mainMenuWidth;
+		private float mainMenuHeight;
+		private float mainMenuX;
+		private float mainMenuY;
+
+		private bool vehicleMenu = false;
+
+		// Styling.
+		private GUIStyle labelStyle = new GUIStyle();
+
+		// Vehicle-related variables.
+		private List<Vehicle> vehicles = new List<Vehicle>();
+		private Color color = new Color(255f / 255f, 255f / 255f, 255f / 255f);
+		private int condition = 0;
+		private float fuelValue = 5f;
+		private int fuelTypeInt = -1;
+		private Vector2 scrollPosition;
+
+		// Settings.
+		private bool deleteMode = false;
+
+		// Vehicle class to track variants.
+		[System.Serializable]
+		private class Vehicle
+		{
+			public GameObject vehicle;
+			public int variant;
+		}
+
+		// Serializable vehicle wrapper for translation config.
+		[System.Serializable]
+		private class ConfigVehicle
+		{
+			public string objectName;
+			public int variant;
+			public string name;
+
+			public static ConfigVehicle CreateFromJSON(string json)
+			{
+				return JsonUtility.FromJson<ConfigVehicle>(json);
+			}
 		}
 
 		// Override functions.
@@ -54,6 +94,11 @@ namespace MSpawner
 
 			// Main menu always shows.
 			MainMenu();
+
+			if (vehicleMenu)
+			{
+				VehicleMenu();
+			}
 		}
 
 		public override void OnLoad()
@@ -71,15 +116,20 @@ namespace MSpawner
 				return;
 			}
 
-			style.fontSize = 14;
-			style.font = Font.CreateDynamicFontFromOSFont("Consolas", 14);
-			smallStyle.fontSize = 10;
-			smallStyle.font = Font.CreateDynamicFontFromOSFont("Consolas", 10);
+			labelStyle.alignment = TextAnchor.UpperLeft;
+			labelStyle.normal.textColor = Color.white;
 
-			// Load items and vehicles now to avoid lagging the menu on first open.
-			LoadItems();
-			LoadVehicles();
-			Log("Post OnLoad", LogLevel.Debug);
+			mainMenuWidth = Screen.width / 8f;
+			mainMenuHeight = Screen.height / 1.2f;
+			mainMenuX = Screen.width / 2.5f - mainMenuWidth;
+			mainMenuY = 75f;
+
+		LoadVehicles();
+
+			foreach (int i in Enum.GetValues(typeof(mainscript.fluidenum)))
+			{
+				Log($"{i}: {Enum.GetName(typeof(mainscript.fluidenum), i)}", LogLevel.Debug);
+			}
 		}
 
 		public override void Update()
@@ -87,6 +137,20 @@ namespace MSpawner
 			// Return early if spawner isn't enabled.
 			if (!enabled)
 				return;
+
+			if (deleteMode)
+			{
+				if (Input.GetKeyDown(KeyCode.Delete) && mainscript.M.player.seat == null)
+				{
+					Physics.Raycast(mainscript.M.player.Cam.transform.position, mainscript.M.player.Cam.transform.forward, out var raycastHit, float.PositiveInfinity, mainscript.M.player.useLayer);
+					raycastHit.transform.gameObject.GetComponent<tosaveitemscript>().removeFromMemory = true;	
+					foreach (tosaveitemscript component in raycastHit.transform.root.GetComponentsInChildren<tosaveitemscript>())
+					{
+						component.removeFromMemory = true;
+					}
+					UnityEngine.Object.Destroy(raycastHit.transform.root.gameObject);
+				}
+			}
 		}
 
 		// Mod-specific functions.
@@ -122,77 +186,212 @@ namespace MSpawner
 		}
 
 		/// <summary>
-		/// Load all items.
-		/// </summary>
-		private void LoadItems()
-		{
-			items = new Dictionary<string, GameObject>();
-			foreach (GameObject gameObject in itemdatabase.d.items)
-			{
-				items.Add(gameObject.name, gameObject);
-			}
-		}
-
-		/// <summary>
 		/// Load all vehicles.
 		/// </summary>
 		private void LoadVehicles()
 		{
-			vehicles = new Dictionary<string, GameObject>();
+			vehicles = new List<Vehicle>();
 			foreach (GameObject gameObject in itemdatabase.d.items)
 			{
-				//foreach (Transform child in gameObject.transform)
-				//{
-				//	foreach (Component component in child.gameObject.GetComponents(typeof(Component)))
-				//	{
-				//		Debug($"Vehicle: {gameObject.name} - {child.name} - {component}");
-				//	}
-				//}
-
-				if (gameObject.name.ToLower().Contains("full"))
+				try
 				{
-					//vehicles.Add(gameObject.name, gameObject);
-					//Log("Vehicle: " + gameObject.name, LogLevel.Debug);
+					if (gameObject.name.ToLower().Contains("full") && gameObject.GetComponentsInChildren<carscript>().Length > 0)
+					{
+						// Check for variants.
+						tosaveitemscript save = gameObject.GetComponent<tosaveitemscript>();
+						if (save != null && save.randoms.Length > 0)
+						{
+							for (int i = 0; i <= save.randoms.Length; i++)
+							{
+								Vehicle vehicle = new Vehicle()
+								{
+									vehicle = gameObject,
+									variant = i + 1,
+								};
+								vehicles.Add(vehicle);
+							}
+						}
+						else
+						{
+							Vehicle vehicle = new Vehicle()
+							{
+								vehicle = gameObject,
+								variant = -1,
+							};
+							vehicles.Add(vehicle);
+						}
+					}
+				}
+				catch
+				{
+					Log($"Something went wrong loading vehicle {gameObject.name}", LogLevel.Error);
 				}
 			}
 		}
 
 		/// <summary>
-		/// Wrapper around the default spawn function to handle fuel, condition, etc.
+		/// Check if an object is a vehicle.
 		/// </summary>
-		/// <param name="vehicle">The vehicle to spawn</param>
-		/// <param name="fuel">The amount of fuel to spawn with</param>
-		/// <param name="fluid">The fluid the vehicle should spawn with in the fuel tank</param>
-		private void Spawn(GameObject vehicle, float fuel, int fluid)
+		/// <param name="gameObject">The object to check</param>
+		/// <returns>true if the object is a vehicle; otherwise, false</returns>
+		private bool IsVehicle(GameObject gameObject)
 		{
-			// I've got no idea what param 4 does.
-			mainscript.M.Spawn(vehicle, color, condition, 1);
+			if (gameObject.GetComponentsInChildren<carscript>().Length > 0)
+				return true;
+			return false;
+		}
+
+		/// <summary>
+		/// Wrapper around the default spawn function to handle vehicle fuel and variants etc.
+		/// </summary>
+		/// <param name="gameObject">The object to spawn</param>
+		/// <param name="variant">The object variant to spawn</param>
+		private void Spawn(GameObject gameObject, int variant = -1)
+		{
+			if (!IsVehicle(gameObject))
+			{
+				Color objectColor = new Color(255f / 255f, 255f / 255f, 255f / 255f);
+				mainscript.M.Spawn(gameObject, objectColor, condition, variant);
+				return;
+			}
+
+			tankscript fuelTank = gameObject.GetComponent<tankscript>();
+			if (fuelTank == null)
+			{
+				// Vehicle doesn't have a fuel tank, log a warning and return.
+				mainscript.M.Spawn(gameObject, color, condition, variant);
+				Log($"Vehicle {gameObject.name} has no fuel tank.", LogLevel.Warning);
+				return;
+			}
+
+
+			// Fuel type and value are default, just spawn the vehicle.
+			if (fuelTypeInt == -1 && fuelValue == -1f)
+			{
+				mainscript.M.Spawn(gameObject, color, condition, variant);
+				return;
+			}
+			
+			// Store the current fuel type and amount to return either to default.
+			// TODO: Store all default fuel types in case a vehicle spawns with a mix.
+			mainscript.fluidenum currentFuelType = fuelTank.F.fluids.FirstOrDefault().type;
+			float currentFuelAmount = fuelTank.F.fluids.FirstOrDefault().amount;
+
+			gameObject.GetComponent<tankscript>().F.fluids.Clear();
+
+			if (fuelTypeInt == -1 && fuelValue > -1)
+			{
+				gameObject.GetComponent<tankscript>().F.ChangeOne(fuelValue, currentFuelType);
+			}
+			else if (fuelTypeInt > -1 && fuelValue == -1)
+			{
+				gameObject.GetComponent<tankscript>().F.ChangeOne(currentFuelAmount, (mainscript.fluidenum)fuelTypeInt);
+			}
+			else
+			{
+				gameObject.GetComponent<tankscript>().F.ChangeOne(fuelValue, (mainscript.fluidenum)fuelTypeInt);
+			}
+			mainscript.M.Spawn(gameObject, color, condition, variant);
 		}
 
 		// Menus.
+
+		/// <summary>
+		/// Main menu GUI.
+		/// </summary>
 		private void MainMenu()
 		{
-			float width = Screen.width / 8f;
-			float height = Screen.height / 1.2f;
-			float x = Screen.width / 2.5f - width;
-			float y = 75f;
-			GUI.Box(new Rect(x, y, width, height), $"<color=#ac78ad><size=16><b>{Name}</b></size>\n<size=14>v{Version} - made with ❤️ by {Author}</size></color>");
-			height = 20f;
-			width -= 5f;
-			x += 20f;
-			y += 2.5f;
-			//for (var i = 0; i <= vehicles.Count; i++)
-			//{
-			//	string vehicleName = vehicles.ElementAt(i).Key;
-			//	Debug("Loop: " + vehicleName);
-			//	GameObject vehicle = vehicles.ElementAt(i).Value;
-			//	if (GUI.Button(new Rect(x, y, width, height), vehicleName))
-			//	{
-			//		// Spawn vehicle.
-			//	}
+			float x = mainMenuX;
+			float y = mainMenuY;
+			float width = mainMenuWidth;
+			float height = mainMenuHeight;
 
-			//	x += 5f;
-			//}
+			float buttonHeight = 20f;
+			width -= 10f;
+			x += 2.5f;
+
+			GUI.Box(new Rect(x, y, width, height), $"<color=#ac78ad><size=16><b>{Name}</b></size>\n<size=14>v{Version} - made with ❤️ by {Author}</size></color>");
+
+			float deleteY = y + 50f;
+			if (GUI.Button(new Rect(x, deleteY, width, buttonHeight), (deleteMode ? "<color=#0F0>Delete mode</color>" : "<color=#F00>Delete mode</color>") + " (Press del)"))
+			{
+				deleteMode = !deleteMode;
+			}
+
+			float vehicleMenuY = deleteY + 25f;
+			if (GUI.Button(new Rect(x, vehicleMenuY, width, buttonHeight), vehicleMenu ? "<color=#0F0>Vehicle menu</color>" : "<color=#F00>Vehicle menu</color>"))
+			{
+				vehicleMenu = !vehicleMenu;
+			}
+
+			float scrollHeight = (buttonHeight + 5f) * vehicles.Count;
+			float scrollY = y + height / 2;
+			scrollPosition = GUI.BeginScrollView(new Rect(x, scrollY, width, height / 2), scrollPosition, new Rect(x, scrollY, width, scrollHeight), GUIStyle.none, GUIStyle.none);
+			foreach (Vehicle vehicle in vehicles)
+			{
+				GameObject gameObject = vehicle.vehicle;
+				string name = gameObject.name;
+				
+				// Vehicle has variants, add to name.
+				if (vehicle.variant != -1)
+				{
+					name += $" (Variant {vehicle.variant})";
+				}
+
+				if (GUI.Button(new Rect(x, scrollY, width, buttonHeight), name))
+				{
+					Spawn(gameObject, vehicle.variant);
+				}
+
+				scrollY += 25f;
+			}
+			GUI.EndScrollView();
+		}
+
+		/// <summary>
+		/// Vehicle config menu GUI.
+		/// </summary>
+		private void VehicleMenu()
+		{
+			float x = mainMenuX + mainMenuWidth + 15f;
+			float y = 75f;
+			float width = Screen.width / 3.5f;
+			float height = Screen.height / 5f;
+
+			GUI.Box(new Rect(x, y, width, height), "<color=#FFF><size=16><b>Vehicle settings</b></size></color>");
+
+			float sliderX = x + 175f;
+			float sliderY = y + 30f;
+			float sliderWidth = width / 1.75f;
+			float sliderHeight = 20f;
+
+			float textX = sliderX + sliderWidth + 10f;
+			float textWidth = 50f;
+
+			// Fuel type.
+			GUI.Label(new Rect(x + 10f, sliderY - 2.5f, textWidth, sliderHeight), "Fuel type:", labelStyle);
+			int maxFuelType = (int)Enum.GetValues(typeof(mainscript.fluidenum)).Cast<mainscript.fluidenum>().Max();
+			float rawFuelType = GUI.HorizontalSlider(new Rect(sliderX, sliderY, sliderWidth, sliderHeight), fuelTypeInt, -1, maxFuelType);
+			fuelTypeInt = Mathf.RoundToInt(rawFuelType);
+
+			string fuelType = ((mainscript.fluidenum)fuelTypeInt).ToString();
+			if (fuelTypeInt == -1)
+				fuelType = "Default";
+			else
+				fuelType = fuelType[0].ToString().ToUpper() + fuelType.Substring(1);
+
+			GUI.Label(new Rect(textX, sliderY - 2.5f, textWidth, sliderHeight), fuelType, labelStyle);
+
+			sliderY += 20f;
+
+			// Fuel amount.
+			GUI.Label(new Rect(x + 10f, sliderY - 2.5f, textWidth, sliderHeight), "Fuel amount (-1 for default):", labelStyle);
+			float rawFuelValue = GUI.HorizontalSlider(new Rect(sliderX, sliderY, sliderWidth, sliderHeight), fuelValue, -1f, 1000f);
+			fuelValue = Mathf.Round(rawFuelValue);
+
+			bool fuelValueParse = float.TryParse(GUI.TextField(new Rect(textX, sliderY - 2.5f, textWidth, sliderHeight), fuelValue.ToString(), labelStyle), out fuelValue);
+			if (!fuelValueParse)
+				Log($"{fuelValue.ToString()} is not a number", LogLevel.Error);
 		}
 	}
 }

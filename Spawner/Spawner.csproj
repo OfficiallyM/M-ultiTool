@@ -20,6 +20,9 @@
     <Reference Include="UnityEngine.InputLegacyModule">
       <HintPath>H:\Program Files (x86)\Steam\SteamApps\common\The Long Drive\TheLongDrive_Data\Managed\UnityEngine.InputLegacyModule.dll</HintPath>
     </Reference>
+    <Reference Include="UnityEngine.JSONSerializeModule">
+      <HintPath>H:\Program Files (x86)\Steam\SteamApps\common\The Long Drive\TheLongDrive_Data\Managed\UnityEngine.JSONSerializeModule.dll</HintPath>
+    </Reference>
     <Reference Include="UnityEngine.PhysicsModule">
       <HintPath>H:\Program Files (x86)\Steam\SteamApps\common\The Long Drive\TheLongDrive_Data\Managed\UnityEngine.PhysicsModule.dll</HintPath>
     </Reference>
