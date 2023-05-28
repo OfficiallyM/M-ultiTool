@@ -1,9 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net6.0</TargetFramework>
-    <ImplicitUsings>enable</ImplicitUsings>
-    <Nullable>enable</Nullable>
+    <TargetFramework>net48</TargetFramework>
   </PropertyGroup>
 
   <ItemGroup>
@@ -12,9 +10,6 @@
     </Reference>
     <Reference Include="TLDLoader">
       <HintPath>H:\Program Files (x86)\Steam\SteamApps\common\The Long Drive\TheLongDrive_Data\Managed\TLDLoader.dll</HintPath>
-    </Reference>
-    <Reference Include="UnityEngine.AssetBundleModule">
-      <HintPath>H:\Program Files (x86)\Steam\SteamApps\common\The Long Drive\TheLongDrive_Data\Managed\UnityEngine.AssetBundleModule.dll</HintPath>
     </Reference>
     <Reference Include="UnityEngine.CoreModule">
       <HintPath>H:\Program Files (x86)\Steam\SteamApps\common\The Long Drive\TheLongDrive_Data\Managed\UnityEngine.CoreModule.dll</HintPath>
@@ -32,5 +27,9 @@
       <HintPath>H:\Program Files (x86)\Steam\SteamApps\common\The Long Drive\TheLongDrive_Data\Managed\UnityEngine.TextRenderingModule.dll</HintPath>
     </Reference>
   </ItemGroup>
+
+  <Target Name="PostBuild" AfterTargets="PostBuildEvent">
+    <Exec Command="move /Y &quot;$(TargetPath)&quot; &quot;C:\Users\Miner\Documents\TheLongDrive\Mods\$(TargetFileName)&quot;" />
+  </Target>
 
 </Project>

@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "uqStEy3OPuvLihfQuirB/hy8yZMw5BSkWi45h6CclAwzho7kUqQTdZq32Fb7bHdXblotCsbJJhq+U3XCLvI6hw==",
+  "dgSpecHash": "5uJdfiOAK5/3uI80rUjKo9m8PK2/GPgDmFk+65APrjVjdYpGmjpyusMXywNXjYSBNdNikCfHMhTXrOClrdm3hQ==",
   "success": true,
-  "projectFilePath": "F:\\TLD Modding\\ImprovedSpawner\\Spawner\\Spawner\\Spawner.csproj",
+  "projectFilePath": "F:\\TLD Modding\\Spawner\\Spawner\\Spawner.csproj",
   "expectedPackageFiles": [],
   "logs": []
 }

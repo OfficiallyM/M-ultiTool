@@ -1,0 +1,5 @@
+F:\TLD Modding\Spawner\Spawner\obj\Debug\net48\Spawner.csproj.AssemblyReference.cache
+F:\TLD Modding\Spawner\Spawner\obj\Debug\net48\Spawner.GeneratedMSBuildEditorConfig.editorconfig
+F:\TLD Modding\Spawner\Spawner\obj\Debug\net48\Spawner.AssemblyInfoInputs.cache
+F:\TLD Modding\Spawner\Spawner\obj\Debug\net48\Spawner.AssemblyInfo.cs
+F:\TLD Modding\Spawner\Spawner\obj\Debug\net48\Spawner.csproj.CoreCompileInputs.cache

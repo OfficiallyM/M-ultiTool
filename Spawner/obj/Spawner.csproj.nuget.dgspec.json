@@ -1,32 +1,32 @@
 {
   "format": 1,
   "restore": {
-    "F:\\TLD Modding\\ImprovedSpawner\\Spawner\\Spawner\\Spawner.csproj": {}
+    "F:\\TLD Modding\\Spawner\\Spawner\\Spawner.csproj": {}
   },
   "projects": {
-    "F:\\TLD Modding\\ImprovedSpawner\\Spawner\\Spawner\\Spawner.csproj": {
+    "F:\\TLD Modding\\Spawner\\Spawner\\Spawner.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "F:\\TLD Modding\\ImprovedSpawner\\Spawner\\Spawner\\Spawner.csproj",
+        "projectUniqueName": "F:\\TLD Modding\\Spawner\\Spawner\\Spawner.csproj",
         "projectName": "Spawner",
-        "projectPath": "F:\\TLD Modding\\ImprovedSpawner\\Spawner\\Spawner\\Spawner.csproj",
+        "projectPath": "F:\\TLD Modding\\Spawner\\Spawner\\Spawner.csproj",
         "packagesPath": "C:\\Users\\Miner\\.nuget\\packages\\",
-        "outputPath": "F:\\TLD Modding\\ImprovedSpawner\\Spawner\\Spawner\\obj\\",
+        "outputPath": "F:\\TLD Modding\\Spawner\\Spawner\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
           "C:\\Users\\Miner\\AppData\\Roaming\\NuGet\\NuGet.Config",
           "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
         ],
         "originalTargetFrameworks": [
-          "net6.0"
+          "net48"
         ],
         "sources": {
           "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
           "https://api.nuget.org/v3/index.json": {}
         },
         "frameworks": {
-          "net6.0": {
-            "targetAlias": "net6.0",
+          "net48": {
+            "targetAlias": "net48",
             "projectReferences": {}
           }
         },
@@ -37,23 +37,8 @@
         }
       },
       "frameworks": {
-        "net6.0": {
-          "targetAlias": "net6.0",
-          "imports": [
-            "net461",
-            "net462",
-            "net47",
-            "net471",
-            "net472",
-            "net48"
-          ],
-          "assetTargetFallback": true,
-          "warn": true,
-          "frameworkReferences": {
-            "Microsoft.NETCore.App": {
-              "privateAssets": "all"
-            }
-          },
+        "net48": {
+          "targetAlias": "net48",
           "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\6.0.101\\RuntimeIdentifierGraph.json"
         }
       }
