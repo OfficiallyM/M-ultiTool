@@ -4,6 +4,9 @@ using System.IO;
 using System.Linq;
 using TLDLoader;
 using UnityEngine;
+using System.Runtime.Serialization;
+using System.Runtime.Serialization.Json;
+using System.Text;
 
 namespace MSpawner
 {
@@ -53,8 +56,11 @@ namespace MSpawner
 		// Settings.
 		private bool deleteMode = false;
 
+		// Translation-related variables.
+		private string language;
+		private Dictionary<string, List<ConfigVehicle>> translations = new Dictionary<string, List<ConfigVehicle>>();
+
 		// Vehicle class to track variants.
-		[System.Serializable]
 		private class Vehicle
 		{
 			public GameObject vehicle;
@@ -62,17 +68,18 @@ namespace MSpawner
 		}
 
 		// Serializable vehicle wrapper for translation config.
-		[System.Serializable]
+		[DataContract]
 		private class ConfigVehicle
 		{
-			public string objectName;
-			public int variant;
-			public string name;
+			[DataMember] public string objectName { get; set; }
+			[DataMember] public int? variant { get; set; }
+			[DataMember] public string name { get; set; }
+		}
 
-			public static ConfigVehicle CreateFromJSON(string json)
-			{
-				return JsonUtility.FromJson<ConfigVehicle>(json);
-			}
+		[DataContract]
+		private class ConfigWrapper
+		{
+			[DataMember] public List<ConfigVehicle> vehicles { get; set; }
 		}
 
 		// Override functions.
@@ -124,12 +131,9 @@ namespace MSpawner
 			mainMenuX = Screen.width / 2.5f - mainMenuWidth;
 			mainMenuY = 75f;
 
-		LoadVehicles();
-
-			foreach (int i in Enum.GetValues(typeof(mainscript.fluidenum)))
-			{
-				Log($"{i}: {Enum.GetName(typeof(mainscript.fluidenum), i)}", LogLevel.Debug);
-			}
+			LoadVehicles();
+			LoadTranslationFiles();
+			language = mainscript.M.menu.language.languageNames[mainscript.M.menu.language.selectedLanguage];
 		}
 
 		public override void Update()
@@ -227,6 +231,75 @@ namespace MSpawner
 					Log($"Something went wrong loading vehicle {gameObject.name}", LogLevel.Error);
 				}
 			}
+		}
+
+		/// <summary>
+		/// Load translation JSON files from mod config folder.
+		/// </summary>
+		private void LoadTranslationFiles()
+		{
+			// Return early if the config directory doesn't exist.
+			if (!Directory.Exists(ModLoader.GetModConfigFolder(this))) {
+				Log("Config folder is missing, nothing will be translated", LogLevel.Error);
+				return;
+			}
+
+			string[] files = Directory.GetFiles(ModLoader.GetModConfigFolder(this), "*.json");
+			foreach (string file in files)
+			{
+				if (!File.Exists(file))
+				{
+					continue;
+				}
+
+				try
+				{
+					string json = File.ReadAllText(file);
+					MemoryStream ms = new MemoryStream(Encoding.UTF8.GetBytes(json));
+					DataContractJsonSerializer jsonSerializer = new DataContractJsonSerializer(typeof(ConfigWrapper));
+					var config = jsonSerializer.ReadObject(ms) as ConfigWrapper;
+					ms.Close();
+
+					translations.Add(Path.GetFileNameWithoutExtension(file), config.vehicles);
+				}
+				catch (Exception ex)
+				{
+					Log($"Failed loading translation file {Path.GetFileNameWithoutExtension(file)} - error:\n{ex}", LogLevel.Error);
+				}
+			}
+		}
+
+		/// <summary>
+		/// 
+		/// </summary>
+		/// <param name="objectName">The object name to translate</param>
+		/// <param name="variant">The vehicle variant (optional)</param>
+		/// <returns>Translated object name or untranslated name if no translation is found</returns>
+		private string T(string objectName, int? variant = null)
+		{
+			if (translations.ContainsKey(language))
+			{
+				List<ConfigVehicle> vehicles = translations[language];
+				foreach (ConfigVehicle vehicle in vehicles)
+				{
+					if (vehicle.objectName == objectName)
+					{
+						if (variant != null && variant != -1)
+						{
+							if (vehicle.variant == variant)
+								return vehicle.name;
+						}
+						else
+							return vehicle.name;
+					}
+				}
+			}
+
+			if (variant != null && variant != -1)
+			{
+				objectName += $" (Variant {variant.GetValueOrDefault()})";
+			}
+			return objectName;
 		}
 
 		/// <summary>
@@ -330,13 +403,7 @@ namespace MSpawner
 			foreach (Vehicle vehicle in vehicles)
 			{
 				GameObject gameObject = vehicle.vehicle;
-				string name = gameObject.name;
-				
-				// Vehicle has variants, add to name.
-				if (vehicle.variant != -1)
-				{
-					name += $" (Variant {vehicle.variant})";
-				}
+				string name = T(gameObject.name, vehicle.variant);
 
 				if (GUI.Button(new Rect(x, scrollY, width, buttonHeight), name))
 				{
