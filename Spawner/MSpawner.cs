@@ -247,17 +247,30 @@ namespace MSpawner
 		private void LoadVehicles()
 		{
 			vehicles = new List<Vehicle>();
+			
+			// TODO: Find a way of loading trailers dynamically.
+			string[] trailers = new string[] {
+				"Bus02UtanfutoFull",
+				"UtanFutoFull"
+			};
 			foreach (GameObject gameObject in itemdatabase.d.items)
 			{
 				try
 				{
-					if (gameObject.name.ToLower().Contains("full") && gameObject.GetComponentsInChildren<carscript>().Length > 0)
+					if ((gameObject.name.ToLower().Contains("full") && gameObject.GetComponentsInChildren<carscript>().Length > 0) || trailers.Contains(gameObject.name))
 					{
 						// Check for variants.
 						tosaveitemscript save = gameObject.GetComponent<tosaveitemscript>();
 						if (save != null && save.randoms.Length > 0)
 						{
-							for (int i = 0; i <= save.randoms.Length; i++)
+							int variants = save.randoms.Length;
+
+							// TODO: Look into why IFA trailer (bed) is missing from randoms?
+							// For now, manually include it.
+							if (gameObject.name == "Bus02UtanfutoFull")
+								variants += 1;
+
+							for (int i = 0; i <= variants; i++)
 							{
 								Vehicle vehicle = new Vehicle()
 								{
