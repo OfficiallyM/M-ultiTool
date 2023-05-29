@@ -41,9 +41,11 @@ namespace MSpawner
 		private float mainMenuY;
 
 		private bool vehicleMenu = false;
+		private bool itemsMenu = false;
 
 		// Styling.
 		private GUIStyle labelStyle = new GUIStyle();
+		private GUIStyle headerStyle = new GUIStyle();
 
 		// Vehicle-related variables.
 		private List<Vehicle> vehicles = new List<Vehicle>();
@@ -55,6 +57,7 @@ namespace MSpawner
 
 		// Settings.
 		private bool deleteMode = false;
+		private List<QuickSpawn> quickSpawns = new List<QuickSpawn>();
 
 		// Translation-related variables.
 		private string language;
@@ -65,6 +68,14 @@ namespace MSpawner
 		{
 			public GameObject vehicle;
 			public int variant;
+		}
+
+		// Objects available for quickspawn.
+		private class QuickSpawn
+		{
+			public GameObject gameObject;
+			public string name;
+			public bool fluidOverride = false;
 		}
 
 		// Serializable vehicle wrapper for translation config.
@@ -123,9 +134,16 @@ namespace MSpawner
 				return;
 			}
 
+			// Set label styling.
 			labelStyle.alignment = TextAnchor.UpperLeft;
 			labelStyle.normal.textColor = Color.white;
 
+			// Set header styling.
+			headerStyle.alignment = TextAnchor.MiddleCenter;
+			headerStyle.fontSize = 16;
+			headerStyle.normal.textColor = Color.white;
+
+			// Set main menu position here so other menus can be based around it.
 			mainMenuWidth = Screen.width / 8f;
 			mainMenuHeight = Screen.height / 1.2f;
 			mainMenuX = Screen.width / 2.5f - mainMenuWidth;
@@ -134,6 +152,12 @@ namespace MSpawner
 			LoadVehicles();
 			LoadTranslationFiles();
 			language = mainscript.M.menu.language.languageNames[mainscript.M.menu.language.selectedLanguage];
+
+			// Add available quickspawn items.
+			// TODO: Allow these to be user-selected?
+			quickSpawns.Add(new QuickSpawn() { gameObject = itemdatabase.d.goilcan, name = "Oil can",	fluidOverride = true });
+			quickSpawns.Add(new QuickSpawn() { gameObject = itemdatabase.d.ggascan, name = "Jerry can", fluidOverride = true });
+			quickSpawns.Add(new QuickSpawn() { gameObject = itemdatabase.d.gbarrel, name = "Barrel",	fluidOverride = true });
 		}
 
 		public override void Update()
@@ -319,9 +343,10 @@ namespace MSpawner
 		/// </summary>
 		/// <param name="gameObject">The object to spawn</param>
 		/// <param name="variant">The object variant to spawn</param>
-		private void Spawn(GameObject gameObject, int variant = -1)
+		/// <param name="fluidOverride">Allow the fluid to be overriden using the vehicle fuel selector</param>
+		private void Spawn(GameObject gameObject, int variant = -1, bool fluidOverride = false)
 		{
-			if (!IsVehicle(gameObject))
+			if (!IsVehicle(gameObject) && !fluidOverride)
 			{
 				Color objectColor = new Color(255f / 255f, 255f / 255f, 255f / 255f);
 				mainscript.M.Spawn(gameObject, objectColor, condition, variant);
@@ -385,20 +410,50 @@ namespace MSpawner
 
 			GUI.Box(new Rect(x, y, width, height), $"<color=#ac78ad><size=16><b>{Name}</b></size>\n<size=14>v{Version} - made with ❤️ by {Author}</size></color>");
 
+			// Delete mode.
 			float deleteY = y + 50f;
 			if (GUI.Button(new Rect(x, deleteY, width, buttonHeight), (deleteMode ? "<color=#0F0>Delete mode</color>" : "<color=#F00>Delete mode</color>") + " (Press del)"))
 			{
 				deleteMode = !deleteMode;
 			}
 
+			// Vehicle settings menu.
 			float vehicleMenuY = deleteY + 25f;
 			if (GUI.Button(new Rect(x, vehicleMenuY, width, buttonHeight), vehicleMenu ? "<color=#0F0>Vehicle menu</color>" : "<color=#F00>Vehicle menu</color>"))
 			{
 				vehicleMenu = !vehicleMenu;
 			}
 
+			// Items menu.
+			float itemsMenuY = vehicleMenuY + 25f;
+			if (GUI.Button(new Rect(x, itemsMenuY, width, buttonHeight), itemsMenu ? "<color=#0F0>Items menu</color>" : "<color=#F00>Items menu</color>"))
+			{
+				itemsMenu = !itemsMenu;
+
+				// Close all other menus when the items menu opens.
+				if (itemsMenu)
+				{
+					vehicleMenu = false;
+				}
+			}
+
+			// Quick spawns.
+			float quickSpawnY = itemsMenuY + 40f;
+			GUI.Label(new Rect(x, quickSpawnY, width, buttonHeight * 2), "<color=#FFF><size=14>Quick spawns</size>\n<size=12>Container fluids can be changed\n using vehicle menu</size></color>", headerStyle);
+			quickSpawnY += 50f;
+			foreach (QuickSpawn spawn in quickSpawns)
+			{
+				if (GUI.Button(new Rect(x, quickSpawnY, width, buttonHeight), spawn.name))
+				{
+					Spawn(spawn.gameObject, fluidOverride: spawn.fluidOverride);
+				}
+				quickSpawnY += 25f;
+			}
+
+			// Vehicle spawner.
 			float scrollHeight = (buttonHeight + 5f) * vehicles.Count;
 			float scrollY = y + height / 2;
+			GUI.Label(new Rect(x, scrollY - 40f, width, buttonHeight * 2), "<color=#FFF><size=14>Vehicles</size>\n<size=12>Scroll for the full list</size></color>", headerStyle);
 			scrollPosition = GUI.BeginScrollView(new Rect(x, scrollY, width, height / 2), scrollPosition, new Rect(x, scrollY, width, scrollHeight), GUIStyle.none, GUIStyle.none);
 			foreach (Vehicle vehicle in vehicles)
 			{
@@ -434,6 +489,8 @@ namespace MSpawner
 
 			float textX = sliderX + sliderWidth + 10f;
 			float textWidth = 50f;
+
+			// TODO: Support multiple fuel types and amount, allowing for spawning with mixed fuel tanks.
 
 			// Fuel type.
 			GUI.Label(new Rect(x + 10f, sliderY - 2.5f, textWidth, sliderHeight), "Fuel type:", labelStyle);
