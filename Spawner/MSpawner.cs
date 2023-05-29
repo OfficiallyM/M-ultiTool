@@ -40,7 +40,13 @@ namespace MSpawner
 		private float mainMenuX;
 		private float mainMenuY;
 
+		private float vehicleMenuWidth;
+		private float vehicleMenuHeight;
+		private float vehicleMenuX;
+		private float vehicleMenuY;
+
 		private bool vehicleMenu = false;
+		private bool developerMenu = false;
 		private bool itemsMenu = false;
 
 		// Styling.
@@ -67,6 +73,7 @@ namespace MSpawner
 		// Settings.
 		private bool deleteMode = false;
 		private List<QuickSpawn> quickSpawns = new List<QuickSpawn>();
+		private float selectedTime;
 
 		// Translation-related variables.
 		private string language;
@@ -126,6 +133,11 @@ namespace MSpawner
 			{
 				VehicleMenu();
 			}
+
+			if (developerMenu)
+			{
+				DeveloperMenu();
+			}
 		}
 
 		public override void OnLoad()
@@ -157,6 +169,13 @@ namespace MSpawner
 			mainMenuHeight = Screen.height / 1.2f;
 			mainMenuX = Screen.width / 2.5f - mainMenuWidth;
 			mainMenuY = 75f;
+
+			// Also store the vehicle menu so the developer menu can be
+			// placed under it.
+			vehicleMenuX = mainMenuX + mainMenuWidth + 15f;
+			vehicleMenuY = 75f;
+			vehicleMenuWidth = Screen.width / 3.5f;
+			vehicleMenuHeight = Screen.height / 5f;
 
 			LoadVehicles();
 			LoadTranslationFiles();
@@ -441,8 +460,15 @@ namespace MSpawner
 				vehicleMenu = !vehicleMenu;
 			}
 
+			// Developer settings menu.
+			float developerMenuY = vehicleMenuY + 25f;
+			if (GUI.Button(new Rect(x, developerMenuY, width, buttonHeight), developerMenu ? "<color=#0F0>Developer menu</color>" : "<color=#F00>Developer menu</color>"))
+			{
+				developerMenu = !developerMenu;
+			}
+
 			// Items menu.
-			float itemsMenuY = vehicleMenuY + 25f;
+			float itemsMenuY = developerMenuY + 25f;
 			if (GUI.Button(new Rect(x, itemsMenuY, width, buttonHeight), itemsMenu ? "<color=#0F0>Items menu</color>" : "<color=#F00>Items menu</color>"))
 			{
 				itemsMenu = !itemsMenu;
@@ -451,6 +477,7 @@ namespace MSpawner
 				if (itemsMenu)
 				{
 					vehicleMenu = false;
+					developerMenu = false;
 				}
 			}
 
@@ -492,10 +519,10 @@ namespace MSpawner
 		/// </summary>
 		private void VehicleMenu()
 		{
-			float x = mainMenuX + mainMenuWidth + 15f;
-			float y = 75f;
-			float width = Screen.width / 3.5f;
-			float height = Screen.height / 5f;
+			float x = vehicleMenuX;
+			float y = vehicleMenuY;
+			float width = vehicleMenuWidth;
+			float height = vehicleMenuHeight;
 
 			GUI.Box(new Rect(x, y, width, height), "<color=#FFF><size=16><b>Vehicle settings</b></size></color>");
 
@@ -599,6 +626,37 @@ namespace MSpawner
 			GUI.skin.button = previewStyle;
 			GUI.Button(new Rect(x + 10f, sliderY, width - 20f, 20f), "");
 			GUI.skin.button = defaultStyle;
+		}
+
+		/// <summary>
+		/// Developer menu config GUI.
+		/// </summary>
+		private void DeveloperMenu()
+		{
+			float x = vehicleMenuX;
+			float y = vehicleMenuY + vehicleMenuHeight + 25f;
+			float width = vehicleMenuWidth;
+			float height = vehicleMenuHeight;
+
+			GUI.Box(new Rect(x, y, width, height), "<color=#FFF><size=16><b>Developer settings</b></size></color>");
+
+			float sliderX = x + 175f;
+			float sliderY = y + 30f;
+			float sliderWidth = width / 1.75f;
+			float sliderHeight = 20f;
+
+			float textX = sliderX + sliderWidth + 10f;
+			float textWidth = 50f;
+
+			// Time setting.
+			// TODO: Work out what the time actually is.
+			GUI.Label(new Rect(x + 10f, sliderY - 2.5f, textWidth, sliderHeight), "Time:", labelStyle);
+			float time = GUI.HorizontalSlider(new Rect(sliderX, sliderY, sliderWidth, sliderHeight), selectedTime, 0f, 360f);
+			selectedTime = Mathf.Round(time);
+			if (GUI.Button(new Rect(textX, sliderY - 2.5f, textWidth, sliderHeight), "Set"))
+			{
+				mainscript.M.napszak.tekeres = selectedTime;
+			}
 		}
 	}
 }
