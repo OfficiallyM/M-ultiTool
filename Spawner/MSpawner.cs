@@ -207,7 +207,6 @@ namespace MSpawner
 				// Remove vehicles and trailers from items array.
 				if (!IsVehicleOrTrailer(item) && item.name != "ErrorPrefab")
 				{
-					Log(item.name, LogLevel.Debug);
 					items.Add(item);
 				}
 			}
@@ -699,52 +698,45 @@ namespace MSpawner
 
 		private void ItemsMenu()
 		{
-			try
+			float x = mainMenuX + mainMenuWidth + 15f;
+			float y = mainMenuY;
+			float width = Screen.width / 1.75f;
+			float height = mainMenuHeight;
+
+			GUI.Box(new Rect(x, y, width, height), "<color=#FFF><size=16><b>Items</b></size></color>");
+
+			float itemWidth = 140f;
+			float itemHeight = 30f;
+			float initialRowX = x + 10f;
+			float itemX = initialRowX;
+			float itemY = 70f;
+
+			int maxRowItems = Mathf.FloorToInt(width / (itemWidth + 10f));
+			int drawnRows = 0;
+
+			float scrollHeight = itemHeight * (10f * maxRowItems) + itemY;
+			itemsScrollPosition = GUI.BeginScrollView(new Rect(x, y + 30f, width - 10f, height - 40f), itemsScrollPosition, new Rect(x, y + 30f, width - 10f, scrollHeight), new GUIStyle(), new GUIStyle());
+
+			for (int i = 0; i < items.Count(); i++)
 			{
-				float x = mainMenuX + mainMenuWidth + 15f;
-				float y = mainMenuY;
-				float width = Screen.width / 1.75f;
-				float height = mainMenuHeight;
+				GameObject item = items[i];
 
-				GUI.Box(new Rect(x, y, width, height), "<color=#FFF><size=16><b>Items</b></size></color>");
+				itemX += itemWidth + 10f;
 
-				float itemWidth = 140f;
-				float itemHeight = 30f;
-				float initialRowX = x + 10f;
-				float itemX = initialRowX;
-				float itemY = 70f;
-
-				int maxRowItems = Mathf.FloorToInt(width / (itemWidth + 10f));
-				int drawnRows = 0;
-
-				float scrollHeight = itemHeight * (10f * maxRowItems) + itemY;
-				itemsScrollPosition = GUI.BeginScrollView(new Rect(x, y + 30f, width - 10f, height - 40f), itemsScrollPosition, new Rect(x, y + 30f, width - 10f, scrollHeight), new GUIStyle(), new GUIStyle());
-
-				for (int i = 0; i < items.Count(); i++)
+				if (i % maxRowItems == 0)
 				{
-					GameObject item = items[i];
-
-					itemX += itemWidth + 10f;
-
-					if (i % maxRowItems == 0)
-					{
-						drawnRows++;
-						itemX = initialRowX;
-						itemY += itemHeight + 10f;
-					}
-
-					if (GUI.Button(new Rect(itemX, itemY, itemWidth, itemHeight), item.name))
-					{
-						Spawn(item);
-					}
+					drawnRows++;
+					itemX = initialRowX;
+					itemY += itemHeight + 10f;
 				}
 
-				GUI.EndScrollView();
+				if (GUI.Button(new Rect(itemX, itemY, itemWidth, itemHeight), item.name))
+				{
+					Spawn(item);
+				}
 			}
-			catch (Exception ex)
-			{
-				Log($"Item drawing error - {ex}", LogLevel.Error);
-			}
+
+			GUI.EndScrollView();
 		}
 	}
 }
