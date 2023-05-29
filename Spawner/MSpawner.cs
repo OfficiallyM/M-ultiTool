@@ -165,7 +165,7 @@ namespace MSpawner
 			headerStyle.normal.textColor = Color.white;
 
 			// Set main menu position here so other menus can be based around it.
-			mainMenuWidth = Screen.width / 8f;
+			mainMenuWidth = Screen.width / 7.5f;
 			mainMenuHeight = Screen.height / 1.2f;
 			mainMenuX = Screen.width / 2.5f - mainMenuWidth;
 			mainMenuY = 75f;
@@ -440,11 +440,11 @@ namespace MSpawner
 			float width = mainMenuWidth;
 			float height = mainMenuHeight;
 
+			GUI.Box(new Rect(x, y, width, height), $"<color=#ac78ad><size=16><b>{Name}</b></size>\n<size=14>v{Version} - made with ❤️ by {Author}</size></color>");
+
 			float buttonHeight = 20f;
 			width -= 10f;
-			x += 2.5f;
-
-			GUI.Box(new Rect(x, y, width, height), $"<color=#ac78ad><size=16><b>{Name}</b></size>\n<size=14>v{Version} - made with ❤️ by {Author}</size></color>");
+			x += 5f;
 
 			// Delete mode.
 			float deleteY = y + 50f;
