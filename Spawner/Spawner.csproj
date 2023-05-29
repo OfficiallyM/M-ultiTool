@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>net48</TargetFramework>
@@ -31,8 +31,19 @@
     </Reference>
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Configs\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="Configs\**">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
   <Target Name="PostBuild" AfterTargets="PostBuildEvent">
     <Exec Command="move /Y &quot;$(TargetPath)&quot; &quot;C:\Users\Miner\Documents\TheLongDrive\Mods\$(TargetFileName)&quot;" />
+    <Exec Command="copy /Y &quot;$(TargetDir)Configs&quot; &quot;C:\Users\Miner\Documents\TheLongDrive\Mods\Config\Mod Settings\MSpawner&quot;" />
   </Target>
 
 </Project>

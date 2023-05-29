@@ -48,3 +48,4 @@ F:\TLD Modding\Spawner\Spawner\bin\Release\net48\UnityEngine.GridModule.dll
 F:\TLD Modding\Spawner\Spawner\obj\Release\net48\Spawner.csproj.CopyComplete
 F:\TLD Modding\Spawner\Spawner\obj\Release\net48\Spawner.dll
 F:\TLD Modding\Spawner\Spawner\obj\Release\net48\Spawner.pdb
+F:\TLD Modding\Spawner\Spawner\bin\Release\net48\Configs\English.json
