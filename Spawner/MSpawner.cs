@@ -69,6 +69,15 @@ namespace MSpawner
 		private float fuelValue = 5f;
 		private int fuelTypeInt = -1;
 		private Vector2 scrollPosition;
+		// TODO: Find a way of loading trailers dynamically.
+		private string[] trailers = new string[] {
+			"Bus02UtanfutoFull",
+			"UtanFutoFull"
+		};
+
+		// Item menu variables.
+		private Vector2 itemsScrollPosition;
+		private List<GameObject> items = new List<GameObject>();
 
 		// Settings.
 		private bool deleteMode = false;
@@ -138,6 +147,11 @@ namespace MSpawner
 			{
 				DeveloperMenu();
 			}
+
+			if (itemsMenu)
+			{
+				ItemsMenu();
+			}
 		}
 
 		public override void OnLoad()
@@ -173,7 +187,7 @@ namespace MSpawner
 			// Also store the vehicle menu so the developer menu can be
 			// placed under it.
 			vehicleMenuX = mainMenuX + mainMenuWidth + 15f;
-			vehicleMenuY = 75f;
+			vehicleMenuY = mainMenuY;
 			vehicleMenuWidth = Screen.width / 3.5f;
 			vehicleMenuHeight = Screen.height / 5f;
 
@@ -186,6 +200,17 @@ namespace MSpawner
 			quickSpawns.Add(new QuickSpawn() { gameObject = itemdatabase.d.goilcan, name = "Oil can",	fluidOverride = true });
 			quickSpawns.Add(new QuickSpawn() { gameObject = itemdatabase.d.ggascan, name = "Jerry can", fluidOverride = true });
 			quickSpawns.Add(new QuickSpawn() { gameObject = itemdatabase.d.gbarrel, name = "Barrel",	fluidOverride = true });
+
+			// Parse items.
+			foreach (GameObject item in itemdatabase.d.items)
+			{
+				// Remove vehicles and trailers from items array.
+				if (!IsVehicleOrTrailer(item) && item.name != "ErrorPrefab")
+				{
+					Log(item.name, LogLevel.Debug);
+					items.Add(item);
+				}
+			}
 		}
 
 		public override void Update()
@@ -247,17 +272,11 @@ namespace MSpawner
 		private void LoadVehicles()
 		{
 			vehicles = new List<Vehicle>();
-			
-			// TODO: Find a way of loading trailers dynamically.
-			string[] trailers = new string[] {
-				"Bus02UtanfutoFull",
-				"UtanFutoFull"
-			};
 			foreach (GameObject gameObject in itemdatabase.d.items)
 			{
 				try
 				{
-					if ((gameObject.name.ToLower().Contains("full") && gameObject.GetComponentsInChildren<carscript>().Length > 0) || trailers.Contains(gameObject.name))
+					if (IsVehicleOrTrailer(gameObject))
 					{
 						// Check for variants.
 						tosaveitemscript save = gameObject.GetComponent<tosaveitemscript>();
@@ -296,6 +315,18 @@ namespace MSpawner
 					Log($"Something went wrong loading vehicle {gameObject.name}", LogLevel.Error);
 				}
 			}
+		}
+
+		/// <summary>
+		/// Check if an object is a vehicle.
+		/// </summary>
+		/// <param name="gameObject">The object to check</param>
+		/// <returns>true if the object is a vehicle or trailer; otherwise, false</returns>
+		private bool IsVehicleOrTrailer(GameObject gameObject)
+		{
+			if ((gameObject.name.ToLower().Contains("full") && gameObject.GetComponentsInChildren<carscript>().Length > 0) || trailers.Contains(gameObject.name))
+				return true;
+			return false;
 		}
 
 		/// <summary>
@@ -368,18 +399,6 @@ namespace MSpawner
 		}
 
 		/// <summary>
-		/// Check if an object is a vehicle.
-		/// </summary>
-		/// <param name="gameObject">The object to check</param>
-		/// <returns>true if the object is a vehicle; otherwise, false</returns>
-		private bool IsVehicle(GameObject gameObject)
-		{
-			if (gameObject.GetComponentsInChildren<carscript>().Length > 0)
-				return true;
-			return false;
-		}
-
-		/// <summary>
 		/// Wrapper around the default spawn function to handle vehicle fuel and variants etc.
 		/// </summary>
 		/// <param name="gameObject">The object to spawn</param>
@@ -395,7 +414,7 @@ namespace MSpawner
 				gameObject.GetComponent<partconditionscript>().StartFullRandom(0, maxCondition);
 				selectedCondition = UnityEngine.Random.Range(0, maxCondition);
 			}
-			if (!IsVehicle(gameObject) && !fluidOverride)
+			if (!IsVehicleOrTrailer(gameObject) && !fluidOverride)
 			{
 				Color objectColor = new Color(255f / 255f, 255f / 255f, 255f / 255f);
 				mainscript.M.Spawn(gameObject, objectColor, selectedCondition, variant);
@@ -471,6 +490,9 @@ namespace MSpawner
 			if (GUI.Button(new Rect(x, vehicleMenuY, width, buttonHeight), vehicleMenu ? "<color=#0F0>Vehicle menu</color>" : "<color=#F00>Vehicle menu</color>"))
 			{
 				vehicleMenu = !vehicleMenu;
+
+				if (vehicleMenu)
+					itemsMenu = false;
 			}
 
 			// Developer settings menu.
@@ -478,6 +500,9 @@ namespace MSpawner
 			if (GUI.Button(new Rect(x, developerMenuY, width, buttonHeight), developerMenu ? "<color=#0F0>Developer menu</color>" : "<color=#F00>Developer menu</color>"))
 			{
 				developerMenu = !developerMenu;
+
+				if (developerMenu)
+					itemsMenu = false;
 			}
 
 			// Items menu.
@@ -669,6 +694,56 @@ namespace MSpawner
 			if (GUI.Button(new Rect(textX, sliderY - 2.5f, textWidth, sliderHeight), "Set"))
 			{
 				mainscript.M.napszak.tekeres = selectedTime;
+			}
+		}
+
+		private void ItemsMenu()
+		{
+			try
+			{
+				float x = mainMenuX + mainMenuWidth + 15f;
+				float y = mainMenuY;
+				float width = Screen.width / 1.75f;
+				float height = mainMenuHeight;
+
+				GUI.Box(new Rect(x, y, width, height), "<color=#FFF><size=16><b>Items</b></size></color>");
+
+				float itemWidth = 140f;
+				float itemHeight = 30f;
+				float initialRowX = x + 10f;
+				float itemX = initialRowX;
+				float itemY = 70f;
+
+				int maxRowItems = Mathf.FloorToInt(width / (itemWidth + 10f));
+				int drawnRows = 0;
+
+				float scrollHeight = itemHeight * (10f * maxRowItems) + itemY;
+				itemsScrollPosition = GUI.BeginScrollView(new Rect(x, y + 30f, width - 10f, height - 40f), itemsScrollPosition, new Rect(x, y + 30f, width - 10f, scrollHeight), new GUIStyle(), new GUIStyle());
+
+				for (int i = 0; i < items.Count(); i++)
+				{
+					GameObject item = items[i];
+
+					itemX += itemWidth + 10f;
+
+					if (i % maxRowItems == 0)
+					{
+						drawnRows++;
+						itemX = initialRowX;
+						itemY += itemHeight + 10f;
+					}
+
+					if (GUI.Button(new Rect(itemX, itemY, itemWidth, itemHeight), item.name))
+					{
+						Spawn(item);
+					}
+				}
+
+				GUI.EndScrollView();
+			}
+			catch (Exception ex)
+			{
+				Log($"Item drawing error - {ex}", LogLevel.Error);
 			}
 		}
 	}
