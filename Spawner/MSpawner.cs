@@ -372,6 +372,12 @@ namespace MSpawner
 		/// <returns>Translated object name or untranslated name if no translation is found</returns>
 		private string T(string objectName, int? variant = null)
 		{
+			// Fallback to English if the current language isn't supported.
+			if (!translations.ContainsKey(language))
+			{
+				language = "English";
+			}
+
 			if (translations.ContainsKey(language))
 			{
 				List<ConfigVehicle> vehicles = translations[language];
