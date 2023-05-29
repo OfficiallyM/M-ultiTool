@@ -50,7 +50,16 @@ namespace MSpawner
 		// Vehicle-related variables.
 		private List<Vehicle> vehicles = new List<Vehicle>();
 		private Color color = new Color(255f / 255f, 255f / 255f, 255f / 255f);
-		private int condition = 0;
+		private int conditionInt = 0;
+		private enum condition
+		{
+			Random = -1,
+			Pristine,
+			Dull,
+			Rough,
+			Crusty,
+			Rusty
+		}
 		private float fuelValue = 5f;
 		private int fuelTypeInt = -1;
 		private Vector2 scrollPosition;
@@ -346,10 +355,18 @@ namespace MSpawner
 		/// <param name="fluidOverride">Allow the fluid to be overriden using the vehicle fuel selector</param>
 		private void Spawn(GameObject gameObject, int variant = -1, bool fluidOverride = false)
 		{
+			int selectedCondition = conditionInt;
+			if (selectedCondition == -1)
+			{
+				// Randomise vehicle condition.
+				int maxCondition = (int)Enum.GetValues(typeof(condition)).Cast<condition>().Max();
+				gameObject.GetComponent<partconditionscript>().StartFullRandom(0, maxCondition);
+				selectedCondition = UnityEngine.Random.Range(0, maxCondition);
+			}
 			if (!IsVehicle(gameObject) && !fluidOverride)
 			{
 				Color objectColor = new Color(255f / 255f, 255f / 255f, 255f / 255f);
-				mainscript.M.Spawn(gameObject, objectColor, condition, variant);
+				mainscript.M.Spawn(gameObject, objectColor, selectedCondition, variant);
 				return;
 			}
 
@@ -357,7 +374,7 @@ namespace MSpawner
 			if (fuelTank == null)
 			{
 				// Vehicle doesn't have a fuel tank, log a warning and return.
-				mainscript.M.Spawn(gameObject, color, condition, variant);
+				mainscript.M.Spawn(gameObject, color, selectedCondition, variant);
 				Log($"Vehicle {gameObject.name} has no fuel tank.", LogLevel.Warning);
 				return;
 			}
@@ -366,7 +383,7 @@ namespace MSpawner
 			// Fuel type and value are default, just spawn the vehicle.
 			if (fuelTypeInt == -1 && fuelValue == -1f)
 			{
-				mainscript.M.Spawn(gameObject, color, condition, variant);
+				mainscript.M.Spawn(gameObject, color, selectedCondition, variant);
 				return;
 			}
 			
@@ -389,7 +406,7 @@ namespace MSpawner
 			{
 				gameObject.GetComponent<tankscript>().F.ChangeOne(fuelValue, (mainscript.fluidenum)fuelTypeInt);
 			}
-			mainscript.M.Spawn(gameObject, color, condition, variant);
+			mainscript.M.Spawn(gameObject, color, selectedCondition, variant);
 		}
 
 		// Menus.
@@ -490,6 +507,18 @@ namespace MSpawner
 			float textX = sliderX + sliderWidth + 10f;
 			float textWidth = 50f;
 
+			// Condition.
+			GUI.Label(new Rect(x + 10f, sliderY - 2.5f, textWidth, sliderHeight), "Condition:", labelStyle);
+			int maxCondition = (int)Enum.GetValues(typeof(condition)).Cast<condition>().Max();
+			float rawCondition = GUI.HorizontalSlider(new Rect(sliderX, sliderY, sliderWidth, sliderHeight), conditionInt, -1, maxCondition);
+			conditionInt = Mathf.RoundToInt(rawCondition);
+
+			string conditionName = ((condition)conditionInt).ToString();
+
+			GUI.Label(new Rect(textX, sliderY - 2.5f, textWidth, sliderHeight), conditionName, labelStyle);
+
+			sliderY += 20f;
+
 			// TODO: Support multiple fuel types and amount, allowing for spawning with mixed fuel tanks.
 
 			// Fuel type.
@@ -516,6 +545,60 @@ namespace MSpawner
 			bool fuelValueParse = float.TryParse(GUI.TextField(new Rect(textX, sliderY - 2.5f, textWidth, sliderHeight), fuelValue.ToString(), labelStyle), out fuelValue);
 			if (!fuelValueParse)
 				Log($"{fuelValue.ToString()} is not a number", LogLevel.Error);
+
+			// Vehicle colour sliders.
+			// Red.
+			sliderY += 20f;
+			GUI.Label(new Rect(x + 10f, sliderY - 2.5f, textWidth, sliderHeight), "<color=#F00>Red:</color>", labelStyle);
+			float red = GUI.HorizontalSlider(new Rect(sliderX, sliderY, sliderWidth, sliderHeight), color.r * 255, 0, 255);
+			red = Mathf.Round(red);
+			bool redParse = float.TryParse(GUI.TextField(new Rect(textX, sliderY - 2.5f, textWidth, sliderHeight), red.ToString(), labelStyle), out red);
+			if (!redParse)
+				Log($"{redParse.ToString()} is not a number", LogLevel.Error);
+			red = Mathf.Clamp(red, 0f, 255f);
+			color.r = red / 255f;
+			GUI.Label(new Rect(textX, sliderY - 2.5f, textWidth, sliderHeight), red.ToString(), labelStyle);
+
+			// Green.
+			sliderY += 20f;
+			GUI.Label(new Rect(x + 10f, sliderY - 2.5f, textWidth, sliderHeight), "<color=#0F0>Green:</color>", labelStyle);
+			float green = GUI.HorizontalSlider(new Rect(sliderX, sliderY, sliderWidth, sliderHeight), color.g * 255, 0, 255);
+			green = Mathf.Round(green);
+			bool greenParse = float.TryParse(GUI.TextField(new Rect(textX, sliderY - 2.5f, textWidth, sliderHeight), green.ToString(), labelStyle), out green);
+			if (!greenParse)
+				Log($"{greenParse.ToString()} is not a number", LogLevel.Error);
+			green = Mathf.Clamp(green, 0f, 255f);
+			color.g = green / 255f;
+			GUI.Label(new Rect(textX, sliderY - 2.5f, textWidth, sliderHeight), green.ToString(), labelStyle);
+
+			// Blue.
+			sliderY += 20f;
+			GUI.Label(new Rect(x + 10f, sliderY - 2.5f, textWidth, sliderHeight), "<color=#00F>Blue:</color>", labelStyle);
+			float blue = GUI.HorizontalSlider(new Rect(sliderX, sliderY, sliderWidth, sliderHeight), color.b * 255, 0, 255);
+			blue = Mathf.Round(blue);
+			bool blueParse = float.TryParse(GUI.TextField(new Rect(textX, sliderY - 2.5f, textWidth, sliderHeight), blue.ToString(), labelStyle), out blue);
+			if (!blueParse)
+				Log($"{blueParse.ToString()} is not a number", LogLevel.Error);
+			blue = Mathf.Clamp(blue, 0f, 255f);
+			color.b = blue / 255f;
+			GUI.Label(new Rect(textX, sliderY - 2.5f, textWidth, sliderHeight), blue.ToString(), labelStyle);
+
+			sliderY += 20f;
+
+			// Colour preview.
+			GUIStyle defaultStyle = GUI.skin.button;
+			GUIStyle previewStyle = new GUIStyle(defaultStyle);
+			Texture2D previewTexture = new Texture2D(1, 1);
+			Color[] pixels = new Color[] { color };
+			previewTexture.SetPixels(pixels);
+			previewTexture.Apply();
+			previewStyle.normal.background = previewTexture;
+			previewStyle.active.background = previewTexture;
+			previewStyle.hover.background = previewTexture;
+			previewStyle.margin = new RectOffset(0, 0, 0, 0);
+			GUI.skin.button = previewStyle;
+			GUI.Button(new Rect(x + 10f, sliderY, width - 20f, 20f), "");
+			GUI.skin.button = defaultStyle;
 		}
 	}
 }
