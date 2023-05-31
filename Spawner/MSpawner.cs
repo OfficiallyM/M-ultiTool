@@ -442,6 +442,13 @@ namespace MSpawner
 			}
 
 			tankscript fuelTank = gameObject.GetComponent<tankscript>();
+
+			// Find fuel tank objects.
+			if (fuelTank == null)
+			{
+				fuelTank = gameObject.GetComponentInChildren<tankscript>();
+			}
+
 			if (fuelTank == null)
 			{
 				// Vehicle doesn't have a fuel tank, log a warning and return.
@@ -449,7 +456,6 @@ namespace MSpawner
 				Log($"Vehicle {gameObject.name} has no fuel tank.", LogLevel.Warning);
 				return;
 			}
-
 
 			// Fuel type and value are default, just spawn the vehicle.
 			if (fuelTypeInt == -1 && fuelValue == -1f)
@@ -463,19 +469,19 @@ namespace MSpawner
 			mainscript.fluidenum currentFuelType = fuelTank.F.fluids.FirstOrDefault().type;
 			float currentFuelAmount = fuelTank.F.fluids.FirstOrDefault().amount;
 
-			gameObject.GetComponent<tankscript>().F.fluids.Clear();
+			fuelTank.F.fluids.Clear();
 
 			if (fuelTypeInt == -1 && fuelValue > -1)
 			{
-				gameObject.GetComponent<tankscript>().F.ChangeOne(fuelValue, currentFuelType);
+				fuelTank.F.ChangeOne(fuelValue, currentFuelType);
 			}
 			else if (fuelTypeInt > -1 && fuelValue == -1)
 			{
-				gameObject.GetComponent<tankscript>().F.ChangeOne(currentFuelAmount, (mainscript.fluidenum)fuelTypeInt);
+				fuelTank.F.ChangeOne(currentFuelAmount, (mainscript.fluidenum)fuelTypeInt);
 			}
 			else
 			{
-				gameObject.GetComponent<tankscript>().F.ChangeOne(fuelValue, (mainscript.fluidenum)fuelTypeInt);
+				fuelTank.F.ChangeOne(fuelValue, (mainscript.fluidenum)fuelTypeInt);
 			}
 			mainscript.M.Spawn(gameObject, color, selectedCondition, variant);
 		}
