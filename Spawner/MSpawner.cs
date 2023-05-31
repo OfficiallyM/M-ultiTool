@@ -69,6 +69,7 @@ namespace MSpawner
 		private float fuelValue = 5f;
 		private int fuelTypeInt = -1;
 		private Vector2 scrollPosition;
+		private string plate = String.Empty;
 		// TODO: Find a way of loading trailers dynamically.
 		private string[] trailers = new string[] {
 			"Bus02UtanfutoFull",
@@ -419,6 +420,20 @@ namespace MSpawner
 				gameObject.GetComponent<partconditionscript>().StartFullRandom(0, maxCondition);
 				selectedCondition = UnityEngine.Random.Range(0, maxCondition);
 			}
+
+			// Set vehicle license plate text.
+			if (IsVehicleOrTrailer(gameObject) && plate != String.Empty)
+			{
+				rendszamscript[] plateScripts = gameObject.GetComponentsInChildren<rendszamscript>();
+				foreach (rendszamscript plateScript in plateScripts)
+				{
+					if (plateScript == null)
+						continue;
+
+					plateScript.Same(plate);
+				}
+			}
+
 			if (!IsVehicleOrTrailer(gameObject) && !fluidOverride)
 			{
 				Color objectColor = new Color(255f / 255f, 255f / 255f, 255f / 255f);
@@ -669,6 +684,11 @@ namespace MSpawner
 			GUI.skin.button = previewStyle;
 			GUI.Button(new Rect(x + 10f, sliderY, width - 20f, 20f), "");
 			GUI.skin.button = defaultStyle;
+
+			// License plate.
+			sliderY += 25f;
+			GUI.Label(new Rect(x + 10f, sliderY - 2.5f, textWidth, sliderHeight), "Plate (blank for random):", labelStyle);
+			plate = GUI.TextField(new Rect(sliderX, sliderY, sliderWidth, sliderHeight), plate, 7, labelStyle);
 		}
 
 		/// <summary>
