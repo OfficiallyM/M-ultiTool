@@ -692,7 +692,7 @@ namespace MSpawner
 			GUI.skin.button = defaultStyle;
 
 			// License plate.
-			sliderY += 25f;
+			sliderY += 30f;
 			GUI.Label(new Rect(x + 10f, sliderY - 2.5f, textWidth, sliderHeight), "Plate (blank for random):", labelStyle);
 			plate = GUI.TextField(new Rect(sliderX, sliderY, sliderWidth, sliderHeight), plate, 7, labelStyle);
 		}
