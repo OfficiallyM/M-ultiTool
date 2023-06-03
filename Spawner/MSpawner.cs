@@ -86,6 +86,7 @@ namespace MSpawner
 		private List<QuickSpawn> quickSpawns = new List<QuickSpawn>();
 		private float selectedTime;
 		private bool isTimeLocked;
+		GameObject ufo;
 
 		// Translation-related variables.
 		private string language;
@@ -770,6 +771,32 @@ namespace MSpawner
 				isTimeLocked = !isTimeLocked;
 
 				mainscript.M.napszak.enabled = !isTimeLocked;
+			}
+
+			sliderY += 25f;
+
+			GUI.Label(new Rect(x + 10f, sliderY - 2.5f, textWidth, sliderHeight), "UFO control (Doesn't save):", labelStyle);
+
+			if (GUI.Button(new Rect(sliderX, sliderY - 2.5f, textWidth * 2f, sliderHeight), "Spawn UFO"))
+			{
+				temporaryTurnOffGeneration temp = mainscript.M.menu.Kaposztaleves.GetComponentInParent<temporaryTurnOffGeneration>();
+				if (temp != null)
+				{
+					// Destory existing UFO.
+					if (ufo != null)
+						UnityEngine.Object.Destroy(ufo);
+
+					ufo = UnityEngine.Object.Instantiate(temp.FEDOSPAWN.prefab, mainscript.M.player.lookPoint + Vector3.up * 0.75f, Quaternion.FromToRotation(Vector3.forward, -mainscript.M.player.transform.right));
+					fedoscript ufoScript = ufo.GetComponent<fedoscript>();
+					ufoScript.ai = false;
+					ufoScript.followRoad = false;
+				}
+			}
+
+			if (GUI.Button(new Rect(sliderX + textWidth * 2 + 5f, sliderY - 2.5f, textWidth * 2f, sliderHeight), "Remove UFO"))
+			{
+				if (ufo != null)
+					UnityEngine.Object.Destroy(ufo);
 			}
 		}
 
