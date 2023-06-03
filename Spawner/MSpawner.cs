@@ -66,8 +66,9 @@ namespace MSpawner
 			Crusty,
 			Rusty
 		}
-		private float fuelValue = 5f;
-		private int fuelTypeInt = -1;
+		private int fuelMixes = 1;
+		private List<float> fuelValues = new List<float> { -1f };
+		private List<int> fuelTypeInts = new List<int> { -1 };
 		private Vector2 scrollPosition;
 		private string plate = String.Empty;
 		// TODO: Find a way of loading trailers dynamically.
@@ -210,6 +211,14 @@ namespace MSpawner
 				{
 					items.Add(item);
 				}
+			}
+
+			// Prepopulate fuel types and fuel values as all default.
+			int maxFuelType = (int)Enum.GetValues(typeof(mainscript.fluidenum)).Cast<mainscript.fluidenum>().Max();
+			for (int i = 0; i < maxFuelType; i++)
+			{
+				fuelValues.Add(-1f);
+				fuelTypeInts.Add(-1);
 			}
 		}
 
@@ -451,37 +460,46 @@ namespace MSpawner
 
 			if (fuelTank == null)
 			{
-				// Vehicle doesn't have a fuel tank, log a warning and return.
+				// Vehicle doesn't have a fuel tank, just spawn the vehicle and return.
 				mainscript.M.Spawn(gameObject, color, selectedCondition, variant);
-				Log($"Vehicle {gameObject.name} has no fuel tank.", LogLevel.Warning);
 				return;
 			}
 
 			// Fuel type and value are default, just spawn the vehicle.
-			if (fuelTypeInt == -1 && fuelValue == -1f)
+			if (fuelMixes == 1)
 			{
-				mainscript.M.Spawn(gameObject, color, selectedCondition, variant);
-				return;
+				if (fuelTypeInts[0] == -1 && fuelValues[0] == -1f)
+				{
+					mainscript.M.Spawn(gameObject, color, selectedCondition, variant);
+					return;
+				}
 			}
 			
-			// Store the current fuel type and amount to return either to default.
-			// TODO: Store all default fuel types in case a vehicle spawns with a mix.
-			mainscript.fluidenum currentFuelType = fuelTank.F.fluids.FirstOrDefault().type;
-			float currentFuelAmount = fuelTank.F.fluids.FirstOrDefault().amount;
+			// Store the current fuel types and amounts to return either to default.
+			List<mainscript.fluidenum> currentFuelTypes = new List<mainscript.fluidenum>();
+			List<float> currentFuelAmounts = new List<float>();
+			foreach (mainscript.fluid fluid in fuelTank.F.fluids)
+			{
+				currentFuelTypes.Add(fluid.type);
+				currentFuelAmounts.Add(fluid.amount);
+			}
 
 			fuelTank.F.fluids.Clear();
 
-			if (fuelTypeInt == -1 && fuelValue > -1)
+			for (int i = 0; i < fuelMixes; i++)
 			{
-				fuelTank.F.ChangeOne(fuelValue, currentFuelType);
-			}
-			else if (fuelTypeInt > -1 && fuelValue == -1)
-			{
-				fuelTank.F.ChangeOne(currentFuelAmount, (mainscript.fluidenum)fuelTypeInt);
-			}
-			else
-			{
-				fuelTank.F.ChangeOne(fuelValue, (mainscript.fluidenum)fuelTypeInt);
+				if (fuelTypeInts[i] == -1 && fuelValues[i] > -1)
+				{
+					fuelTank.F.ChangeOne(fuelValues[i], currentFuelTypes[i]);
+				}
+				else if (fuelTypeInts[i] > -1 && fuelValues[i] == -1)
+				{
+					fuelTank.F.ChangeOne(currentFuelAmounts[i], (mainscript.fluidenum)fuelTypeInts[i]);
+				}
+				else
+				{
+					fuelTank.F.ChangeOne(fuelValues[i], (mainscript.fluidenum)fuelTypeInts[i]);
+				}
 			}
 			mainscript.M.Spawn(gameObject, color, selectedCondition, variant);
 		}
@@ -583,10 +601,13 @@ namespace MSpawner
 		/// </summary>
 		private void VehicleMenu()
 		{
+
 			float x = vehicleMenuX;
 			float y = vehicleMenuY;
 			float width = vehicleMenuWidth;
 			float height = vehicleMenuHeight;
+
+			height += (fuelMixes * 40f);
 
 			GUI.Box(new Rect(x, y, width, height), "<color=#FFF><size=16><b>Vehicle settings</b></size></color>");
 
@@ -610,32 +631,46 @@ namespace MSpawner
 
 			sliderY += 20f;
 
-			// TODO: Support multiple fuel types and amount, allowing for spawning with mixed fuel tanks.
-
-			// Fuel type.
-			GUI.Label(new Rect(x + 10f, sliderY - 2.5f, textWidth, sliderHeight), "Fuel type:", labelStyle);
+			// Fuel mixes.
 			int maxFuelType = (int)Enum.GetValues(typeof(mainscript.fluidenum)).Cast<mainscript.fluidenum>().Max();
-			float rawFuelType = GUI.HorizontalSlider(new Rect(sliderX, sliderY, sliderWidth, sliderHeight), fuelTypeInt, -1, maxFuelType);
-			fuelTypeInt = Mathf.RoundToInt(rawFuelType);
-
-			string fuelType = ((mainscript.fluidenum)fuelTypeInt).ToString();
-			if (fuelTypeInt == -1)
-				fuelType = "Default";
-			else
-				fuelType = fuelType[0].ToString().ToUpper() + fuelType.Substring(1);
-
-			GUI.Label(new Rect(textX, sliderY - 2.5f, textWidth, sliderHeight), fuelType, labelStyle);
+			GUI.Label(new Rect(x + 10f, sliderY - 2.5f, textWidth, sliderHeight), "Number of fuels:", labelStyle);
+			float rawFuelMixes = GUI.HorizontalSlider(new Rect(sliderX, sliderY, sliderWidth, sliderHeight), fuelMixes, 1, maxFuelType + 1);
+			fuelMixes = Mathf.RoundToInt(rawFuelMixes);
+			GUI.Label(new Rect(textX, sliderY - 2.5f, textWidth, sliderHeight), fuelMixes.ToString(), labelStyle);
 
 			sliderY += 20f;
 
-			// Fuel amount.
-			GUI.Label(new Rect(x + 10f, sliderY - 2.5f, textWidth, sliderHeight), "Fuel amount (-1 for default):", labelStyle);
-			float rawFuelValue = GUI.HorizontalSlider(new Rect(sliderX, sliderY, sliderWidth, sliderHeight), fuelValue, -1f, 1000f);
-			fuelValue = Mathf.Round(rawFuelValue);
+			for (int i = 0; i < fuelMixes; i++)
+			{
+				if (i > 0)
+					sliderY += 20f;
 
-			bool fuelValueParse = float.TryParse(GUI.TextField(new Rect(textX, sliderY - 2.5f, textWidth, sliderHeight), fuelValue.ToString(), labelStyle), out fuelValue);
-			if (!fuelValueParse)
-				Log($"{fuelValue.ToString()} is not a number", LogLevel.Error);
+				// Fuel type.
+				GUI.Label(new Rect(x + 10f, sliderY - 2.5f, textWidth, sliderHeight), $"Fuel type {i + 1}:", labelStyle);
+				float rawFuelType = GUI.HorizontalSlider(new Rect(sliderX, sliderY, sliderWidth, sliderHeight), fuelTypeInts[i], -1, maxFuelType);
+				fuelTypeInts[i] = Mathf.RoundToInt(rawFuelType);
+
+				string fuelType = ((mainscript.fluidenum)fuelTypeInts[i]).ToString();
+				if (fuelTypeInts[i] == -1)
+					fuelType = "Default";
+				else
+					fuelType = fuelType[0].ToString().ToUpper() + fuelType.Substring(1);
+
+				GUI.Label(new Rect(textX, sliderY - 2.5f, textWidth, sliderHeight), fuelType, labelStyle);
+
+				sliderY += 20f;
+
+				// Fuel amount.
+				GUI.Label(new Rect(x + 10f, sliderY - 2.5f, textWidth, sliderHeight), $"Fuel amount {i + 1}:", labelStyle);
+				float rawFuelValue = GUI.HorizontalSlider(new Rect(sliderX, sliderY, sliderWidth, sliderHeight), fuelValues[i], -1f, 1000f);
+				fuelValues[i] = Mathf.Round(rawFuelValue);
+
+				bool fuelValueParse = float.TryParse(GUI.TextField(new Rect(textX, sliderY - 2.5f, textWidth, sliderHeight), fuelValues[i].ToString(), labelStyle), out float tempFuelValue);
+				if (!fuelValueParse)
+					Log($"{tempFuelValue} is not a number", LogLevel.Error);
+				else
+					fuelValues[i] = tempFuelValue;
+			}
 
 			// Vehicle colour sliders.
 			// Red.
@@ -706,6 +741,8 @@ namespace MSpawner
 			float y = vehicleMenuY + vehicleMenuHeight + 25f;
 			float width = vehicleMenuWidth;
 			float height = vehicleMenuHeight;
+
+			y += (fuelMixes * 40f);
 
 			GUI.Box(new Rect(x, y, width, height), "<color=#FFF><size=16><b>Developer settings</b></size></color>");
 
