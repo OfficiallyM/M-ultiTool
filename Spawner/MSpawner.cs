@@ -85,6 +85,7 @@ namespace MSpawner
 		private bool deleteMode = false;
 		private List<QuickSpawn> quickSpawns = new List<QuickSpawn>();
 		private float selectedTime;
+		private bool isTimeLocked;
 
 		// Translation-related variables.
 		private string language;
@@ -759,9 +760,16 @@ namespace MSpawner
 			GUI.Label(new Rect(x + 10f, sliderY - 2.5f, textWidth, sliderHeight), "Time:", labelStyle);
 			float time = GUI.HorizontalSlider(new Rect(sliderX, sliderY, sliderWidth, sliderHeight), selectedTime, 0f, 360f);
 			selectedTime = Mathf.Round(time);
-			if (GUI.Button(new Rect(textX, sliderY - 2.5f, textWidth, sliderHeight), "Set"))
+			if (GUI.Button(new Rect(textX, sliderY - 15f, textWidth, sliderHeight), "Set"))
 			{
 				mainscript.M.napszak.tekeres = selectedTime;
+			}
+
+			if (GUI.Button(new Rect(textX, sliderY + 5f, textWidth, sliderHeight), isTimeLocked ? "<color=#0F0>Unlock</color>" : "<color=#F00>Lock</color>"))
+			{
+				isTimeLocked = !isTimeLocked;
+
+				mainscript.M.napszak.enabled = !isTimeLocked;
 			}
 		}
 
