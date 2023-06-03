@@ -46,7 +46,7 @@ namespace MSpawner
 		private float vehicleMenuY;
 
 		private bool vehicleMenu = false;
-		private bool developerMenu = false;
+		private bool miscMenu = false;
 		private bool itemsMenu = false;
 
 		// Styling.
@@ -147,9 +147,9 @@ namespace MSpawner
 				VehicleMenu();
 			}
 
-			if (developerMenu)
+			if (miscMenu)
 			{
-				DeveloperMenu();
+				MiscMenu();
 			}
 
 			if (itemsMenu)
@@ -188,7 +188,7 @@ namespace MSpawner
 			mainMenuX = Screen.width / 2.5f - mainMenuWidth;
 			mainMenuY = 75f;
 
-			// Also store the vehicle menu so the developer menu can be
+			// Also store the vehicle menu so the misc menu can be
 			// placed under it.
 			vehicleMenuX = mainMenuX + mainMenuWidth + 15f;
 			vehicleMenuY = mainMenuY;
@@ -541,18 +541,18 @@ namespace MSpawner
 					itemsMenu = false;
 			}
 
-			// Developer settings menu.
-			float developerMenuY = vehicleMenuY + 25f;
-			if (GUI.Button(new Rect(x, developerMenuY, width, buttonHeight), developerMenu ? "<color=#0F0>Developer menu</color>" : "<color=#F00>Developer menu</color>"))
+			// Misc settings menu.
+			float miscMenuY = vehicleMenuY + 25f;
+			if (GUI.Button(new Rect(x, miscMenuY, width, buttonHeight), miscMenu ? "<color=#0F0>Miscellaneous menu</color>" : "<color=#F00>Miscellaneous menu</color>"))
 			{
-				developerMenu = !developerMenu;
+				miscMenu = !miscMenu;
 
-				if (developerMenu)
+				if (miscMenu)
 					itemsMenu = false;
 			}
 
 			// Items menu.
-			float itemsMenuY = developerMenuY + 25f;
+			float itemsMenuY = miscMenuY + 25f;
 			if (GUI.Button(new Rect(x, itemsMenuY, width, buttonHeight), itemsMenu ? "<color=#0F0>Items menu</color>" : "<color=#F00>Items menu</color>"))
 			{
 				itemsMenu = !itemsMenu;
@@ -561,7 +561,7 @@ namespace MSpawner
 				if (itemsMenu)
 				{
 					vehicleMenu = false;
-					developerMenu = false;
+					miscMenu = false;
 				}
 			}
 
@@ -735,9 +735,9 @@ namespace MSpawner
 		}
 
 		/// <summary>
-		/// Developer menu config GUI.
+		/// Misc menu config GUI.
 		/// </summary>
-		private void DeveloperMenu()
+		private void MiscMenu()
 		{
 			float x = vehicleMenuX;
 			float y = vehicleMenuY + vehicleMenuHeight + 25f;
@@ -746,7 +746,7 @@ namespace MSpawner
 
 			y += (fuelMixes * 40f);
 
-			GUI.Box(new Rect(x, y, width, height), "<color=#FFF><size=16><b>Developer settings</b></size></color>");
+			GUI.Box(new Rect(x, y, width, height), "<color=#FFF><size=16><b>Miscellaneous settings</b></size></color>");
 
 			float sliderX = x + 175f;
 			float sliderY = y + 30f;
