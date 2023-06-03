@@ -1,4 +1,4 @@
-# MSpawner
+# SpawnerTLD
 ## The Long Drive (TLD) spawner
 
 ### Features
@@ -21,7 +21,7 @@
 - [ ] Allow quick spawns to be configurable
   - Through the UI would be ideal
 - [ ] Expand translation system to support items 
-- [ ] Add item thumbnails
+- [x] Add item thumbnails
 - [ ] Make delete key rebindable
 - [ ] Add godmode toggle
 - [ ] Add noclip toggle
