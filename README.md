@@ -11,6 +11,7 @@
 - Colour changer
 - Fuel changer with support for fuel mixes
 - Time changer
+- Plate changer
 
 ### TODO:
 - [ ] Improve time changer to display what the chosen time is
