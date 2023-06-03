@@ -25,3 +25,4 @@
 - [ ] Make delete key rebindable
 - [ ] Add godmode toggle
 - [ ] Add noclip toggle
+- [ ] Add item search/filtering
