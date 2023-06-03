@@ -8,15 +8,15 @@ using System.Runtime.Serialization;
 using System.Runtime.Serialization.Json;
 using System.Text;
 
-namespace MSpawner
+namespace SpawnerTLD
 {
-	public class MSpawner : Mod
+	public class SpawnerTLD : Mod
 	{
 		// Mod meta stuff.
-		public override string ID => "MSpawner";
+		public override string ID => "SpawnerTLD";
 		public override string Name => "Spawner";
 		public override string Author => "M-";
-		public override string Version => "1.0.0";
+		public override string Version => "1.1.0";
 
 		// Variables.
 
@@ -253,13 +253,13 @@ namespace MSpawner
 		}
 
 		// Mod-specific functions.
-		public MSpawner()
+		public SpawnerTLD()
 		{
 			if (Directory.Exists(ModLoader.ModsFolder))
 			{
 				Directory.CreateDirectory(Path.Combine(ModLoader.ModsFolder, "Logs"));
-				logFile = ModLoader.ModsFolder + "\\Logs\\MSpawner.log";
-				File.WriteAllText(logFile, $"MSpawner v{Version} initialised\r\n");
+				logFile = ModLoader.ModsFolder + "\\Logs\\SpawnerTLD.log";
+				File.WriteAllText(logFile, $"SpawnerTLD v{Version} initialised\r\n");
 			}
 		}
 

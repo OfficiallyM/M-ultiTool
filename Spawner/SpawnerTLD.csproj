@@ -42,8 +42,8 @@
   </ItemGroup>
 
   <Target Name="PostBuild" AfterTargets="PostBuildEvent">
-    <Exec Command="move /Y &quot;$(TargetPath)&quot; &quot;C:\Users\Miner\Documents\TheLongDrive\Mods\$(TargetFileName)&quot;" />
-    <Exec Command="copy /Y &quot;$(TargetDir)Configs&quot; &quot;C:\Users\Miner\Documents\TheLongDrive\Mods\Config\Mod Settings\MSpawner&quot;" />
+    <Exec Command="move /Y &quot;$(TargetPath)&quot; &quot;%userprofile%\Documents\TheLongDrive\Mods\$(TargetFileName)&quot;" />
+    <Exec Command="copy /Y &quot;$(TargetDir)Configs&quot; &quot;%userprofile%\Documents\TheLongDrive\Mods\Config\Mod Settings\SpawnerTLD&quot;" />
   </Target>
 
 </Project>
