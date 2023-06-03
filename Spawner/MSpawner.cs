@@ -79,7 +79,7 @@ namespace MSpawner
 
 		// Item menu variables.
 		private Vector2 itemsScrollPosition;
-		private List<GameObject> items = new List<GameObject>();
+		private List<Item> items = new List<Item>();
 
 		// Settings.
 		private bool deleteMode = false;
@@ -105,6 +105,13 @@ namespace MSpawner
 			public GameObject gameObject;
 			public string name;
 			public bool fluidOverride = false;
+		}
+
+		// Item and thumbnail.
+		private class Item
+		{
+			public GameObject item;
+			public Texture2D thumbnail;
 		}
 
 		// Serializable vehicle wrapper for translation config.
@@ -211,7 +218,7 @@ namespace MSpawner
 				// Remove vehicles and trailers from items array.
 				if (!IsVehicleOrTrailer(item) && item.name != "ErrorPrefab")
 				{
-					items.Add(item);
+					items.Add(new Item() { item = item, thumbnail = GenerateThumbnail(item) });
 				}
 			}
 
@@ -504,6 +511,114 @@ namespace MSpawner
 				}
 			}
 			mainscript.M.Spawn(gameObject, color, selectedCondition, variant);
+		}
+
+		/// <summary>
+		/// Item thumbnail generator
+		/// </summary>
+		/// <param name="item">The item to generate a thumbnail for</param>
+		/// <returns>Texture2D thumbnail of the item</returns>
+		private Texture2D GenerateThumbnail(GameObject item)
+		{
+			GameObject gameObject = new GameObject("THUMBNAIL GENERATOR FOR " + item.name.ToUpper());
+			gameObject.transform.position = new Vector3(UnityEngine.Random.Range(-100f, 100f), UnityEngine.Random.Range(-200f, -100f), UnityEngine.Random.Range(-100f, 100f));
+			gameObject.layer = 1;
+			gameObject.SetActive(false);
+			GameObject gameObject2 = UnityEngine.Object.Instantiate<GameObject>(item, gameObject.transform, false);
+			gameObject2.transform.SetParent(gameObject.transform, false);
+			gameObject2.transform.localPosition = Vector3.zero;
+			gameObject2.layer = gameObject.layer;
+			object obj = null;
+			float num = 0.001f;
+			try
+			{
+				Material material = null;
+				foreach (Renderer renderer in gameObject2.GetComponentsInChildren<Renderer>(true))
+				{
+					try
+					{
+						if (renderer.gameObject.layer == 18)
+						{
+							renderer.gameObject.SetActive(renderer.enabled = false);
+						}
+						if (renderer.material == null && material != null)
+						{
+							renderer.material = material;
+						}
+						else
+						{
+							material = renderer.material;
+						}
+						renderer.gameObject.layer = gameObject.layer;
+						if (obj == null)
+						{
+							obj = new Bounds(renderer.bounds.center, renderer.bounds.size);
+						}
+						else
+						{
+							((Bounds)obj).Encapsulate(renderer.bounds);
+						}
+						num = Mathf.Max(num, renderer.bounds.size.magnitude);
+					}
+					catch
+					{
+					}
+				}
+			}
+			catch
+			{
+			}
+			try
+			{
+				foreach (MonoBehaviour monoBehaviour in gameObject2.GetComponentsInChildren<MonoBehaviour>(true))
+				{
+					if (Array.IndexOf(new Type[]
+					{
+						typeof(Transform),
+						typeof(Renderer),
+						typeof(MeshRenderer),
+						typeof(SkinnedMeshRenderer),
+						typeof(MeshFilter)
+					}, monoBehaviour.GetType()) == -1)
+					{
+						monoBehaviour.enabled = false;
+					}
+					UnityEngine.Object.Destroy(monoBehaviour.gameObject);
+				}
+			}
+			catch
+			{
+			}
+			Camera camera = new GameObject("CAMERA").AddComponent<Camera>();
+			camera.gameObject.layer = gameObject.layer;
+			camera.transform.SetParent(gameObject.transform, false);
+			camera.transform.localPosition = new Vector3(1f, 1f, 1f) * num;
+			camera.transform.LookAt((num >= ((Bounds)obj).size.magnitude + 1f) ? gameObject2.transform.position : ((Bounds)obj).center);
+			num = Mathf.Max(((Bounds)obj).size.magnitude, num * 1.5f);
+			camera.farClipPlane = Mathf.Max(10f, num * 1.5f);
+			camera.nearClipPlane = 0.0001f;
+			camera.clearFlags = CameraClearFlags.Color;
+			camera.backgroundColor = Color.clear;
+			camera.orthographic = true;
+			camera.orthographicSize = num / 3f;
+			camera.gameObject.AddComponent<Light>().type = LightType.Directional;
+			RenderTexture renderTexture = new RenderTexture(100, 100, 16);
+			camera.forceIntoRenderTexture = true;
+			camera.targetTexture = renderTexture;
+			gameObject.SetActive(true);
+			camera.Render();
+			RenderTexture active = RenderTexture.active;
+			RenderTexture.active = renderTexture;
+			Texture2D texture2D = new Texture2D(renderTexture.width, renderTexture.height);
+			texture2D.ReadPixels(new Rect(0f, 0f, (float)texture2D.width, (float)texture2D.height), 0, 0);
+			texture2D.Apply();
+			RenderTexture.active = active;
+			gameObject.SetActive(false);
+			gameObject2.SetActive(false);
+			UnityEngine.Object.Destroy(renderTexture);
+			UnityEngine.Object.Destroy(gameObject);
+			UnityEngine.Object.Destroy(gameObject2);
+			return texture2D;
 		}
 
 		// Menus.
@@ -810,31 +925,36 @@ namespace MSpawner
 			GUI.Box(new Rect(x, y, width, height), "<color=#FFF><size=16><b>Items</b></size></color>");
 
 			float itemWidth = 140f;
-			float itemHeight = 30f;
+			float itemHeight = 120f;
+			float thumbnailHeight = 90f;
+			float textHeight = 30f;
 			float initialRowX = x + 10f;
 			float itemX = initialRowX;
-			float itemY = 70f;
+			float itemY = 0f;
 
 			int maxRowItems = Mathf.FloorToInt(width / (itemWidth + 10f));
-			int drawnRows = 0;
 
-			float scrollHeight = itemHeight * (10f * maxRowItems) + itemY;
+			int columnCount = (int)Math.Ceiling((double) items.Count() / maxRowItems);
+
+			float scrollHeight = (itemHeight + 10f) * (columnCount + 1);
 			itemsScrollPosition = GUI.BeginScrollView(new Rect(x, y + 30f, width - 10f, height - 40f), itemsScrollPosition, new Rect(x, y + 30f, width - 10f, scrollHeight), new GUIStyle(), new GUIStyle());
 
 			for (int i = 0; i < items.Count(); i++)
 			{
-				GameObject item = items[i];
+				Item currentItem = items[i];
+				GameObject item = items[i].item;
 
 				itemX += itemWidth + 10f;
 
 				if (i % maxRowItems == 0)
 				{
-					drawnRows++;
 					itemX = initialRowX;
 					itemY += itemHeight + 10f;
 				}
 
-				if (GUI.Button(new Rect(itemX, itemY, itemWidth, itemHeight), item.name))
+				if (GUI.Button(new Rect(itemX, itemY, itemWidth, itemHeight), String.Empty) ||
+					GUI.Button(new Rect(itemX, itemY, itemWidth, thumbnailHeight), currentItem.thumbnail) ||
+					GUI.Button(new Rect(itemX, itemY + thumbnailHeight, itemWidth, textHeight), item.name))
 				{
 					Spawn(item);
 				}
