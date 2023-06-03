@@ -19,3 +19,4 @@
 - [ ] Fix IFA box trailer variant not detecting
 - [ ] Allow quick spawns to be configurable
   - Through the UI would be ideal
+- [ ] Expand translation system to support items 
