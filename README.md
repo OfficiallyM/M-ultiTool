@@ -27,3 +27,6 @@
 - [ ] Add godmode toggle
 - [ ] Add noclip toggle
 - [ ] Add item search/filtering
+
+## Contributors
+- RUNDEN: Thumbnail generation
