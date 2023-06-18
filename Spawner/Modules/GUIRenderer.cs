@@ -113,17 +113,17 @@ namespace SpawnerTLD.Modules
 			headerStyle.normal.textColor = Color.white;
 
 			// Set main menu position here so other menus can be based around it.
-			mainMenuWidth = Screen.width / 7.5f;
-			mainMenuHeight = Screen.height / 1.2f;
-			mainMenuX = Screen.width / 2.5f - mainMenuWidth;
+			mainMenuWidth = Screen.currentResolution.width / 7f;
+			mainMenuHeight = Screen.currentResolution.height / 1.2f;
+			mainMenuX = Screen.currentResolution.width / 2.5f - mainMenuWidth;
 			mainMenuY = 75f;
 
 			// Also store the vehicle menu so the misc menu can be
 			// placed under it.
 			vehicleMenuX = mainMenuX + mainMenuWidth + 15f;
 			vehicleMenuY = mainMenuY;
-			vehicleMenuWidth = Screen.width / 3.5f;
-			vehicleMenuHeight = Screen.height / 5f;
+			vehicleMenuWidth = Screen.currentResolution.width / 2f;
+			vehicleMenuHeight = Screen.currentResolution.height / 4.25f;
 
 			vehicles = Utility.LoadVehicles();
 
@@ -487,7 +487,7 @@ namespace SpawnerTLD.Modules
 		{
 			float x = mainMenuX + mainMenuWidth + 15f;
 			float y = mainMenuY;
-			float width = Screen.width / 1.75f;
+			float width = Screen.currentResolution.width / 1.75f;
 			float height = mainMenuHeight;
 
 			GUI.Box(new Rect(x, y, width, height), "<color=#FFF><size=16><b>Items</b></size></color>");
