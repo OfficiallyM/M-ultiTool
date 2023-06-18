@@ -12,7 +12,7 @@
 - Fuel changer with support for fuel mixes
 - Time changer
 - Plate changer
-- UFO spawner
+- UFO spawner (Beta branch only)
 
 ### TODO:
 - [ ] Improve time changer to display what the chosen time is
@@ -27,6 +27,7 @@
 - [ ] Add godmode toggle
 - [ ] Add noclip toggle
 - [ ] Add item search/filtering
+- [ ] Fix UFO not spawning on main branch
 
 ## Contributors
 - RUNDEN: Thumbnail generation
