@@ -17,13 +17,7 @@ namespace SpawnerTLD.Modules
 		/// <returns>true if the object is a vehicle or trailer; otherwise, false</returns>
 		public static bool IsVehicleOrTrailer(GameObject gameObject)
 		{
-			// TODO: Change this to check for utanfutoscript instead.
-			string[] trailers = new string[] {
-				"Bus02UtanfutoFull",
-				"UtanFutoFull"
-			};
-
-			if ((gameObject.name.ToLower().Contains("full") && gameObject.GetComponentsInChildren<carscript>().Length > 0) || trailers.Contains(gameObject.name))
+			if (gameObject.name.ToLower().Contains("full") && (gameObject.GetComponentsInChildren<carscript>().Length > 0 || gameObject.GetComponentsInChildren<utanfutoscript>().Length > 0))
 				return true;
 			return false;
 		}
