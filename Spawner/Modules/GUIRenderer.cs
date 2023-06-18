@@ -450,21 +450,29 @@ namespace SpawnerTLD.Modules
 
 			sliderY += 25f;
 
-			GUI.Label(new Rect(x + 10f, sliderY - 2.5f, textWidth, sliderHeight), "UFO control (Doesn't save):", labelStyle);
+			// TODO: UFO doesn't spawn on main branch, FEDOSPAWN.prefab isn't set.
+			GUI.Label(new Rect(x + 10f, sliderY - 2.5f, textWidth, sliderHeight), "UFO (Beta branch only):", labelStyle);
 
 			if (GUI.Button(new Rect(sliderX, sliderY - 2.5f, textWidth * 2f, sliderHeight), "Spawn UFO"))
 			{
-				temporaryTurnOffGeneration temp = mainscript.M.menu.Kaposztaleves.GetComponentInParent<temporaryTurnOffGeneration>();
-				if (temp != null)
+				try
 				{
-					// Destory existing UFO.
-					if (ufo != null)
-						UnityEngine.Object.Destroy(ufo);
+					temporaryTurnOffGeneration temp = mainscript.M.menu.Kaposztaleves.GetComponentInParent<temporaryTurnOffGeneration>();
+					if (temp != null)
+					{
+						// Destory existing UFO.
+						if (ufo != null)
+							UnityEngine.Object.Destroy(ufo);
 
-					ufo = UnityEngine.Object.Instantiate(temp.FEDOSPAWN.prefab, mainscript.M.player.lookPoint + Vector3.up * 0.75f, Quaternion.FromToRotation(Vector3.forward, -mainscript.M.player.transform.right));
-					fedoscript ufoScript = ufo.GetComponent<fedoscript>();
-					ufoScript.ai = false;
-					ufoScript.followRoad = false;
+						ufo = UnityEngine.Object.Instantiate(temp.FEDOSPAWN.prefab, mainscript.M.player.lookPoint + Vector3.up * 0.75f, Quaternion.FromToRotation(Vector3.forward, -mainscript.M.player.transform.right));
+						fedoscript ufoScript = ufo.GetComponent<fedoscript>();
+						ufoScript.ai = false;
+						ufoScript.followRoad = false;
+					}
+				}
+				catch (Exception ex)
+				{
+					logger.Log($"Failed to spawn UFO - {ex}", Logger.LogLevel.Error);
 				}
 			}
 
