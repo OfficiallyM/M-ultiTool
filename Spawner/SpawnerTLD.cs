@@ -31,6 +31,10 @@ namespace SpawnerTLD
 			Critical
 		}
 
+		// Cache variables.
+		private string cacheDir = "";
+		private bool regenerateCache = false;
+
 		// Menu control.
 		private bool show = false;
 		private bool enabled = false;
@@ -213,12 +217,13 @@ namespace SpawnerTLD
 			quickSpawns.Add(new QuickSpawn() { gameObject = itemdatabase.d.gbarrel, name = "Barrel",	fluidOverride = true });
 
 			// Parse items.
+			PrepareCache();
 			foreach (GameObject item in itemdatabase.d.items)
 			{
 				// Remove vehicles and trailers from items array.
 				if (!IsVehicleOrTrailer(item) && item.name != "ErrorPrefab")
 				{
-					items.Add(new Item() { item = item, thumbnail = GenerateThumbnail(item) });
+					items.Add(new Item() { item = item, thumbnail = GetThumbnail(item) });
 				}
 			}
 
@@ -255,11 +260,19 @@ namespace SpawnerTLD
 		// Mod-specific functions.
 		public SpawnerTLD()
 		{
+			// Create logs directory.
 			if (Directory.Exists(ModLoader.ModsFolder))
 			{
 				Directory.CreateDirectory(Path.Combine(ModLoader.ModsFolder, "Logs"));
 				logFile = ModLoader.ModsFolder + "\\Logs\\SpawnerTLD.log";
 				File.WriteAllText(logFile, $"SpawnerTLD v{Version} initialised\r\n");
+			}
+
+			// Create cache directory.
+			if (Directory.Exists(ModLoader.GetModConfigFolder(this)))
+			{
+				DirectoryInfo dir = Directory.CreateDirectory(Path.Combine(ModLoader.GetModConfigFolder(this), "Cache"));
+				cacheDir = dir.FullName;
 			}
 		}
 
@@ -514,6 +527,58 @@ namespace SpawnerTLD
 		}
 
 		/// <summary>
+		/// Check
+		/// </summary>
+		private void PrepareCache()
+		{
+			List<string> tempItems = new List<string>();
+
+			// Remove vehicles and trailers from items count.
+			foreach (GameObject item in itemdatabase.d.items)
+			{
+				if (!IsVehicleOrTrailer(item) && item.name != "ErrorPrefab" && !tempItems.Contains(item.name.ToUpper()))
+				{
+					tempItems.Add(item.name.ToUpper());
+				}
+			}
+
+			int itemCount = tempItems.Count;
+			DirectoryInfo cache = new DirectoryInfo(cacheDir);
+			int cacheCount = cache.GetFiles().Length;
+
+			// Item count differs, remove all cached thumbnails.
+			if (itemCount != cacheCount)
+			{
+				regenerateCache = true;
+				Log("Item count has changed, regenerating cached thumbnails", LogLevel.Info);
+				foreach (FileInfo file in cache.GetFiles())
+				{
+					file.Delete();
+				}
+			}
+		}
+
+		/// <summary>
+		/// Load thumbnail from cache or generate if it doesn't exist
+		/// </summary>
+		/// <param name="item">Item to generate the thumbnail for</param>
+		/// <returns>Texture2D thumbnail of the item</returns>
+		private Texture2D GetThumbnail(GameObject item)
+		{
+			if (!regenerateCache && File.Exists(Path.Combine(cacheDir, item.name.ToUpper() + ".png")))
+			{
+				RenderTexture renderTexture = new RenderTexture(100, 100, 16);
+				Texture2D texture2D = new Texture2D(renderTexture.width, renderTexture.height);
+				byte[] cacheImage = File.ReadAllBytes(Path.Combine(cacheDir, item.name.ToUpper() + ".png"));
+				ImageConversion.LoadImage(texture2D, cacheImage);
+				texture2D.Apply();
+				return texture2D;
+			}
+
+			return GenerateThumbnail(item);
+		}
+
+		/// <summary>
 		/// Item thumbnail generator
 		/// </summary>
 		/// <param name="item">The item to generate a thumbnail for</param>
@@ -618,6 +683,10 @@ namespace SpawnerTLD
 			UnityEngine.Object.Destroy(renderTexture);
 			UnityEngine.Object.Destroy(gameObject);
 			UnityEngine.Object.Destroy(gameObject2);
+
+			// Write texture to cache.
+			File.WriteAllBytes(Path.Combine(cacheDir, item.name.ToUpper() + ".png"), texture2D.EncodeToPNG());
+
 			return texture2D;
 		}
 
