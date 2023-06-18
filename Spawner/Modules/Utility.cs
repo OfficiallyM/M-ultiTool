@@ -77,10 +77,9 @@ namespace SpawnerTLD.Modules
 		}
 
 		/// <summary>
-		/// Wrapper around the default spawn function to handle vehicle fuel and variants etc.
+		/// Wrapper around the default spawn function to handle condition and fuel for items.
 		/// </summary>
 		/// <param name="item">The object to spawn</param>
-		/// <param name="fluidOverride">Allow the fluid to be overriden using the vehicle fuel selector</param>
 		public static void Spawn(Item item)
 		{
 			int selectedCondition = item.conditionInt;
@@ -153,7 +152,7 @@ namespace SpawnerTLD.Modules
 		}
 
 		/// <summary>
-		/// Wrapper around the default spawn function to handle vehicle fuel and variants etc.
+		/// Wrapper around the default spawn function to extend vehicle functionality
 		/// </summary>
 		/// <param name="vehicle">The vehicle to spawn</param>
 		public static void Spawn(Vehicle vehicle)
