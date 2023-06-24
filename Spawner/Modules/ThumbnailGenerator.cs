@@ -8,21 +8,23 @@ namespace SpawnerTLD.Modules
 {
 	internal class ThumbnailGenerator
 	{
+		private Logger logger;
+		private Utility utility;
+		private string configDirectory;
+
 		private string cacheDir = "";
 		private bool regenerateCache = false;
-		private Mod mod;
-		private Logger logger;
 
-		public ThumbnailGenerator(Mod _mod)
+		public ThumbnailGenerator(Logger _logger, Utility _utility, string _configDirectory)
 		{
-			mod = _mod;
-
-			logger = new Logger();
+			logger = _logger;
+			utility = _utility;
+			configDirectory = _configDirectory;
 
 			// Create cache directory.
-			if (Directory.Exists(ModLoader.GetModConfigFolder(mod)))
+			if (Directory.Exists(configDirectory))
 			{
-				DirectoryInfo dir = Directory.CreateDirectory(Path.Combine(ModLoader.GetModConfigFolder(mod), "Cache"));
+				DirectoryInfo dir = Directory.CreateDirectory(Path.Combine(configDirectory, "Cache"));
 				cacheDir = dir.FullName;
 			}
 		}
@@ -34,12 +36,29 @@ namespace SpawnerTLD.Modules
 		{
 			List<string> tempItems = new List<string>();
 
-			// Remove vehicles and trailers from items count.
+			// Remove unnecessary items and duplicates from item list.
 			foreach (GameObject item in itemdatabase.d.items)
 			{
-				if (!Utility.IsVehicleOrTrailer(item) && item.name != "ErrorPrefab" && !tempItems.Contains(item.name.ToUpper()))
+				if (item.name != "ErrorPrefab")
 				{
-					tempItems.Add(item.name.ToUpper());
+					if (utility.IsVehicleOrTrailer(item))
+					{
+						// Get vehicle variants.
+						randomTypeSelector randoms = item.GetComponent<randomTypeSelector>();
+						if (randoms != null && randoms.tipusok.Length > 0)
+						{
+							int variants = randoms.tipusok.Length;
+
+							for (int i = 0; i < variants; i++)
+							{
+								if (!tempItems.Contains($"{item.name.ToUpper()}-{i + 1}"))
+									tempItems.Add($"{item.name.ToUpper()}-{i + 1}");
+							}
+							continue;
+						}
+					}
+					if (!tempItems.Contains(item.name.ToUpper()))
+						tempItems.Add(item.name.ToUpper());
 				}
 			}
 
@@ -63,34 +82,61 @@ namespace SpawnerTLD.Modules
 		/// Load thumbnail from cache or generate if it doesn't exist
 		/// </summary>
 		/// <param name="item">Item to generate the thumbnail for</param>
+		/// <param name="variant">Optional variant index for the item</param>
 		/// <returns>Texture2D thumbnail of the item</returns>
-		public Texture2D GetThumbnail(GameObject item)
+		public Texture2D GetThumbnail(GameObject item, int? variant = null)
 		{
-			if (!regenerateCache && File.Exists(Path.Combine(cacheDir, item.name.ToUpper() + ".png")))
+			string fileName = item.name.ToUpper();
+			if (variant != null)
 			{
-				RenderTexture renderTexture = new RenderTexture(100, 100, 16);
+				fileName += $"-{variant.Value - 1}";
+			}
+			fileName += ".png";
+			if (!regenerateCache && File.Exists(Path.Combine(cacheDir, fileName)))
+			{
+				RenderTexture renderTexture = new RenderTexture(200, 200, 16);
 				Texture2D texture2D = new Texture2D(renderTexture.width, renderTexture.height);
-				byte[] cacheImage = File.ReadAllBytes(Path.Combine(cacheDir, item.name.ToUpper() + ".png"));
+				byte[] cacheImage = File.ReadAllBytes(Path.Combine(cacheDir, fileName));
 				ImageConversion.LoadImage(texture2D, cacheImage);
 				texture2D.Apply();
 				return texture2D;
 			}
 
-			return GenerateThumbnail(item);
+			return GenerateThumbnail(item, variant);
 		}
 
 		/// <summary>
 		/// Item thumbnail generator
 		/// </summary>
 		/// <param name="item">The item to generate a thumbnail for</param>
+		/// <param name="variant">Optional variant index for the item</param>
 		/// <returns>Texture2D thumbnail of the item</returns>
-		private Texture2D GenerateThumbnail(GameObject item)
+		private Texture2D GenerateThumbnail(GameObject item, int? variant = null)
 		{
 			GameObject gameObject = new GameObject("THUMBNAIL GENERATOR FOR " + item.name.ToUpper());
 			gameObject.transform.position = new Vector3(UnityEngine.Random.Range(-100f, 100f), UnityEngine.Random.Range(-200f, -100f), UnityEngine.Random.Range(-100f, 100f));
 			gameObject.layer = 1;
 			gameObject.SetActive(false);
-			GameObject gameObject2 = UnityEngine.Object.Instantiate<GameObject>(item, gameObject.transform, false);
+			GameObject gameObject2 = UnityEngine.Object.Instantiate(item, gameObject.transform, false);
+
+			// Change model variant.
+			if (variant != null)
+			{
+				randomTypeSelector component = item.GetComponent<randomTypeSelector>();
+				if (component != null)
+				{
+					component.forceStart = false;
+					component.rtipus = variant.Value;
+					component.Refresh();
+				}
+			}
+
+			// Render all thumbnails in pristine and in white.
+			if (gameObject2.GetComponent<partconditionscript>() != null)
+			{
+				gameObject2.GetComponent<partconditionscript>().StartPaint(0, new Color(255f / 255f, 255f / 255f, 255f / 255f));
+			}
+
 			gameObject2.transform.SetParent(gameObject.transform, false);
 			gameObject2.transform.localPosition = Vector3.zero;
 			gameObject2.layer = gameObject.layer;
@@ -168,7 +214,7 @@ namespace SpawnerTLD.Modules
 			camera.orthographic = true;
 			camera.orthographicSize = num / 3f;
 			camera.gameObject.AddComponent<Light>().type = LightType.Directional;
-			RenderTexture renderTexture = new RenderTexture(100, 100, 16);
+			RenderTexture renderTexture = new RenderTexture(200, 200, 16);
 			camera.forceIntoRenderTexture = true;
 			camera.targetTexture = renderTexture;
 			gameObject.SetActive(true);
@@ -186,7 +232,13 @@ namespace SpawnerTLD.Modules
 			UnityEngine.Object.Destroy(gameObject2);
 
 			// Write texture to cache.
-			File.WriteAllBytes(Path.Combine(cacheDir, item.name.ToUpper() + ".png"), texture2D.EncodeToPNG());
+			string fileName = item.name.ToUpper();
+			if (variant != null)
+			{
+				fileName += $"-{variant.Value - 1}";
+			}
+			fileName += ".png"; 
+			File.WriteAllBytes(Path.Combine(cacheDir, fileName), texture2D.EncodeToPNG());
 
 			return texture2D;
 		}
