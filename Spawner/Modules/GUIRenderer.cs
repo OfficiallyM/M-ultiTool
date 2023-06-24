@@ -27,6 +27,7 @@ namespace SpawnerTLD.Modules
 		public bool enabled = false;
 		private bool show = false;
 		private bool legacyUI = false;
+		private bool settingsShow = false;
 
 		private float mainMenuWidth;
 		private float mainMenuHeight;
@@ -232,7 +233,7 @@ namespace SpawnerTLD.Modules
 			if (legacyUI)
 				return;
 
-			if (Input.GetKeyDown(binds.GetKeyByAction(0).key) && !mainscript.M.menu.Menu.activeSelf && !mainscript.M.settingsOpen && !mainscript.M.menu.saveScreen.gameObject.activeSelf)
+			if (Input.GetKeyDown(binds.GetKeyByAction((int)Keybinds.Inputs.menu).key) && !mainscript.M.menu.Menu.activeSelf && !mainscript.M.settingsOpen && !mainscript.M.menu.saveScreen.gameObject.activeSelf)
 			{
 				show = !show;
 				mainscript.M.crsrLocked = !show;
@@ -291,24 +292,48 @@ namespace SpawnerTLD.Modules
 
 			GUI.Box(new Rect(x, y, width, height), $"<color=#f87ffa><size=18><b>{Meta.Name}</b></size>\n<size=16>v{Meta.Version} - made with ❤️ by {Meta.Author}</size></color>");
 
-			// Navigation tabs.
-			float tabHeight = 25f;
-			float tabButtonWidth = 150f;
-			float tabWidth = (tabButtonWidth + 30f) * tabs.Count;
-			float tabX = x + 20f;
-			tabScrollPosition = GUI.BeginScrollView(new Rect(tabX, y + 50f, tabWidth, tabHeight), tabScrollPosition, new Rect(tabX, y + 50f, tabWidth, tabHeight));
-			for (int tabIndex = 0; tabIndex < tabs.Count; tabIndex++)
+			// Settings button.
+			if (GUI.Button(new Rect(x + 5f, y + 5f, 150f, 25f), !settingsShow ? $"<color=#F00>Show settings</color>" : $"<color=#0F0>Hide settings</color>"))
 			{
-				if (GUI.Button(new Rect(tabX, y + 50f, tabButtonWidth, tabHeight), tab == tabIndex ? $"<color=#0F0>{tabs[tabIndex]}</color>" : tabs[tabIndex]))
-				{
-					tab = tabIndex;
-				}
-
-				tabX += tabButtonWidth + 30f;
+				settingsShow = !settingsShow;
 			}
-			GUI.EndScrollView();
 
-			RenderTab(tab);
+			if (settingsShow)
+			{
+				// Render the setting page.
+				try
+				{
+					binds.RenderRebindMenu("Rebind keys", (int[])Enum.GetValues(typeof(Keybinds.Inputs)), x + 10f, y + 50f, width * 0.25f, height - 65f);
+				}
+				catch (Exception ex)
+				{
+					logger.Log($"Error building settings rebind menu - {ex}", Logger.LogLevel.Error);
+				}
+			}
+			else
+			{
+				// Render the menu.
+
+				// Navigation tabs.
+				float tabHeight = 25f;
+				float tabButtonWidth = 150f;
+				float tabWidth = (tabButtonWidth + 30f) * tabs.Count;
+				float tabX = x + 20f;
+				tabScrollPosition = GUI.BeginScrollView(new Rect(tabX, y + 50f, tabWidth, tabHeight), tabScrollPosition, new Rect(tabX, y + 50f, tabWidth, tabHeight));
+				for (int tabIndex = 0; tabIndex < tabs.Count; tabIndex++)
+				{
+					if (GUI.Button(new Rect(tabX, y + 50f, tabButtonWidth, tabHeight), tab == tabIndex ? $"<color=#0F0>{tabs[tabIndex]}</color>" : tabs[tabIndex]))
+					{
+						tab = tabIndex;
+					}
+
+					tabX += tabButtonWidth + 30f;
+				}
+				GUI.EndScrollView();
+
+				RenderTab(tab);
+			}
+
 		}
 
 		private class ConfigDimensions
@@ -476,7 +501,7 @@ namespace SpawnerTLD.Modules
 					float labelWidth = tabWidth - 20f;
 
 					// Delete mode.
-					if (GUI.Button(new Rect(miscX, miscY, buttonWidth, buttonHeight), (settings.deleteMode ? "<color=#0F0>Delete mode</color>" : "<color=#F00>Delete mode</color>") + " (Press del)"))
+					if (GUI.Button(new Rect(miscX, miscY, buttonWidth, buttonHeight), (settings.deleteMode ? "<color=#0F0>Delete mode</color>" : "<color=#F00>Delete mode</color>") + $" (Press {binds.GetKeyByAction((int)Keybinds.Inputs.deleteMode).key})"))
 					{
 						settings.deleteMode = !settings.deleteMode;
 					}

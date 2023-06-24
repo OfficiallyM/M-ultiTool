@@ -22,6 +22,7 @@ namespace SpawnerTLD.Modules
 		public enum Inputs
 		{
 			menu,
+			deleteMode,
 		}
 
 		public List<Key> keys = new List<Key>();
@@ -65,9 +66,15 @@ namespace SpawnerTLD.Modules
 					keys.Add(new Key() { action = i });
 				}
 
+				// Menu.
 				keys[0].key = KeyCode.F1;
 				keys[0].defaultKey = KeyCode.F1;
-				keys[0].name = "Open menu";				
+				keys[0].name = "Open menu";
+
+				// Delete mode.
+				keys[1].key = KeyCode.Delete;
+				keys[1].defaultKey = KeyCode.Delete;
+				keys[1].name = "Delete mode";
 			}
 			catch (Exception ex)
 			{
@@ -87,6 +94,16 @@ namespace SpawnerTLD.Modules
 				if (newKeys == null)
 					// No keybinds in config, write the defaults.
 					config.UpdateKeybinds(keys);
+				else if (newKeys.Count < keys.Count)
+				{
+					// Config is missing binds, update missing ones with defaults.
+					List<Key> missing = keys.Where(k => !newKeys.Any(x => x.action == k.action)).ToList();
+					foreach (Key key in missing)
+					{
+						newKeys.Add(key);
+					}
+					config.UpdateKeybinds(newKeys);
+				}
 				else
 					keys = newKeys;
 			}
@@ -114,7 +131,7 @@ namespace SpawnerTLD.Modules
 		/// <param name="actions">Int array of actions to display rebinds for</param>
 		/// <param name="x">The X position to display the menu</param>
 		/// <param name="y">The Y position to display the menu</param>
-		public void RenderRebindMenu(string title, int[] actions, float x, float y)
+		public void RenderRebindMenu(string title, int[] actions, float x, float y, float? widthOverride = null, float? heightOverride = null)
 		{
 			if (actions.Length == 0)
 				return;
@@ -125,6 +142,13 @@ namespace SpawnerTLD.Modules
 			float labelWidth = 295f;
 			float buttonWidth = 80f;
 			float height = 30f + (actions.Length * actionHeight);
+
+			if (widthOverride != null)
+				width = widthOverride.Value;
+
+			if (heightOverride != null)
+				height = heightOverride.Value;
+
 			GUI.Box(new Rect(x, y, width, height), $"<size=16><b>{title}</b></size>");
 
 			for (int i = 0; i < actions.Length; i++)
