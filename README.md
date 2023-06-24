@@ -16,11 +16,8 @@
 
 ### TODO:
 - [ ] Improve time changer to display what the chosen time is
-- [ ] Find a way of automatically detecting trailers
-  - This is currently done manually
-- [ ] Fix IFA box trailer variant not detecting
-- [ ] Allow quick spawns to be configurable
-  - Through the UI would be ideal
+- [X] Find a way of automatically detecting trailers
+- [X] Fix IFA box trailer variant not detecting
 - [ ] Expand translation system to support items 
 - [x] Add item thumbnails
 - [ ] Make delete key rebindable
