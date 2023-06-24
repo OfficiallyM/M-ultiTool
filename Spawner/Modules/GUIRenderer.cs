@@ -516,7 +516,7 @@ namespace SpawnerTLD.Modules
 
 					toggleX += buttonWidth + 10f;
 
-					// Stat toggle.
+					// God toggle.
 					if (GUI.Button(new Rect(toggleX, miscY, buttonWidth, buttonHeight), (settings.godMode ? "<color=#0F0>God mode</color>" : "<color=#F00>God mode</color>")))
 					{
 						settings.godMode = !settings.godMode;
