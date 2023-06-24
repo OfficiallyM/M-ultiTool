@@ -4,6 +4,7 @@ using System.Linq;
 using System.Runtime.Serialization;
 using System.Text;
 using System.Threading.Tasks;
+using static SpawnerTLD.Modules.Keybinds;
 
 namespace SpawnerTLD.Core
 {
@@ -30,5 +31,12 @@ namespace SpawnerTLD.Core
 			get { return s_deleteMode; }
 			set { s_deleteMode = value; }
 		}
+	}
+
+	[DataContract]
+	internal class ConfigSerializable
+	{
+		[DataMember] public List<Key> keybinds { get; set; }
+		[DataMember] public bool legacyUI { get; set; }
 	}
 }
