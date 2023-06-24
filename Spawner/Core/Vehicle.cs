@@ -10,6 +10,7 @@ namespace SpawnerTLD.Core
 	internal class Vehicle
 	{
 		public GameObject vehicle;
+		public Texture2D thumbnail;
 		public int variant;
 		public int conditionInt = 0;
 		public int fuelMixes = 1;
