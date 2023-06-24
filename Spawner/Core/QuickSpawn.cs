@@ -11,6 +11,5 @@ namespace SpawnerTLD.Core
 	{
 		public GameObject gameObject;
 		public string name;
-		public bool fluidOverride = false;
 	}
 }
