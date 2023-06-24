@@ -1,5 +1,6 @@
 ﻿using SpawnerTLD.Core;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -12,30 +13,55 @@ namespace SpawnerTLD.Modules
 {
 	internal class GUIRenderer
 	{
-		private Mod mod;
-		private Settings settings = new Core.Settings();
+		private Settings settings = new Settings();
 
-		// Initialise required modules.
+		// Modules.
+		private Logger logger;
+		private Config config;
 		private Translator translator;
-		private Logger logger = new Logger();
+		private ThumbnailGenerator thumbnailGenerator;
+		private Keybinds binds;
+		private Utility utility;
 
 		// Menu control.
 		public bool enabled = false;
 		private bool show = false;
+		private bool legacyUI = false;
 
 		private float mainMenuWidth;
 		private float mainMenuHeight;
 		private float mainMenuX;
 		private float mainMenuY;
 
-		private float vehicleMenuWidth;
-		private float vehicleMenuHeight;
-		private float vehicleMenuX;
-		private float vehicleMenuY;
+		private float legacyMainMenuWidth;
+		private float legacyMainMenuHeight;
+		private float legacyMainMenuX;
+		private float legacyMainMenuY;
+
+		private float legacyVehicleMenuWidth;
+		private float legacyVehicleMenuHeight;
+		private float legacyVehicleMenuX;
+		private float legacyVehicleMenuY;
 
 		private bool vehicleMenu = false;
 		private bool miscMenu = false;
 		private bool itemsMenu = false;
+
+		private int tab = 0;
+		private readonly List<string> tabs = new List<string>()
+		{
+			"Vehicles",
+			"Items",
+			"Miscellaneous"
+		};
+
+		private Vector2 tabScrollPosition;
+		private Vector2 vehicleScrollPosition;
+		private Vector2 itemScrollPosition;
+		private Vector2 configScrollPosition;
+
+		// Tab indexes which render the config pane.
+		private List<int> configTabs = new List<int>() { 0, 1 };
 
 		// Styling.
 		private GUIStyle labelStyle = new GUIStyle();
@@ -61,9 +87,14 @@ namespace SpawnerTLD.Modules
 		private bool isTimeLocked;
 		GameObject ufo;
 
-		public GUIRenderer(Mod _mod)
+		public GUIRenderer(Logger _logger, Config _config, Translator _translator, ThumbnailGenerator _thumbnailGenerator, Keybinds _binds, Utility _utility)
 		{
-			mod = _mod;
+			logger = _logger;
+			config = _config;
+			translator = _translator;
+			thumbnailGenerator = _thumbnailGenerator;
+			binds = _binds;
+			utility = _utility;
 		}
 
 		public void OnGUI()
@@ -72,11 +103,18 @@ namespace SpawnerTLD.Modules
 			if (!enabled)
 				return;
 
-			// Return early if pause menu isn't active.
-			if (!mainscript.M.menu.Menu.activeSelf)
+			// Render the legacy UI if enabled.
+			if (legacyUI)
+			{
+				RenderLegacyUI();
 				return;
+			}
 
-			ToggleVisibility();
+			// Only show visibility menu on pause menu.
+			if (mainscript.M.menu.Menu.activeSelf)
+			{
+				ToggleVisibility();
+			}
 
 			// Return early if the UI isn't supposed to be visible.
 			if (!show)
@@ -84,20 +122,38 @@ namespace SpawnerTLD.Modules
 
 			// Main menu always shows.
 			MainMenu();
+		}
+
+		/// <summary>
+		/// Render the legacy version of the UI
+		/// </summary>
+		private void RenderLegacyUI()
+		{
+			// Return early if pause menu isn't active.
+			if (!mainscript.M.menu.Menu.activeSelf)
+				return;
+
+			ToggleVisibilityLegacy();
+
+			// Return early if the UI isn't supposed to be visible.
+			if (!show)
+				return;
+
+			// Main menu always shows.
+			MainMenuLegacy();
 
 			if (vehicleMenu)
 			{
-				VehicleMenu();
+				VehicleMenuLegacy();
 			}
 
-			if (miscMenu)
-			{
-				MiscMenu();
+			if (miscMenu) {
+				MiscMenuLegacy();
 			}
-
+			
 			if (itemsMenu)
 			{
-				ItemsMenu();
+				ItemsMenuLegacy();
 			}
 		}
 
@@ -113,38 +169,42 @@ namespace SpawnerTLD.Modules
 			headerStyle.normal.textColor = Color.white;
 
 			// Set main menu position here so other menus can be based around it.
-			mainMenuWidth = Screen.currentResolution.width / 7f;
-			mainMenuHeight = Screen.currentResolution.height / 1.2f;
-			mainMenuX = Screen.currentResolution.width / 2.5f - mainMenuWidth;
-			mainMenuY = 75f;
+			legacyMainMenuWidth = Screen.currentResolution.width / 7f;
+			legacyMainMenuHeight = Screen.currentResolution.height / 1.2f;
+			legacyMainMenuX = Screen.currentResolution.width / 2.5f - legacyMainMenuWidth;
+			legacyMainMenuY = 75f;
+
+			mainMenuWidth = Screen.currentResolution.width - 80f;
+			mainMenuHeight = Screen.currentResolution.height - 80f;
+			mainMenuX = 40f;
+			mainMenuY = 40f;
 
 			// Also store the vehicle menu so the misc menu can be
 			// placed under it.
-			vehicleMenuX = mainMenuX + mainMenuWidth + 15f;
-			vehicleMenuY = mainMenuY;
-			vehicleMenuWidth = Screen.currentResolution.width / 2f;
-			vehicleMenuHeight = Screen.currentResolution.height / 4.25f;
+			legacyVehicleMenuX = legacyMainMenuX + legacyMainMenuWidth + 15f;
+			legacyVehicleMenuY = legacyMainMenuY;
+			legacyVehicleMenuWidth = Screen.currentResolution.width / 2f;
+			legacyVehicleMenuHeight = Screen.currentResolution.height / 4.25f;
 
-			vehicles = Utility.LoadVehicles();
 
 			// Add available quickspawn items.
 			// TODO: Allow these to be user-selected?
-			quickSpawns.Add(new QuickSpawn() { gameObject = itemdatabase.d.goilcan, name = "Oil can", fluidOverride = true });
-			quickSpawns.Add(new QuickSpawn() { gameObject = itemdatabase.d.ggascan, name = "Jerry can", fluidOverride = true });
-			quickSpawns.Add(new QuickSpawn() { gameObject = itemdatabase.d.gbarrel, name = "Barrel", fluidOverride = true });
+			quickSpawns.Add(new QuickSpawn() { gameObject = itemdatabase.d.goilcan, name = "Oil can" });
+			quickSpawns.Add(new QuickSpawn() { gameObject = itemdatabase.d.ggascan, name = "Jerry can" });
+			quickSpawns.Add(new QuickSpawn() { gameObject = itemdatabase.d.gbarrel, name = "Barrel" });
 
-			translator = new Translator(mainscript.M.menu.language.languageNames[mainscript.M.menu.language.selectedLanguage], mod);
-
-			ThumbnailGenerator generator = new ThumbnailGenerator(mod);
-			generator.PrepareCache();
+			// Prepare items list.
+			thumbnailGenerator.PrepareCache();
 			foreach (GameObject item in itemdatabase.d.items)
 			{
 				// Remove vehicles and trailers from items array.
-				if (!Utility.IsVehicleOrTrailer(item) && item.name != "ErrorPrefab")
+				if (!utility.IsVehicleOrTrailer(item) && item.name != "ErrorPrefab")
 				{
-					items.Add(new Item() { item = item, thumbnail = generator.GetThumbnail(item) });
+					items.Add(new Item() { item = item, thumbnail = thumbnailGenerator.GetThumbnail(item) });
 				}
 			}
+
+			vehicles = LoadVehicles();
 
 			// Prepopulate fuel types and fuel values as all default.
 			int maxFuelType = (int)Enum.GetValues(typeof(mainscript.fluidenum)).Cast<mainscript.fluidenum>().Max();
@@ -153,6 +213,40 @@ namespace SpawnerTLD.Modules
 				fuelValues.Add(-1f);
 				fuelTypeInts.Add(-1);
 			}
+
+			// Load legacy UI config.
+
+			bool? configLegacyMode = config.GetLegacyMode();
+			if (configLegacyMode.HasValue)
+				legacyUI = configLegacyMode.Value;
+			else
+				config.UpdateLegacyMode(legacyUI);
+
+			// Load keybinds.
+			binds.OnLoad();
+		}
+
+		public void Update()
+		{
+			// Return early if the legacy UI is enabled.
+			if (legacyUI)
+				return;
+
+			if (Input.GetKeyDown(binds.GetKeyByAction(0).key) && !mainscript.M.menu.Menu.activeSelf && !mainscript.M.settingsOpen && !mainscript.M.menu.saveScreen.gameObject.activeSelf)
+			{
+				show = !show;
+				mainscript.M.crsrLocked = !show;
+				mainscript.M.SetCursorVisible(show);
+				mainscript.M.menu.gameObject.SetActive(!show);
+			}
+
+			if (show && !mainscript.M.menu.Menu.activeSelf && Input.GetButtonDown("Cancel"))
+			{
+				show = false;
+				mainscript.M.crsrLocked = !show;
+				mainscript.M.SetCursorVisible(show);
+				mainscript.M.menu.gameObject.SetActive(!show);
+			}
 		}
 
 		/// <summary>
@@ -160,6 +254,27 @@ namespace SpawnerTLD.Modules
 		/// </summary>
 		private void ToggleVisibility()
 		{
+			if (GUI.Button(new Rect(Screen.currentResolution.width - 350f, 30f, 300f, 20f), "Switch to Legacy UI"))
+			{
+				legacyUI = true;
+				config.UpdateLegacyMode(legacyUI);
+			}
+			binds.RenderRebindMenu("Spawner menu key", new int[] { (int)Keybinds.Inputs.menu }, Screen.currentResolution.width - 350f, 50f);
+		}
+
+		/// <summary>
+		/// Show menu toggle button.
+		/// </summary>
+		private void ToggleVisibilityLegacy()
+		{
+			if (GUI.Button(new Rect(230f, 10f, 200f, 20f), "Switch to New UI"))
+			{
+				legacyUI = false;
+				config.UpdateLegacyMode(legacyUI);
+
+				// Hide the menu in case it's currently visible.
+				show = false;
+			}
 			if (GUI.Button(new Rect(230f, 30f, 200f, 50f), show ? "<size=28><color=#0F0>Spawner</color></size>" : "<size=28><color=#F00>Spawner</color></size>"))
 				show = !show;
 		}
@@ -173,6 +288,434 @@ namespace SpawnerTLD.Modules
 			float y = mainMenuY;
 			float width = mainMenuWidth;
 			float height = mainMenuHeight;
+
+			GUI.Box(new Rect(x, y, width, height), $"<color=#f87ffa><size=18><b>{Meta.Name}</b></size>\n<size=16>v{Meta.Version} - made with ❤️ by {Meta.Author}</size></color>");
+
+			// Navigation tabs.
+			float tabHeight = 25f;
+			float tabButtonWidth = 150f;
+			float tabWidth = (tabButtonWidth + 30f) * tabs.Count;
+			float tabX = x + 20f;
+			tabScrollPosition = GUI.BeginScrollView(new Rect(tabX, y + 50f, tabWidth, tabHeight), tabScrollPosition, new Rect(tabX, y + 50f, tabWidth, tabHeight));
+			for (int tabIndex = 0; tabIndex < tabs.Count; tabIndex++)
+			{
+				if (GUI.Button(new Rect(tabX, y + 50f, tabButtonWidth, tabHeight), tab == tabIndex ? $"<color=#0F0>{tabs[tabIndex]}</color>" : tabs[tabIndex]))
+				{
+					tab = tabIndex;
+				}
+
+				tabX += tabButtonWidth + 30f;
+			}
+			GUI.EndScrollView();
+
+			RenderTab(tab);
+		}
+
+		private class ConfigDimensions
+		{
+			public float x;
+			public float y;
+			public float width;
+			public float height;
+		}
+
+		/// <summary>
+		/// Render a given tab
+		/// </summary>
+		/// <param name="tab">The tab index to render</param>
+		private void RenderTab(int tab)
+		{
+			float tabX = mainMenuX + 10f;
+			float tabY = mainMenuX + 90f;
+			float tabWidth = mainMenuWidth - 20f;
+			float tabHeight = mainMenuHeight - 105f;
+
+			float configWidth = (mainMenuWidth * 0.25f);
+			float configX = mainMenuX + mainMenuWidth - configWidth - 10f;
+
+			// Config pane.
+			if (configTabs.Contains(tab))
+			{
+				// Decrease tab width to account for content pane.
+				tabWidth -= configWidth + 5f;
+
+				GUI.Box(new Rect(configX, tabY, configWidth, tabHeight), "<size=16>Configuration</size>");
+
+				ConfigDimensions configDimensions = new ConfigDimensions()
+				{
+					x = configX,
+					y = tabY,
+					width = configWidth,
+					height = tabHeight,	
+				};
+
+				RenderConfig(tab, configDimensions);
+			}
+
+			GUI.Box(new Rect(tabX, tabY, tabWidth, tabHeight), String.Empty);
+
+			float itemWidth = 140f;
+			float thumbnailHeight = 90f;
+			float textHeight = 40f;
+			float itemHeight = thumbnailHeight + textHeight;
+			float initialRowX = tabX + 10f;
+			float itemX = initialRowX;
+			float itemY = 0f;
+
+			int maxRowItems = Mathf.FloorToInt(tabWidth / (itemWidth + 10f));
+			int columnCount = (int)Math.Ceiling((double)vehicles.Count / maxRowItems);
+			float scrollHeight = (itemHeight + 10f) * (columnCount + 1);
+
+			switch (tab)
+			{
+				// Vehicles tab.
+				case 0:
+					GUI.skin.button.wordWrap = true;
+
+					itemWidth = 140f;
+					thumbnailHeight = 90f;
+					textHeight = 40f;
+					itemHeight = thumbnailHeight + textHeight;
+					initialRowX = tabX + 10f;
+					itemX = initialRowX;
+					itemY = 0f;
+
+					scrollHeight = (itemHeight + 10f) * (columnCount + 1);
+					vehicleScrollPosition = GUI.BeginScrollView(new Rect(tabX, tabY + 10f, tabWidth, tabHeight), vehicleScrollPosition, new Rect(tabX, tabY, tabWidth, scrollHeight), new GUIStyle(), new GUIStyle());
+
+					for (int i = 0; i < vehicles.Count(); i++)
+					{
+						Vehicle currentVehicle = vehicles[i];
+
+						itemX += itemWidth + 10f;
+
+						if (i % maxRowItems == 0)
+						{
+							itemX = initialRowX;
+							itemY += itemHeight + 10f;
+						}
+
+						string name = translator.T(currentVehicle.vehicle.name, currentVehicle.variant);
+						if (GUI.Button(new Rect(itemX, itemY, itemWidth, itemHeight), String.Empty) ||
+							GUI.Button(new Rect(itemX, itemY, itemWidth, thumbnailHeight), currentVehicle.thumbnail) ||
+							GUI.Button(new Rect(itemX, itemY + thumbnailHeight, itemWidth, textHeight), name))
+						{
+							utility.Spawn(new Vehicle()
+							{
+								vehicle = currentVehicle.vehicle,
+								variant = currentVehicle.variant,
+								conditionInt = conditionInt,
+								fuelMixes = fuelMixes,
+								fuelValues = fuelValues,
+								fuelTypeInts = fuelTypeInts,
+								color = color,
+								plate = plate
+							});
+						}
+					}
+					GUI.EndScrollView();
+					break;
+
+				// Items tab.
+				case 1:
+					GUI.skin.button.wordWrap = true;
+					itemWidth = 140f;
+					thumbnailHeight = 90f;
+					textHeight = 40f;
+					itemHeight = thumbnailHeight + textHeight;
+					initialRowX = tabX + 10f;
+					itemX = initialRowX;
+					itemY = 0f;
+
+					maxRowItems = Mathf.FloorToInt(tabWidth / (itemWidth + 10f));
+
+					columnCount = (int)Math.Ceiling((double)items.Count / maxRowItems);
+
+					scrollHeight = (itemHeight + 10f) * (columnCount + 1);
+					itemScrollPosition = GUI.BeginScrollView(new Rect(tabX, tabY + 10f, tabWidth, tabHeight), itemScrollPosition, new Rect(tabX, tabY, tabWidth, scrollHeight), new GUIStyle(), new GUIStyle());
+
+					for (int i = 0; i < items.Count(); i++)
+					{
+						Item currentItem = items[i];
+						GameObject item = items[i].item;
+
+						itemX += itemWidth + 10f;
+
+						if (i % maxRowItems == 0)
+						{
+							itemX = initialRowX;
+							itemY += itemHeight + 10f;
+						}
+
+						if (GUI.Button(new Rect(itemX, itemY, itemWidth, itemHeight), String.Empty) ||
+							GUI.Button(new Rect(itemX, itemY, itemWidth, thumbnailHeight), currentItem.thumbnail) ||
+							GUI.Button(new Rect(itemX, itemY + thumbnailHeight, itemWidth, textHeight), item.name))
+						{
+							utility.Spawn(new Item()
+							{
+								item = item,
+								conditionInt = conditionInt,
+								fuelMixes = fuelMixes,
+								fuelValues = fuelValues,
+								fuelTypeInts = fuelTypeInts,
+								color = color,
+							});
+						}
+					}
+					GUI.EndScrollView();
+					break;
+
+				// Miscellaneous tab.
+				case 2:
+					float miscX = tabX + 10f;
+					float miscY = tabY + 10f;
+					float buttonWidth = 200f;
+					float buttonHeight = 20f;
+
+					float miscWidth = 250f;
+					float labelWidth = tabWidth - 20f;
+
+					// Delete mode.
+					if (GUI.Button(new Rect(miscX, miscY, buttonWidth, buttonHeight), (settings.deleteMode ? "<color=#0F0>Delete mode</color>" : "<color=#F00>Delete mode</color>") + " (Press del)"))
+					{
+						settings.deleteMode = !settings.deleteMode;
+					}
+
+					miscY += buttonHeight + 20f;
+
+					// Time setting.
+					// TODO: Work out what the time actually is.
+					GUI.Label(new Rect(miscX, miscY, labelWidth, buttonHeight), "Time:", labelStyle);
+					miscY += buttonHeight;
+					float time = GUI.HorizontalSlider(new Rect(miscX, miscY, miscWidth, buttonHeight), selectedTime, 0f, 360f);
+					selectedTime = Mathf.Round(time);
+					if (GUI.Button(new Rect(miscX + miscWidth + 10f, miscY, buttonWidth, buttonHeight), "Set"))
+					{
+						mainscript.M.napszak.tekeres = selectedTime;
+					}
+
+					if (GUI.Button(new Rect(miscX + miscWidth + buttonWidth + 20f, miscY, buttonWidth, buttonHeight), isTimeLocked ? "<color=#0F0>Unlock</color>" : "<color=#F00>Lock</color>"))
+					{
+						isTimeLocked = !isTimeLocked;
+
+						mainscript.M.napszak.enabled = !isTimeLocked;
+					}
+
+					break;
+			}
+		}
+
+		/// <summary>
+		/// Render the config pane
+		/// </summary>
+		/// <param name="tab">The tab index to render the config pane for</param>
+		private void RenderConfig(int tab, ConfigDimensions configDimensions)
+		{
+			switch (tab)
+			{
+				case 0:
+				case 1:
+					float configX = configDimensions.x + 5f;
+					float configY = configDimensions.y + 30f;
+					float configWidth = configDimensions.width - 10f;
+					float configHeight = 20f;
+
+					// Fuel mixes needs multiplying by two as it has two fields per mix.
+					int configItems = 7 + (fuelMixes * 2);
+					float configScrollHeight = configItems * ((configHeight * 3) + 10f);
+					configScrollPosition = GUI.BeginScrollView(new Rect(configX, configY, configWidth, configDimensions.height - 40f), configScrollPosition, new Rect(configX, configY, configWidth, configScrollHeight), new GUIStyle(), new GUIStyle());
+
+					// Condition.
+					GUI.Label(new Rect(configX, configY, configWidth, configHeight), $"Condition:", labelStyle);
+					configY += configHeight;
+					int maxCondition = (int)Enum.GetValues(typeof(Item.Condition)).Cast<Item.Condition>().Max();
+					float rawCondition = GUI.HorizontalSlider(new Rect(configX, configY, configWidth, configHeight), conditionInt, -1, maxCondition);
+					conditionInt = Mathf.RoundToInt(rawCondition);
+					configY += configHeight;
+					string conditionName = ((Item.Condition)conditionInt).ToString();
+					GUI.Label(new Rect(configX, configY, configWidth, configHeight), conditionName, labelStyle);
+
+					configY += configHeight + 10f;
+
+					// Fuel mixes.
+					int maxFuelType = (int)Enum.GetValues(typeof(mainscript.fluidenum)).Cast<mainscript.fluidenum>().Max();
+					GUI.Label(new Rect(configX, configY, configWidth, configHeight), "Number of fuels:", labelStyle);
+					configY += configHeight;
+					float rawFuelMixes = GUI.HorizontalSlider(new Rect(configX, configY, configWidth, configHeight), fuelMixes, 1, maxFuelType + 1);
+					fuelMixes = Mathf.RoundToInt(rawFuelMixes);
+					configY += configHeight;
+					GUI.Label(new Rect(configX, configY, configWidth, configHeight), fuelMixes.ToString(), labelStyle);
+
+					for (int i = 0; i < fuelMixes; i++)
+					{
+						configY += configHeight + 10f;
+
+						// Fuel type.
+						GUI.Label(new Rect(configX, configY, configWidth, configHeight), $"Fuel type {i + 1}:", labelStyle);
+						configY += configHeight;
+						float rawFuelType = GUI.HorizontalSlider(new Rect(configX, configY, configWidth, configHeight), fuelTypeInts[i], -1, maxFuelType);
+						fuelTypeInts[i] = Mathf.RoundToInt(rawFuelType);
+						configY += configHeight;
+
+						string fuelType = ((mainscript.fluidenum)fuelTypeInts[i]).ToString();
+						if (fuelTypeInts[i] == -1)
+							fuelType = "Default";
+						else
+							fuelType = fuelType[0].ToString().ToUpper() + fuelType.Substring(1);
+
+						GUI.Label(new Rect(configX, configY, configWidth, configHeight), fuelType, labelStyle);
+
+						configY += configHeight + 10f;
+
+						// Fuel amount.
+						GUI.Label(new Rect(configX, configY, configWidth, configHeight), $"Fuel amount {i + 1}:", labelStyle);
+						configY += configHeight;
+						float rawFuelValue = GUI.HorizontalSlider(new Rect(configX, configY, configWidth, configHeight), fuelValues[i], -1f, 1000f);
+						fuelValues[i] = Mathf.Round(rawFuelValue);
+						configY += configHeight;
+
+						bool fuelValueParse = float.TryParse(GUI.TextField(new Rect(configX, configY, configWidth, configHeight), fuelValues[i].ToString(), labelStyle), out float tempFuelValue);
+						if (!fuelValueParse)
+							logger.Log($"{tempFuelValue} is not a number", Logger.LogLevel.Error);
+						else
+							fuelValues[i] = tempFuelValue;
+					}
+
+					configY += configHeight + 10f;
+
+					// Vehicle colour sliders.
+					// Red.
+					GUI.Label(new Rect(configX, configY, configWidth, configHeight), "<color=#F00>Red:</color>", labelStyle);
+					configY += configHeight;
+					float red = GUI.HorizontalSlider(new Rect(configX, configY, configWidth, configHeight), color.r * 255, 0, 255);
+					red = Mathf.Round(red);
+					configY += configHeight;
+					bool redParse = float.TryParse(GUI.TextField(new Rect(configX, configY, configWidth, configHeight), red.ToString(), labelStyle), out red);
+					if (!redParse)
+						logger.Log($"{redParse} is not a number", Logger.LogLevel.Error);
+					red = Mathf.Clamp(red, 0f, 255f);
+					color.r = red / 255f;
+					//GUI.Label(new Rect(configX, configY, configWidth, configHeight), red.ToString(), labelStyle);
+
+					// Green.
+					configY += configHeight + 10f;
+					GUI.Label(new Rect(configX, configY, configWidth, configHeight), "<color=#0F0>Green:</color>", labelStyle);
+					configY += configHeight;
+					float green = GUI.HorizontalSlider(new Rect(configX, configY, configWidth, configHeight), color.g * 255, 0, 255);
+					green = Mathf.Round(green);
+					configY += configHeight;
+					bool greenParse = float.TryParse(GUI.TextField(new Rect(configX, configY, configWidth, configHeight), green.ToString(), labelStyle), out green);
+					if (!greenParse)
+						logger.Log($"{greenParse} is not a number", Logger.LogLevel.Error);
+					green = Mathf.Clamp(green, 0f, 255f);
+					color.g = green / 255f;
+					//GUI.Label(new Rect(configX, configY, configWidth, configHeight), green.ToString(), labelStyle);
+
+					// Blue.
+					configY += configHeight + 10f;
+					GUI.Label(new Rect(configX, configY, configWidth, configHeight), "<color=#00F>Blue:</color>", labelStyle);
+					configY += configHeight;
+					float blue = GUI.HorizontalSlider(new Rect(configX, configY, configWidth, configHeight), color.b * 255, 0, 255);
+					blue = Mathf.Round(blue);
+					configY += configHeight;
+					bool blueParse = float.TryParse(GUI.TextField(new Rect(configX, configY, configWidth, configHeight), blue.ToString(), labelStyle), out blue);
+					if (!blueParse)
+						logger.Log($"{blueParse.ToString()} is not a number", Logger.LogLevel.Error);
+					blue = Mathf.Clamp(blue, 0f, 255f);
+					color.b = blue / 255f;
+					//GUI.Label(new Rect(configX, configY, configWidth, configHeight), blue.ToString(), labelStyle);
+
+					configY += configHeight + 10f;
+
+					// Colour preview.
+					GUIStyle defaultStyle = GUI.skin.button;
+					GUIStyle previewStyle = new GUIStyle(defaultStyle);
+					Texture2D previewTexture = new Texture2D(1, 1);
+					Color[] pixels = new Color[] { color };
+					previewTexture.SetPixels(pixels);
+					previewTexture.Apply();
+					previewStyle.normal.background = previewTexture;
+					previewStyle.active.background = previewTexture;
+					previewStyle.hover.background = previewTexture;
+					previewStyle.margin = new RectOffset(0, 0, 0, 0);
+					GUI.skin.button = previewStyle;
+					GUI.Button(new Rect(configX, configY, configWidth, configHeight), "");
+					GUI.skin.button = defaultStyle;
+
+					// License plate only renders for vehicle tab.
+					if (tab == 0)
+					{
+						configY += configHeight + 10f;
+						GUI.Label(new Rect(configX, configY, configWidth, configHeight), "Plate (blank for random):", labelStyle);
+						configY += configHeight;
+						plate = GUI.TextField(new Rect(configX, configY, configWidth, configHeight), plate, 7, labelStyle);
+					}
+
+					GUI.EndScrollView();
+					break;
+			}
+		}
+
+		/// <summary>
+		/// Load all vehicles and generate thumbnails
+		/// </summary>
+		/// <returns>List of vehicles</returns>
+		public List<Vehicle> LoadVehicles()
+		{
+			List<Vehicle> vehicles = new List<Vehicle>();
+			foreach (GameObject gameObject in itemdatabase.d.items)
+			{
+				try
+				{
+					if (utility.IsVehicleOrTrailer(gameObject))
+					{
+						// Check for variants.
+						randomTypeSelector randoms = gameObject.GetComponent<randomTypeSelector>();
+						if (randoms != null && randoms.tipusok.Length > 0)
+						{
+							int variants = randoms.tipusok.Length;
+
+							for (int i = 0; i < variants; i++)
+							{
+								Vehicle vehicle = new Vehicle()
+								{
+									vehicle = gameObject,
+									variant = i + 1,
+									thumbnail = thumbnailGenerator.GetThumbnail(gameObject, i + 2), // I have no idea why +1 produces the wrong variant in the thumbnail.
+								};
+								vehicles.Add(vehicle);
+							}
+						}
+						else
+						{
+							Vehicle vehicle = new Vehicle()
+							{
+								vehicle = gameObject,
+								variant = -1,
+								thumbnail = thumbnailGenerator.GetThumbnail(gameObject),
+							};
+							vehicles.Add(vehicle);
+						}
+					}
+				}
+				catch
+				{
+					logger.Log($"Something went wrong loading vehicle {gameObject.name}", Logger.LogLevel.Error);
+				}
+			}
+
+			return vehicles;
+		}
+
+		/// <summary> 
+		/// Legacy main menu GUI.
+		/// </summary>
+		private void MainMenuLegacy()
+		{
+			float x = legacyMainMenuX;
+			float y = legacyMainMenuY;
+			float width = legacyMainMenuWidth;
+			float height = legacyMainMenuHeight;
 
 			GUI.Box(new Rect(x, y, width, height), $"<color=#ac78ad><size=16><b>{Meta.Name}</b></size>\n<size=14>v{Meta.Version} - made with ❤️ by {Meta.Author}</size></color>");
 
@@ -229,10 +772,9 @@ namespace SpawnerTLD.Modules
 			{
 				if (GUI.Button(new Rect(x, quickSpawnY, width, buttonHeight), spawn.name))
 				{
-					Utility.Spawn(new Item()
+					utility.Spawn(new Item()
 					{
 						item = spawn.gameObject,
-						fluidOverride = spawn.fluidOverride,
 						conditionInt = conditionInt,
 						fuelMixes = fuelMixes,
 						fuelValues = fuelValues,
@@ -255,7 +797,7 @@ namespace SpawnerTLD.Modules
 
 				if (GUI.Button(new Rect(x, scrollY, width, buttonHeight), name))
 				{
-					Utility.Spawn(new Vehicle()
+					utility.Spawn(new Vehicle()
 					{
 						vehicle = vehicle.vehicle,
 						variant = vehicle.variant,
@@ -276,13 +818,13 @@ namespace SpawnerTLD.Modules
 		/// <summary>
 		/// Vehicle config menu GUI.
 		/// </summary>
-		private void VehicleMenu()
+		private void VehicleMenuLegacy()
 		{
 
-			float x = vehicleMenuX;
-			float y = vehicleMenuY;
-			float width = vehicleMenuWidth;
-			float height = vehicleMenuHeight;
+			float x = legacyVehicleMenuX;
+			float y = legacyVehicleMenuY;
+			float width = legacyVehicleMenuWidth;
+			float height = legacyVehicleMenuHeight;
 
 			height += (fuelMixes * 40f);
 
@@ -298,11 +840,11 @@ namespace SpawnerTLD.Modules
 
 			// Condition.
 			GUI.Label(new Rect(x + 10f, sliderY - 2.5f, textWidth, sliderHeight), "Condition:", labelStyle);
-			int maxCondition = (int)Enum.GetValues(typeof(Item.condition)).Cast<Item.condition>().Max();
+			int maxCondition = (int)Enum.GetValues(typeof(Item.Condition)).Cast<Item.Condition>().Max();
 			float rawCondition = GUI.HorizontalSlider(new Rect(sliderX, sliderY, sliderWidth, sliderHeight), conditionInt, -1, maxCondition);
 			conditionInt = Mathf.RoundToInt(rawCondition);
 
-			string conditionName = ((Item.condition)conditionInt).ToString();
+			string conditionName = ((Item.Condition)conditionInt).ToString();
 
 			GUI.Label(new Rect(textX, sliderY - 2.5f, textWidth, sliderHeight), conditionName, labelStyle);
 
@@ -412,12 +954,12 @@ namespace SpawnerTLD.Modules
 		/// <summary>
 		/// Misc menu config GUI.
 		/// </summary>
-		private void MiscMenu()
+		private void MiscMenuLegacy()
 		{
-			float x = vehicleMenuX;
-			float y = vehicleMenuY + vehicleMenuHeight + 25f;
-			float width = vehicleMenuWidth;
-			float height = vehicleMenuHeight;
+			float x = legacyVehicleMenuX;
+			float y = legacyVehicleMenuY + legacyVehicleMenuHeight + 25f;
+			float width = legacyVehicleMenuWidth;
+			float height = legacyVehicleMenuHeight;
 
 			y += (fuelMixes * 40f);
 
@@ -483,12 +1025,12 @@ namespace SpawnerTLD.Modules
 			}
 		}
 
-		private void ItemsMenu()
+		private void ItemsMenuLegacy()
 		{
-			float x = mainMenuX + mainMenuWidth + 15f;
-			float y = mainMenuY;
+			float x = legacyMainMenuX + legacyMainMenuWidth + 15f;
+			float y = legacyMainMenuY;
 			float width = Screen.currentResolution.width / 1.75f;
-			float height = mainMenuHeight;
+			float height = legacyMainMenuHeight;
 
 			GUI.Box(new Rect(x, y, width, height), "<color=#FFF><size=16><b>Items</b></size></color>");
 
@@ -524,7 +1066,7 @@ namespace SpawnerTLD.Modules
 					GUI.Button(new Rect(itemX, itemY, itemWidth, thumbnailHeight), currentItem.thumbnail) ||
 					GUI.Button(new Rect(itemX, itemY + thumbnailHeight, itemWidth, textHeight), item.name))
 				{
-					Utility.Spawn(currentItem.Clone());
+					utility.Spawn(currentItem.Clone());
 				}
 			}
 
