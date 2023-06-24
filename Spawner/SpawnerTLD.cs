@@ -1,14 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using SpawnerTLD.Core;
+using SpawnerTLD.Modules;
+using System;
 using System.IO;
-using System.Linq;
 using TLDLoader;
 using UnityEngine;
-using System.Runtime.Serialization;
-using System.Runtime.Serialization.Json;
-using System.Text;
-using SpawnerTLD.Core;
-using SpawnerTLD.Modules;
 using Logger = SpawnerTLD.Modules.Logger;
 using Settings = SpawnerTLD.Core.Settings;
 
@@ -23,10 +18,36 @@ namespace SpawnerTLD
 		public override string Version => Meta.Version;
 
 		// Initialise modules.
-		private Logger logger = new Logger();
-		private GUIRenderer renderer;
+		private readonly Logger logger = new Logger();
+		private readonly GUIRenderer renderer;
+		private readonly Config config;
+		private readonly Translator translator;
+		private readonly ThumbnailGenerator thumbnailGenerator;
+		private readonly Keybinds binds;
+		private readonly Utility utility;
 
 		private Settings settings = new Settings();
+
+		public SpawnerTLD()
+		{
+			// Initialise modules.
+			try
+			{
+				// We can't use GetModConfigFolder here as the mod isn't fully initialised yet.
+				string configDirectory = Path.Combine(ModLoader.ModsFolder, "Config", "Mod Settings", ID);
+
+				config = new Config(logger);
+				utility = new Utility(logger);
+				translator = new Translator(logger, configDirectory);
+				thumbnailGenerator = new ThumbnailGenerator(logger, utility, configDirectory);
+				binds = new Keybinds(logger, config);
+				renderer = new GUIRenderer(logger, config, translator, thumbnailGenerator, binds, utility);
+			}
+			catch (Exception ex)
+			{
+				logger.Log($"Module initialisation failed - {ex}", Logger.LogLevel.Critical);
+			}
+		}
 
 		// Override functions.
 		public override void OnGUI()
@@ -36,9 +57,6 @@ namespace SpawnerTLD
 
 		public override void OnLoad()
 		{
-			// Initialise GUI renderer.
-			renderer = new GUIRenderer(this);
-
 			// Distance check.
 			float minDistance = 1000f;
 			float distance = mainscript.DistanceRead();
@@ -52,6 +70,12 @@ namespace SpawnerTLD
 				return;
 			}
 
+			// Set the configuration path.
+			config.setConfigPath(ModLoader.GetModConfigFolder(this) + "\\Config.json");
+
+			translator.SetLanguage(mainscript.M.menu.language.languageNames[mainscript.M.menu.language.selectedLanguage]);
+
+			// Load the GUI renderer.
 			renderer.OnLoad();
 		}
 
@@ -61,12 +85,14 @@ namespace SpawnerTLD
 			if (!renderer.enabled)
 				return;
 
+			renderer.Update();
+
 			if (settings.deleteMode)
 			{
 				if (Input.GetKeyDown(KeyCode.Delete) && mainscript.M.player.seat == null)
 				{
 					Physics.Raycast(mainscript.M.player.Cam.transform.position, mainscript.M.player.Cam.transform.forward, out var raycastHit, float.PositiveInfinity, mainscript.M.player.useLayer);
-					raycastHit.transform.gameObject.GetComponent<tosaveitemscript>().removeFromMemory = true;	
+					raycastHit.transform.gameObject.GetComponent<tosaveitemscript>().removeFromMemory = true;
 					foreach (tosaveitemscript component in raycastHit.transform.root.GetComponentsInChildren<tosaveitemscript>())
 					{
 						component.removeFromMemory = true;
