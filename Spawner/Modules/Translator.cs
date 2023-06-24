@@ -15,17 +15,25 @@ namespace SpawnerTLD.Modules
 		// Translation-related variables.
 		private string language;
 		private Dictionary<string, List<ConfigVehicle>> translations = new Dictionary<string, List<ConfigVehicle>>();
-		private Mod mod = null;
+		private string configDirectory;
 		private Logger logger;
 
-		public Translator(string _language, Mod _mod)
+		public Translator(Logger _logger, string _configDirectory)
 		{
-			language = _language;
-			mod = _mod;
+			logger = _logger;
 
-			logger = new Logger();
+			configDirectory = _configDirectory;
 
 			LoadTranslationFiles();
+		}
+
+		/// <summary>
+		/// Set translator language
+		/// </summary>
+		/// <param name="_language">The language to set the translator to</param>
+		public void SetLanguage(string _language)
+		{
+			language = _language;
 		}
 
 		/// <summary>
@@ -34,13 +42,13 @@ namespace SpawnerTLD.Modules
 		private void LoadTranslationFiles()
 		{
 			// Return early if the config directory doesn't exist.
-			if (!Directory.Exists(ModLoader.GetModConfigFolder(mod)))
+			if (!Directory.Exists(configDirectory))
 			{
 				logger.Log("Config folder is missing, nothing will be translated", Logger.LogLevel.Error);
 				return;
 			}
 
-			string[] files = Directory.GetFiles(ModLoader.GetModConfigFolder(mod), "*.json");
+			string[] files = Directory.GetFiles(configDirectory, "*.json");
 			foreach (string file in files)
 			{
 				if (!File.Exists(file))
