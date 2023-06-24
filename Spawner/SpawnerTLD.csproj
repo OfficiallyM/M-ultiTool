@@ -6,31 +6,31 @@
 
   <ItemGroup>
     <Reference Include="Assembly-CSharp">
-      <HintPath>H:\Program Files (x86)\Steam\SteamApps\common\The Long Drive\TheLongDrive_Data\Managed\Assembly-CSharp.dll</HintPath>
+      <HintPath>C:/Program Files (x86)\Steam\SteamApps\common\The Long Drive\TheLongDrive_Data\Managed\Assembly-CSharp.dll</HintPath>
     </Reference>
     <Reference Include="TLDLoader">
-      <HintPath>H:\Program Files (x86)\Steam\SteamApps\common\The Long Drive\TheLongDrive_Data\Managed\TLDLoader.dll</HintPath>
+      <HintPath>C:/Program Files (x86)\Steam\SteamApps\common\The Long Drive\TheLongDrive_Data\Managed\TLDLoader.dll</HintPath>
     </Reference>
     <Reference Include="UnityEngine.CoreModule">
-      <HintPath>H:\Program Files (x86)\Steam\SteamApps\common\The Long Drive\TheLongDrive_Data\Managed\UnityEngine.CoreModule.dll</HintPath>
+      <HintPath>C:/Program Files (x86)\Steam\SteamApps\common\The Long Drive\TheLongDrive_Data\Managed\UnityEngine.CoreModule.dll</HintPath>
     </Reference>
     <Reference Include="UnityEngine.ImageConversionModule">
-      <HintPath>H:\Program Files (x86)\Steam\SteamApps\common\The Long Drive\TheLongDrive_Data\Managed\UnityEngine.ImageConversionModule.dll</HintPath>
+      <HintPath>C:/Program Files (x86)\Steam\SteamApps\common\The Long Drive\TheLongDrive_Data\Managed\UnityEngine.ImageConversionModule.dll</HintPath>
     </Reference>
     <Reference Include="UnityEngine.IMGUIModule">
-      <HintPath>H:\Program Files (x86)\Steam\SteamApps\common\The Long Drive\TheLongDrive_Data\Managed\UnityEngine.IMGUIModule.dll</HintPath>
+      <HintPath>C:/Program Files (x86)\Steam\SteamApps\common\The Long Drive\TheLongDrive_Data\Managed\UnityEngine.IMGUIModule.dll</HintPath>
     </Reference>
     <Reference Include="UnityEngine.InputLegacyModule">
-      <HintPath>H:\Program Files (x86)\Steam\SteamApps\common\The Long Drive\TheLongDrive_Data\Managed\UnityEngine.InputLegacyModule.dll</HintPath>
+      <HintPath>C:/Program Files (x86)\Steam\SteamApps\common\The Long Drive\TheLongDrive_Data\Managed\UnityEngine.InputLegacyModule.dll</HintPath>
     </Reference>
     <Reference Include="UnityEngine.JSONSerializeModule">
-      <HintPath>H:\Program Files (x86)\Steam\SteamApps\common\The Long Drive\TheLongDrive_Data\Managed\UnityEngine.JSONSerializeModule.dll</HintPath>
+      <HintPath>C:/Program Files (x86)\Steam\SteamApps\common\The Long Drive\TheLongDrive_Data\Managed\UnityEngine.JSONSerializeModule.dll</HintPath>
     </Reference>
     <Reference Include="UnityEngine.PhysicsModule">
-      <HintPath>H:\Program Files (x86)\Steam\SteamApps\common\The Long Drive\TheLongDrive_Data\Managed\UnityEngine.PhysicsModule.dll</HintPath>
+      <HintPath>C:/Program Files (x86)\Steam\SteamApps\common\The Long Drive\TheLongDrive_Data\Managed\UnityEngine.PhysicsModule.dll</HintPath>
     </Reference>
     <Reference Include="UnityEngine.TextRenderingModule">
-      <HintPath>H:\Program Files (x86)\Steam\SteamApps\common\The Long Drive\TheLongDrive_Data\Managed\UnityEngine.TextRenderingModule.dll</HintPath>
+      <HintPath>C:/Program Files (x86)\Steam\SteamApps\common\The Long Drive\TheLongDrive_Data\Managed\UnityEngine.TextRenderingModule.dll</HintPath>
     </Reference>
   </ItemGroup>
 
