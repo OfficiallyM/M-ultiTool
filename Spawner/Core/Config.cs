@@ -31,6 +31,13 @@ namespace SpawnerTLD.Core
 			get { return s_deleteMode; }
 			set { s_deleteMode = value; }
 		}
+
+		public static bool s_godMode = false;
+		public bool godMode
+		{
+			get { return s_godMode; }
+			set { s_godMode = value; }
+		}
 	}
 
 	[DataContract]

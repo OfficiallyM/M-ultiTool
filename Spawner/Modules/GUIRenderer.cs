@@ -59,6 +59,7 @@ namespace SpawnerTLD.Modules
 		private Vector2 tabScrollPosition;
 		private Vector2 vehicleScrollPosition;
 		private Vector2 itemScrollPosition;
+		private Vector2 toggleScrollPosition;
 		private Vector2 configScrollPosition;
 
 		// Tab indexes which render the config pane.
@@ -500,11 +501,30 @@ namespace SpawnerTLD.Modules
 					float miscWidth = 250f;
 					float labelWidth = tabWidth - 20f;
 
+					int toggleCount = 2;
+					float toggleWidth = (buttonWidth + 10f) * toggleCount;
+
+					float toggleX = miscX;
+
+					toggleScrollPosition = GUI.BeginScrollView(new Rect(miscX, miscY, toggleWidth, buttonHeight), toggleScrollPosition, new Rect(miscX, miscY, toggleWidth, buttonHeight));
+
 					// Delete mode.
-					if (GUI.Button(new Rect(miscX, miscY, buttonWidth, buttonHeight), (settings.deleteMode ? "<color=#0F0>Delete mode</color>" : "<color=#F00>Delete mode</color>") + $" (Press {binds.GetKeyByAction((int)Keybinds.Inputs.deleteMode).key})"))
+					if (GUI.Button(new Rect(toggleX, miscY, buttonWidth, buttonHeight), (settings.deleteMode ? "<color=#0F0>Delete mode</color>" : "<color=#F00>Delete mode</color>") + $" (Press {binds.GetKeyByAction((int)Keybinds.Inputs.deleteMode).key})"))
 					{
 						settings.deleteMode = !settings.deleteMode;
 					}
+
+					toggleX += buttonWidth + 10f;
+
+					// Stat toggle.
+					if (GUI.Button(new Rect(toggleX, miscY, buttonWidth, buttonHeight), (settings.godMode ? "<color=#0F0>God mode</color>" : "<color=#F00>God mode</color>")))
+					{
+						settings.godMode = !settings.godMode;
+						mainscript.M.ChGodMode(settings.godMode);
+					}
+					toggleX += buttonWidth + 10f;
+
+					GUI.EndScrollView();
 
 					miscY += buttonHeight + 20f;
 
