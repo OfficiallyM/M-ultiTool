@@ -20,7 +20,7 @@
 - [X] Fix IFA box trailer variant not detecting
 - [ ] Expand translation system to support items 
 - [x] Add item thumbnails
-- [ ] Make delete key rebindable
+- [x] Make delete key rebindable
 - [ ] Add godmode toggle
 - [ ] Add noclip toggle
 - [ ] Add item search/filtering
