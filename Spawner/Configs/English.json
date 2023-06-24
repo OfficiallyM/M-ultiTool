@@ -67,12 +67,12 @@
 		{
 			"objectName": "Bus02UtanfutoFull",
 			"variant": 2,
-			"name": "IFA trailer (Bed)"
+			"name": "IFA trailer (Box)"
 		},
 		{
 			"objectName": "Bus02UtanfutoFull",
 			"variant": 3,
-			"name": "IFA trailer (Box)"
+			"name": "IFA trailer (Bed)"
 		},
 		{
 			"objectName": "Car06Full",
@@ -99,16 +99,6 @@
 			"name": "Plymouth Fury (Silver trim)"
 		},
 		{
-			"objectName": "Car07 Full",
-			"variant": 3,
-			"name": "Plymouth Fury (Also silver trim?)"
-		},
-		{
-			"objectName": "Car07 Full",
-			"variant": 4,
-			"name": "Plymouth Fury (Also silver trim?)"
-		},
-		{
 			"objectName": "Car08 Full",
 			"variant": 1,
 			"name": "Beetle (Variant 1)"
@@ -119,11 +109,6 @@
 			"name": "Beetle (Variant 2)"
 		},
 		{
-			"objectName": "Car08 Full",
-			"variant": 3,
-			"name": "Beetle (Variant 3)"
-		},
-		{
 			"objectName": "Car08c Full",
 			"variant": 1,
 			"name": "Beetle Cabrio (Variant 1)"
@@ -132,11 +117,6 @@
 			"objectName": "Car08c Full",
 			"variant": 2,
 			"name": "Beetle Cabrio (Variant 2)"
-		},
-		{
-			"objectName": "Car08c Full",
-			"variant": 3,
-			"name": "Beetle Cabrio (Variant 3)"
 		},
 		{
 			"objectName": "Bike03Full",
@@ -182,16 +162,6 @@
 			"name": "Barkas (Variant 3)"
 		},
 		{
-			"objectName": "Car09full",
-			"variant": 4,
-			"name": "Barkas (Variant 4)"
-		},
-		{
-			"objectName": "Car09full",
-			"variant": 5,
-			"name": "Barkas (Variant 5)"
-		},
-		{
 			"objectName": "Car09full_slide",
 			"variant": 1,
 			"name": "Barkas slide (Variant 1)"
@@ -207,44 +177,14 @@
 			"name": "Barkas slide (Variant 3)"
 		},
 		{
-			"objectName": "Car09full_slide",
-			"variant": 4,
-			"name": "Barkas slide (Variant 4)"
-		},
-		{
-			"objectName": "Car09full_slide",
-			"variant": 5,
-			"name": "Barkas slide (Variant 5)"
-		},
-		{
 			"objectName": "Car09Pfull",
 			"variant": 1,
 			"name": "Barkas pickup (Variant 1)"
 		},
 		{
-			"objectName": "Car09Pfull",
-			"variant": 2,
-			"name": "Barkas pickup (Variant 2)"
-		},
-		{
-			"objectName": "Car09Pfull",
-			"variant": 3,
-			"name": "Barkas pickup (Variant 3)"
-		},
-		{
 			"objectName": "Car09Tfull",
 			"variant": 1,
 			"name": "Barkas transporter (Variant 1)"
-		},
-		{
-			"objectName": "Car09Tfull",
-			"variant": 2,
-			"name": "Barkas transporter (Variant 2)"
-		},
-		{
-			"objectName": "Car09Tfull",
-			"variant": 3,
-			"name": "Barkas transporter (Variant 3)"
 		}
 	]
 }
