@@ -21,7 +21,7 @@
 - [ ] Expand translation system to support items 
 - [x] Add item thumbnails
 - [x] Make delete key rebindable
-- [ ] Add godmode toggle
+- [x] Add godmode toggle
 - [ ] Add noclip toggle
 - [ ] Add item search/filtering
 - [ ] Fix UFO not spawning on main branch
