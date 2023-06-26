@@ -43,10 +43,11 @@ Pause screen
 ![20230624182306_1](https://github.com/OfficiallyM/SpawnerTLD/assets/6341480/cc4f64fd-b06e-4775-b9b6-813fd54fd5b8)
 
 Vehicles tab
-![20230624182311_1](https://github.com/OfficiallyM/SpawnerTLD/assets/6341480/89f493b5-62f0-4d53-8caa-207dc3776b4c)
+![20230626221039_1](https://github.com/OfficiallyM/SpawnerTLD/assets/6341480/c2081094-effc-4787-bc9e-1446423e1ee0)
 
 Items tab
-![20230624182314_1](https://github.com/OfficiallyM/SpawnerTLD/assets/6341480/f9aca091-4c8f-4665-97de-ef4aced90361)
+![20230626221042_1](https://github.com/OfficiallyM/SpawnerTLD/assets/6341480/3dcae739-b2ed-47bb-9c3b-8dd131368fbe)
 
 Miscellaneous tab
-![20230624182317_1](https://github.com/OfficiallyM/SpawnerTLD/assets/6341480/c985ccb3-ef86-48f6-9341-7aefbd9f60a1)
+![20230626221044_1](https://github.com/OfficiallyM/SpawnerTLD/assets/6341480/b77d20a1-e037-4776-98b7-1de1f3e0d753)
+
