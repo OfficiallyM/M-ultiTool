@@ -156,87 +156,79 @@ namespace SpawnerTLD.Modules
 			if (actions.Length == 0)
 				return;
 
-			try
+			float width = 300f;
+			float actionHeight = 40f;
+			float actionY = y + 25f;
+			float labelWidth = 295f;
+			float buttonWidth = 80f;
+			float height = 30f + (actions.Length * (actionHeight + 5f));
+
+			if (widthOverride != null)
+				width = widthOverride.Value;
+
+			if (heightOverride != null)
+				height = heightOverride.Value;
+
+			float scrollHeight = height - 35f;
+			if (height > Screen.height * 0.9f)
+				height = Screen.height * 0.9f;
+
+			GUI.Box(new Rect(x, y, width, height), $"<size=16><b>{title}</b></size>");
+
+			Vector2 scrollPosition = GUI.BeginScrollView(new Rect(x + 10f, y + 25f, width - 20f, height - 35f), scrollPositions.ContainsKey(title) ? scrollPositions[title] : new Vector2(0, 0), new Rect(x + 10f, y + 25f, width - 20f, scrollHeight), new GUIStyle(), new GUIStyle());
+			if (!scrollPositions.ContainsKey(title))
+				scrollPositions.Add(title, scrollPosition);
+			else
+				scrollPositions[title] = scrollPosition;
+
+			for (int i = 0; i < actions.Length; i++)
 			{
-				float width = 300f;
-				float actionHeight = 40f;
-				float actionY = y + 25f;
-				float labelWidth = 295f;
-				float buttonWidth = 80f;
-				float height = 30f + (actions.Length * (actionHeight + 5f));
+				int action = actions[i];
+				Key key = GetKeyByAction(action);
 
-				if (widthOverride != null)
-					width = widthOverride.Value;
+				GUI.Label(new Rect(x + 10f, actionY, labelWidth, actionHeight / 2), $"{key.name} - Current ({key.key}) - Default ({key.defaultKey})", labelStyle);
+				actionY += actionHeight / 2;
 
-				if (heightOverride != null)
-					height = heightOverride.Value;
+				float buttonX = x + 10f;
 
-				float scrollHeight = height - 35f;
-				if (height > Screen.height * 0.9f)
-					height = Screen.height * 0.9f;
-
-				GUI.Box(new Rect(x, y, width, height), $"<size=16><b>{title}</b></size>");
-
-				Vector2 scrollPosition = GUI.BeginScrollView(new Rect(x + 10f, y + 25f, width - 20f, height - 35f), scrollPositions.ContainsKey(title) ? scrollPositions[title] : new Vector2(0, 0), new Rect(x + 10f, y + 25f, width - 20f, scrollHeight), new GUIStyle(), new GUIStyle());
-				if (!scrollPositions.ContainsKey(title))
-					scrollPositions.Add(title, scrollPosition);
-				else
-					scrollPositions[title] = scrollPosition;
-
-				for (int i = 0; i < actions.Length; i++)
+				string rebindText = rebindAction == action ? "Waiting..." : "Rebind";
+				if (GUI.Button(new Rect(buttonX, actionY, buttonWidth, actionHeight / 2), rebindText))
 				{
-					int action = actions[i];
-					Key key = GetKeyByAction(action);
-
-					GUI.Label(new Rect(x + 10f, actionY, labelWidth, actionHeight / 2), $"{key.name} - Current ({key.key}) - Default ({key.defaultKey})", labelStyle);
-					actionY += actionHeight / 2;
-
-					float buttonX = x + 10f;
-
-					string rebindText = rebindAction == action ? "Waiting..." : "Rebind";
-					if (GUI.Button(new Rect(buttonX, actionY, buttonWidth, actionHeight / 2), rebindText))
+					if (rebindAction == -1)
 					{
-						if (rebindAction == -1)
-						{
-							rebindAction = action;
-						}
+						rebindAction = action;
 					}
-
-					buttonX += buttonWidth + 10f;
-
-					if (GUI.Button(new Rect(buttonX, actionY, buttonWidth, actionHeight / 2), "Reset"))
-					{
-						key.Reset();
-						config.UpdateKeybinds(keys);
-					}
-
-					actionY += actionHeight + 5f;
 				}
 
-				GUI.EndScrollView();
+				buttonX += buttonWidth + 10f;
 
-				if (rebindAction != -1)
+				if (GUI.Button(new Rect(buttonX, actionY, buttonWidth, actionHeight / 2), "Reset"))
 				{
-					Key key = GetKeyByAction(rebindAction);
-					if (key != null && Input.anyKeyDown)
+					key.Reset();
+					config.UpdateKeybinds(keys);
+				}
+
+				actionY += actionHeight + 5f;
+			}
+
+			GUI.EndScrollView();
+
+			if (rebindAction != -1)
+			{
+				Key key = GetKeyByAction(rebindAction);
+				if (key != null && Input.anyKeyDown)
+				{
+					foreach (KeyCode keyCode in keyCodes)
 					{
-						foreach (KeyCode keyCode in keyCodes)
+						if (Input.GetKey(keyCode) && keyCode != KeyCode.None)
 						{
-							if (Input.GetKey(keyCode) && keyCode != KeyCode.None)
-							{
-								key.Set(keyCode);
-								rebindAction = -1;
-								config.UpdateKeybinds(keys);
-							}
+							key.Set(keyCode);
+							rebindAction = -1;
+							config.UpdateKeybinds(keys);
 						}
 					}
 				}
 			}
-			catch (Exception ex)
-			{
-				logger.Log($"RenderRebindMenu - {ex}", Logger.LogLevel.Error);
-			}
-
 		}
 	}
 }
