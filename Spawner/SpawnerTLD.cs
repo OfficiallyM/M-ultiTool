@@ -90,15 +90,22 @@ namespace SpawnerTLD
 			// Delete mode.
 			if (settings.deleteMode)
 			{
-				if (Input.GetKeyDown(binds.GetKeyByAction((int)Keybinds.Inputs.deleteMode).key) && mainscript.M.player.seat == null)
+				try
 				{
-					Physics.Raycast(mainscript.M.player.Cam.transform.position, mainscript.M.player.Cam.transform.forward, out var raycastHit, float.PositiveInfinity, mainscript.M.player.useLayer);
-					raycastHit.transform.gameObject.GetComponent<tosaveitemscript>().removeFromMemory = true;
-					foreach (tosaveitemscript component in raycastHit.transform.root.GetComponentsInChildren<tosaveitemscript>())
+					if (Input.GetKeyDown(binds.GetKeyByAction((int)Keybinds.Inputs.deleteMode).key) && mainscript.M.player.seat == null)
 					{
-						component.removeFromMemory = true;
+						Physics.Raycast(mainscript.M.player.Cam.transform.position, mainscript.M.player.Cam.transform.forward, out var raycastHit, float.PositiveInfinity, mainscript.M.player.useLayer);
+						raycastHit.transform.gameObject.GetComponent<tosaveitemscript>().removeFromMemory = true;
+						foreach (tosaveitemscript component in raycastHit.transform.root.GetComponentsInChildren<tosaveitemscript>())
+						{
+							component.removeFromMemory = true;
+						}
+						UnityEngine.Object.Destroy(raycastHit.transform.root.gameObject);
 					}
-					UnityEngine.Object.Destroy(raycastHit.transform.root.gameObject);
+				}
+				catch (Exception ex)
+				{
+					logger.Log($"Failed to delete entity - {ex}", Logger.LogLevel.Warning);
 				}
 			}
 
