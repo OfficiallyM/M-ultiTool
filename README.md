@@ -51,3 +51,6 @@ Items tab
 Miscellaneous tab
 ![20230626221044_1](https://github.com/OfficiallyM/SpawnerTLD/assets/6341480/b77d20a1-e037-4776-98b7-1de1f3e0d753)
 
+Settings tab
+![20230626231417_1](https://github.com/OfficiallyM/SpawnerTLD/assets/6341480/1863bae9-9b9c-4a29-bfe8-339f81106f78)
+
