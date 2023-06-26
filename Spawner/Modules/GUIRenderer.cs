@@ -423,7 +423,7 @@ namespace SpawnerTLD.Modules
 						searchVehicles = vehicles.Where(v => v.name.ToLower().Contains(search.ToLower()) || v.vehicle.name.ToLower().Contains(search.ToLower())).ToList();
 
 					scrollHeight = (itemHeight + 10f) * (columnCount + 1);
-					vehicleScrollPosition = GUI.BeginScrollView(new Rect(tabX, tabY + 10f + searchHeight, tabWidth, tabHeight), vehicleScrollPosition, new Rect(tabX, tabY, tabWidth, scrollHeight), new GUIStyle(), new GUIStyle());
+					vehicleScrollPosition = GUI.BeginScrollView(new Rect(tabX, tabY + 10f + searchHeight, tabWidth, tabHeight - 10f - searchHeight), vehicleScrollPosition, new Rect(tabX, tabY, tabWidth, scrollHeight - 10f - searchHeight), new GUIStyle(), new GUIStyle());
 
 					for (int i = 0; i < searchVehicles.Count(); i++)
 					{
@@ -484,7 +484,7 @@ namespace SpawnerTLD.Modules
 					columnCount = (int)Math.Ceiling((double)items.Count / maxRowItems);
 
 					scrollHeight = (itemHeight + 10f) * (columnCount + 1);
-					itemScrollPosition = GUI.BeginScrollView(new Rect(tabX, tabY + 10f + searchHeight, tabWidth, tabHeight), itemScrollPosition, new Rect(tabX, tabY, tabWidth, scrollHeight), new GUIStyle(), new GUIStyle());
+					itemScrollPosition = GUI.BeginScrollView(new Rect(tabX, tabY + 10f + searchHeight, tabWidth, tabHeight - 10f - searchHeight), itemScrollPosition, new Rect(tabX, tabY, tabWidth, scrollHeight - 10f - searchHeight), new GUIStyle(), new GUIStyle());
 
 					for (int i = 0; i < searchItems.Count(); i++)
 					{
