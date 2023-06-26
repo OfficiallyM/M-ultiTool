@@ -12,7 +12,7 @@
 - Fuel changer with support for fuel mixes
 - Time changer
 - Plate changer
-- UFO spawner (Beta branch only)
+- UFO spawner (Beta branch, legacy UI only)
 
 ### TODO
 - [ ] Improve time changer to display what the chosen time is
