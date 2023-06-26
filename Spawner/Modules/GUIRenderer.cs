@@ -69,6 +69,8 @@ namespace SpawnerTLD.Modules
 		private GUIStyle labelStyle = new GUIStyle();
 		private GUIStyle headerStyle = new GUIStyle();
 
+		private string search = String.Empty;
+
 		// Vehicle-related variables.
 		private List<Vehicle> vehicles = new List<Vehicle>();
 		private Color color = new Color(255f / 255f, 255f / 255f, 255f / 255f);
@@ -389,6 +391,8 @@ namespace SpawnerTLD.Modules
 			float itemX = initialRowX;
 			float itemY = 0f;
 
+			float searchHeight = 20f;
+
 			int maxRowItems = Mathf.FloorToInt(tabWidth / (itemWidth + 10f));
 			int columnCount = (int)Math.Ceiling((double)vehicles.Count / maxRowItems);
 			float scrollHeight = (itemHeight + 10f) * (columnCount + 1);
@@ -407,12 +411,23 @@ namespace SpawnerTLD.Modules
 					itemX = initialRowX;
 					itemY = 0f;
 
-					scrollHeight = (itemHeight + 10f) * (columnCount + 1);
-					vehicleScrollPosition = GUI.BeginScrollView(new Rect(tabX, tabY + 10f, tabWidth, tabHeight), vehicleScrollPosition, new Rect(tabX, tabY, tabWidth, scrollHeight), new GUIStyle(), new GUIStyle());
+					// Search field.
+					GUI.Label(new Rect(tabX + 10f, tabY + 10f, 60f, searchHeight), "Search:", labelStyle);
+					search = GUI.TextField(new Rect(tabX + 70f, tabY + 10f, tabWidth * 0.25f, searchHeight), search, labelStyle);
+					if (GUI.Button(new Rect(tabX + 60f + tabWidth * 0.25f + 10f, tabY + 10f, 100f, searchHeight), "Reset"))
+						search = String.Empty;
 
-					for (int i = 0; i < vehicles.Count(); i++)
+					// Filter vehicle list by search term.
+					List<Vehicle> searchVehicles = vehicles;
+					if (search != String.Empty)
+						searchVehicles = vehicles.Where(v => v.name.ToLower().Contains(search.ToLower()) || v.vehicle.name.ToLower().Contains(search.ToLower())).ToList();
+
+					scrollHeight = (itemHeight + 10f) * (columnCount + 1);
+					vehicleScrollPosition = GUI.BeginScrollView(new Rect(tabX, tabY + 10f + searchHeight, tabWidth, tabHeight), vehicleScrollPosition, new Rect(tabX, tabY, tabWidth, scrollHeight), new GUIStyle(), new GUIStyle());
+
+					for (int i = 0; i < searchVehicles.Count(); i++)
 					{
-						Vehicle currentVehicle = vehicles[i];
+						Vehicle currentVehicle = searchVehicles[i];
 
 						itemX += itemWidth + 10f;
 
@@ -422,10 +437,9 @@ namespace SpawnerTLD.Modules
 							itemY += itemHeight + 10f;
 						}
 
-						string name = translator.T(currentVehicle.vehicle.name, currentVehicle.variant);
 						if (GUI.Button(new Rect(itemX, itemY, itemWidth, itemHeight), String.Empty) ||
 							GUI.Button(new Rect(itemX, itemY, itemWidth, thumbnailHeight), currentVehicle.thumbnail) ||
-							GUI.Button(new Rect(itemX, itemY + thumbnailHeight, itemWidth, textHeight), name))
+							GUI.Button(new Rect(itemX, itemY + thumbnailHeight, itemWidth, textHeight), currentVehicle.name))
 						{
 							utility.Spawn(new Vehicle()
 							{
@@ -454,17 +468,28 @@ namespace SpawnerTLD.Modules
 					itemX = initialRowX;
 					itemY = 0f;
 
+					// Search field.
+					GUI.Label(new Rect(tabX + 10f, tabY + 10f, 60f, searchHeight), "Search:", labelStyle);
+					search = GUI.TextField(new Rect(tabX + 70f, tabY + 10f, tabWidth * 0.25f, searchHeight), search, labelStyle);
+					if (GUI.Button(new Rect(tabX + 60f + tabWidth * 0.25f + 10f, tabY + 10f, 100f, searchHeight), "Reset"))
+						search = String.Empty;
+
+					// Filter vehicle list by search term.
+					List<Item> searchItems = items;
+					if (search != String.Empty)
+						searchItems = items.Where(v => v.item.name.ToLower().Contains(search.ToLower())).ToList();
+
 					maxRowItems = Mathf.FloorToInt(tabWidth / (itemWidth + 10f));
 
 					columnCount = (int)Math.Ceiling((double)items.Count / maxRowItems);
 
 					scrollHeight = (itemHeight + 10f) * (columnCount + 1);
-					itemScrollPosition = GUI.BeginScrollView(new Rect(tabX, tabY + 10f, tabWidth, tabHeight), itemScrollPosition, new Rect(tabX, tabY, tabWidth, scrollHeight), new GUIStyle(), new GUIStyle());
+					itemScrollPosition = GUI.BeginScrollView(new Rect(tabX, tabY + 10f + searchHeight, tabWidth, tabHeight), itemScrollPosition, new Rect(tabX, tabY, tabWidth, scrollHeight), new GUIStyle(), new GUIStyle());
 
-					for (int i = 0; i < items.Count(); i++)
+					for (int i = 0; i < searchItems.Count(); i++)
 					{
-						Item currentItem = items[i];
-						GameObject item = items[i].item;
+						Item currentItem = searchItems[i];
+						GameObject item = searchItems[i].item;
 
 						itemX += itemWidth + 10f;
 
@@ -760,6 +785,7 @@ namespace SpawnerTLD.Modules
 									vehicle = gameObject,
 									variant = i + 1,
 									thumbnail = thumbnailGenerator.GetThumbnail(gameObject, i + 2), // I have no idea why +1 produces the wrong variant in the thumbnail.
+									name = translator.T(gameObject.name, i + 1),
 								};
 								vehicles.Add(vehicle);
 							}
@@ -771,6 +797,7 @@ namespace SpawnerTLD.Modules
 								vehicle = gameObject,
 								variant = -1,
 								thumbnail = thumbnailGenerator.GetThumbnail(gameObject),
+								name = translator.T(gameObject.name, -1),
 							};
 							vehicles.Add(vehicle);
 						}
