@@ -32,6 +32,9 @@
     <Reference Include="UnityEngine.TextRenderingModule">
       <HintPath>C:/Program Files (x86)\Steam\SteamApps\common\The Long Drive\TheLongDrive_Data\Managed\UnityEngine.TextRenderingModule.dll</HintPath>
     </Reference>
+    <Reference Include="UnityEngine.UI">
+      <HintPath>C:\Program Files (x86)\Steam\steamapps\common\The Long Drive\TheLongDrive_Data\Managed\UnityEngine.UI.dll</HintPath>
+    </Reference>
   </ItemGroup>
 
   <ItemGroup>

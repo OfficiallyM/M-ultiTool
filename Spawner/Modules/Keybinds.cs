@@ -23,6 +23,9 @@ namespace SpawnerTLD.Modules
 		{
 			menu,
 			deleteMode,
+			noclipSpeedUp,
+			noclipUp,
+			noclipDown
 		}
 
 		public List<Key> keys = new List<Key>();
@@ -75,6 +78,21 @@ namespace SpawnerTLD.Modules
 				keys[1].key = KeyCode.Delete;
 				keys[1].defaultKey = KeyCode.Delete;
 				keys[1].name = "Delete mode";
+
+				// Noclip speed up.
+				keys[2].key = KeyCode.LeftShift;
+				keys[2].defaultKey = KeyCode.LeftShift;
+				keys[2].name = "Noclip speed up";
+
+				// Noclip fly up.
+				keys[3].key = KeyCode.Space;
+				keys[3].defaultKey = KeyCode.Space;
+				keys[3].name = "Noclip fly up";
+
+				// Noclip fly down.
+				keys[4].key = KeyCode.LeftControl;
+				keys[4].defaultKey = KeyCode.LeftControl;
+				keys[4].name = "Noclip fly down";
 			}
 			catch (Exception ex)
 			{
@@ -141,7 +159,7 @@ namespace SpawnerTLD.Modules
 			float actionY = y + 25f;
 			float labelWidth = 295f;
 			float buttonWidth = 80f;
-			float height = 30f + (actions.Length * actionHeight);
+			float height = 30f + (actions.Length * (actionHeight + 5f));
 
 			if (widthOverride != null)
 				width = widthOverride.Value;

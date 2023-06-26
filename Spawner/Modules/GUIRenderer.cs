@@ -88,6 +88,7 @@ namespace SpawnerTLD.Modules
 		private float selectedTime;
 		private bool isTimeLocked;
 		GameObject ufo;
+		private Quaternion localRotation;
 
 		public GUIRenderer(Logger _logger, Config _config, Translator _translator, ThumbnailGenerator _thumbnailGenerator, Keybinds _binds, Utility _utility)
 		{
@@ -501,7 +502,7 @@ namespace SpawnerTLD.Modules
 					float miscWidth = 250f;
 					float labelWidth = tabWidth - 20f;
 
-					int toggleCount = 2;
+					int toggleCount = 3;
 					float toggleWidth = (buttonWidth + 10f) * toggleCount;
 
 					float toggleX = miscX;
@@ -520,6 +521,38 @@ namespace SpawnerTLD.Modules
 					if (GUI.Button(new Rect(toggleX, miscY, buttonWidth, buttonHeight), (settings.godMode ? "<color=#0F0>God mode</color>" : "<color=#F00>God mode</color>")))
 					{
 						settings.godMode = !settings.godMode;
+						mainscript.M.ChGodMode(settings.godMode);
+					}
+					toggleX += buttonWidth + 10f;
+
+					// Noclip toggle.
+					if (GUI.Button(new Rect(toggleX, miscY, buttonWidth, buttonHeight), (settings.noclip ? "<color=#0F0>Noclip</color>" : "<color=#F00>Noclip</color>")))
+					{
+						settings.noclip = !settings.noclip;
+
+						if (settings.noclip)
+						{
+							Noclip noclip = mainscript.M.player.gameObject.AddComponent<Noclip>();
+							noclip.constructor(binds, logger);
+							localRotation = mainscript.M.player.transform.localRotation;
+							mainscript.M.player.Th.localEulerAngles = new Vector3(0f, 0f, 0f);
+							settings.godMode = true;
+						}
+						else
+						{
+							Noclip noclip = mainscript.M.player.gameObject.GetComponent<Noclip>();
+							if (noclip != null)
+							{
+								UnityEngine.Object.Destroy(noclip);
+
+								// Resetting localRotation stops the player from flying infinitely
+								// upwards when coming out of noclip.
+								// I have no idea why, it just works.
+								mainscript.M.player.transform.localRotation = localRotation;
+							}
+
+							settings.godMode = false;
+						}
 						mainscript.M.ChGodMode(settings.godMode);
 					}
 					toggleX += buttonWidth + 10f;

@@ -38,6 +38,13 @@ namespace SpawnerTLD.Core
 			get { return s_godMode; }
 			set { s_godMode = value; }
 		}
+
+		public static bool s_noclip = false;
+		public bool noclip
+		{
+			get { return s_noclip; }
+			set { s_noclip = value; }
+		}
 	}
 
 	[DataContract]

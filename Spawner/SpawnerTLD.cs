@@ -87,6 +87,7 @@ namespace SpawnerTLD
 
 			renderer.Update();
 
+			// Delete mode.
 			if (settings.deleteMode)
 			{
 				if (Input.GetKeyDown(binds.GetKeyByAction((int)Keybinds.Inputs.deleteMode).key) && mainscript.M.player.seat == null)
@@ -100,6 +101,11 @@ namespace SpawnerTLD
 					UnityEngine.Object.Destroy(raycastHit.transform.root.gameObject);
 				}
 			}
+
+			// Fake the player being on a ladder to remove the gravity during noclip.
+			// This is needed because setting useGravity directly on the player RigidBody
+			// gets enabled again immediately by the fpscontroller.
+			mainscript.M.player.ladderV = settings.noclip ? 1 : 0;
 		}
 	}
 }
