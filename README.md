@@ -23,7 +23,8 @@
 - [x] Make delete key rebindable
 - [x] Add godmode toggle
 - [x] Add noclip toggle
-- [ ] Add item search/filtering
+- [x] Add item search/filtering
+- [ ] Add item categories
 - [ ] Fix UFO not spawning on main branch
 
 ## Contributors
