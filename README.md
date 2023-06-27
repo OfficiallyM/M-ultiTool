@@ -12,7 +12,7 @@
 - Fuel changer with support for fuel mixes
 - Time changer
 - Plate changer
-- UFO spawner (Beta branch, legacy UI only)
+- UFO spawner
 
 ### TODO
 - [ ] Improve time changer to display what the chosen time is
@@ -25,7 +25,7 @@
 - [x] Add noclip toggle
 - [x] Add item search/filtering
 - [ ] Add item categories
-- [ ] Fix UFO not spawning on main branch
+- [x] Fix UFO not spawning on main branch
 
 ## Contributors
 - RUNDEN: Thumbnail generation
@@ -49,7 +49,7 @@ Items tab
 ![20230626221042_1](https://github.com/OfficiallyM/SpawnerTLD/assets/6341480/3dcae739-b2ed-47bb-9c3b-8dd131368fbe)
 
 Miscellaneous tab
-![20230626221044_1](https://github.com/OfficiallyM/SpawnerTLD/assets/6341480/b77d20a1-e037-4776-98b7-1de1f3e0d753)
+![20230627221624_1](https://github.com/OfficiallyM/SpawnerTLD/assets/6341480/06b82b39-21c4-4819-b750-fdf1542f1f60)
 
 Settings tab
 ![20230626231417_1](https://github.com/OfficiallyM/SpawnerTLD/assets/6341480/1863bae9-9b9c-4a29-bfe8-339f81106f78)
