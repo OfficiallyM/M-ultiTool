@@ -13,6 +13,8 @@
 - Time changer
 - Plate changer
 - UFO spawner
+- Godmode toggle
+- Noclip toggle
 
 ### TODO
 - [ ] Improve time changer to display what the chosen time is
