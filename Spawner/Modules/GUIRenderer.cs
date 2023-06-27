@@ -92,6 +92,8 @@ namespace SpawnerTLD.Modules
 		GameObject ufo;
 		private Quaternion localRotation;
 
+		private temporaryTurnOffGeneration temp;
+
 		public GUIRenderer(Logger _logger, Config _config, Translator _translator, ThumbnailGenerator _thumbnailGenerator, Keybinds _binds, Utility _utility)
 		{
 			logger = _logger;
@@ -229,6 +231,9 @@ namespace SpawnerTLD.Modules
 
 			// Load keybinds.
 			binds.OnLoad();
+
+			// Find instance of temporaryTurnOffGeneration to spawn UFO.
+			temp = mainscript.M.menu.GetComponentInChildren<temporaryTurnOffGeneration>();
 		}
 
 		public void Update()
@@ -604,6 +609,38 @@ namespace SpawnerTLD.Modules
 						mainscript.M.napszak.enabled = !isTimeLocked;
 					}
 
+					miscY += buttonHeight + 10f;
+
+					GUI.Label(new Rect(miscX, miscY, labelWidth, buttonHeight), "UFO spawning (doesn't save):", labelStyle);
+
+					if (GUI.Button(new Rect(miscX + miscWidth + 10f, miscY, buttonWidth, buttonHeight), "Spawn"))
+					{
+						try
+						{
+							// Destory existing UFO.
+							if (ufo != null)
+								UnityEngine.Object.Destroy(ufo);
+
+							ufo = UnityEngine.Object.Instantiate(temp.FEDOSPAWN.prefab, mainscript.M.player.lookPoint + Vector3.up * 0.75f, Quaternion.FromToRotation(Vector3.forward, -mainscript.M.player.transform.right));
+							fedoscript ufoScript = ufo.GetComponent<fedoscript>();
+							ufoScript.ai = false;
+							ufoScript.followRoad = false;
+						}
+						catch (Exception ex)
+						{
+							logger.Log($"Failed to spawn UFO - {ex}", Logger.LogLevel.Error);
+						}
+					}
+
+					if (GUI.Button(new Rect(miscX + miscWidth + buttonWidth + 20f, miscY, buttonWidth, buttonHeight), "Delete"))
+					{
+						if (ufo != null)
+						{
+							fedoscript ufoScript = ufo.GetComponent<fedoscript>();
+							if (!ufoScript.seat.inUse)
+								UnityEngine.Object.Destroy(ufo);
+						}
+					}
 					break;
 			}
 		}
@@ -1104,18 +1141,14 @@ namespace SpawnerTLD.Modules
 			{
 				try
 				{
-					temporaryTurnOffGeneration temp = mainscript.M.menu.Kaposztaleves.GetComponentInParent<temporaryTurnOffGeneration>();
-					if (temp != null)
-					{
-						// Destory existing UFO.
-						if (ufo != null)
-							UnityEngine.Object.Destroy(ufo);
+					// Destroy existing UFO.
+					if (ufo != null)
+						UnityEngine.Object.Destroy(ufo);
 
-						ufo = UnityEngine.Object.Instantiate(temp.FEDOSPAWN.prefab, mainscript.M.player.lookPoint + Vector3.up * 0.75f, Quaternion.FromToRotation(Vector3.forward, -mainscript.M.player.transform.right));
-						fedoscript ufoScript = ufo.GetComponent<fedoscript>();
-						ufoScript.ai = false;
-						ufoScript.followRoad = false;
-					}
+					ufo = UnityEngine.Object.Instantiate(temp.FEDOSPAWN.prefab, mainscript.M.player.lookPoint + Vector3.up * 0.75f, Quaternion.FromToRotation(Vector3.forward, -mainscript.M.player.transform.right));
+					fedoscript ufoScript = ufo.GetComponent<fedoscript>();
+					ufoScript.ai = false;
+					ufoScript.followRoad = false;
 				}
 				catch (Exception ex)
 				{
