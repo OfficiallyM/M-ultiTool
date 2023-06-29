@@ -30,6 +30,47 @@ namespace SpawnerTLD.Modules
 		}
 
 		/// <summary>
+		/// Get the category for a given item.
+		/// </summary>
+		/// <param name="gameObject">The item to get the category for</param>
+		/// <param name="categories">The categories to sort into</param>
+		/// <returns>The category index</returns>
+		public int GetCategory(GameObject gameObject, Dictionary<string, Type> categories)
+		{
+			// Get all components, add types to list.
+			var components = gameObject.GetComponents<MonoBehaviour>();
+			Dictionary<Type, MonoBehaviour> types = new Dictionary<Type, MonoBehaviour>();
+			foreach (var component in components)
+			{
+				logger.Log($"Item: {gameObject.name} - Component: {component.GetType()}", Logger.LogLevel.Debug);
+				if (!types.ContainsKey(component.GetType()))
+					types.Add(component.GetType(), component);
+			}
+
+			// Convert keys to list to get the index later.
+			List<string> names = categories.Keys.ToList();
+
+			// Categories will be located in order.
+			foreach (KeyValuePair<string, Type> category in categories)
+			{
+				if (types.ContainsKey(category.Value))
+				{
+					MonoBehaviour component = types[category.Value];
+					if (category.Value == typeof(pickupable))
+					{
+						pickupable pickupable = component as pickupable;
+						if (pickupable.usable != null)
+							return names.IndexOf(category.Key);
+					}
+					else
+						return names.IndexOf(category.Key);
+				}
+			}
+
+			return names.IndexOf("Other");
+		}
+
+		/// <summary>
 		/// Wrapper around the default spawn function to handle condition and fuel for items.
 		/// </summary>
 		/// <param name="item">The object to spawn</param>

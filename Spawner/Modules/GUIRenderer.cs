@@ -69,6 +69,7 @@ namespace SpawnerTLD.Modules
 		private GUIStyle labelStyle = new GUIStyle();
 		private GUIStyle headerStyle = new GUIStyle();
 
+		// General variables.
 		private string search = String.Empty;
 
 		// Vehicle-related variables.
@@ -84,6 +85,24 @@ namespace SpawnerTLD.Modules
 		// Item menu variables.
 		private Vector2 itemsScrollPosition;
 		private List<Item> items = new List<Item>();
+
+		// Filtering.
+		private Dictionary<string, Type> categories = new Dictionary<string, Type>()
+		{
+			{ "Vehicles", typeof(carscript) },
+			{ "Tanks", typeof(tankscript) },
+			{ "Vehicle parts", typeof(partscript) },
+			{ "Guns", typeof(weaponscript) },
+			{ "Melee weapons", typeof(meleeweaponscript) },
+			{ "Refillables", typeof(ammoscript) },
+			{ "Food", typeof(ediblescript) },
+			{ "Wearables", typeof(wearable) },
+			{ "Lights", typeof(flashlightscript) },
+			{ "Usables", typeof(pickupable) },
+			{ "Other", typeof(MonoBehaviour) },
+		};
+		private bool filterShow = false;
+		private List<int> filters = new List<int>();
 
 		// Settings.
 		private List<QuickSpawn> quickSpawns = new List<QuickSpawn>();
@@ -207,7 +226,7 @@ namespace SpawnerTLD.Modules
 				// Remove vehicles and trailers from items array.
 				if (!utility.IsVehicleOrTrailer(item) && item.name != "ErrorPrefab")
 				{
-					items.Add(new Item() { item = item, thumbnail = thumbnailGenerator.GetThumbnail(item) });
+					items.Add(new Item() { item = item, thumbnail = thumbnailGenerator.GetThumbnail(item), category = utility.GetCategory(item, categories) });
 				}
 			}
 
@@ -222,7 +241,6 @@ namespace SpawnerTLD.Modules
 			}
 
 			// Load legacy UI config.
-
 			bool? configLegacyMode = config.GetLegacyMode();
 			if (configLegacyMode.HasValue)
 				legacyUI = configLegacyMode.Value;
@@ -479,10 +497,13 @@ namespace SpawnerTLD.Modules
 					if (GUI.Button(new Rect(tabX + 60f + tabWidth * 0.25f + 10f, tabY + 10f, 100f, searchHeight), "Reset"))
 						search = String.Empty;
 
-					// Filter vehicle list by search term.
+					// Filter item list by search term.
 					List<Item> searchItems = items;
 					if (search != String.Empty)
 						searchItems = items.Where(v => v.item.name.ToLower().Contains(search.ToLower())).ToList();
+
+					if (filters.Count > 0)
+						searchItems = searchItems.Where(v => filters.Contains(v.category)).ToList();
 
 					maxRowItems = Mathf.FloorToInt(tabWidth / (itemWidth + 10f));
 
@@ -491,6 +512,7 @@ namespace SpawnerTLD.Modules
 					scrollHeight = (itemHeight + 10f) * (columnCount + 1);
 					itemScrollPosition = GUI.BeginScrollView(new Rect(tabX, tabY + 10f + searchHeight, tabWidth, tabHeight - 10f - searchHeight), itemScrollPosition, new Rect(tabX, tabY, tabWidth, scrollHeight - 10f - searchHeight), new GUIStyle(), new GUIStyle());
 
+					GUI.enabled = !filterShow;
 					for (int i = 0; i < searchItems.Count(); i++)
 					{
 						Item currentItem = searchItems[i];
@@ -519,7 +541,43 @@ namespace SpawnerTLD.Modules
 							});
 						}
 					}
+
+					GUI.enabled = true;
+
 					GUI.EndScrollView();
+
+					// Filters need rendering last to ensure they show on top of the item grid.
+					float filterWidth = 200f;
+					float filterY = tabY + 10f;
+					float filterX = tabX + tabWidth - filterWidth - 10f;
+					if (GUI.Button(new Rect(filterX, filterY, filterWidth, searchHeight), "Filters"))
+					{
+						filterShow = !filterShow;
+					}
+
+					if (filterShow)
+					{
+						filterY += searchHeight;
+						GUI.Box(new Rect(filterX, filterY, filterWidth, (searchHeight + 2f ) * categories.Count), String.Empty);
+						for (int i = 0; i < categories.Count; i++)
+						{
+							string name = categories.ElementAt(i).Key;
+							if (GUI.Button(new Rect(filterX, filterY, filterWidth, searchHeight), filters.Contains(i) ? $"<color=#0F0>{name}</color>" : name))
+							{
+								if (filters.Contains(i))
+									filters.Remove(i);
+								else
+									filters.Add(i);
+
+								// Reset scroll position to avoid the items menu looking empty
+								// but actually being scrolled past the end of the list.
+								itemScrollPosition = new Vector2(0, 0);
+							}
+
+							filterY += searchHeight + 2f;
+						}
+					}
+
 					break;
 
 				// Miscellaneous tab.

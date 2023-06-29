@@ -11,6 +11,7 @@ namespace SpawnerTLD.Core
 	{
 		public GameObject item;
 		public Texture2D thumbnail;
+		public int category;
 		public int conditionInt = 0;
 		public int fuelMixes = 1;
 		public List<float> fuelValues = new List<float> { -1f };
