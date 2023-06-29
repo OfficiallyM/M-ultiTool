@@ -26,7 +26,7 @@
 - [x] Add godmode toggle
 - [x] Add noclip toggle
 - [x] Add item search/filtering
-- [ ] Add item categories
+- [x] Add item categories
 - [x] Fix UFO not spawning on main branch
 
 ## Contributors
@@ -48,7 +48,10 @@ Vehicles tab
 ![20230626221039_1](https://github.com/OfficiallyM/SpawnerTLD/assets/6341480/c2081094-effc-4787-bc9e-1446423e1ee0)
 
 Items tab
-![20230626221042_1](https://github.com/OfficiallyM/SpawnerTLD/assets/6341480/3dcae739-b2ed-47bb-9c3b-8dd131368fbe)
+![20230629215234_1](https://github.com/OfficiallyM/SpawnerTLD/assets/6341480/9dfeac2c-0a45-452a-b1b4-041748d2571f)
+
+Filters
+![20230629215140_1](https://github.com/OfficiallyM/SpawnerTLD/assets/6341480/676b3480-2864-459d-8a55-e7f2d9659fa6)
 
 Miscellaneous tab
 ![20230627221624_1](https://github.com/OfficiallyM/SpawnerTLD/assets/6341480/06b82b39-21c4-4819-b750-fdf1542f1f60)
