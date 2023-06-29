@@ -42,7 +42,6 @@ namespace SpawnerTLD.Modules
 			Dictionary<Type, MonoBehaviour> types = new Dictionary<Type, MonoBehaviour>();
 			foreach (var component in components)
 			{
-				logger.Log($"Item: {gameObject.name} - Component: {component.GetType()}", Logger.LogLevel.Debug);
 				if (!types.ContainsKey(component.GetType()))
 					types.Add(component.GetType(), component);
 			}
