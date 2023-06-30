@@ -910,6 +910,15 @@ namespace SpawnerTLD.Modules
 
 					configY += configHeight + 10f;
 
+					if (GUI.Button(new Rect(configX, configY, 200f, configHeight), "Randomise colour"))
+					{
+						color.r = UnityEngine.Random.Range(0f, 255f) / 255f;
+						color.g = UnityEngine.Random.Range(0f, 255f) / 255f;
+						color.b = UnityEngine.Random.Range(0f, 255f) / 255f;
+					}
+
+					configY += configHeight + 10f;
+
 					// Colour preview.
 					GUIStyle defaultStyle = GUI.skin.button;
 					GUIStyle previewStyle = new GUIStyle(defaultStyle);
