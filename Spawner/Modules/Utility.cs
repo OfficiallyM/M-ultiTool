@@ -145,12 +145,13 @@ namespace SpawnerTLD.Modules
 		public void Spawn(Vehicle vehicle)
 		{
 			int selectedCondition = vehicle.conditionInt;
+			bool fullRandom = false;
 			if (selectedCondition == -1)
 			{
 				// Randomise vehicle condition.
 				int maxCondition = (int)Enum.GetValues(typeof(Item.Condition)).Cast<Item.Condition>().Max();
-				vehicle.vehicle.GetComponent<partconditionscript>().StartFullRandom(0, maxCondition);
 				selectedCondition = UnityEngine.Random.Range(0, maxCondition);
+				fullRandom = true;
 			}
 
 			// Set vehicle license plate text.
@@ -177,7 +178,7 @@ namespace SpawnerTLD.Modules
 			if (fuelTank == null)
 			{
 				// Vehicle doesn't have a fuel tank, just spawn the vehicle and return.
-				mainscript.M.Spawn(vehicle.vehicle, vehicle.color, selectedCondition, vehicle.variant);
+				Spawn(vehicle.vehicle, vehicle.color, fullRandom, selectedCondition, vehicle.variant);
 				return;
 			}
 
@@ -186,7 +187,7 @@ namespace SpawnerTLD.Modules
 			{
 				if (vehicle.fuelTypeInts[0] == -1 && vehicle.fuelValues[0] == -1f)
 				{
-					mainscript.M.Spawn(vehicle.vehicle, vehicle.color, selectedCondition, vehicle.variant);
+					Spawn(vehicle.vehicle, vehicle.color, fullRandom, selectedCondition, vehicle.variant);
 					return;
 				}
 			}
@@ -217,7 +218,89 @@ namespace SpawnerTLD.Modules
 					fuelTank.F.ChangeOne(vehicle.fuelValues[i], (mainscript.fluidenum)vehicle.fuelTypeInts[i]);
 				}
 			}
-			mainscript.M.Spawn(vehicle.vehicle, vehicle.color, selectedCondition, vehicle.variant);
+			Spawn(vehicle.vehicle, vehicle.color, fullRandom, selectedCondition, vehicle.variant);
+		}
+
+		/// <summary>
+		/// Based off mainscript Spawn method
+		/// </summary>
+		public void Spawn(GameObject gameObject, Color color, bool fullRandom, int condition, int variant)
+		{
+			try
+			{
+				GameObject spawned = UnityEngine.Object.Instantiate(gameObject, mainscript.M.player.lookPoint + Vector3.up * 0.75f, Quaternion.FromToRotation(Vector3.forward, -mainscript.M.player.transform.right));
+				partconditionscript component1 = spawned.GetComponent<partconditionscript>();
+				if (component1 == null && spawned.GetComponent<childunparent>() != null)
+					component1 = spawned.GetComponent<childunparent>().g.GetComponent<partconditionscript>();
+				if (component1 != null)
+				{
+					if (variant != -1)
+					{
+						randomTypeSelector component2 = component1.GetComponent<randomTypeSelector>();
+						if (component2 != null)
+						{
+							component2.forceStart = false;
+							component2.rtipus = variant;
+							component2.Refresh();
+						}
+					}
+					else
+					{
+						if (fullRandom)
+						{
+							RandomiseCondition(component1);
+						}
+						else
+						{
+							component1.StartPaint(condition, color);
+						}
+					}
+
+					Paint(color, component1);
+				}
+				mainscript.M.PostSpawn(spawned);
+			}
+			catch (Exception ex)
+			{
+				logger.Log($"Failed to spawn {gameObject.name} - {ex}", Logger.LogLevel.Error);
+			}
+		}
+
+		/// <summary>
+		/// Paint all child parts of a vehicle.
+		/// </summary>
+		/// <param name="c">The colour to paint</param>
+		/// <param name="partconditionscript">The root vehicle partconditionscript</param>
+		private void Paint(Color c, partconditionscript partconditionscript)
+		{
+			partconditionscript.Paint(c);
+			foreach (partconditionscript child in partconditionscript.childs)
+			{
+				if (!child.isChild && ! child.loaded)
+					Paint(c, child);
+			}
+		}
+
+		private void RandomiseCondition(partconditionscript partconditionscript)
+		{
+			List<partconditionscript> children = new List<partconditionscript>();
+			FindPartChildren(partconditionscript, ref children);
+
+			foreach (partconditionscript child in children)
+			{
+				logger.Log($"{child.name}", Logger.LogLevel.Debug);
+				child.RandomState(0, 4);
+				child.Refresh();
+			}
+		}
+
+		private void FindPartChildren(partconditionscript root, ref List<partconditionscript> allChildren)
+		{
+			foreach (partconditionscript child in root.childs)
+			{
+				allChildren.Add(child);
+				FindPartChildren(child, ref allChildren);
+			}
 		}
 	}
 }
