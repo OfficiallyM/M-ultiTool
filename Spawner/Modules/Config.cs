@@ -79,6 +79,17 @@ namespace SpawnerTLD.Modules
 		}
 
 		/// <summary>
+		/// Update scrollWidth in config
+		/// </summary>
+		/// <param name="width">The new scrollbar width</param>
+		public void UpdateScrollWidth(float width)
+		{
+			config.scrollWidth = width;
+
+			UpdateConfig();
+		}
+
+		/// <summary>
 		/// Get keybinds from the config file
 		/// </summary>
 		/// <returns>A list of keys</returns>
@@ -97,7 +108,7 @@ namespace SpawnerTLD.Modules
 		/// <summary>
 		/// Get legacy mode status from config
 		/// </summary>
-		/// <returns></returns>
+		/// <returns>Boolean legacy mode value</returns>
 		public bool? GetLegacyMode()
 		{
 			loadFromConfigFile();
@@ -105,6 +116,22 @@ namespace SpawnerTLD.Modules
 			if (config != null)
 			{
 				return config.legacyUI;
+			}
+
+			return null;
+		}
+
+		/// <summary>
+		/// Get scrollbar width from config
+		/// </summary>
+		/// <returns>The scrollbar width</returns>
+		public float? GetScrollWidth()
+		{
+			loadFromConfigFile();
+
+			if (config != null && config.scrollWidth > 0)
+			{
+				return config.scrollWidth;
 			}
 
 			return null;

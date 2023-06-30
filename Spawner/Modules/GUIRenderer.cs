@@ -71,6 +71,7 @@ namespace SpawnerTLD.Modules
 		// Styling.
 		private GUIStyle labelStyle = new GUIStyle();
 		private GUIStyle headerStyle = new GUIStyle();
+		private float scrollWidth = 10f;
 
 		// General variables.
 		private string search = String.Empty;
@@ -113,6 +114,7 @@ namespace SpawnerTLD.Modules
 		private bool isTimeLocked;
 		GameObject ufo;
 		private Quaternion localRotation;
+		private float settingsScrollWidth;
 
 		private temporaryTurnOffGeneration temp;
 
@@ -133,8 +135,8 @@ namespace SpawnerTLD.Modules
 				return;
 
 			// Override scrollbar width;
-			GUI.skin.verticalScrollbar.fixedWidth = 5f;
-			GUI.skin.verticalScrollbarThumb.fixedWidth = 5f;
+			GUI.skin.verticalScrollbar.fixedWidth = scrollWidth;
+			GUI.skin.verticalScrollbarThumb.fixedWidth = scrollWidth;
 
 			// Render the legacy UI if enabled.
 			if (legacyUI)
@@ -263,6 +265,14 @@ namespace SpawnerTLD.Modules
 			else
 				config.UpdateLegacyMode(legacyUI);
 
+			float? configScrollWidth = config.GetScrollWidth();
+			if (configScrollWidth.HasValue)
+				scrollWidth = configScrollWidth.Value;
+			else
+				config.UpdateScrollWidth(scrollWidth);
+
+			settingsScrollWidth = scrollWidth;
+
 			// Load keybinds.
 			binds.OnLoad();
 
@@ -351,6 +361,46 @@ namespace SpawnerTLD.Modules
 				catch (Exception ex)
 				{
 					logger.Log($"Error building settings rebind menu - {ex}", Logger.LogLevel.Error);
+				}
+
+				// Other settings.
+				float settingsX = x + (width * 0.25f) + 20f;
+				float settingsY = y + 50f;
+				float settingsWidth = width * 0.75f - 30f;
+				float settingsHeight = height - 65f;
+				GUI.Box(new Rect(settingsX, settingsY, settingsWidth, settingsHeight), "Settings");
+
+				settingsX += 10f;
+				settingsY += 50f;
+				float configHeight = 20f;
+
+				float buttonWidth = 200f;
+
+				settingsWidth -= 20f;
+
+				GUI.Label(new Rect(settingsX, settingsY, settingsWidth, configHeight), "Scroll bar width", labelStyle);
+				settingsY += configHeight;
+				float tempScrollWidth = GUI.HorizontalSlider(new Rect(settingsX, settingsY, settingsWidth, configHeight), settingsScrollWidth, 5f, 30f);
+				settingsScrollWidth = Mathf.Round(tempScrollWidth);
+				settingsY += configHeight;
+
+				// GUI.VerticalScrollbar doesn't work properly so just use a button as the preview.
+				GUI.Button(new Rect(settingsX, settingsY, settingsScrollWidth, configHeight), String.Empty);
+				GUI.Label(new Rect(settingsX + settingsScrollWidth + 10f, settingsY, settingsWidth - settingsScrollWidth - 10f, configHeight), settingsScrollWidth.ToString());
+
+				settingsY += configHeight;
+
+				if (GUI.Button(new Rect(settingsX, settingsY, buttonWidth, configHeight), "Apply"))
+				{
+					scrollWidth = settingsScrollWidth;
+					config.UpdateScrollWidth(scrollWidth);
+				}
+
+				if (GUI.Button(new Rect(settingsX + buttonWidth + 10f, settingsY, buttonWidth, configHeight), "Reset"))
+				{
+					scrollWidth = 10f;
+					settingsScrollWidth = scrollWidth;
+					config.UpdateScrollWidth(scrollWidth);
 				}
 			}
 			else
@@ -462,7 +512,7 @@ namespace SpawnerTLD.Modules
 						searchVehicles = vehicles.Where(v => v.name.ToLower().Contains(search.ToLower()) || v.vehicle.name.ToLower().Contains(search.ToLower())).ToList();
 
 					scrollHeight = (itemHeight + 10f) * (columnCount + 1);
-					vehicleScrollPosition = GUI.BeginScrollView(new Rect(tabX, tabY + 10f + searchHeight, tabWidth - 2f, tabHeight - 10f - searchHeight), vehicleScrollPosition, new Rect(tabX, tabY, tabWidth - 2f, scrollHeight - 10f - searchHeight), new GUIStyle(), GUI.skin.verticalScrollbar);
+					vehicleScrollPosition = GUI.BeginScrollView(new Rect(tabX, tabY + 10f + searchHeight, tabWidth, tabHeight - 10f - searchHeight), vehicleScrollPosition, new Rect(tabX, tabY, tabWidth, scrollHeight - 10f - searchHeight), new GUIStyle(), GUI.skin.verticalScrollbar);
 
 					for (int i = 0; i < searchVehicles.Count(); i++)
 					{
@@ -526,7 +576,7 @@ namespace SpawnerTLD.Modules
 					columnCount = (int)Math.Ceiling((double)items.Count / maxRowItems);
 
 					scrollHeight = (itemHeight + 10f) * (columnCount + 1);
-					itemScrollPosition = GUI.BeginScrollView(new Rect(tabX, tabY + 10f + searchHeight, tabWidth - 2f, tabHeight - 10f - searchHeight), itemScrollPosition, new Rect(tabX, tabY, tabWidth - 2f, scrollHeight - 10f - searchHeight), new GUIStyle(), GUI.skin.verticalScrollbar);
+					itemScrollPosition = GUI.BeginScrollView(new Rect(tabX, tabY + 10f + searchHeight, tabWidth, tabHeight - 10f - searchHeight), itemScrollPosition, new Rect(tabX, tabY, tabWidth, scrollHeight - 10f - searchHeight), new GUIStyle(), GUI.skin.verticalScrollbar);
 
 					GUI.enabled = !filterShow;
 					for (int i = 0; i < searchItems.Count(); i++)

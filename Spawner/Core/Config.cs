@@ -52,5 +52,6 @@ namespace SpawnerTLD.Core
 	{
 		[DataMember] public List<Key> keybinds { get; set; }
 		[DataMember] public bool legacyUI { get; set; }
+		[DataMember] public float scrollWidth { get; set; }
 	}
 }
