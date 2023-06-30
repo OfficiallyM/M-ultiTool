@@ -29,6 +29,9 @@ namespace SpawnerTLD.Modules
 		private bool legacyUI = false;
 		private bool settingsShow = false;
 
+		private int resolutionX;
+		private int resolutionY;
+
 		private float mainMenuWidth;
 		private float mainMenuHeight;
 		private float mainMenuX;
@@ -194,14 +197,17 @@ namespace SpawnerTLD.Modules
 			headerStyle.fontSize = 16;
 			headerStyle.normal.textColor = Color.white;
 
+			resolutionX = mainscript.M.SettingObj.S.IResolutionX;
+			resolutionY = mainscript.M.SettingObj.S.IResolutionY;
+
 			// Set main menu position here so other menus can be based around it.
-			legacyMainMenuWidth = Screen.currentResolution.width / 7f;
-			legacyMainMenuHeight = Screen.currentResolution.height / 1.2f;
-			legacyMainMenuX = Screen.currentResolution.width / 2.5f - legacyMainMenuWidth;
+			legacyMainMenuWidth = resolutionX / 7f;
+			legacyMainMenuHeight = resolutionY / 1.2f;
+			legacyMainMenuX = resolutionX / 2.5f - legacyMainMenuWidth;
 			legacyMainMenuY = 75f;
 
-			mainMenuWidth = Screen.currentResolution.width - 80f;
-			mainMenuHeight = Screen.currentResolution.height - 80f;
+			mainMenuWidth = resolutionX - 80f;
+			mainMenuHeight = resolutionY - 80f;
 			mainMenuX = 40f;
 			mainMenuY = 40f;
 
@@ -209,8 +215,8 @@ namespace SpawnerTLD.Modules
 			// placed under it.
 			legacyVehicleMenuX = legacyMainMenuX + legacyMainMenuWidth + 15f;
 			legacyVehicleMenuY = legacyMainMenuY;
-			legacyVehicleMenuWidth = Screen.currentResolution.width / 2f;
-			legacyVehicleMenuHeight = Screen.currentResolution.height / 4.25f;
+			legacyVehicleMenuWidth = resolutionX / 2f;
+			legacyVehicleMenuHeight = resolutionY / 4.25f;
 
 
 			// Add available quickspawn items.
@@ -282,12 +288,12 @@ namespace SpawnerTLD.Modules
 		/// </summary>
 		private void ToggleVisibility()
 		{
-			if (GUI.Button(new Rect(Screen.currentResolution.width - 350f, 30f, 300f, 20f), "Switch to Legacy UI"))
+			if (GUI.Button(new Rect(resolutionX - 350f, 30f, 300f, 20f), "Switch to Legacy UI"))
 			{
 				legacyUI = true;
 				config.UpdateLegacyMode(legacyUI);
 			}
-			binds.RenderRebindMenu("Spawner menu key", new int[] { (int)Keybinds.Inputs.menu }, Screen.currentResolution.width - 350f, 50f);
+			binds.RenderRebindMenu("Spawner menu key", new int[] { (int)Keybinds.Inputs.menu }, resolutionX - 350f, 50f);
 		}
 
 		/// <summary>
@@ -1225,7 +1231,7 @@ namespace SpawnerTLD.Modules
 		{
 			float x = legacyMainMenuX + legacyMainMenuWidth + 15f;
 			float y = legacyMainMenuY;
-			float width = Screen.currentResolution.width / 1.75f;
+			float width = resolutionX / 1.75f;
 			float height = legacyMainMenuHeight;
 
 			GUI.Box(new Rect(x, y, width, height), "<color=#FFF><size=16><b>Items</b></size></color>");
