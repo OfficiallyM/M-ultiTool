@@ -229,10 +229,17 @@ namespace SpawnerTLD.Modules
 			thumbnailGenerator.PrepareCache();
 			foreach (GameObject item in itemdatabase.d.items)
 			{
-				// Remove vehicles and trailers from items array.
-				if (!utility.IsVehicleOrTrailer(item) && item.name != "ErrorPrefab")
+				try
 				{
-					items.Add(new Item() { item = item, thumbnail = thumbnailGenerator.GetThumbnail(item), category = utility.GetCategory(item, categories) });
+					// Remove vehicles and trailers from items array.
+					if (!utility.IsVehicleOrTrailer(item) && item.name != "ErrorPrefab")
+					{
+						items.Add(new Item() { item = item, thumbnail = thumbnailGenerator.GetThumbnail(item), category = utility.GetCategory(item, categories) });
+					}
+				}
+				catch (Exception ex)
+				{
+					logger.Log($"Failed to load item {item.name} - {ex}", Logger.LogLevel.Error);
 				}
 			}
 
