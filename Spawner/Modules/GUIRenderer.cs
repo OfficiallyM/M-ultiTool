@@ -709,6 +709,12 @@ namespace SpawnerTLD.Modules
 							localRotation = mainscript.M.player.transform.localRotation;
 							mainscript.M.player.Th.localEulerAngles = new Vector3(0f, 0f, 0f);
 							settings.godMode = true;
+
+							// Disable colliders.
+							foreach (Collider collider in mainscript.M.player.C)
+							{
+								collider.enabled = false;
+							}
 						}
 						else
 						{
@@ -721,6 +727,12 @@ namespace SpawnerTLD.Modules
 								// upwards when coming out of noclip.
 								// I have no idea why, it just works.
 								mainscript.M.player.transform.localRotation = localRotation;
+
+								// Re-enable colliders.
+								foreach (Collider collider in mainscript.M.player.C)
+								{
+									collider.enabled = true;
+								}
 							}
 
 							if (noclipGodmodeDisable)
