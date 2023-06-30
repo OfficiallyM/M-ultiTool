@@ -86,7 +86,7 @@ namespace SpawnerTLD.Modules
 		/// <returns>Texture2D thumbnail of the item</returns>
 		public Texture2D GetThumbnail(GameObject item, int? variant = null)
 		{
-			string fileName = item.name.ToUpper();
+			string fileName = item.name.ToUpper().Replace("/", "or");
 			if (variant != null)
 			{
 				fileName += $"-{variant.Value - 1}";
@@ -232,12 +232,12 @@ namespace SpawnerTLD.Modules
 			UnityEngine.Object.Destroy(gameObject2);
 
 			// Write texture to cache.
-			string fileName = item.name.ToUpper();
+			string fileName = item.name.ToUpper().Replace("/", "or");
 			if (variant != null)
 			{
 				fileName += $"-{variant.Value - 1}";
 			}
-			fileName += ".png"; 
+			fileName += ".png";
 			File.WriteAllBytes(Path.Combine(cacheDir, fileName), texture2D.EncodeToPNG());
 
 			return texture2D;
