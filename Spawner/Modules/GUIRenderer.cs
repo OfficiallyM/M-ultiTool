@@ -115,6 +115,7 @@ namespace SpawnerTLD.Modules
 		GameObject ufo;
 		private Quaternion localRotation;
 		private float settingsScrollWidth;
+		private bool noclipGodmodeDisable = true;
 
 		private temporaryTurnOffGeneration temp;
 
@@ -265,13 +266,20 @@ namespace SpawnerTLD.Modules
 			else
 				config.UpdateLegacyMode(legacyUI);
 
+			// Load scroll width.
 			float? configScrollWidth = config.GetScrollWidth();
 			if (configScrollWidth.HasValue)
 				scrollWidth = configScrollWidth.Value;
 			else
 				config.UpdateScrollWidth(scrollWidth);
-
 			settingsScrollWidth = scrollWidth;
+
+			// Load noclip godmode disable.
+			bool? configNoclipGodmodeDisable = config.GetNoclipGodmodeDisable();
+			if (configNoclipGodmodeDisable.HasValue)
+				noclipGodmodeDisable = configNoclipGodmodeDisable.Value;
+			else
+				config.UpdateNoclipGodmodeDisable(noclipGodmodeDisable);
 
 			// Load keybinds.
 			binds.OnLoad();
@@ -378,7 +386,7 @@ namespace SpawnerTLD.Modules
 
 				settingsWidth -= 20f;
 
-				GUI.Label(new Rect(settingsX, settingsY, settingsWidth, configHeight), "Scroll bar width", labelStyle);
+				GUI.Label(new Rect(settingsX, settingsY, settingsWidth, configHeight), "Scroll bar width:", labelStyle);
 				settingsY += configHeight;
 				float tempScrollWidth = GUI.HorizontalSlider(new Rect(settingsX, settingsY, settingsWidth, configHeight), settingsScrollWidth, 5f, 30f);
 				settingsScrollWidth = Mathf.Round(tempScrollWidth);
@@ -401,6 +409,16 @@ namespace SpawnerTLD.Modules
 					scrollWidth = 10f;
 					settingsScrollWidth = scrollWidth;
 					config.UpdateScrollWidth(scrollWidth);
+				}
+
+				settingsY += configHeight + 10f;
+
+				GUI.Label(new Rect(settingsX, settingsY, settingsWidth, configHeight), "Disabling noclip disables godmode:", labelStyle);
+				settingsY += configHeight;
+				if (GUI.Button(new Rect(settingsX, settingsY, buttonWidth, configHeight), noclipGodmodeDisable ? $"<color=#0F0>On</color>" : $"<color=#F00>Off</color>"))
+				{
+					noclipGodmodeDisable = !noclipGodmodeDisable;
+					config.UpdateNoclipGodmodeDisable(noclipGodmodeDisable);
 				}
 			}
 			else
@@ -705,7 +723,8 @@ namespace SpawnerTLD.Modules
 								mainscript.M.player.transform.localRotation = localRotation;
 							}
 
-							settings.godMode = false;
+							if (noclipGodmodeDisable)
+								settings.godMode = false;
 						}
 						mainscript.M.ChGodMode(settings.godMode);
 					}

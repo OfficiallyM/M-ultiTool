@@ -90,6 +90,17 @@ namespace SpawnerTLD.Modules
 		}
 
 		/// <summary>
+		/// Toggle noclip godmode disable in config
+		/// </summary>
+		/// <param name="enabled">Whether godmode is disabled when leaving noclip</param>
+		public void UpdateNoclipGodmodeDisable(bool enabled)
+		{
+			config.noclipGodmodeDisable = enabled;
+
+			UpdateConfig();
+		}
+
+		/// <summary>
 		/// Get keybinds from the config file
 		/// </summary>
 		/// <returns>A list of keys</returns>
@@ -113,7 +124,7 @@ namespace SpawnerTLD.Modules
 		{
 			loadFromConfigFile();
 
-			if (config != null)
+			if (config != null && config.legacyUI != null)
 			{
 				return config.legacyUI;
 			}
@@ -132,6 +143,22 @@ namespace SpawnerTLD.Modules
 			if (config != null && config.scrollWidth > 0)
 			{
 				return config.scrollWidth;
+			}
+
+			return null;
+		}
+
+		/// <summary>
+		/// Get legacy mode status from config
+		/// </summary>
+		/// <returns>Boolean legacy mode value</returns>
+		public bool? GetNoclipGodmodeDisable()
+		{
+			loadFromConfigFile();
+
+			if (config != null && config.noclipGodmodeDisable != null)
+			{
+				return config.noclipGodmodeDisable;
 			}
 
 			return null;
