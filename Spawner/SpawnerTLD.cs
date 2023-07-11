@@ -112,7 +112,8 @@ namespace SpawnerTLD
 			// Fake the player being on a ladder to remove the gravity during noclip.
 			// This is needed because setting useGravity directly on the player RigidBody
 			// gets enabled again immediately by the fpscontroller.
-			mainscript.M.player.ladderV = settings.noclip ? 1 : 0;
+			if (settings.noclip)
+				mainscript.M.player.ladderV = 1;
 		}
 	}
 }
