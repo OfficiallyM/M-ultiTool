@@ -244,16 +244,14 @@ namespace SpawnerTLD.Modules
 							component2.Refresh();
 						}
 					}
+
+					if (fullRandom)
+					{
+						RandomiseCondition(component1);
+					}
 					else
 					{
-						if (fullRandom)
-						{
-							RandomiseCondition(component1);
-						}
-						else
-						{
-							component1.StartPaint(condition, color);
-						}
+						component1.StartPaint(condition, color);
 					}
 
 					Paint(color, component1);
@@ -281,6 +279,10 @@ namespace SpawnerTLD.Modules
 			}
 		}
 
+		/// <summary>
+		/// Randomise condition of all parts
+		/// </summary>
+		/// <param name="partconditionscript">Base vehicle partconditionscript</param>
 		private void RandomiseCondition(partconditionscript partconditionscript)
 		{
 			List<partconditionscript> children = new List<partconditionscript>();
@@ -288,12 +290,16 @@ namespace SpawnerTLD.Modules
 
 			foreach (partconditionscript child in children)
 			{
-				logger.Log($"{child.name}", Logger.LogLevel.Debug);
 				child.RandomState(0, 4);
 				child.Refresh();
 			}
 		}
 
+		/// <summary>
+		/// Recursively find all child parts
+		/// </summary>
+		/// <param name="root">Parent part</param>
+		/// <param name="allChildren">Current list of child parts</param>
 		private void FindPartChildren(partconditionscript root, ref List<partconditionscript> allChildren)
 		{
 			foreach (partconditionscript child in root.childs)
