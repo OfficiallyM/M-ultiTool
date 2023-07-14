@@ -22,6 +22,7 @@ namespace SpawnerTLD.Modules
 		private ThumbnailGenerator thumbnailGenerator;
 		private Keybinds binds;
 		private Utility utility;
+		private Duplicate dupe;
 
 		// Menu control.
 		public bool enabled = false;
@@ -119,7 +120,7 @@ namespace SpawnerTLD.Modules
 
 		private temporaryTurnOffGeneration temp;
 
-		public GUIRenderer(Logger _logger, Config _config, Translator _translator, ThumbnailGenerator _thumbnailGenerator, Keybinds _binds, Utility _utility)
+		public GUIRenderer(Logger _logger, Config _config, Translator _translator, ThumbnailGenerator _thumbnailGenerator, Keybinds _binds, Utility _utility, Duplicate _dupe)
 		{
 			logger = _logger;
 			config = _config;
@@ -127,6 +128,7 @@ namespace SpawnerTLD.Modules
 			thumbnailGenerator = _thumbnailGenerator;
 			binds = _binds;
 			utility = _utility;
+			dupe = _dupe;
 		}
 
 		public void OnGUI()
@@ -150,6 +152,11 @@ namespace SpawnerTLD.Modules
 			if (mainscript.M.menu.Menu.activeSelf)
 			{
 				ToggleVisibility();
+			}
+			else
+			{
+				// Show HUD.
+				RenderHUD();
 			}
 
 			// Return early if the UI isn't supposed to be visible.
@@ -674,7 +681,7 @@ namespace SpawnerTLD.Modules
 					float miscWidth = 250f;
 					float labelWidth = tabWidth - 20f;
 
-					int toggleCount = 3;
+					int toggleCount = 4;
 					float toggleWidth = (buttonWidth + 10f) * toggleCount;
 
 					float toggleX = miscX;
@@ -740,6 +747,14 @@ namespace SpawnerTLD.Modules
 						}
 						mainscript.M.ChGodMode(settings.godMode);
 					}
+					toggleX += buttonWidth + 10f;
+
+					// Duplicate toggle.
+					if (GUI.Button(new Rect(toggleX, miscY, buttonWidth, buttonHeight), (settings.duplicateMode ? "<color=#0F0>Duplicate mode</color>" : "<color=#F00>Duplicate mode</color>")))
+					{
+						settings.duplicateMode = !settings.duplicateMode;
+					}
+
 					toggleX += buttonWidth + 10f;
 
 					GUI.EndScrollView();
@@ -1011,6 +1026,31 @@ namespace SpawnerTLD.Modules
 			}
 
 			return vehicles;
+		}
+
+		/// <summary>
+		/// Render the heads up display.
+		/// </summary>
+		private void RenderHUD()
+		{
+			if (settings.duplicateMode)
+			{
+				float width = 400f;
+				float height = 40f;
+				float x = resolutionX / 2 - 100f;
+				float y = resolutionY * 0.90f;
+
+				GUI.Box(new Rect(x, y, width, height), String.Empty);
+				GUI.Button(new Rect(x, y, width / 2, height / 2), "Copy");
+				GUI.Button(new Rect(x + width / 2, y, width / 2, height / 2), dupe.HasCopy() ? "<color=#0F0>Paste</color>" : "<color=#F00>Paste</color>");
+
+				GUI.Button(new Rect(x, y + height / 2, width / 2, height / 2), binds.GetKeyByAction((int)Keybinds.Inputs.duplicateCopy).key.ToString());
+				GUI.Button(new Rect(x + width / 2, y + height / 2, width / 2, height / 2), binds.GetKeyByAction((int)Keybinds.Inputs.duplicatePaste).key.ToString());
+				GUI.Button(new Rect(x + width * 0.25f, y + height, width / 2, height / 2), "Clear: " + binds.GetKeyByAction((int)Keybinds.Inputs.duplicateClear).key.ToString());
+
+				if (dupe.HasCopy())
+					GUI.Button(new Rect(x, y - 20f, width, height / 2), dupe.GetDupeName());
+			}
 		}
 
 		/// <summary> 

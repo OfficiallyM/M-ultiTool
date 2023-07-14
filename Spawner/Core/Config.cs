@@ -45,6 +45,13 @@ namespace SpawnerTLD.Core
 			get { return s_noclip; }
 			set { s_noclip = value; }
 		}
+
+		public static bool s_duplicateMode = false;
+		public bool duplicateMode
+		{
+			get { return s_duplicateMode; }
+			set { s_duplicateMode = value; }
+		}
 	}
 
 	[DataContract]

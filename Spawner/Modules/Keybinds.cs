@@ -27,7 +27,10 @@ namespace SpawnerTLD.Modules
 			deleteMode,
 			noclipSpeedUp,
 			noclipUp,
-			noclipDown
+			noclipDown,
+			duplicateCopy,
+			duplicatePaste,
+			duplicateClear,
 		}
 
 		public List<Key> keys = new List<Key>();
@@ -95,6 +98,21 @@ namespace SpawnerTLD.Modules
 				keys[4].key = KeyCode.LeftControl;
 				keys[4].defaultKey = KeyCode.LeftControl;
 				keys[4].name = "Noclip fly down";
+
+				// Duplicate copy.
+				keys[5].key = KeyCode.Mouse0;
+				keys[5].defaultKey = KeyCode.Mouse0;
+				keys[5].name = "Duplicate copy";
+
+				// Duplicate paste.
+				keys[6].key = KeyCode.Mouse1;
+				keys[6].defaultKey = KeyCode.Mouse1;
+				keys[6].name = "Duplicate paste";
+
+				// Duplicate clear.
+				keys[7].key = KeyCode.Mouse2;
+				keys[7].defaultKey = KeyCode.Mouse2;
+				keys[7].name = "Duplicate clear";
 			}
 			catch (Exception ex)
 			{

@@ -25,6 +25,7 @@ namespace SpawnerTLD
 		private readonly ThumbnailGenerator thumbnailGenerator;
 		private readonly Keybinds binds;
 		private readonly Utility utility;
+		private readonly Duplicate dupe;
 
 		private Settings settings = new Settings();
 
@@ -41,7 +42,8 @@ namespace SpawnerTLD
 				translator = new Translator(logger, configDirectory);
 				thumbnailGenerator = new ThumbnailGenerator(logger, utility, configDirectory);
 				binds = new Keybinds(logger, config);
-				renderer = new GUIRenderer(logger, config, translator, thumbnailGenerator, binds, utility);
+				dupe = new Duplicate(logger, binds);
+				renderer = new GUIRenderer(logger, config, translator, thumbnailGenerator, binds, utility, dupe);
 			}
 			catch (Exception ex)
 			{
@@ -85,6 +87,7 @@ namespace SpawnerTLD
 			if (!renderer.enabled)
 				return;
 
+			dupe.Update();
 			renderer.Update();
 
 			// Delete mode.
