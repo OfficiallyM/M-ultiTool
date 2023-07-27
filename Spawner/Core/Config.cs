@@ -54,5 +54,6 @@ namespace SpawnerTLD.Core
 		[DataMember] public bool? legacyUI { get; set; }
 		[DataMember] public float scrollWidth { get; set; }
 		[DataMember] public bool? noclipGodmodeDisable { get; set; }
+		[DataMember] public string accessibilityMode { get; set; }
 	}
 }

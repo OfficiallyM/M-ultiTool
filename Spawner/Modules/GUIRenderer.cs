@@ -116,6 +116,14 @@ namespace SpawnerTLD.Modules
 		private Quaternion localRotation;
 		private float settingsScrollWidth;
 		private bool noclipGodmodeDisable = true;
+		private Dictionary<string, string> accessibilityModes = new Dictionary<string, string>()
+		{
+			{ "none", "None" },
+			{ "contrast", "Improved contrast" },
+			{ "colourless", "Colourless" }
+		};
+		private bool accessibilityShow = false;
+		private string accessibilityMode = "none";
 
 		private temporaryTurnOffGeneration temp;
 
@@ -281,6 +289,13 @@ namespace SpawnerTLD.Modules
 			else
 				config.UpdateNoclipGodmodeDisable(noclipGodmodeDisable);
 
+			// Load accessibility mode.
+			string configAccessibilityMode = config.GetAccessibilityMode();
+			if (configAccessibilityMode != null)
+				accessibilityMode = configAccessibilityMode;
+			else
+				config.UpdateAccessibiltiyMode(accessibilityMode);
+
 			// Load keybinds.
 			binds.OnLoad();
 
@@ -354,7 +369,7 @@ namespace SpawnerTLD.Modules
 			GUI.Box(new Rect(x, y, width, height), $"<color=#f87ffa><size=18><b>{Meta.Name}</b></size>\n<size=16>v{Meta.Version} - made with ❤️ by {Meta.Author}</size></color>");
 
 			// Settings button.
-			if (GUI.Button(new Rect(x + 5f, y + 5f, 150f, 25f), !settingsShow ? $"<color=#F00>Show settings</color>" : $"<color=#0F0>Hide settings</color>"))
+			if (GUI.Button(new Rect(x + 5f, y + 5f, 150f, 25f), GetAccessibleString("Show settings", settingsShow)))
 			{
 				settingsShow = !settingsShow;
 			}
@@ -415,10 +430,33 @@ namespace SpawnerTLD.Modules
 
 				GUI.Label(new Rect(settingsX, settingsY, settingsWidth, configHeight), "Disabling noclip disables godmode:", labelStyle);
 				settingsY += configHeight;
-				if (GUI.Button(new Rect(settingsX, settingsY, buttonWidth, configHeight), noclipGodmodeDisable ? $"<color=#0F0>On</color>" : $"<color=#F00>Off</color>"))
+				if (GUI.Button(new Rect(settingsX, settingsY, buttonWidth, configHeight), GetAccessibleString("On", "Off", noclipGodmodeDisable)))
 				{
 					noclipGodmodeDisable = !noclipGodmodeDisable;
 					config.UpdateNoclipGodmodeDisable(noclipGodmodeDisable);
+				}
+
+				settingsY += configHeight + 10f;
+
+				if (GUI.Button(new Rect(settingsX, settingsY, buttonWidth, configHeight), "Accessibility mode"))
+				{
+					accessibilityShow = !accessibilityShow;
+				}
+				if (accessibilityShow)
+				{
+					settingsY += configHeight;
+					GUI.Box(new Rect(settingsX, settingsY, buttonWidth, (configHeight + 2f) * accessibilityModes.Count), String.Empty);
+					for (int i = 0; i < accessibilityModes.Count; i++)
+					{
+						KeyValuePair<string, string> mode = accessibilityModes.ElementAt(i);
+						if (GUI.Button(new Rect(settingsX, settingsY, buttonWidth, configHeight), GetAccessibleString(mode.Value, accessibilityMode == mode.Key)))
+						{
+							accessibilityMode = mode.Key;
+							config.UpdateAccessibiltiyMode(accessibilityMode);
+						}
+
+						settingsY += configHeight + 2f;
+					}
 				}
 			}
 			else
@@ -682,7 +720,7 @@ namespace SpawnerTLD.Modules
 					toggleScrollPosition = GUI.BeginScrollView(new Rect(miscX, miscY, toggleWidth, buttonHeight), toggleScrollPosition, new Rect(miscX, miscY, toggleWidth, buttonHeight));
 
 					// Delete mode.
-					if (GUI.Button(new Rect(toggleX, miscY, buttonWidth, buttonHeight), (settings.deleteMode ? "<color=#0F0>Delete mode</color>" : "<color=#F00>Delete mode</color>") + $" (Press {binds.GetKeyByAction((int)Keybinds.Inputs.deleteMode).key})"))
+					if (GUI.Button(new Rect(toggleX, miscY, buttonWidth, buttonHeight), GetAccessibleString("Delete mode", settings.deleteMode) + $" (Press {binds.GetKeyByAction((int)Keybinds.Inputs.deleteMode).key})"))
 					{
 						settings.deleteMode = !settings.deleteMode;
 					}
@@ -690,7 +728,7 @@ namespace SpawnerTLD.Modules
 					toggleX += buttonWidth + 10f;
 
 					// God toggle.
-					if (GUI.Button(new Rect(toggleX, miscY, buttonWidth, buttonHeight), (settings.godMode ? "<color=#0F0>God mode</color>" : "<color=#F00>God mode</color>")))
+					if (GUI.Button(new Rect(toggleX, miscY, buttonWidth, buttonHeight), GetAccessibleString("God mode", settings.godMode)))
 					{
 						settings.godMode = !settings.godMode;
 						mainscript.M.ChGodMode(settings.godMode);
@@ -698,7 +736,7 @@ namespace SpawnerTLD.Modules
 					toggleX += buttonWidth + 10f;
 
 					// Noclip toggle.
-					if (GUI.Button(new Rect(toggleX, miscY, buttonWidth, buttonHeight), (settings.noclip ? "<color=#0F0>Noclip</color>" : "<color=#F00>Noclip</color>")))
+					if (GUI.Button(new Rect(toggleX, miscY, buttonWidth, buttonHeight), GetAccessibleString("Noclip", settings.noclip)))
 					{
 						settings.noclip = !settings.noclip;
 
@@ -757,7 +795,7 @@ namespace SpawnerTLD.Modules
 						mainscript.M.napszak.tekeres = selectedTime;
 					}
 
-					if (GUI.Button(new Rect(miscX + miscWidth + buttonWidth + 20f, miscY, buttonWidth, buttonHeight), isTimeLocked ? "<color=#0F0>Unlock</color>" : "<color=#F00>Lock</color>"))
+					if (GUI.Button(new Rect(miscX + miscWidth + buttonWidth + 20f, miscY, buttonWidth, buttonHeight), GetAccessibleString("Unlock", "Lock", isTimeLocked)))
 					{
 						isTimeLocked = !isTimeLocked;
 
@@ -1011,6 +1049,45 @@ namespace SpawnerTLD.Modules
 			}
 
 			return vehicles;
+		}
+
+		/// <summary>
+		/// Translate a string appropriate for the selected accessibility mode
+		/// </summary>
+		/// <param name="str">The string to translate</param>
+		/// <param name="state">The button state</param>
+		/// <returns>Accessibility mode translated string</returns>
+		private string GetAccessibleString(string str, bool state)
+		{
+			switch (accessibilityMode)
+			{
+				case "contrast":
+					return state ? $"<color=#0F0>{str}</color>" : $"<color=#FFF>{str}</color>";
+				case "colourless":
+					return state ? $"{str} ✔" : $"{str} ✖";
+			}
+
+			return state ? $"<color=#0F0>{str}</color>" : $"<color=#F00>{str}</color>";
+		}
+
+		/// <summary>
+		/// Translate a string appropriate for the selected accessibility mode
+		/// </summary>
+		/// <param name="trueStr">The string to translate for true</param>
+		/// <param name="falseStr">The string to translate for false</param>
+		/// <param name="state">The button state</param>
+		/// <returns>Accessibility mode translated string</returns>
+		private string GetAccessibleString(string trueStr, string falseStr, bool state)
+		{
+			switch (accessibilityMode)
+			{
+				case "contrast":
+					return state ? $"<color=#0F0>{trueStr}</color>" : $"<color=#FFF>{falseStr}</color>";
+				case "colourless":
+					return state ? $"{trueStr} ✔" : $"{falseStr} ✖";
+			}
+
+			return state ? $"<color=#0F0>{trueStr}</color>" : $"<color=#F00>{falseStr}</color>";
 		}
 
 		/// <summary> 

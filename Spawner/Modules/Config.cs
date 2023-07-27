@@ -101,6 +101,17 @@ namespace SpawnerTLD.Modules
 		}
 
 		/// <summary>
+		/// Update accessibilityMode in config
+		/// </summary>
+		/// <param name="mode">The accessibility mode to set</param>
+		public void UpdateAccessibiltiyMode(string mode)
+		{
+			config.accessibilityMode = mode;
+
+			UpdateConfig();
+		}
+
+		/// <summary>
 		/// Get keybinds from the config file
 		/// </summary>
 		/// <returns>A list of keys</returns>
@@ -149,7 +160,7 @@ namespace SpawnerTLD.Modules
 		}
 
 		/// <summary>
-		/// Get legacy mode status from config
+		/// Get noclip godmode disable status from config
 		/// </summary>
 		/// <returns>Boolean legacy mode value</returns>
 		public bool? GetNoclipGodmodeDisable()
@@ -159,6 +170,22 @@ namespace SpawnerTLD.Modules
 			if (config != null && config.noclipGodmodeDisable != null)
 			{
 				return config.noclipGodmodeDisable;
+			}
+
+			return null;
+		}
+
+		/// <summary>
+		/// Get accessibility mode from config
+		/// </summary>
+		/// <returns>Boolean legacy mode value</returns>
+		public string GetAccessibilityMode()
+		{
+			loadFromConfigFile();
+
+			if (config != null && config.accessibilityMode != null)
+			{
+				return config.accessibilityMode;
 			}
 
 			return null;
