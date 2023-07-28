@@ -75,67 +75,74 @@ namespace SpawnerTLD.Modules
 		/// <param name="item">The object to spawn</param>
 		public void Spawn(Item item)
 		{
-			int selectedCondition = item.conditionInt;
-			if (selectedCondition == -1)
+			try
 			{
-				// Randomise item condition.
-				int maxCondition = (int)Enum.GetValues(typeof(Item.Condition)).Cast<Item.Condition>().Max();
-				item.item.GetComponent<partconditionscript>().StartFullRandom(0, maxCondition);
-				selectedCondition = UnityEngine.Random.Range(0, maxCondition);
-			}
-
-			tankscript fuelTank = item.item.GetComponent<tankscript>();
-
-			// Find fuel tank objects.
-			if (fuelTank == null)
-			{
-				fuelTank = item.item.GetComponentInChildren<tankscript>();
-			}
-
-			if (fuelTank == null)
-			{
-				// Item doesn't have a fuel tank, just spawn the item and return.
-				mainscript.M.Spawn(item.item, item.color, selectedCondition, -1);
-				return;
-			}
-
-			// Fuel type and value are default, just spawn the item.
-			if (item.fuelMixes == 1)
-			{
-				if (item.fuelTypeInts[0] == -1 && item.fuelValues[0] == -1f)
+				int selectedCondition = item.conditionInt;
+				if (selectedCondition == -1)
 				{
+					// Randomise item condition.
+					int maxCondition = (int)Enum.GetValues(typeof(Item.Condition)).Cast<Item.Condition>().Max();
+					item.item.GetComponent<partconditionscript>().StartFullRandom(0, maxCondition);
+					selectedCondition = UnityEngine.Random.Range(0, maxCondition);
+				}
+
+				tankscript fuelTank = item.item.GetComponent<tankscript>();
+
+				// Find fuel tank objects.
+				if (fuelTank == null)
+				{
+					fuelTank = item.item.GetComponentInChildren<tankscript>();
+				}
+
+				if (fuelTank == null)
+				{
+					// Item doesn't have a fuel tank, just spawn the item and return.
 					mainscript.M.Spawn(item.item, item.color, selectedCondition, -1);
 					return;
 				}
-			}
 
-			// Store the current fuel types and amounts to return either to default.
-			List<mainscript.fluidenum> currentFuelTypes = new List<mainscript.fluidenum>();
-			List<float> currentFuelAmounts = new List<float>();
-			foreach (mainscript.fluid fluid in fuelTank.F.fluids)
+				// Fuel type and value are default, just spawn the item.
+				if (item.fuelMixes == 1)
+				{
+					if (item.fuelTypeInts[0] == -1 && item.fuelValues[0] == -1f)
+					{
+						mainscript.M.Spawn(item.item, item.color, selectedCondition, -1);
+						return;
+					}
+				}
+
+				// Store the current fuel types and amounts to return either to default.
+				List<mainscript.fluidenum> currentFuelTypes = new List<mainscript.fluidenum>();
+				List<float> currentFuelAmounts = new List<float>();
+				foreach (mainscript.fluid fluid in fuelTank.F.fluids)
+				{
+					currentFuelTypes.Add(fluid.type);
+					currentFuelAmounts.Add(fluid.amount);
+				}
+
+				fuelTank.F.fluids.Clear();
+
+				for (int i = 0; i < item.fuelMixes; i++)
+				{
+					if (item.fuelTypeInts[i] == -1 && item.fuelValues[i] > -1)
+					{
+						fuelTank.F.ChangeOne(item.fuelValues[i], currentFuelTypes[i]);
+					}
+					else if (item.fuelTypeInts[i] > -1 && item.fuelValues[i] == -1)
+					{
+						fuelTank.F.ChangeOne(currentFuelAmounts[i], (mainscript.fluidenum)item.fuelTypeInts[i]);
+					}
+					else
+					{
+						fuelTank.F.ChangeOne(item.fuelValues[i], (mainscript.fluidenum)item.fuelTypeInts[i]);
+					}
+				}
+				mainscript.M.Spawn(item.item, item.color, selectedCondition, -1);
+			}
+			catch (Exception ex)
 			{
-				currentFuelTypes.Add(fluid.type);
-				currentFuelAmounts.Add(fluid.amount);
+				logger.Log($"Item spawning error - {ex}", Logger.LogLevel.Error);
 			}
-
-			fuelTank.F.fluids.Clear();
-
-			for (int i = 0; i < item.fuelMixes; i++)
-			{
-				if (item.fuelTypeInts[i] == -1 && item.fuelValues[i] > -1)
-				{
-					fuelTank.F.ChangeOne(item.fuelValues[i], currentFuelTypes[i]);
-				}
-				else if (item.fuelTypeInts[i] > -1 && item.fuelValues[i] == -1)
-				{
-					fuelTank.F.ChangeOne(currentFuelAmounts[i], (mainscript.fluidenum)item.fuelTypeInts[i]);
-				}
-				else
-				{
-					fuelTank.F.ChangeOne(item.fuelValues[i], (mainscript.fluidenum)item.fuelTypeInts[i]);
-				}
-			}
-			mainscript.M.Spawn(item.item, item.color, selectedCondition, -1);
 		}
 
 		/// <summary>
