@@ -64,7 +64,7 @@ namespace SpawnerTLD.Modules
 
 			foreach (GameObject POI in itemdatabase.d.buildings)
 			{
-				if (POI.name != "ErrorPrefab")
+				if (POI.name != "ErrorPrefab" && POI.name != "Falu01")
 				{
 					if (!tempItems.Contains(POI.name.ToUpper()))
 					{
@@ -82,6 +82,8 @@ namespace SpawnerTLD.Modules
 			{
 				regenerateCache = true;
 				logger.Log("Item count has changed, regenerating cached thumbnails", Logger.LogLevel.Info);
+				logger.Log($"Item count: {itemCount} - Cache count: {cacheCount}", Logger.LogLevel.Info);
+
 				foreach (FileInfo file in cache.GetFiles())
 				{
 					file.Delete();
