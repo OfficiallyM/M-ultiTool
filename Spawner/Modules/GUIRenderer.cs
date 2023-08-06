@@ -382,6 +382,8 @@ namespace SpawnerTLD.Modules
 				settingsShow = !settingsShow;
 			}
 
+			GUI.Label(new Rect(x + mainMenuWidth - 160f, y + 5f, 150f, 25f), "<color=#f9d909><size=15>In honor of <b>FreakShow</b></size></color>");
+
 			if (settingsShow)
 			{
 				// Render the setting page.
