@@ -241,7 +241,7 @@ namespace SpawnerTLD.Modules
 				Vector3 position = mainscript.M.player.lookPoint;
 
 				// Don't apply offset to starter house.
-				if (POI.name != "haz02")
+				if (POI.poi.name != "haz02")
 					position -= Vector3.up * 1.1f;
 
 				GameObject gameObject = UnityEngine.Object.Instantiate(POI.poi, position, Quaternion.FromToRotation(Vector3.forward, -mainscript.M.player.transform.right), mainscript.M.terrainGenerationSettings.roadBuildingGeneration.parent);
