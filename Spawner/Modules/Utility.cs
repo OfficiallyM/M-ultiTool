@@ -229,6 +229,44 @@ namespace SpawnerTLD.Modules
 		}
 
 		/// <summary>
+		/// Spawn a point of interest
+		/// </summary>
+		/// <param name="POI">The point of interest to spawn</param>
+		/// <param name="spawnItems">Whether the POI should spawn items</param>
+		/// <returns>The spawned point of interest</returns>
+		public GameObject Spawn(POI POI, bool spawnItems)
+		{
+			try
+			{
+				Vector3 position = mainscript.M.player.lookPoint;
+
+				// Don't apply offset to starter house.
+				if (POI.name != "haz02")
+					position -= Vector3.up * 1.2f;
+
+				GameObject gameObject = UnityEngine.Object.Instantiate(POI.poi, position, Quaternion.FromToRotation(Vector3.forward, -mainscript.M.player.transform.right), mainscript.M.terrainGenerationSettings.roadBuildingGeneration.parent);
+
+				// TODO: This doesn't work.
+				terrainHeightAlignToBuildingScript terrain = gameObject.GetComponent<terrainHeightAlignToBuildingScript>();
+				if (terrain != null)
+				{
+					terrain.FStart(true);
+				}
+
+				if (spawnItems)
+					gameObject.GetComponent<buildingscript>().FStart(0);
+
+				return gameObject;
+			}
+			catch (Exception ex)
+			{
+				logger.Log($"Error spawning POI - {ex}", Logger.LogLevel.Error);
+			}
+
+			return null;
+		}
+
+		/// <summary>
 		/// Based off mainscript Spawn method
 		/// </summary>
 		public void Spawn(GameObject gameObject, Color color, bool fullRandom, int condition, int variant)

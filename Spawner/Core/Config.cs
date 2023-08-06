@@ -18,9 +18,17 @@ namespace SpawnerTLD.Core
 	}
 
 	[DataContract]
+	internal class ConfigPOI
+	{
+		[DataMember] public string objectName { get; set; }
+		[DataMember] public string name { get; set; }
+	}
+
+	[DataContract]
 	internal class ConfigWrapper
 	{
 		[DataMember] public List<ConfigVehicle> vehicles { get; set; }
+		[DataMember] public List<ConfigPOI> POIs { get; set; }
 	}
 
 	internal class Settings

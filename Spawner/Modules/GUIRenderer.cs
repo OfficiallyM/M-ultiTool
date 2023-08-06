@@ -56,6 +56,7 @@ namespace SpawnerTLD.Modules
 		{
 			"Vehicles",
 			"Items",
+			"POIs",
 			"Miscellaneous"
 		};
 
@@ -107,6 +108,12 @@ namespace SpawnerTLD.Modules
 		};
 		private bool filterShow = false;
 		private List<int> filters = new List<int>();
+
+		// POI variables.
+		private Vector2 poiScrollPosition;
+		private List<POI> POIs = new List<POI>();
+		private List<GameObject> spawnedPOIs = new List<GameObject>();
+		private bool poiSpawnItems = true;
 
 		// Settings.
 		private List<QuickSpawn> quickSpawns = new List<QuickSpawn>();
@@ -258,6 +265,7 @@ namespace SpawnerTLD.Modules
 			}
 
 			vehicles = LoadVehicles();
+			POIs = LoadPOIs();
 
 			// Prepopulate fuel types and fuel values as all default.
 			int maxFuelType = (int)Enum.GetValues(typeof(mainscript.fluidenum)).Cast<mainscript.fluidenum>().Max();
@@ -702,8 +710,63 @@ namespace SpawnerTLD.Modules
 
 					break;
 
-				// Miscellaneous tab.
+				// POIs tab.
 				case 2:
+					GUI.skin.button.wordWrap = true;
+
+					itemWidth = 140f;
+					thumbnailHeight = 90f;
+					textHeight = 40f;
+					itemHeight = thumbnailHeight + textHeight;
+					initialRowX = tabX + 10f;
+					itemX = initialRowX;
+					itemY = 0f;
+
+					// Search field.
+					GUI.Label(new Rect(tabX + 10f, tabY + 10f, 60f, searchHeight), "Search:", labelStyle);
+					search = GUI.TextField(new Rect(tabX + 70f, tabY + 10f, tabWidth * 0.25f, searchHeight), search, labelStyle);
+					if (GUI.Button(new Rect(tabX + 60f + tabWidth * 0.25f + 10f, tabY + 10f, 100f, searchHeight), "Reset"))
+						search = String.Empty;
+
+					if (GUI.Button(new Rect(tabX + tabWidth - 100f - 10f, tabY + 10f, 100f, searchHeight), GetAccessibleString("Spawn items", poiSpawnItems)))
+						poiSpawnItems = !poiSpawnItems;
+
+					// Filter POI list by search term.
+					List<POI> searchPOIs = POIs;
+					if (search != String.Empty)
+						searchPOIs = POIs.Where(p => p.name.ToLower().Contains(search.ToLower()) || p.poi.name.ToLower().Contains(search.ToLower())).ToList();
+
+					columnCount = (int)Math.Ceiling((double)POIs.Count / maxRowItems);
+
+					scrollHeight = (itemHeight + 10f) * (columnCount + 1);
+					poiScrollPosition = GUI.BeginScrollView(new Rect(tabX, tabY + 10f + searchHeight, tabWidth, tabHeight - 10f - searchHeight), poiScrollPosition, new Rect(tabX, tabY, tabWidth, scrollHeight - 10f - searchHeight), new GUIStyle(), GUI.skin.verticalScrollbar);
+
+					for (int i = 0; i < searchPOIs.Count(); i++)
+					{
+						POI currentPOI = searchPOIs[i];
+
+						itemX += itemWidth + 10f;
+
+						if (i % maxRowItems == 0)
+						{
+							itemX = initialRowX;
+							itemY += itemHeight + 10f;
+						}
+
+						if (GUI.Button(new Rect(itemX, itemY, itemWidth, itemHeight), String.Empty) ||
+							GUI.Button(new Rect(itemX, itemY, itemWidth, thumbnailHeight), currentPOI.thumbnail) ||
+							GUI.Button(new Rect(itemX, itemY + thumbnailHeight, itemWidth, textHeight), currentPOI.name))
+						{
+							GameObject spawnedPOI = utility.Spawn(currentPOI, poiSpawnItems);
+							if (spawnedPOI != null)
+								spawnedPOIs.Add(spawnedPOI);
+						}
+					}
+					GUI.EndScrollView();
+					break;
+
+				// Miscellaneous tab.
+				case 3:
 					float miscX = tabX + 10f;
 					float miscY = tabY + 10f;
 					float buttonWidth = 200f;
@@ -834,6 +897,26 @@ namespace SpawnerTLD.Modules
 								UnityEngine.Object.Destroy(ufo);
 						}
 					}
+
+					miscY += buttonHeight + 10f;
+
+					if (GUI.Button(new Rect(miscX, miscY, buttonWidth, buttonHeight), "Delete last building"))
+					{
+						if (spawnedPOIs.Count > 0)
+						{
+							try
+							{
+								GameObject poi = spawnedPOIs.Last();
+								spawnedPOIs.Remove(poi);
+								GameObject.Destroy(poi);
+							}
+							catch (Exception ex)
+							{
+								logger.Log($"Error deleting POI - {ex}", Logger.LogLevel.Error);
+							}
+						}
+					}
+
 					break;
 			}
 		}
@@ -1024,7 +1107,7 @@ namespace SpawnerTLD.Modules
 									vehicle = gameObject,
 									variant = i + 1,
 									thumbnail = thumbnailGenerator.GetThumbnail(gameObject, i + 2), // I have no idea why +1 produces the wrong variant in the thumbnail.
-									name = translator.T(gameObject.name, i + 1),
+									name = translator.T(gameObject.name, "vehicle", i + 1),
 								};
 								vehicles.Add(vehicle);
 							}
@@ -1036,7 +1119,7 @@ namespace SpawnerTLD.Modules
 								vehicle = gameObject,
 								variant = -1,
 								thumbnail = thumbnailGenerator.GetThumbnail(gameObject),
-								name = translator.T(gameObject.name, -1),
+								name = translator.T(gameObject.name, "vehicle", -1),
 							};
 							vehicles.Add(vehicle);
 						}
@@ -1049,6 +1132,33 @@ namespace SpawnerTLD.Modules
 			}
 
 			return vehicles;
+		}
+
+		public List<POI> LoadPOIs()
+		{
+			List<POI> POIs = new List<POI>();
+
+			try
+			{
+				foreach (GameObject POI in itemdatabase.d.buildings)
+				{
+					if (POI.name == "ErrorPrefab" || POI.name == "Falu01") continue;
+					
+					// TODO: Some building thumbnails are a bit fucked.
+					POIs.Add(new POI()
+					{
+						poi = POI,
+						thumbnail = thumbnailGenerator.GetThumbnail(POI, POI: true),
+						name = translator.T(POI.name, "POI"),
+					});
+				}
+			}
+			catch (Exception ex)
+			{
+				logger.Log($"Error loading POIs - {ex}", Logger.LogLevel.Error);
+			}
+
+			return POIs;
 		}
 
 		/// <summary>
@@ -1176,7 +1286,7 @@ namespace SpawnerTLD.Modules
 			foreach (Vehicle vehicle in vehicles)
 			{
 				GameObject gameObject = vehicle.vehicle;
-				string name = translator.T(gameObject.name, vehicle.variant);
+				string name = translator.T(gameObject.name, "vehicle", vehicle.variant);
 
 				if (GUI.Button(new Rect(x, scrollY, width, buttonHeight), name))
 				{

@@ -14,7 +14,7 @@ namespace SpawnerTLD.Modules
 	{
 		// Translation-related variables.
 		private string language;
-		private Dictionary<string, List<ConfigVehicle>> translations = new Dictionary<string, List<ConfigVehicle>>();
+		private Dictionary<string, ConfigWrapper> translations = new Dictionary<string, ConfigWrapper>();
 		private string configDirectory;
 		private Logger logger;
 
@@ -64,7 +64,7 @@ namespace SpawnerTLD.Modules
 					var config = jsonSerializer.ReadObject(ms) as ConfigWrapper;
 					ms.Close();
 
-					translations.Add(Path.GetFileNameWithoutExtension(file), config.vehicles);
+					translations.Add(Path.GetFileNameWithoutExtension(file), config);
 				}
 				catch (Exception ex)
 				{
@@ -79,7 +79,7 @@ namespace SpawnerTLD.Modules
 		/// <param name="objectName">The object name to translate</param>
 		/// <param name="variant">The vehicle variant (optional)</param>
 		/// <returns>Translated object name or untranslated name if no translation is found</returns>
-		public string T(string objectName, int? variant = null)
+		public string T(string objectName, string type, int? variant = null)
 		{
 			// Fallback to English if the current language isn't supported.
 			if (!translations.ContainsKey(language))
@@ -89,19 +89,35 @@ namespace SpawnerTLD.Modules
 
 			if (translations.ContainsKey(language))
 			{
-				List<ConfigVehicle> vehicles = translations[language];
-				foreach (ConfigVehicle vehicle in vehicles)
+				ConfigWrapper config = translations[language];
+				switch (type)
 				{
-					if (vehicle.objectName == objectName)
-					{
-						if (variant != null && variant != -1)
+					case "vehicle":
+						List<ConfigVehicle> vehicles = config.vehicles;
+						foreach (ConfigVehicle vehicle in vehicles)
 						{
-							if (vehicle.variant == variant)
-								return vehicle.name;
+							if (vehicle.objectName == objectName)
+							{
+								if (variant != null && variant != -1)
+								{
+									if (vehicle.variant == variant)
+										return vehicle.name;
+								}
+								else
+									return vehicle.name;
+							}
 						}
-						else
-							return vehicle.name;
-					}
+						break;
+					case "POI":
+						List<ConfigPOI> POIs = config.POIs;
+						foreach (ConfigPOI POI in POIs)
+						{
+							if (POI.objectName == objectName)
+							{
+								return POI.name;
+							}
+						}
+						break;
 				}
 			}
 

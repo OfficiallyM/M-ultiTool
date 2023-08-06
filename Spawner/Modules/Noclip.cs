@@ -21,7 +21,7 @@ namespace SpawnerTLD.Modules
 		public float cameraSensitivity = 90f;
 		public float climbSpeed = 10f;
 		public float normalMoveSpeed = 10f;
-		public float fastMoveFactor = 3f;
+		public float fastMoveFactor = 10f;
 		private float rotationX;
 		private float rotationY;
 

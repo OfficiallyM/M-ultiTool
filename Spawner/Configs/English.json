@@ -186,5 +186,75 @@
 			"variant": 1,
 			"name": "Barkas transporter (Variant 1)"
 		}
+	],
+	"POIs": [
+		{
+			"objectName": "haz02",
+			"name": "Starter house"
+		},
+		{
+			"objectName": "kut",
+			"name": "Well"
+		},
+		{
+			"objectName": "KERTIBUDI",
+			"name": "Outhouse"
+		},
+		{
+			"objectName": "Benzinkut01",
+			"name": "Open gas station"
+		},
+		{
+			"objectName": "Buszmegallo",
+			"name": "Bus stop"
+		},
+		{
+			"objectName": "LegjobbBenzinkut",
+			"name": "Medium gas station"
+		},
+		{
+			"objectName": "Muhely",
+			"name": "Garage"
+		},
+		{
+			"objectName": "NagyBenzinkut",
+			"name": "Gus's Gas"
+		},
+		{
+			"objectName": "OldHouse",
+			"name": "Old house"
+		},
+		{
+			"objectName": "OLDPETROLSTATION",
+			"name": "Small gas station"
+		},
+		{
+			"objectName": "Turrethaz",
+			"name": "Bunker"
+		},
+		{
+			"objectName": "Vizmu",
+			"name": "Bridge building"
+		},
+		{
+			"objectName": "PhoneBooth",
+			"name": "Phone booth"
+		},
+		{
+			"objectName": "Post",
+			"name": "Mailbox"
+		},
+		{
+			"objectName": "Cabin",
+			"name": "Cabin"
+		},
+		{
+			"objectName": "YellowFoodKut",
+			"name": "Diner"
+		},
+		{
+			"objectName": "Mansion",
+			"name": "Haunted mansion"
+		}
 	]
 }

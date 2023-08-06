@@ -62,6 +62,17 @@ namespace SpawnerTLD.Modules
 				}
 			}
 
+			foreach (GameObject POI in itemdatabase.d.buildings)
+			{
+				if (POI.name != "ErrorPrefab")
+				{
+					if (!tempItems.Contains(POI.name.ToUpper()))
+					{
+						tempItems.Add(POI.name.ToUpper());
+					}
+				}
+			}
+
 			int itemCount = tempItems.Count;
 			DirectoryInfo cache = new DirectoryInfo(cacheDir);
 			int cacheCount = cache.GetFiles().Length;
@@ -84,7 +95,7 @@ namespace SpawnerTLD.Modules
 		/// <param name="item">Item to generate the thumbnail for</param>
 		/// <param name="variant">Optional variant index for the item</param>
 		/// <returns>Texture2D thumbnail of the item</returns>
-		public Texture2D GetThumbnail(GameObject item, int? variant = null)
+		public Texture2D GetThumbnail(GameObject item, int? variant = null, bool POI = false)
 		{
 			string fileName = item.name.ToUpper().Replace("/", "or");
 			if (variant != null)
@@ -102,7 +113,7 @@ namespace SpawnerTLD.Modules
 				return texture2D;
 			}
 
-			return GenerateThumbnail(item, variant);
+			return GenerateThumbnail(item, variant, POI);
 		}
 
 		/// <summary>
@@ -111,7 +122,7 @@ namespace SpawnerTLD.Modules
 		/// <param name="item">The item to generate a thumbnail for</param>
 		/// <param name="variant">Optional variant index for the item</param>
 		/// <returns>Texture2D thumbnail of the item</returns>
-		private Texture2D GenerateThumbnail(GameObject item, int? variant = null)
+		private Texture2D GenerateThumbnail(GameObject item, int? variant = null, bool POI = false)
 		{
 			GameObject gameObject = new GameObject("THUMBNAIL GENERATOR FOR " + item.name.ToUpper());
 			gameObject.transform.position = new Vector3(UnityEngine.Random.Range(-100f, 100f), UnityEngine.Random.Range(-200f, -100f), UnityEngine.Random.Range(-100f, 100f));
@@ -134,14 +145,16 @@ namespace SpawnerTLD.Modules
 			// Render all thumbnails in pristine and in white.
 			if (gameObject2.GetComponent<partconditionscript>() != null)
 			{
-				gameObject2.GetComponent<partconditionscript>().StartPaint(0, new Color(255f / 255f, 255f / 255f, 255f / 255f));
+				gameObject2.GetComponent<partconditionscript>().StartPaint(0, new Color(1f, 1f, 1f));
 			}
 
 			gameObject2.transform.SetParent(gameObject.transform, false);
 			gameObject2.transform.localPosition = Vector3.zero;
 			gameObject2.layer = gameObject.layer;
+
 			object obj = null;
 			float num = 0.001f;
+
 			try
 			{
 				Material material = null;
@@ -205,8 +218,16 @@ namespace SpawnerTLD.Modules
 			camera.gameObject.layer = gameObject.layer;
 			camera.transform.SetParent(gameObject.transform, false);
 			camera.transform.localPosition = new Vector3(1f, 1f, 1f) * num;
-			camera.transform.LookAt((num >= ((Bounds)obj).size.magnitude + 1f) ? gameObject2.transform.position : ((Bounds)obj).center);
-			num = Mathf.Max(((Bounds)obj).size.magnitude, num * 1.5f);
+			if (POI && obj == null)
+			{
+				camera.transform.LookAt(gameObject2.transform.position);
+				num = 1f;
+			}
+			else
+			{
+				camera.transform.LookAt((num >= ((Bounds)obj).size.magnitude + 1f) ? gameObject2.transform.position : ((Bounds)obj).center);
+				num = Mathf.Max(((Bounds)obj).size.magnitude, num * 1.5f);
+			}
 			camera.farClipPlane = Mathf.Max(10f, num * 1.5f);
 			camera.nearClipPlane = 0.0001f;
 			camera.clearFlags = CameraClearFlags.Color;
