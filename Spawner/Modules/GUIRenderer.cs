@@ -917,6 +917,32 @@ namespace SpawnerTLD.Modules
 						}
 					}
 
+					miscY += buttonHeight + 10f;
+
+					if (GUI.Button(new Rect(miscX, miscY, buttonWidth, buttonHeight), "Respawn nearest building items"))
+					{
+						Vector3 playerPosition = mainscript.M.player.transform.position;
+
+						// Find closest building.
+						float distance = float.MaxValue;
+						GameObject closestBuilding = null;
+						foreach (KeyValuePair<int, GameObject> building in mainscript.M.terrainGenerationSettings.roadBuildingGeneration.placedBuildings)
+						{
+							Vector3 position = building.Value.transform.position;
+							float buildingDistance = Vector3.Distance(position, playerPosition);
+							if (buildingDistance < distance)
+							{
+								distance = buildingDistance;
+								closestBuilding = building.Value;
+							}
+						}
+
+						// Trigger item respawn.
+						buildingscript buildingscript = closestBuilding.GetComponent<buildingscript>();
+						buildingscript.itemsSpawned = false;
+						buildingscript.SpawnStuff(0);
+					}
+
 					break;
 			}
 		}
