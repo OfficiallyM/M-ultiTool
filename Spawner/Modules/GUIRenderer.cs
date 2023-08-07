@@ -28,6 +28,7 @@ namespace SpawnerTLD.Modules
 		private bool show = false;
 		private bool legacyUI = false;
 		private bool settingsShow = false;
+		private bool creditsShow = false;
 
 		private int resolutionX;
 		private int resolutionY;
@@ -65,6 +66,7 @@ namespace SpawnerTLD.Modules
 		private Vector2 itemScrollPosition;
 		private Vector2 toggleScrollPosition;
 		private Vector2 configScrollPosition;
+		private Vector2 creditScrollPosition;
 
 		// Tab indexes which render the config pane.
 		private List<int> configTabs = new List<int>() { 0, 1 };
@@ -380,9 +382,14 @@ namespace SpawnerTLD.Modules
 			if (GUI.Button(new Rect(x + 5f, y + 5f, 150f, 25f), GetAccessibleString("Show settings", settingsShow)))
 			{
 				settingsShow = !settingsShow;
+				creditsShow = false;
 			}
 
-			GUI.Label(new Rect(x + mainMenuWidth - 160f, y + 5f, 150f, 25f), "<color=#f9d909><size=15>In honor of <b>FreakShow</b></size></color>");
+			if (GUI.Button(new Rect(x + mainMenuWidth - 110f, y + 5f, 100f, 25f), GetAccessibleString("Credits", creditsShow)))
+			{
+				creditsShow = !creditsShow;
+				settingsShow = false;
+			}
 
 			if (settingsShow)
 			{
@@ -467,6 +474,56 @@ namespace SpawnerTLD.Modules
 
 						settingsY += configHeight + 2f;
 					}
+				}
+			}
+			else if (creditsShow)
+			{
+				float creditsX = x + 10f;
+				float creditsY = y + 50f;
+				float creditsWidth = width - 20f;
+				float creditsHeight = height - 65f;
+				GUI.Box(new Rect(creditsX, creditsY, creditsWidth, creditsHeight), "<size=18>Credits</size>");
+
+				creditsX += 10f;
+				creditsY += 50f;
+
+
+				List<string> credits = new List<string>()
+				{
+					"M- - The rewrite",
+					"RUNDEN - Thumbnail generator",
+					"FreakShow - Original spawner",
+					"_RainBowSheep_ - Original spawner"
+				};
+
+				List<string> other = new List<string>()
+				{
+					"copperboltwire",
+					"SgtJoe",
+					"Tumpy_Noodles",
+					"SubG",
+					"_Starixx",
+					"the Sabii",
+					"Jessica",
+					"Doubt"
+				};
+
+				float totalCreditsHeight = (credits.Count + other.Count) * 20f;
+
+				creditScrollPosition = GUI.BeginScrollView(new Rect(creditsX, creditsY, creditsWidth, creditsHeight), creditScrollPosition, new Rect(creditsX, creditsY, creditsWidth, totalCreditsHeight));
+
+				foreach (string credit in credits)
+				{
+					GUI.Label(new Rect(creditsX, creditsY, creditsWidth, 20f), $"<size=16>{credit}</size>");
+					creditsY += 30f;
+				}
+
+				GUI.Label(new Rect(creditsX, creditsY, creditsWidth, 20f), $"<b><size=16>With special thanks to the following for the bug reports/feature suggestions:</size></b>");
+				creditsY += 30f;
+				foreach (string name in other)
+				{
+					GUI.Label(new Rect(creditsX, creditsY, creditsWidth, 20f), $"<size=16>{name}</size>");
+					creditsY += 25f;
 				}
 			}
 			else
