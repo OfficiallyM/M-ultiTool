@@ -95,7 +95,10 @@ namespace SpawnerTLD
 					if (Input.GetKeyDown(binds.GetKeyByAction((int)Keybinds.Inputs.deleteMode).key) && mainscript.M.player.seat == null)
 					{
 						Physics.Raycast(mainscript.M.player.Cam.transform.position, mainscript.M.player.Cam.transform.forward, out var raycastHit, float.PositiveInfinity, mainscript.M.player.useLayer);
-						raycastHit.transform.gameObject.GetComponent<tosaveitemscript>().removeFromMemory = true;
+						tosaveitemscript save = raycastHit.transform.gameObject.GetComponent<tosaveitemscript>();
+						if (save != null)
+							save.removeFromMemory = true;
+
 						foreach (tosaveitemscript component in raycastHit.transform.root.GetComponentsInChildren<tosaveitemscript>())
 						{
 							component.removeFromMemory = true;
