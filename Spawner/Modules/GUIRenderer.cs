@@ -58,6 +58,7 @@ namespace SpawnerTLD.Modules
 			"Vehicles",
 			"Items",
 			"POIs",
+			"Shapes",
 			"Miscellaneous"
 		};
 
@@ -69,7 +70,7 @@ namespace SpawnerTLD.Modules
 		private Vector2 creditScrollPosition;
 
 		// Tab indexes which render the config pane.
-		private List<int> configTabs = new List<int>() { 0, 1 };
+		private List<int> configTabs = new List<int>() { 0, 1, 3 };
 
 		// Styling.
 		private GUIStyle labelStyle = new GUIStyle();
@@ -116,6 +117,10 @@ namespace SpawnerTLD.Modules
 		private List<POI> POIs = new List<POI>();
 		private List<GameObject> spawnedPOIs = new List<GameObject>();
 		private bool poiSpawnItems = true;
+
+		// Shape variables.
+		private Vector3 scale = Vector3.one;
+		private bool linkScale = false;
 
 		// Settings.
 		private List<QuickSpawn> quickSpawns = new List<QuickSpawn>();
@@ -541,6 +546,9 @@ namespace SpawnerTLD.Modules
 					if (GUI.Button(new Rect(tabX, y + 50f, tabButtonWidth, tabHeight), tab == tabIndex ? $"<color=#0F0>{tabs[tabIndex]}</color>" : tabs[tabIndex]))
 					{
 						tab = tabIndex;
+
+						// Reset config scroll position when changing tabs.
+						configScrollPosition = Vector2.zero;
 					}
 
 					tabX += tabButtonWidth + 30f;
@@ -549,7 +557,6 @@ namespace SpawnerTLD.Modules
 
 				RenderTab(tab);
 			}
-
 		}
 
 		private class ConfigDimensions
@@ -766,7 +773,6 @@ namespace SpawnerTLD.Modules
 							filterY += searchHeight + 2f;
 						}
 					}
-
 					break;
 
 				// POIs tab.
@@ -824,8 +830,74 @@ namespace SpawnerTLD.Modules
 					GUI.EndScrollView();
 					break;
 
-				// Miscellaneous tab.
+				// Shapes tab.
 				case 3:
+					GUI.skin.button.wordWrap = true;
+
+					itemWidth = 140f;
+					itemHeight = 40f;
+					initialRowX = tabX + 10f;
+					itemX = initialRowX;
+					itemY = tabY - 40f;
+
+					Dictionary<string, string> shapes = new Dictionary<string, string>()
+					{
+						{ "cube", "Cube" },
+						{ "sphere", "Sphere" },
+						{ "cylinder", "Cylinder" }
+					};
+
+					for (int i = 0; i < shapes.Count(); i++)
+					{
+						KeyValuePair<string, string> shape = shapes.ElementAt(i);
+
+						itemX += itemWidth + 10f;
+
+						if (i % maxRowItems == 0)
+						{
+							itemX = initialRowX;
+							itemY += itemHeight + 10f;
+						}
+
+						if (GUI.Button(new Rect(itemX, itemY, itemWidth, itemHeight), shape.Value))
+						{
+							GameObject primitive = null;
+
+							switch (shape.Key)
+							{
+								case "cube":
+									primitive = GameObject.CreatePrimitive(PrimitiveType.Cube);
+									break;
+								case "sphere":
+									primitive = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+									//primitive.AddComponent<childmoverscript>();
+									break;
+								case "cylinder":
+									primitive = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
+									//primitive.AddComponent<childmoverscript>();
+									break;
+							}
+
+
+							if (primitive != null)
+							{
+								pickupable pickupable = primitive.AddComponent<pickupable>();
+								massScript mass = primitive.AddComponent<massScript>();
+								mass.SetMass(20f);
+								mass.P = pickupable;
+								mass.AddRB();
+
+								primitive.GetComponent<Renderer>().material.color = color;
+								primitive.transform.localScale = scale;
+
+								mainscript.M.Spawn(primitive, -1);
+							}
+						}
+					}
+					break;
+
+				// Miscellaneous tab.
+				case 4:
 					float miscX = tabX + 10f;
 					float miscY = tabY + 10f;
 					float buttonWidth = 200f;
@@ -1012,15 +1084,27 @@ namespace SpawnerTLD.Modules
 		/// <param name="tab">The tab index to render the config pane for</param>
 		private void RenderConfig(int tab, ConfigDimensions configDimensions)
 		{
+			float configX = configDimensions.x + 5f;
+			float configY = configDimensions.y + 30f;
+			float configWidth = configDimensions.width - 10f;
+			float configHeight = 20f;
+
+			float red;
+			float green;
+			float blue;
+			bool redParse;
+			bool greenParse;
+			bool blueParse;
+
+			GUIStyle defaultStyle = GUI.skin.button;
+			GUIStyle previewStyle = new GUIStyle(defaultStyle);
+			Texture2D previewTexture = new Texture2D(1, 1);
+			Color[] pixels = new Color[] { color };
+
 			switch (tab)
 			{
 				case 0:
 				case 1:
-					float configX = configDimensions.x + 5f;
-					float configY = configDimensions.y + 30f;
-					float configWidth = configDimensions.width - 10f;
-					float configHeight = 20f;
-
 					// Fuel mixes needs multiplying by two as it has two fields per mix.
 					int configItems = 7 + (fuelMixes * 2);
 					float configScrollHeight = configItems * ((configHeight * 3) + 10f);
@@ -1088,10 +1172,10 @@ namespace SpawnerTLD.Modules
 					// Red.
 					GUI.Label(new Rect(configX, configY, configWidth, configHeight), "<color=#F00>Red:</color>", labelStyle);
 					configY += configHeight;
-					float red = GUI.HorizontalSlider(new Rect(configX, configY, configWidth, configHeight), color.r * 255, 0, 255);
+					red = GUI.HorizontalSlider(new Rect(configX, configY, configWidth, configHeight), color.r * 255, 0, 255);
 					red = Mathf.Round(red);
 					configY += configHeight;
-					bool redParse = float.TryParse(GUI.TextField(new Rect(configX, configY, configWidth, configHeight), red.ToString(), labelStyle), out red);
+					redParse = float.TryParse(GUI.TextField(new Rect(configX, configY, configWidth, configHeight), red.ToString(), labelStyle), out red);
 					if (!redParse)
 						logger.Log($"{redParse} is not a number", Logger.LogLevel.Error);
 					red = Mathf.Clamp(red, 0f, 255f);
@@ -1102,10 +1186,10 @@ namespace SpawnerTLD.Modules
 					configY += configHeight + 10f;
 					GUI.Label(new Rect(configX, configY, configWidth, configHeight), "<color=#0F0>Green:</color>", labelStyle);
 					configY += configHeight;
-					float green = GUI.HorizontalSlider(new Rect(configX, configY, configWidth, configHeight), color.g * 255, 0, 255);
+					green = GUI.HorizontalSlider(new Rect(configX, configY, configWidth, configHeight), color.g * 255, 0, 255);
 					green = Mathf.Round(green);
 					configY += configHeight;
-					bool greenParse = float.TryParse(GUI.TextField(new Rect(configX, configY, configWidth, configHeight), green.ToString(), labelStyle), out green);
+					greenParse = float.TryParse(GUI.TextField(new Rect(configX, configY, configWidth, configHeight), green.ToString(), labelStyle), out green);
 					if (!greenParse)
 						logger.Log($"{greenParse} is not a number", Logger.LogLevel.Error);
 					green = Mathf.Clamp(green, 0f, 255f);
@@ -1116,10 +1200,10 @@ namespace SpawnerTLD.Modules
 					configY += configHeight + 10f;
 					GUI.Label(new Rect(configX, configY, configWidth, configHeight), "<color=#00F>Blue:</color>", labelStyle);
 					configY += configHeight;
-					float blue = GUI.HorizontalSlider(new Rect(configX, configY, configWidth, configHeight), color.b * 255, 0, 255);
+					blue = GUI.HorizontalSlider(new Rect(configX, configY, configWidth, configHeight), color.b * 255, 0, 255);
 					blue = Mathf.Round(blue);
 					configY += configHeight;
-					bool blueParse = float.TryParse(GUI.TextField(new Rect(configX, configY, configWidth, configHeight), blue.ToString(), labelStyle), out blue);
+					blueParse = float.TryParse(GUI.TextField(new Rect(configX, configY, configWidth, configHeight), blue.ToString(), labelStyle), out blue);
 					if (!blueParse)
 						logger.Log($"{blueParse.ToString()} is not a number", Logger.LogLevel.Error);
 					blue = Mathf.Clamp(blue, 0f, 255f);
@@ -1138,10 +1222,7 @@ namespace SpawnerTLD.Modules
 					configY += configHeight + 10f;
 
 					// Colour preview.
-					GUIStyle defaultStyle = GUI.skin.button;
-					GUIStyle previewStyle = new GUIStyle(defaultStyle);
-					Texture2D previewTexture = new Texture2D(1, 1);
-					Color[] pixels = new Color[] { color };
+					pixels = new Color[] { color };
 					previewTexture.SetPixels(pixels);
 					previewTexture.Apply();
 					previewStyle.normal.background = previewTexture;
@@ -1159,6 +1240,123 @@ namespace SpawnerTLD.Modules
 						GUI.Label(new Rect(configX, configY, configWidth, configHeight), "Plate (blank for random):", labelStyle);
 						configY += configHeight;
 						plate = GUI.TextField(new Rect(configX, configY, configWidth, configHeight), plate, 7, labelStyle);
+					}
+
+					GUI.EndScrollView();
+					break;
+				case 3:
+					int shapeConfigItems = 8;
+					float shapeConfigScrollHeight = shapeConfigItems * ((configHeight * 3) + 10f);
+
+					configScrollPosition = GUI.BeginScrollView(new Rect(configX, configY, configWidth, configDimensions.height - 40f), configScrollPosition, new Rect(configX, configY, configWidth, shapeConfigScrollHeight), new GUIStyle(), new GUIStyle());
+					// Red.
+					GUI.Label(new Rect(configX, configY, configWidth, configHeight), "<color=#F00>Red:</color>", labelStyle);
+					configY += configHeight;
+					red = GUI.HorizontalSlider(new Rect(configX, configY, configWidth, configHeight), color.r * 255, 0, 255);
+					red = Mathf.Round(red);
+					configY += configHeight;
+					redParse = float.TryParse(GUI.TextField(new Rect(configX, configY, configWidth, configHeight), red.ToString(), labelStyle), out red);
+					if (!redParse)
+						logger.Log($"{redParse} is not a number", Logger.LogLevel.Error);
+					red = Mathf.Clamp(red, 0f, 255f);
+					color.r = red / 255f;
+
+					// Green.
+					configY += configHeight + 10f;
+					GUI.Label(new Rect(configX, configY, configWidth, configHeight), "<color=#0F0>Green:</color>", labelStyle);
+					configY += configHeight;
+					green = GUI.HorizontalSlider(new Rect(configX, configY, configWidth, configHeight), color.g * 255, 0, 255);
+					green = Mathf.Round(green);
+					configY += configHeight;
+					greenParse = float.TryParse(GUI.TextField(new Rect(configX, configY, configWidth, configHeight), green.ToString(), labelStyle), out green);
+					if (!greenParse)
+						logger.Log($"{greenParse} is not a number", Logger.LogLevel.Error);
+					green = Mathf.Clamp(green, 0f, 255f);
+					color.g = green / 255f;
+
+					// Blue.
+					configY += configHeight + 10f;
+					GUI.Label(new Rect(configX, configY, configWidth, configHeight), "<color=#00F>Blue:</color>", labelStyle);
+					configY += configHeight;
+					blue = GUI.HorizontalSlider(new Rect(configX, configY, configWidth, configHeight), color.b * 255, 0, 255);
+					blue = Mathf.Round(blue);
+					configY += configHeight;
+					blueParse = float.TryParse(GUI.TextField(new Rect(configX, configY, configWidth, configHeight), blue.ToString(), labelStyle), out blue);
+					if (!blueParse)
+						logger.Log($"{blueParse.ToString()} is not a number", Logger.LogLevel.Error);
+					blue = Mathf.Clamp(blue, 0f, 255f);
+					color.b = blue / 255f;
+
+					configY += configHeight + 10f;
+
+					if (GUI.Button(new Rect(configX, configY, 200f, configHeight), "Randomise colour"))
+					{
+						color.r = UnityEngine.Random.Range(0f, 255f) / 255f;
+						color.g = UnityEngine.Random.Range(0f, 255f) / 255f;
+						color.b = UnityEngine.Random.Range(0f, 255f) / 255f;
+					}
+
+					configY += configHeight + 10f;
+
+					// Colour preview.
+					pixels = new Color[] { color };
+					previewTexture.SetPixels(pixels);
+					previewTexture.Apply();
+					previewStyle.normal.background = previewTexture;
+					previewStyle.active.background = previewTexture;
+					previewStyle.hover.background = previewTexture;
+					previewStyle.margin = new RectOffset(0, 0, 0, 0);
+					GUI.skin.button = previewStyle;
+					GUI.Button(new Rect(configX, configY, configWidth, configHeight), "");
+					GUI.skin.button = defaultStyle;
+
+					configY += configHeight + 10f;
+					if (GUI.Button(new Rect(configX, configY, configWidth, configHeight), GetAccessibleString("Link scale axis", linkScale)))
+						linkScale = !linkScale;
+
+					if (linkScale)
+					{
+						// Scale.
+						configY += configHeight + 10f;
+						GUI.Label(new Rect(configX, configY, configWidth, configHeight), "Scale:", labelStyle);
+						configY += configHeight;
+						float allScale = GUI.HorizontalSlider(new Rect(configX, configY, configWidth, configHeight), scale.x, 0.1f, 10f);
+						allScale = (float)Math.Round(allScale, 2);
+						configY += configHeight;
+						allScale = (float)Math.Round(double.Parse(GUI.TextField(new Rect(configX, configY, configWidth, configHeight), allScale.ToString(), labelStyle)), 2);
+						scale = new Vector3(allScale, allScale, allScale);
+					}
+					else
+					{
+						// X.
+						configY += configHeight + 10f;
+						GUI.Label(new Rect(configX, configY, configWidth, configHeight), "Scale X:", labelStyle);
+						configY += configHeight;
+						float x = GUI.HorizontalSlider(new Rect(configX, configY, configWidth, configHeight), scale.x, 0.1f, 10f);
+						x = (float)Math.Round(x, 2);
+						configY += configHeight;
+						x = (float)Math.Round(double.Parse(GUI.TextField(new Rect(configX, configY, configWidth, configHeight), x.ToString(), labelStyle)), 2);
+						scale.x = x;
+
+						// Y.
+						configY += configHeight + 10f;
+						GUI.Label(new Rect(configX, configY, configWidth, configHeight), "Scale Y:", labelStyle);
+						configY += configHeight;
+						float y = GUI.HorizontalSlider(new Rect(configX, configY, configWidth, configHeight), scale.y, 0.1f, 10f);
+						y = (float)Math.Round(y, 2);
+						configY += configHeight;
+						y = (float)Math.Round(double.Parse(GUI.TextField(new Rect(configX, configY, configWidth, configHeight), y.ToString(), labelStyle)), 2);
+						scale.y = y;
+
+						// Z.
+						configY += configHeight + 10f;
+						GUI.Label(new Rect(configX, configY, configWidth, configHeight), "Scale Z:", labelStyle);
+						configY += configHeight;
+						float z = GUI.HorizontalSlider(new Rect(configX, configY, configWidth, configHeight), scale.z, 0.1f, 10f);
+						z = (float)Math.Round(z, 2);
+						configY += configHeight;
+						z = (float)Math.Round(double.Parse(GUI.TextField(new Rect(configX, configY, configWidth, configHeight), z.ToString(), labelStyle)), 2);
+						scale.z = z;
 					}
 
 					GUI.EndScrollView();
