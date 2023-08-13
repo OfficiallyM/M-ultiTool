@@ -138,6 +138,7 @@ namespace SpawnerTLD.Modules
 		};
 		private bool accessibilityShow = false;
 		private string accessibilityMode = "none";
+		private float noclipFastMoveFactor = 10f;
 
 		private temporaryTurnOffGeneration temp;
 
@@ -288,6 +289,7 @@ namespace SpawnerTLD.Modules
 			settingsScrollWidth = scrollWidth;
 			noclipGodmodeDisable = config.GetNoclipGodmodeDisable(noclipGodmodeDisable);
 			accessibilityMode = config.GetAccessibilityMode(accessibilityMode);
+			noclipFastMoveFactor = config.GetNoclipFastMoveFactor(noclipFastMoveFactor);
 
 			// Load keybinds.
 			binds.OnLoad();
@@ -435,6 +437,15 @@ namespace SpawnerTLD.Modules
 					noclipGodmodeDisable = !noclipGodmodeDisable;
 					config.UpdateNoclipGodmodeDisable(noclipGodmodeDisable);
 				}
+
+				settingsY += configHeight + 10f;
+
+				GUI.Label(new Rect(settingsX, settingsY, settingsWidth, configHeight), "Noclip speed increase factor:", labelStyle);
+				settingsY += configHeight;
+				float factor = GUI.HorizontalSlider(new Rect(settingsX, settingsY, settingsWidth, configHeight), noclipFastMoveFactor, 2f, 100f);
+				noclipFastMoveFactor = Mathf.Round(factor);
+				settingsY += configHeight;
+				GUI.Label(new Rect(settingsX, settingsY, settingsWidth, configHeight), noclipFastMoveFactor.ToString());
 
 				settingsY += configHeight + 10f;
 
@@ -915,7 +926,7 @@ namespace SpawnerTLD.Modules
 						if (settings.noclip)
 						{
 							Noclip noclip = mainscript.M.player.gameObject.AddComponent<Noclip>();
-							noclip.constructor(binds, logger);
+							noclip.constructor(binds, logger, noclipFastMoveFactor);
 							localRotation = mainscript.M.player.transform.localRotation;
 							mainscript.M.player.Th.localEulerAngles = new Vector3(0f, 0f, 0f);
 							settings.godMode = true;

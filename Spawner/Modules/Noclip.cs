@@ -12,11 +12,6 @@ namespace SpawnerTLD.Modules
 		private Keybinds binds;
 		private Logger logger;
 
-		public void constructor(Keybinds _binds, Logger _logger)
-		{
-			binds = _binds;
-			logger = _logger;
-		}
 
 		public float cameraSensitivity = 90f;
 		public float climbSpeed = 10f;
@@ -24,6 +19,13 @@ namespace SpawnerTLD.Modules
 		public float fastMoveFactor = 10f;
 		private float rotationX;
 		private float rotationY;
+
+		public void constructor(Keybinds _binds, Logger _logger, float _fastMoveFactor)
+		{
+			binds = _binds;
+			logger = _logger;
+			fastMoveFactor = _fastMoveFactor;
+		}
 
 		private void Update()
 		{

@@ -63,5 +63,6 @@ namespace SpawnerTLD.Core
 		[DataMember] public float scrollWidth { get; set; }
 		[DataMember] public bool? noclipGodmodeDisable { get; set; }
 		[DataMember] public string accessibilityMode { get; set; }
+		[DataMember] public float noclipFastMoveFactor { get; set; }
 	}
 }

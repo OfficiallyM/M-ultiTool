@@ -115,6 +115,17 @@ namespace SpawnerTLD.Modules
 		}
 
 		/// <summary>
+		/// Update noclipFastMoveFactor in config
+		/// </summary>
+		/// <param name="factor">The new factor</param>
+		public void UpdateNoclipFastMoveFactor(float factor)
+		{
+			config.noclipFastMoveFactor = factor;
+
+			Commit();
+		}
+
+		/// <summary>
 		/// Get keybinds from the config file
 		/// </summary>
 		/// <returns>A list of keys</returns>
@@ -202,6 +213,22 @@ namespace SpawnerTLD.Modules
 			}
 
 			return config.accessibilityMode;
+		}
+
+		/// <summary>
+		/// Get scrollbar width from config
+		/// </summary>
+		/// <returns>The scrollbar width</returns>
+		public float GetNoclipFastMoveFactor(float defaultFactor)
+		{
+			loadFromConfigFile();
+
+			if (config.noclipFastMoveFactor == 0)
+			{
+				UpdateNoclipFastMoveFactor(defaultFactor);
+			}
+
+			return config.noclipFastMoveFactor;
 		}
 
 		/// <summary>
