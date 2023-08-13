@@ -485,7 +485,7 @@ namespace SpawnerTLD.Modules
 
 				List<string> credits = new List<string>()
 				{
-					"M- - The rewrite",
+					"M- - Maintainer",
 					"RUNDEN - Thumbnail generator",
 					"FreakShow - Original spawner",
 					"_RainBowSheep_ - Original spawner"
