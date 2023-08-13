@@ -35,7 +35,7 @@ namespace SpawnerTLD.Modules
 		/// <param name="gameObject">The item to get the category for</param>
 		/// <param name="categories">The categories to sort into</param>
 		/// <returns>The category index</returns>
-		public int GetCategory(GameObject gameObject, Dictionary<string, Type> categories)
+		public int GetCategory(GameObject gameObject, Dictionary<string, List<Type>> categories)
 		{
 			// Get all components, add types to list.
 			var components = gameObject.GetComponents<MonoBehaviour>();
@@ -50,19 +50,22 @@ namespace SpawnerTLD.Modules
 			List<string> names = categories.Keys.ToList();
 
 			// Categories will be located in order.
-			foreach (KeyValuePair<string, Type> category in categories)
+			foreach (KeyValuePair<string, List<Type>> category in categories)
 			{
-				if (types.ContainsKey(category.Value))
+				foreach (Type type in category.Value)
 				{
-					MonoBehaviour component = types[category.Value];
-					if (category.Value == typeof(pickupable))
+					if (types.ContainsKey(type))
 					{
-						pickupable pickupable = component as pickupable;
-						if (pickupable.usable != null)
+						MonoBehaviour component = types[type];
+						if (type == typeof(pickupable))
+						{
+							pickupable pickupable = component as pickupable;
+							if (pickupable.usable != null)
+								return names.IndexOf(category.Key);
+						}
+						else
 							return names.IndexOf(category.Key);
 					}
-					else
-						return names.IndexOf(category.Key);
 				}
 			}
 

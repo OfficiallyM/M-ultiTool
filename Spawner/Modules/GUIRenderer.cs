@@ -95,19 +95,20 @@ namespace SpawnerTLD.Modules
 		private List<Item> items = new List<Item>();
 
 		// Filtering.
-		private Dictionary<string, Type> categories = new Dictionary<string, Type>()
+		private Dictionary<string, List<Type>> categories = new Dictionary<string, List<Type>>()
 		{
-			{ "Vehicles", typeof(carscript) },
-			{ "Tanks", typeof(tankscript) },
-			{ "Vehicle parts", typeof(partscript) },
-			{ "Guns", typeof(weaponscript) },
-			{ "Melee weapons", typeof(meleeweaponscript) },
-			{ "Refillables", typeof(ammoscript) },
-			{ "Food", typeof(ediblescript) },
-			{ "Wearables", typeof(wearable) },
-			{ "Lights", typeof(flashlightscript) },
-			{ "Usables", typeof(pickupable) },
-			{ "Other", typeof(MonoBehaviour) },
+			{ "Vehicles", new List<Type>() { typeof(carscript) } },
+			{ "Tanks", new List<Type>() { typeof(tankscript) } },
+			{ "Vehicle parts", new List<Type>() { typeof(partscript) } },
+			{ "Guns", new List<Type>() { typeof(weaponscript) } },
+			{ "Melee weapons", new List<Type>() { typeof(meleeweaponscript) } },
+			{ "Cleaning", new List<Type>() { typeof(drotkefescript), typeof(spricniscript) } },
+			{ "Refillables", new List<Type>() { typeof(ammoscript) } },
+			{ "Food", new List<Type>() { typeof(ediblescript) } },
+			{ "Wearables", new List<Type>() { typeof(wearable) } },
+			{ "Lights", new List<Type>() { typeof(flashlightscript) } },
+			{ "Usables", new List<Type>() { typeof(pickupable) } },
+			{ "Other", new List<Type>() { typeof(MonoBehaviour) } },
 		};
 		private bool filterShow = false;
 		private List<int> filters = new List<int>();
