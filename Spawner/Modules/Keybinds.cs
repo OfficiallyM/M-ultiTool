@@ -110,26 +110,11 @@ namespace SpawnerTLD.Modules
 			try
 			{
 				// Load the keybinds from the config.
-				List<Key> newKeys = config.GetKeybinds();
-				if (newKeys == null)
-					// No keybinds in config, write the defaults.
-					config.UpdateKeybinds(keys);
-				else if (newKeys.Count < keys.Count)
-				{
-					// Config is missing binds, update missing ones with defaults.
-					List<Key> missing = keys.Where(k => !newKeys.Any(x => x.action == k.action)).ToList();
-					foreach (Key key in missing)
-					{
-						newKeys.Add(key);
-					}
-					config.UpdateKeybinds(newKeys);
-				}
-				else
-					keys = newKeys;
+				keys = config.GetKeybinds(keys);
 			}
 			catch (Exception ex)
 			{
-				logger.Log($"Keybinds Onload {ex}", Logger.LogLevel.Error);
+				logger.Log($"Keybinds load error - {ex}", Logger.LogLevel.Error);
 			}
 		}
 

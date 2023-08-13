@@ -71,7 +71,7 @@ namespace SpawnerTLD
 			}
 
 			// Set the configuration path.
-			config.setConfigPath(ModLoader.GetModConfigFolder(this) + "\\Config.json");
+			config.SetConfigPath(ModLoader.GetModConfigFolder(this) + "\\Config.json");
 
 			translator.SetLanguage(mainscript.M.menu.language.languageNames[mainscript.M.menu.language.selectedLanguage]);
 

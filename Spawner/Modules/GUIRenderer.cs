@@ -282,34 +282,12 @@ namespace SpawnerTLD.Modules
 				fuelTypeInts.Add(-1);
 			}
 
-			// Load legacy UI config.
-			bool? configLegacyMode = config.GetLegacyMode();
-			if (configLegacyMode.HasValue)
-				legacyUI = configLegacyMode.Value;
-			else
-				config.UpdateLegacyMode(legacyUI);
-
-			// Load scroll width.
-			float? configScrollWidth = config.GetScrollWidth();
-			if (configScrollWidth.HasValue)
-				scrollWidth = configScrollWidth.Value;
-			else
-				config.UpdateScrollWidth(scrollWidth);
+			// Load configs.
+			legacyUI = config.GetLegacyMode(legacyUI);
+			scrollWidth = config.GetScrollWidth(scrollWidth);
 			settingsScrollWidth = scrollWidth;
-
-			// Load noclip godmode disable.
-			bool? configNoclipGodmodeDisable = config.GetNoclipGodmodeDisable();
-			if (configNoclipGodmodeDisable.HasValue)
-				noclipGodmodeDisable = configNoclipGodmodeDisable.Value;
-			else
-				config.UpdateNoclipGodmodeDisable(noclipGodmodeDisable);
-
-			// Load accessibility mode.
-			string configAccessibilityMode = config.GetAccessibilityMode();
-			if (configAccessibilityMode != null)
-				accessibilityMode = configAccessibilityMode;
-			else
-				config.UpdateAccessibiltiyMode(accessibilityMode);
+			noclipGodmodeDisable = config.GetNoclipGodmodeDisable(noclipGodmodeDisable);
+			accessibilityMode = config.GetAccessibilityMode(accessibilityMode);
 
 			// Load keybinds.
 			binds.OnLoad();
@@ -474,7 +452,7 @@ namespace SpawnerTLD.Modules
 						if (GUI.Button(new Rect(settingsX, settingsY, buttonWidth, configHeight), GetAccessibleString(mode.Value, accessibilityMode == mode.Key)))
 						{
 							accessibilityMode = mode.Key;
-							config.UpdateAccessibiltiyMode(accessibilityMode);
+							config.UpdateAccessibilityMode(accessibilityMode);
 						}
 
 						settingsY += configHeight + 2f;

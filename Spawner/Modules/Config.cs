@@ -30,6 +30,9 @@ namespace SpawnerTLD.Modules
 			// Attempt to load the config file.
 			try
 			{
+				// Config already loaded, return early.
+				if (config == new ConfigSerializable()) return;
+
 				if (File.Exists(configPath))
 				{
 					string json = File.ReadAllText(configPath);
@@ -49,7 +52,7 @@ namespace SpawnerTLD.Modules
 		/// Set the path of the config file
 		/// </summary>
 		/// <param name="path">The config file path</param>
-		public void setConfigPath(string path)
+		public void SetConfigPath(string path)
 		{
 			configPath = path;
 
@@ -64,7 +67,7 @@ namespace SpawnerTLD.Modules
 		{
 			config.keybinds = binds;
 
-			UpdateConfig();
+			Commit();
 		}
 
 		/// <summary>
@@ -75,7 +78,7 @@ namespace SpawnerTLD.Modules
 		{
 			config.legacyUI = enabled;
 
-			UpdateConfig();	
+			Commit();	
 		}
 
 		/// <summary>
@@ -86,7 +89,7 @@ namespace SpawnerTLD.Modules
 		{
 			config.scrollWidth = width;
 
-			UpdateConfig();
+			Commit();
 		}
 
 		/// <summary>
@@ -97,104 +100,114 @@ namespace SpawnerTLD.Modules
 		{
 			config.noclipGodmodeDisable = enabled;
 
-			UpdateConfig();
+			Commit();
 		}
 
 		/// <summary>
 		/// Update accessibilityMode in config
 		/// </summary>
 		/// <param name="mode">The accessibility mode to set</param>
-		public void UpdateAccessibiltiyMode(string mode)
+		public void UpdateAccessibilityMode(string mode)
 		{
 			config.accessibilityMode = mode;
 
-			UpdateConfig();
+			Commit();
 		}
 
 		/// <summary>
 		/// Get keybinds from the config file
 		/// </summary>
 		/// <returns>A list of keys</returns>
-		public List<Keybinds.Key> GetKeybinds()
+		public List<Keybinds.Key> GetKeybinds(List<Keybinds.Key> defaultBinds)
 		{
 			loadFromConfigFile();
 
-			if (config.keybinds != null && config.keybinds.Count > 0)
+			if (config.keybinds == null || config.keybinds.Count == 0)
+				// No keybinds in config, write the defaults.
+				UpdateKeybinds(defaultBinds);
+			else if (config.keybinds.Count < defaultBinds.Count)
 			{
-				return config.keybinds;
+				// Config is missing binds, update missing ones with defaults.
+				List<Keybinds.Key> missing = defaultBinds.Where(k => !config.keybinds.Any(x => x.action == k.action)).ToList();
+				foreach (Keybinds.Key key in missing)
+				{
+					config.keybinds.Add(key);
+				}
+				UpdateKeybinds(config.keybinds);
 			}
 
-			return null;
+			return config.keybinds;
 		}
 
 		/// <summary>
 		/// Get legacy mode status from config
 		/// </summary>
 		/// <returns>Boolean legacy mode value</returns>
-		public bool? GetLegacyMode()
+		public bool GetLegacyMode(bool defaultLegacyMode)
 		{
 			loadFromConfigFile();
 
-			if (config != null && config.legacyUI != null)
+			// Populate from default if not set in config.
+			if (config.legacyUI == null)
 			{
-				return config.legacyUI;
+				UpdateLegacyMode(defaultLegacyMode);
 			}
 
-			return null;
+			return config.legacyUI.GetValueOrDefault();
 		}
 
 		/// <summary>
 		/// Get scrollbar width from config
 		/// </summary>
 		/// <returns>The scrollbar width</returns>
-		public float? GetScrollWidth()
+		public float GetScrollWidth(float defaultScrollWidth)
 		{
 			loadFromConfigFile();
 
-			if (config != null && config.scrollWidth > 0)
+			if (config.scrollWidth == 0)
 			{
-				return config.scrollWidth;
+				UpdateScrollWidth(defaultScrollWidth);
 			}
 
-			return null;
+			return config.scrollWidth;
 		}
 
 		/// <summary>
 		/// Get noclip godmode disable status from config
 		/// </summary>
 		/// <returns>Boolean legacy mode value</returns>
-		public bool? GetNoclipGodmodeDisable()
+		public bool GetNoclipGodmodeDisable(bool defaultNoclipGodmodeDisable)
 		{
 			loadFromConfigFile();
 
-			if (config != null && config.noclipGodmodeDisable != null)
+			if (config.noclipGodmodeDisable == null)
 			{
-				return config.noclipGodmodeDisable;
+				UpdateNoclipGodmodeDisable(defaultNoclipGodmodeDisable);
 			}
 
-			return null;
+			return config.noclipGodmodeDisable.GetValueOrDefault();
 		}
 
 		/// <summary>
 		/// Get accessibility mode from config
 		/// </summary>
 		/// <returns>Boolean legacy mode value</returns>
-		public string GetAccessibilityMode()
+		public string GetAccessibilityMode(string defaultAccessibilityMode)
 		{
 			loadFromConfigFile();
 
-			if (config != null && config.accessibilityMode != null)
+			if (config.accessibilityMode == null)
 			{
-				return config.accessibilityMode;
+				UpdateAccessibilityMode(defaultAccessibilityMode);
 			}
 
-			return null;
+			return config.accessibilityMode;
 		}
 
 		/// <summary>
 		/// Write the config to the file
 		/// </summary>
-		private void UpdateConfig()
+		private void Commit()
 		{
 			if (configPath == String.Empty)
 			{
