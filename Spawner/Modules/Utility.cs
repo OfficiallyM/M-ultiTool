@@ -11,6 +11,7 @@ namespace SpawnerTLD.Modules
 	internal class Utility
 	{
 		private Logger logger;
+		private Settings settings = new Settings();
 
 		public Utility(Logger _logger)
 		{
@@ -104,6 +105,14 @@ namespace SpawnerTLD.Modules
 					return;
 				}
 
+				// Support for spawning without any fuel.
+				if (!settings.spawnWithFuel)
+				{
+					fuelTank.F.fluids.Clear();
+					mainscript.M.Spawn(item.item, item.color, selectedCondition, -1);
+					return;
+				}
+
 				// Fuel type and value are default, just spawn the item.
 				if (item.fuelMixes == 1)
 				{
@@ -188,6 +197,14 @@ namespace SpawnerTLD.Modules
 			if (fuelTank == null)
 			{
 				// Vehicle doesn't have a fuel tank, just spawn the vehicle and return.
+				Spawn(vehicle.vehicle, vehicle.color, fullRandom, selectedCondition, vehicle.variant);
+				return;
+			}
+
+			// Support for spawning without any fuel.
+			if (!settings.spawnWithFuel)
+			{
+				fuelTank.F.fluids.Clear();
 				Spawn(vehicle.vehicle, vehicle.color, fullRandom, selectedCondition, vehicle.variant);
 				return;
 			}

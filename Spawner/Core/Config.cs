@@ -53,6 +53,13 @@ namespace SpawnerTLD.Core
 			get { return s_noclip; }
 			set { s_noclip = value; }
 		}
+
+		public static bool s_spawnWithFuel = true;
+		public bool spawnWithFuel
+		{
+			get { return s_spawnWithFuel; }
+			set { s_spawnWithFuel = value; }
+		}
 	}
 
 	[DataContract]

@@ -1112,6 +1112,11 @@ namespace SpawnerTLD.Modules
 
 					configY += configHeight + 10f;
 
+					if (GUI.Button(new Rect(configX, configY, 200f, configHeight), GetAccessibleString("Spawn with fuel", settings.spawnWithFuel)))
+						settings.spawnWithFuel = !settings.spawnWithFuel;
+
+					configY += configHeight + 10f;
+
 					// Fuel mixes.
 					int maxFuelType = (int)Enum.GetValues(typeof(mainscript.fluidenum)).Cast<mainscript.fluidenum>().Max();
 					GUI.Label(new Rect(configX, configY, configWidth, configHeight), "Number of fuels:", labelStyle);
