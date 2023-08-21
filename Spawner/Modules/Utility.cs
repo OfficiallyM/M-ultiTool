@@ -256,28 +256,51 @@ namespace SpawnerTLD.Modules
 		/// <returns>The spawned point of interest</returns>
 		public GameObject Spawn(POI POI, bool spawnItems)
 		{
+			GameObject gameObject = null;
 			try
 			{
 				Vector3 position = mainscript.M.player.lookPoint;
 				position.y = mainscript.M.player.gameObject.transform.position.y;
 
-				// Don't apply offset to starter house.
+				// Starter house needs a different offset.
 				if (POI.poi.name == "haz02")
-					position += Vector3.up * 0.2f;
+					position += Vector3.up * 0.18f;
 				else
 					position -= Vector3.up * 0.85f;
 
-				GameObject gameObject = UnityEngine.Object.Instantiate(POI.poi, position, Quaternion.FromToRotation(Vector3.forward, -mainscript.M.player.transform.right), mainscript.M.terrainGenerationSettings.roadBuildingGeneration.parent);
+				//var components = POI.poi.GetComponents<MonoBehaviour>();
+				//foreach (var component in components)
+				//	logger.Log($"{component.GetType()}", Logger.LogLevel.Debug);
 
-				// TODO: This doesn't work.
-				terrainHeightAlignToBuildingScript terrain = gameObject.GetComponent<terrainHeightAlignToBuildingScript>();
+				gameObject = UnityEngine.Object.Instantiate(POI.poi, position, Quaternion.FromToRotation(Vector3.forward, -mainscript.M.player.transform.right), mainscript.M.terrainGenerationSettings.roadBuildingGeneration.parent);
+
+				// TODO: Does fuck all.
+				// Find appropriate terrainHeightAlignToBuildingScript from TerrainGenerator.
+				terrainHeightAlignToBuildingScript terrain = TerrainGenerator.TG.buildings.Where(b => b.name.Contains(POI.poi.name)).FirstOrDefault();
 				if (terrain != null)
 				{
-					terrain.FStart(true);
+					//terrain.FStart(true);
 				}
 
-				if (spawnItems)
-					gameObject.GetComponent<buildingscript>().FStart(0);
+				// TODO: Also does fuck all.
+				foreach (digholescript2 componentsInChild in gameObject.GetComponentsInChildren<digholescript2>()) 
+				{
+					componentsInChild.Refresh();
+				}
+
+				buildingscript buildingscript = gameObject.GetComponent<buildingscript>();
+				if (buildingscript != null)
+				{
+					if (spawnItems)
+						buildingscript.itemsSpawned = true;
+
+					// TODO: Buildings don't actually save...
+					// Mark building to be saved.
+					savedatascript.d.AddOrRefreshBuilding(buildingscript, 2);
+
+					// Force start as a building with a save script.
+					buildingscript.FStart(2);
+				}
 
 				return gameObject;
 			}
@@ -286,7 +309,7 @@ namespace SpawnerTLD.Modules
 				logger.Log($"Error spawning POI - {ex}", Logger.LogLevel.Error);
 			}
 
-			return null;
+			return gameObject;
 		}
 
 		/// <summary>
