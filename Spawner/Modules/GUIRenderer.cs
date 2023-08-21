@@ -1417,12 +1417,12 @@ namespace SpawnerTLD.Modules
 		{
 			List<POI> POIs = new List<POI>();
 
-			try
+			foreach (GameObject POI in itemdatabase.d.buildings)
 			{
-				foreach (GameObject POI in itemdatabase.d.buildings)
-				{
-					if (POI.name == "ErrorPrefab" || POI.name == "Falu01") continue;
+				if (POI.name == "ErrorPrefab" || POI.name == "Falu01") continue;
 					
+				try
+				{
 					// TODO: Some building thumbnails are a bit fucked.
 					POIs.Add(new POI()
 					{
@@ -1431,10 +1431,35 @@ namespace SpawnerTLD.Modules
 						name = translator.T(POI.name, "POI"),
 					});
 				}
+				catch (Exception ex)
+				{
+					logger.Log($"POI init error - {ex}", Logger.LogLevel.Error);
+				}
 			}
-			catch (Exception ex)
+
+			// Foliage objects.
+			foreach (ObjClass objClass in mainscript.M.terrainGenerationSettings.objGeneration.objTypes)
 			{
-				logger.Log($"Error loading POIs - {ex}", Logger.LogLevel.Error);
+				POIs.Add(new POI()
+				{
+					poi = objClass.prefab,
+					thumbnail = thumbnailGenerator.GetThumbnail(objClass.prefab, POI: true),
+					name = translator.T(objClass.prefab.name, "POI"),
+				});
+			}
+
+			// Desert tower buildings (ship, water tower, etc).
+			foreach (ObjClass objClass in mainscript.M.terrainGenerationSettings.desertTowerGeneration.objTypes)
+			{
+				// Exclude POIs already loaded.
+				if (POIs.Where(p => p.poi.name == objClass.prefab.name).ToList().Count() > 0) continue;
+
+				POIs.Add(new POI()
+				{
+					poi = objClass.prefab,
+					thumbnail = thumbnailGenerator.GetThumbnail(objClass.prefab, POI: true),
+					name = translator.T(objClass.prefab.name, "POI"),
+				});
 			}
 
 			return POIs;

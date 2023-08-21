@@ -73,6 +73,22 @@ namespace SpawnerTLD.Modules
 				}
 			}
 
+			foreach (ObjClass objClass in mainscript.M.terrainGenerationSettings.objGeneration.objTypes)
+			{
+				if (!tempItems.Contains(objClass.prefab.name.ToUpper()))
+				{
+					tempItems.Add(objClass.prefab.name.ToUpper());
+				}
+			}
+
+			foreach (ObjClass objClass in mainscript.M.terrainGenerationSettings.desertTowerGeneration.objTypes)
+			{
+				if (!tempItems.Contains(objClass.prefab.name.ToUpper()))
+				{
+					tempItems.Add(objClass.prefab.name.ToUpper());
+				}
+			}
+
 			int itemCount = tempItems.Count;
 			DirectoryInfo cache = new DirectoryInfo(cacheDir);
 			int cacheCount = cache.GetFiles().Length;
