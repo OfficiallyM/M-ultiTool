@@ -268,7 +268,7 @@ namespace SpawnerTLD.Modules
 				Quaternion rot = new Quaternion();
 
 				// Set default position and rotation.
-				pos = mainscript.M.player.lookPoint;
+				pos = mainscript.M.player.lookPoint + mainscript.M.player.transform.forward * 5f;
 				pos.y = mainscript.M.player.gameObject.transform.position.y;
 
 				// Starter house needs a different offset.
