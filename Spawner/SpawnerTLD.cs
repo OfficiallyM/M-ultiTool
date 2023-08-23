@@ -1,6 +1,7 @@
 ﻿using SpawnerTLD.Core;
 using SpawnerTLD.Modules;
 using System;
+using System.Collections.Generic;
 using System.IO;
 using TLDLoader;
 using UnityEngine;
@@ -95,15 +96,21 @@ namespace SpawnerTLD
 					if (Input.GetKeyDown(binds.GetKeyByAction((int)Keybinds.Inputs.deleteMode).key) && mainscript.M.player.seat == null)
 					{
 						Physics.Raycast(mainscript.M.player.Cam.transform.position, mainscript.M.player.Cam.transform.forward, out var raycastHit, float.PositiveInfinity, mainscript.M.player.useLayer);
+
+						// Require objects to have a tosaveitemscript in order to delete them.
+						// This prevents players from deleting the world, buildings and other
+						// stuff that would break the game.
 						tosaveitemscript save = raycastHit.transform.gameObject.GetComponent<tosaveitemscript>();
 						if (save != null)
+						{
 							save.removeFromMemory = true;
 
-						foreach (tosaveitemscript component in raycastHit.transform.root.GetComponentsInChildren<tosaveitemscript>())
-						{
-							component.removeFromMemory = true;
+							foreach (tosaveitemscript component in raycastHit.transform.root.GetComponentsInChildren<tosaveitemscript>())
+							{
+								component.removeFromMemory = true;
+							}
+							UnityEngine.Object.Destroy(raycastHit.transform.root.gameObject);
 						}
-						UnityEngine.Object.Destroy(raycastHit.transform.root.gameObject);
 					}
 				}
 				catch (Exception ex)

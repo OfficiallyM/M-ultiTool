@@ -13,4 +13,10 @@ namespace SpawnerTLD.Core
 		public string name;
 		public Texture2D thumbnail;
 	}
+
+	internal class SpawnedPOI
+	{
+		public int? ID;
+		public GameObject poi;
+	}
 }

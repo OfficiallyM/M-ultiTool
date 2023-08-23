@@ -1,7 +1,9 @@
 ﻿using SpawnerTLD.Core;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Runtime.Serialization.Json;
 using System.Text;
 using System.Threading.Tasks;
 using UnityEngine;
@@ -253,26 +255,42 @@ namespace SpawnerTLD.Modules
 		/// </summary>
 		/// <param name="POI">The point of interest to spawn</param>
 		/// <param name="spawnItems">Whether the POI should spawn items</param>
+		/// <param name="position">Position override</param>
+		/// <param name="rotation">Rotation override</param>
 		/// <returns>The spawned point of interest</returns>
-		public GameObject Spawn(POI POI, bool spawnItems)
+		public GameObject Spawn(POI POI, bool spawnItems, Vector3? position = null, Quaternion? rotation = null)
 		{
 			GameObject gameObject = null;
 			try
 			{
-				Vector3 position = mainscript.M.player.lookPoint;
-				position.y = mainscript.M.player.gameObject.transform.position.y;
+				bool save = true;
+				Vector3 pos = new Vector3();
+				Quaternion rot = new Quaternion();
+
+				// Set default position and rotation.
+				pos = mainscript.M.player.lookPoint;
+				pos.y = mainscript.M.player.gameObject.transform.position.y;
 
 				// Starter house needs a different offset.
 				if (POI.poi.name == "haz02")
-					position += Vector3.up * 0.18f;
+					pos += Vector3.up * 0.18f;
 				else
-					position -= Vector3.up * 0.85f;
+					pos -= Vector3.up * 0.85f;
+
+				rot = Quaternion.FromToRotation(Vector3.forward, -mainscript.M.player.transform.right);
+
+				if (position != null && position != null)
+				{
+					pos = position.GetValueOrDefault();
+					rot = rotation.GetValueOrDefault();
+					save = false;
+				}
 
 				//var components = POI.poi.GetComponents<MonoBehaviour>();
 				//foreach (var component in components)
 				//	logger.Log($"{component.GetType()}", Logger.LogLevel.Debug);
 
-				gameObject = UnityEngine.Object.Instantiate(POI.poi, position, Quaternion.FromToRotation(Vector3.forward, -mainscript.M.player.transform.right), mainscript.M.terrainGenerationSettings.roadBuildingGeneration.parent);
+				gameObject = UnityEngine.Object.Instantiate(POI.poi, pos, rot, mainscript.M.terrainGenerationSettings.roadBuildingGeneration.parent);
 
 				// TODO: Does fuck all.
 				// Find appropriate terrainHeightAlignToBuildingScript from TerrainGenerator.
@@ -294,15 +312,20 @@ namespace SpawnerTLD.Modules
 					if (spawnItems)
 						buildingscript.itemsSpawned = true;
 
-					// TODO: Buildings don't actually save...
-					// Mark building to be saved.
-					savedatascript.d.AddOrRefreshBuilding(buildingscript, 2);
-
-					// Force start as a building with a save script.
+					// Force start building script.
 					buildingscript.FStart(2);
 				}
 
-				return gameObject;
+				// Save the POI.
+				if (save)
+				{
+					UpdatePOISaveData(new POIData()
+					{
+						poi = gameObject.name,
+						position = pos,
+						rotation = rot,
+					});
+				}
 			}
 			catch (Exception ex)
 			{
@@ -353,6 +376,119 @@ namespace SpawnerTLD.Modules
 			{
 				logger.Log($"Failed to spawn {gameObject.name} - {ex}", Logger.LogLevel.Error);
 			}
+		}
+
+		/// <summary>
+		/// Read/write data to game save
+		/// <para>Originally from RundensWheelPositionEditor</para>
+		/// </summary>
+		/// <param name="input">The string to write to the save</param>
+		/// <returns>The read/written string</returns>
+		public string ReadWriteToGameSave(string input = null)
+		{
+			try
+			{
+				save_rendszam saveRendszam = null;
+				save_prefab savePrefab1;
+
+				// Attempt to find existing plate.
+				if ((savedatascript.d.data.farStuff.TryGetValue(Mathf.Abs(Meta.ID.GetHashCode()), out savePrefab1) || savedatascript.d.data.nearStuff.TryGetValue(Mathf.Abs(Meta.ID.GetHashCode()), out savePrefab1)) && savePrefab1.rendszam != null)
+					saveRendszam = savePrefab1.rendszam;
+
+				// Plate doesn't exist.
+				if (saveRendszam == null)
+				{
+					// Create a new plate to store the input string in.
+					tosaveitemscript component = itemdatabase.d.gplate.GetComponent<tosaveitemscript>();
+					save_prefab savePrefab2 = new save_prefab(component.category, component.id, double.MaxValue, double.MaxValue, double.MaxValue, 0.0f, 0.0f, 0.0f);
+					savePrefab2.rendszam = new save_rendszam();
+					saveRendszam = savePrefab2.rendszam;
+					saveRendszam.S = string.Empty;
+					savedatascript.d.data.farStuff.Add(Mathf.Abs(Meta.ID.GetHashCode()), savePrefab2);
+				}
+
+				// Write the input to the plate.
+				if (input != null && input != string.Empty)
+					saveRendszam.S = input;
+
+				return saveRendszam.S;
+			}
+			catch (Exception ex)
+			{
+				logger.Log($"Save read/write error - {ex}", Logger.LogLevel.Error);
+			}
+
+			return string.Empty;
+		}
+
+		/// <summary>
+		/// Unserialize existing save data
+		/// </summary>
+		/// <returns>Unserialized save data</returns>
+		public Save UnserializeSaveData()
+		{
+			string existingString = ReadWriteToGameSave();
+			if (existingString == null || existingString == string.Empty)
+				return new Save();
+
+			MemoryStream ms = new MemoryStream(Encoding.UTF8.GetBytes(existingString));
+			DataContractJsonSerializer jsonSerializer = new DataContractJsonSerializer(typeof(Save));
+			return jsonSerializer.ReadObject(ms) as Save;
+		}
+
+		/// <summary>
+		/// Serialize save data and write to save
+		/// </summary>
+		/// <param name="data">The data to serialize</param>
+		public void SerializeSaveData(Save data)
+		{
+			MemoryStream ms = new MemoryStream();
+			DataContractJsonSerializer jsonSerializer = new DataContractJsonSerializer(typeof(Save));
+			jsonSerializer.WriteObject(ms, data);
+
+			// Rewind stream.
+			ms.Seek(0, SeekOrigin.Begin);
+
+			// Convert stream to a string.
+			StreamReader reader = new StreamReader(ms);
+			string jsonString = reader.ReadToEnd();
+
+			ReadWriteToGameSave(jsonString);
+		}
+
+		/// <summary>
+		/// Update POI data in save
+		/// </summary>
+		/// <param name="poi">The POI to update</param>
+		/// <param name="type">Update type, either "insert" or "delete"</param>
+		public void UpdatePOISaveData(POIData poi, string type = "insert")
+		{
+			Save data = UnserializeSaveData();
+
+			try
+			{
+				switch (type)
+				{
+					case "insert":
+						if (data.pois == null)
+							data.pois = new List<POIData>();
+
+						poi.ID = data.pois.Count;
+
+						data.pois.Add(poi);
+						break;
+					case "delete":
+						POIData poiData = data.pois.First(p => p.ID == poi.ID);
+						data.pois.Remove(poiData);
+						break;
+				}
+			}
+			catch (Exception ex)
+			{
+				logger.Log($"POI update error - {ex}", Logger.LogLevel.Error);
+			}
+
+			SerializeSaveData(data);
 		}
 
 		/// <summary>

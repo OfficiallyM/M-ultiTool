@@ -116,7 +116,7 @@ namespace SpawnerTLD.Modules
 		// POI variables.
 		private Vector2 poiScrollPosition;
 		private List<POI> POIs = new List<POI>();
-		private List<GameObject> spawnedPOIs = new List<GameObject>();
+		private List<SpawnedPOI> spawnedPOIs = new List<SpawnedPOI>();
 		private bool poiSpawnItems = true;
 
 		// Shape variables.
@@ -275,6 +275,28 @@ namespace SpawnerTLD.Modules
 
 			vehicles = LoadVehicles();
 			POIs = LoadPOIs();
+
+			// Load and spawn saved POIs.
+			Save data = utility.UnserializeSaveData();
+			foreach (POIData poi in data.pois)
+			{
+				try
+				{
+					GameObject gameObject = POIs.Where(p => p.poi.name == poi.poi.Replace("(Clone)", "")).FirstOrDefault().poi;
+					if (gameObject != null)
+					{
+						gameObject = utility.Spawn(new POI() { poi = gameObject }, false, poi.position, poi.rotation);
+						spawnedPOIs.Add(new SpawnedPOI() {
+							ID = poi.ID,
+							poi = gameObject
+						});
+					}
+				}
+				catch (Exception ex)
+				{
+					logger.Log($"POI load error - {ex}", Logger.LogLevel.Error);
+				}
+			}
 
 			// Prepopulate fuel types and fuel values as all default.
 			int maxFuelType = (int)Enum.GetValues(typeof(mainscript.fluidenum)).Cast<mainscript.fluidenum>().Max();
@@ -815,7 +837,9 @@ namespace SpawnerTLD.Modules
 						{
 							GameObject spawnedPOI = utility.Spawn(currentPOI, poiSpawnItems);
 							if (spawnedPOI != null)
-								spawnedPOIs.Add(spawnedPOI);
+								spawnedPOIs.Add(new SpawnedPOI() {
+									poi = spawnedPOI
+								});
 						}
 					}
 					GUI.EndScrollView();
@@ -1028,9 +1052,17 @@ namespace SpawnerTLD.Modules
 						{
 							try
 							{
-								GameObject poi = spawnedPOIs.Last();
+								SpawnedPOI poi = spawnedPOIs.Last();
+
+								// Remove POI from save.
+								if (poi.ID != null)
+									utility.UpdatePOISaveData(new POIData()
+									{
+										ID = poi.ID.Value,
+									}, "delete");
+
 								spawnedPOIs.Remove(poi);
-								GameObject.Destroy(poi);
+								GameObject.Destroy(poi.poi);
 							}
 							catch (Exception ex)
 							{
