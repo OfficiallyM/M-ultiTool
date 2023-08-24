@@ -255,6 +255,62 @@
 		{
 			"objectName": "Mansion",
 			"name": "Haunted mansion"
+		},
+		{
+			"objectName": "BigRock 1",
+			"name": "Big rock"
+		},
+		{
+			"objectName": "Cacti",
+			"name": "Cactus"
+		},
+		{
+			"objectName": "Fucsomo",
+			"name": "Grass"
+		},
+		{
+			"objectName": "HalottFa",
+			"name": "Tree"
+		},
+		{
+			"objectName": "HalottFa2",
+			"name": "Tree 2"
+		},
+		{
+			"objectName": "KO01",
+			"name": "Rock 1"
+		},
+		{
+			"objectName": "KO02",
+			"name": "Rock 2"
+		},
+		{
+			"objectName": "Kereszt",
+			"name": "Grave"
+		},
+		{
+			"objectName": "NagyAntenna",
+			"name": "Radio tower"
+		},
+		{
+			"objectName": "OldShip",
+			"name": "Ship"
+		},
+		{
+			"objectName": "Torony",
+			"name": "Tower"
+		},
+		{
+			"objectName": "Viztorony",
+			"name": "Water tower"
+		},
+		{
+			"objectName": "ViztoronyPapa",
+			"name": "Water tower 2"
+		},
+		{
+			"objectName": "ViztoronyUfo",
+			"name": "Water tower 3"
 		}
 	]
 }
