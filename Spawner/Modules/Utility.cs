@@ -309,11 +309,11 @@ namespace SpawnerTLD.Modules
 				buildingscript buildingscript = gameObject.GetComponent<buildingscript>();
 				if (buildingscript != null)
 				{
-					if (spawnItems)
+					if (!spawnItems)
 						buildingscript.itemsSpawned = true;
 
 					// Force start building script.
-					buildingscript.FStart(2);
+					buildingscript.FStart(0);
 				}
 
 				// Save the POI.
