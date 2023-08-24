@@ -15,6 +15,8 @@
 - UFO spawner
 - Godmode toggle
 - Noclip toggle
+- POI (point of interest) spawner
+- Generic shape spawning, coloring and resizing
 
 ### TODO
 - [ ] Improve time changer to display what the chosen time is
@@ -32,7 +34,7 @@
 ## Contributors
 - RUNDEN: Thumbnail generation
 
-## Screenshots
+## Screenshots (Outdated)
 ### Legacy UI
 Vehicle and misc menu
 ![20230624182256_1](https://github.com/OfficiallyM/SpawnerTLD/assets/6341480/dc6aed48-37e1-4037-9238-2f2cc11bca10)
