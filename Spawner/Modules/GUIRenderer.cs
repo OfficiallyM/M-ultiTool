@@ -523,7 +523,8 @@ namespace SpawnerTLD.Modules
 					"the Sabii",
 					"Jessica",
 					"Doubt",
-					"dela"
+					"dela",
+					"DummyModder"
 				};
 
 				float totalCreditsHeight = (credits.Count + other.Count) * 20f;
