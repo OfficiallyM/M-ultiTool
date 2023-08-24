@@ -287,11 +287,7 @@ namespace SpawnerTLD.Modules
 						GameObject gameObject = POIs.Where(p => p.poi.name == poi.poi.Replace("(Clone)", "")).FirstOrDefault().poi;
 						if (gameObject != null)
 						{
-							gameObject = utility.Spawn(new POI() { poi = gameObject }, false, poi.position, poi.rotation);
-							spawnedPOIs.Add(new SpawnedPOI() {
-								ID = poi.ID,
-								poi = gameObject
-							});
+							spawnedPOIs.Add(utility.Spawn(new POI() { poi = gameObject }, false, poi.position, poi.rotation));
 						}
 					}
 				}
@@ -846,11 +842,9 @@ namespace SpawnerTLD.Modules
 							GUI.Button(new Rect(itemX, itemY, itemWidth, thumbnailHeight), currentPOI.thumbnail) ||
 							GUI.Button(new Rect(itemX, itemY + thumbnailHeight, itemWidth, textHeight), currentPOI.name))
 						{
-							GameObject spawnedPOI = utility.Spawn(currentPOI, poiSpawnItems);
+							SpawnedPOI spawnedPOI = utility.Spawn(currentPOI, poiSpawnItems);
 							if (spawnedPOI != null)
-								spawnedPOIs.Add(new SpawnedPOI() {
-									poi = spawnedPOI
-								});
+								spawnedPOIs.Add(spawnedPOI);
 						}
 					}
 					GUI.EndScrollView();

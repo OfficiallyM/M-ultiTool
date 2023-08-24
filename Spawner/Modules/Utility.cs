@@ -258,9 +258,10 @@ namespace SpawnerTLD.Modules
 		/// <param name="position">Position override</param>
 		/// <param name="rotation">Rotation override</param>
 		/// <returns>The spawned point of interest</returns>
-		public GameObject Spawn(POI POI, bool spawnItems, Vector3? position = null, Quaternion? rotation = null)
+		public SpawnedPOI Spawn(POI POI, bool spawnItems, Vector3? position = null, Quaternion? rotation = null)
 		{
 			GameObject gameObject = null;
+			int ID = -1;
 			try
 			{
 				bool save = true;
@@ -294,17 +295,17 @@ namespace SpawnerTLD.Modules
 
 				// TODO: Does fuck all.
 				// Find appropriate terrainHeightAlignToBuildingScript from TerrainGenerator.
-				terrainHeightAlignToBuildingScript terrain = TerrainGenerator.TG.buildings.Where(b => b.name.Contains(POI.poi.name)).FirstOrDefault();
-				if (terrain != null)
-				{
-					//terrain.FStart(true);
-				}
+				//terrainHeightAlignToBuildingScript terrain = TerrainGenerator.TG.buildings.Where(b => b.name.Contains(POI.poi.name)).FirstOrDefault();
+				//if (terrain != null)
+				//{
+				//	terrain.FStart(true);
+				//}
 
 				// TODO: Also does fuck all.
-				foreach (digholescript2 componentsInChild in gameObject.GetComponentsInChildren<digholescript2>()) 
-				{
-					componentsInChild.Refresh();
-				}
+				//foreach (digholescript2 componentsInChild in gameObject.GetComponentsInChildren<digholescript2>())
+				//{
+				//	componentsInChild.Refresh();
+				//}
 
 				buildingscript buildingscript = gameObject.GetComponent<buildingscript>();
 				if (buildingscript != null)
@@ -319,7 +320,7 @@ namespace SpawnerTLD.Modules
 				// Save the POI.
 				if (save)
 				{
-					UpdatePOISaveData(new POIData()
+					ID = UpdatePOISaveData(new POIData()
 					{
 						poi = gameObject.name,
 						position = pos,
@@ -332,7 +333,11 @@ namespace SpawnerTLD.Modules
 				logger.Log($"Error spawning POI - {ex}", Logger.LogLevel.Error);
 			}
 
-			return gameObject;
+			return new SpawnedPOI()
+			{
+				ID = ID,
+				poi = gameObject,
+			};
 		}
 
 		/// <summary>
@@ -461,9 +466,12 @@ namespace SpawnerTLD.Modules
 		/// </summary>
 		/// <param name="poi">The POI to update</param>
 		/// <param name="type">Update type, either "insert" or "delete"</param>
-		public void UpdatePOISaveData(POIData poi, string type = "insert")
+		/// <returns>POI ID</returns>
+		public int UpdatePOISaveData(POIData poi, string type = "insert")
 		{
 			Save data = UnserializeSaveData();
+
+			int ID = -1;
 
 			try
 			{
@@ -474,12 +482,17 @@ namespace SpawnerTLD.Modules
 							data.pois = new List<POIData>();
 
 						poi.ID = data.pois.Count;
+						ID = poi.ID;
 
 						data.pois.Add(poi);
 						break;
 					case "delete":
 						POIData poiData = data.pois.First(p => p.ID == poi.ID);
-						data.pois.Remove(poiData);
+						if (poiData != null)
+						{
+							ID = poiData.ID;
+							data.pois.Remove(poiData);
+						}
 						break;
 				}
 			}
@@ -489,6 +502,8 @@ namespace SpawnerTLD.Modules
 			}
 
 			SerializeSaveData(data);
+
+			return ID;
 		}
 
 		/// <summary>
