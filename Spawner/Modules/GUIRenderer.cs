@@ -1085,14 +1085,27 @@ namespace SpawnerTLD.Modules
 						// Find closest building.
 						float distance = float.MaxValue;
 						GameObject closestBuilding = null;
+
+						List<GameObject> buildings = new List<GameObject>();
+
 						foreach (KeyValuePair<int, GameObject> building in mainscript.M.terrainGenerationSettings.roadBuildingGeneration.placedBuildings)
 						{
-							Vector3 position = building.Value.transform.position;
+							buildings.Add(building.Value);
+						}
+
+						foreach (SpawnedPOI spawnedPOI in spawnedPOIs)
+						{
+							buildings.Add(spawnedPOI.poi);
+						}
+
+						foreach (GameObject building in buildings)
+						{
+							Vector3 position = building.transform.position;
 							float buildingDistance = Vector3.Distance(position, playerPosition);
 							if (buildingDistance < distance)
 							{
 								distance = buildingDistance;
-								closestBuilding = building.Value;
+								closestBuilding = building;
 							}
 						}
 
