@@ -277,25 +277,28 @@ namespace SpawnerTLD.Modules
 			POIs = LoadPOIs();
 
 			// Load and spawn saved POIs.
-			Save data = utility.UnserializeSaveData();
-			foreach (POIData poi in data.pois)
+			try
 			{
-				try
+				Save data = utility.UnserializeSaveData();
+				if (data.pois != null)
 				{
-					GameObject gameObject = POIs.Where(p => p.poi.name == poi.poi.Replace("(Clone)", "")).FirstOrDefault().poi;
-					if (gameObject != null)
+					foreach (POIData poi in data.pois)
 					{
-						gameObject = utility.Spawn(new POI() { poi = gameObject }, false, poi.position, poi.rotation);
-						spawnedPOIs.Add(new SpawnedPOI() {
-							ID = poi.ID,
-							poi = gameObject
-						});
+						GameObject gameObject = POIs.Where(p => p.poi.name == poi.poi.Replace("(Clone)", "")).FirstOrDefault().poi;
+						if (gameObject != null)
+						{
+							gameObject = utility.Spawn(new POI() { poi = gameObject }, false, poi.position, poi.rotation);
+							spawnedPOIs.Add(new SpawnedPOI() {
+								ID = poi.ID,
+								poi = gameObject
+							});
+						}
 					}
 				}
-				catch (Exception ex)
-				{
-					logger.Log($"POI load error - {ex}", Logger.LogLevel.Error);
-				}
+			}
+			catch (Exception ex)
+			{
+				logger.Log($"POI load error - {ex}", Logger.LogLevel.Error);
 			}
 
 			// Prepopulate fuel types and fuel values as all default.
@@ -307,12 +310,19 @@ namespace SpawnerTLD.Modules
 			}
 
 			// Load configs.
-			legacyUI = config.GetLegacyMode(legacyUI);
-			scrollWidth = config.GetScrollWidth(scrollWidth);
-			settingsScrollWidth = scrollWidth;
-			noclipGodmodeDisable = config.GetNoclipGodmodeDisable(noclipGodmodeDisable);
-			accessibilityMode = config.GetAccessibilityMode(accessibilityMode);
-			noclipFastMoveFactor = config.GetNoclipFastMoveFactor(noclipFastMoveFactor);
+			try
+			{
+				legacyUI = config.GetLegacyMode(legacyUI);
+				scrollWidth = config.GetScrollWidth(scrollWidth);
+				settingsScrollWidth = scrollWidth;
+				noclipGodmodeDisable = config.GetNoclipGodmodeDisable(noclipGodmodeDisable);
+				accessibilityMode = config.GetAccessibilityMode(accessibilityMode);
+				noclipFastMoveFactor = config.GetNoclipFastMoveFactor(noclipFastMoveFactor);
+			}
+			catch (Exception ex)
+			{
+				logger.Log($"Config load error - {ex}", Logger.LogLevel.Error);
+			}
 
 			// Load keybinds.
 			binds.OnLoad();
