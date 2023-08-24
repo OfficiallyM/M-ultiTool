@@ -11,6 +11,6 @@ namespace SpawnerTLD.Core
 		public static string ID => "SpawnerTLD";
 		public static string Name => "Spawner";
 		public static string Author => "M-";
-		public static string Version => "2.4.1";
+		public static string Version => "2.4.2";
 	}
 }
