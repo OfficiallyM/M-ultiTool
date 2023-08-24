@@ -310,8 +310,7 @@ namespace SpawnerTLD.Modules
 				buildingscript buildingscript = gameObject.GetComponent<buildingscript>();
 				if (buildingscript != null)
 				{
-					if (!spawnItems)
-						buildingscript.itemsSpawned = true;
+					buildingscript.itemsSpawned = !spawnItems;
 
 					// Force start building script.
 					buildingscript.FStart(0);
