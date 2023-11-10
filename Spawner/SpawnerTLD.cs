@@ -119,6 +119,46 @@ namespace SpawnerTLD
 				}
 			}
 
+			switch (settings.mode)
+			{
+				case "colorPicker":
+					if (Input.GetKeyDown(binds.GetKeyByAction((int)Keybinds.Inputs.copy).key) && !renderer.show)
+					{
+						Physics.Raycast(mainscript.M.player.Cam.transform.position, mainscript.M.player.Cam.transform.forward, out var raycastHit, float.PositiveInfinity, mainscript.M.player.useLayer);
+						GameObject hitGameObject = raycastHit.transform.gameObject;
+						partconditionscript part = hitGameObject.GetComponent<partconditionscript>();
+
+						// Return early if hit GameObject has no partconditionscript.
+						if (part == null)
+							return;
+
+						Color objectColor = new Color();
+						foreach (Renderer renderer in part.renderers)
+						{
+							if (renderer.material == null)
+								continue;
+
+							objectColor = renderer.material.color;
+						}
+
+						renderer.SetColor(objectColor);
+					}
+
+					if (Input.GetKeyDown(binds.GetKeyByAction((int)Keybinds.Inputs.paste).key) && !renderer.show)
+					{
+						Physics.Raycast(mainscript.M.player.Cam.transform.position, mainscript.M.player.Cam.transform.forward, out var raycastHit, float.PositiveInfinity, mainscript.M.player.useLayer);
+						GameObject hitGameObject = raycastHit.transform.gameObject;
+						partconditionscript part = hitGameObject.transform.root.GetComponent<partconditionscript>();
+
+						// Return early if hit GameObject has no partconditionscript.
+						if (part == null)
+							return;
+
+						utility.Paint(renderer.GetColor(), part);
+					}
+					break;
+			}
+
 			// Fake the player being on a ladder to remove the gravity during noclip.
 			// This is needed because setting useGravity directly on the player RigidBody
 			// gets enabled again immediately by the fpscontroller.

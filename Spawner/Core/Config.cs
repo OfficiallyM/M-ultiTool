@@ -60,6 +60,13 @@ namespace SpawnerTLD.Core
 			get { return s_spawnWithFuel; }
 			set { s_spawnWithFuel = value; }
 		}
+
+		public static string s_mode = null;
+		public string mode
+		{
+			get { return s_mode; }
+			set { s_mode = value; }
+		}
 	}
 
 	[DataContract]

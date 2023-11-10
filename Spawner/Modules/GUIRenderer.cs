@@ -25,7 +25,7 @@ namespace SpawnerTLD.Modules
 
 		// Menu control.
 		public bool enabled = false;
-		private bool show = false;
+		public bool show = false;
 		private bool legacyUI = false;
 		private bool settingsShow = false;
 		private bool creditsShow = false;
@@ -162,6 +162,9 @@ namespace SpawnerTLD.Modules
 			// Override scrollbar width;
 			GUI.skin.verticalScrollbar.fixedWidth = scrollWidth;
 			GUI.skin.verticalScrollbarThumb.fixedWidth = scrollWidth;
+
+			if (!show && !mainscript.M.menu.Menu.activeSelf)
+				RenderHUD();
 
 			// Render the legacy UI if enabled.
 			if (legacyUI)
@@ -1115,6 +1118,16 @@ namespace SpawnerTLD.Modules
 						buildingscript.SpawnStuff(0);
 					}
 
+					miscY += buttonHeight + 10f;
+
+					if (GUI.Button(new Rect(miscX, miscY, buttonWidth, buttonHeight), GetAccessibleString("Toggle color picker", settings.mode == "colorPicker")))
+					{
+						if (settings.mode == "colorPicker")
+							settings.mode = null;
+						else
+							settings.mode = "colorPicker";
+					}
+
 					break;
 			}
 		}
@@ -1411,6 +1424,45 @@ namespace SpawnerTLD.Modules
 		}
 
 		/// <summary>
+		/// Render any HUD elements.
+		/// </summary>
+		private void RenderHUD()
+		{
+			switch (settings.mode)
+			{
+				case "colorPicker":
+					float width = 400f;
+					float height = 40f;
+					float x = resolutionX / 2 - 100f;
+					float y = resolutionY * 0.90f;
+
+					GUI.Box(new Rect(x, y, width, height), String.Empty);
+					GUI.Button(new Rect(x, y, width / 2, height / 2), "Copy");
+					GUI.Button(new Rect(x + width / 2, y, width / 2, height / 2), "Paste");
+
+					GUI.Button(new Rect(x, y + height / 2, width / 2, height / 2), binds.GetPrettyName((int)Keybinds.Inputs.copy));
+					GUI.Button(new Rect(x + width / 2, y + height / 2, width / 2, height / 2), binds.GetPrettyName((int)Keybinds.Inputs.paste));
+
+					// Colour preview.
+					GUIStyle defaultStyle = GUI.skin.button;
+					GUIStyle previewStyle = new GUIStyle(defaultStyle);
+					Texture2D previewTexture = new Texture2D(1, 1);
+					Color[] pixels = new Color[] { color };
+					pixels = new Color[] { color };
+					previewTexture.SetPixels(pixels);
+					previewTexture.Apply();
+					previewStyle.normal.background = previewTexture;
+					previewStyle.active.background = previewTexture;
+					previewStyle.hover.background = previewTexture;
+					previewStyle.margin = new RectOffset(0, 0, 0, 0);
+					GUI.skin.button = previewStyle;
+					GUI.Button(new Rect(x, y + height, width, height / 2), "");
+					GUI.skin.button = defaultStyle;
+					break;
+			}
+		}
+
+		/// <summary>
 		/// Load all vehicles and generate thumbnails
 		/// </summary>
 		/// <returns>List of vehicles</returns>
@@ -1552,6 +1604,24 @@ namespace SpawnerTLD.Modules
 			}
 
 			return state ? $"<color=#0F0>{trueStr}</color>" : $"<color=#F00>{falseStr}</color>";
+		}
+
+		/// <summary>
+		/// Set selected color.
+		/// </summary>
+		/// <param name="_color">Color to select</param>
+		public void SetColor(Color _color)
+		{
+			color = _color;
+		}
+
+		/// <summary>
+		/// Get currently selected color.
+		/// </summary>
+		/// <returns></returns>
+		public Color GetColor()
+		{
+			return color;
 		}
 
 		/// <summary> 

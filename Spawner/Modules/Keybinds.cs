@@ -27,7 +27,9 @@ namespace SpawnerTLD.Modules
 			deleteMode,
 			noclipSpeedUp,
 			noclipUp,
-			noclipDown
+			noclipDown,
+			copy,
+			paste
 		}
 
 		public List<Key> keys = new List<Key>();
@@ -95,6 +97,16 @@ namespace SpawnerTLD.Modules
 				keys[4].key = KeyCode.LeftControl;
 				keys[4].defaultKey = KeyCode.LeftControl;
 				keys[4].name = "Noclip fly down";
+
+				// Copy.
+				keys[5].key = KeyCode.Mouse0;
+				keys[5].defaultKey = KeyCode.Mouse0;
+				keys[5].name = "Copy";
+
+				// Paste.
+				keys[6].key = KeyCode.Mouse1;
+				keys[6].defaultKey = KeyCode.Mouse1;
+				keys[6].name = "Paste";
 			}
 			catch (Exception ex)
 			{
@@ -126,6 +138,26 @@ namespace SpawnerTLD.Modules
 		public Key GetKeyByAction(int action)
 		{
 			return keys.Where(k => k.action == action).FirstOrDefault();
+		}
+
+		/// <summary>
+		/// Get pretty name of action keybind.
+		/// </summary>
+		/// <param name="action">The action to get the key name of</param>
+		/// <returns>Prettified key string</returns>
+		public string GetPrettyName(int action)
+		{
+			KeyCode key = GetKeyByAction(action).key;
+
+			switch (key)
+			{
+				case KeyCode.Mouse0:
+					return "Left mouse button";
+				case KeyCode.Mouse1:
+					return "Right mouse button";
+				default:
+					return key.ToString();
+			}
 		}
 
 		/// <summary>
