@@ -59,6 +59,7 @@ namespace SpawnerTLD.Modules
 			"Items",
 			"POIs",
 			"Shapes",
+			"Vehicle Configuration",
 			"Miscellaneous"
 		};
 
@@ -76,6 +77,16 @@ namespace SpawnerTLD.Modules
 		private GUIStyle labelStyle = new GUIStyle();
 		private GUIStyle headerStyle = new GUIStyle();
 		private float scrollWidth = 10f;
+		private GUIStyle messageStyle = new GUIStyle()
+		{
+			fontSize = 40,
+			alignment = TextAnchor.MiddleCenter,
+			wordWrap = true,
+			normal = new GUIStyleState()
+			{
+				textColor = Color.white,
+			}
+		};
 
 		// General variables.
 		private string search = String.Empty;
@@ -639,6 +650,9 @@ namespace SpawnerTLD.Modules
 			int columnCount = (int)Math.Ceiling((double)vehicles.Count / maxRowItems);
 			float scrollHeight = (itemHeight + 10f) * (columnCount + 1);
 
+			float buttonWidth = 200f;
+			float buttonHeight = 20f;
+
 			switch (tab)
 			{
 				// Vehicles tab.
@@ -919,12 +933,34 @@ namespace SpawnerTLD.Modules
 					}
 					break;
 
-				// Miscellaneous tab.
+				// Current vehicle configuration tab.
 				case 4:
+					float currVehicleX = tabX + 10f;
+					float currVehicleY = tabY + 10f;
+					buttonWidth = 200f;
+					buttonHeight = 20f;
+
+					if (mainscript.M.player.Car == null)
+					{
+						GUI.Label(new Rect(currVehicleX, currVehicleY, tabWidth - 20f, tabHeight - 20f), "No current vehicle\nSit in a vehicle to show configuration", messageStyle);
+						return;
+					}
+
+					carscript car = mainscript.M.player.Car;
+
+					if (GUI.Button(new Rect(currVehicleX, currVehicleY, buttonWidth, buttonHeight), GetAccessibleString("Vehicle god mode", car.crashMultiplier <= 0.0)))
+					{
+						car.crashMultiplier *= -1f;
+					}
+
+					break;
+
+				// Miscellaneous tab.
+				case 5:
 					float miscX = tabX + 10f;
 					float miscY = tabY + 10f;
-					float buttonWidth = 200f;
-					float buttonHeight = 20f;
+					buttonWidth = 200f;
+					buttonHeight = 20f;
 
 					float miscWidth = 250f;
 					float labelWidth = tabWidth - 20f;
