@@ -7,7 +7,9 @@ using System.Text;
 using System.Threading.Tasks;
 using TLDLoader;
 using UnityEngine;
+using SpawnerTLD.Extensions;
 using Settings = SpawnerTLD.Core.Settings;
+using static mainscript;
 
 namespace SpawnerTLD.Modules
 {
@@ -66,6 +68,7 @@ namespace SpawnerTLD.Modules
 		private Vector2 tabScrollPosition;
 		private Vector2 vehicleScrollPosition;
 		private Vector2 itemScrollPosition;
+		private Vector2 currentVehiclePosition;
 		private Vector2 toggleScrollPosition;
 		private Vector2 configScrollPosition;
 		private Vector2 creditScrollPosition;
@@ -75,7 +78,17 @@ namespace SpawnerTLD.Modules
 
 		// Styling.
 		private GUIStyle labelStyle = new GUIStyle();
-		private GUIStyle headerStyle = new GUIStyle();
+		private GUIStyle headerStyle = new GUIStyle()
+		{
+			fontSize = 24,
+			alignment = TextAnchor.UpperLeft,
+			wordWrap = true,
+			normal = new GUIStyleState()
+			{
+				textColor = Color.white,
+			}
+		};
+		private GUIStyle legacyHeaderStyle = new GUIStyle();
 		private float scrollWidth = 10f;
 		private GUIStyle messageStyle = new GUIStyle()
 		{
@@ -133,6 +146,11 @@ namespace SpawnerTLD.Modules
 		// Shape variables.
 		private Vector3 scale = Vector3.one;
 		private bool linkScale = false;
+
+		// Vehicle configuration variables.
+		private Dictionary<mainscript.fluidenum, int> coolants = new Dictionary<mainscript.fluidenum, int>();
+		private Dictionary<mainscript.fluidenum, int> oils = new Dictionary<mainscript.fluidenum, int>();
+		private Dictionary<mainscript.fluidenum, int> fuels = new Dictionary<mainscript.fluidenum, int>();
 
 		// Settings.
 		private List<QuickSpawn> quickSpawns = new List<QuickSpawn>();
@@ -233,112 +251,124 @@ namespace SpawnerTLD.Modules
 
 		public void OnLoad()
 		{
-			// Set label styling.
-			labelStyle.alignment = TextAnchor.UpperLeft;
-			labelStyle.normal.textColor = Color.white;
-
-			// Set header styling.
-			headerStyle.alignment = TextAnchor.MiddleCenter;
-			headerStyle.fontSize = 16;
-			headerStyle.normal.textColor = Color.white;
-
-			resolutionX = mainscript.M.SettingObj.S.IResolutionX;
-			resolutionY = mainscript.M.SettingObj.S.IResolutionY;
-
-			// Set main menu position here so other menus can be based around it.
-			legacyMainMenuWidth = resolutionX / 7f;
-			legacyMainMenuHeight = resolutionY / 1.2f;
-			legacyMainMenuX = resolutionX / 2.5f - legacyMainMenuWidth;
-			legacyMainMenuY = 75f;
-
-			mainMenuWidth = resolutionX - 80f;
-			mainMenuHeight = resolutionY - 80f;
-			mainMenuX = 40f;
-			mainMenuY = 40f;
-
-			// Also store the vehicle menu so the misc menu can be
-			// placed under it.
-			legacyVehicleMenuX = legacyMainMenuX + legacyMainMenuWidth + 15f;
-			legacyVehicleMenuY = legacyMainMenuY;
-			legacyVehicleMenuWidth = resolutionX / 2f;
-			legacyVehicleMenuHeight = resolutionY / 4.25f;
-
-			// Add available quickspawn items.
-			// TODO: Allow these to be user-selected?
-			quickSpawns.Add(new QuickSpawn() { gameObject = itemdatabase.d.goilcan, name = "Oil can" });
-			quickSpawns.Add(new QuickSpawn() { gameObject = itemdatabase.d.ggascan, name = "Jerry can" });
-			quickSpawns.Add(new QuickSpawn() { gameObject = itemdatabase.d.gbarrel, name = "Barrel" });
-
-			// Prepare items list.
-			thumbnailGenerator.PrepareCache();
-			foreach (GameObject item in itemdatabase.d.items)
+			try
 			{
+				// Set label styling.
+				labelStyle.alignment = TextAnchor.UpperLeft;
+				labelStyle.normal.textColor = Color.white;
+
+				// Set header styling.
+				legacyHeaderStyle.alignment = TextAnchor.MiddleCenter;
+				legacyHeaderStyle.fontSize = 16;
+				legacyHeaderStyle.normal.textColor = Color.white;
+
+				resolutionX = mainscript.M.SettingObj.S.IResolutionX;
+				resolutionY = mainscript.M.SettingObj.S.IResolutionY;
+
+				// Set main menu position here so other menus can be based around it.
+				legacyMainMenuWidth = resolutionX / 7f;
+				legacyMainMenuHeight = resolutionY / 1.2f;
+				legacyMainMenuX = resolutionX / 2.5f - legacyMainMenuWidth;
+				legacyMainMenuY = 75f;
+
+				mainMenuWidth = resolutionX - 80f;
+				mainMenuHeight = resolutionY - 80f;
+				mainMenuX = 40f;
+				mainMenuY = 40f;
+
+				// Also store the vehicle menu so the misc menu can be
+				// placed under it.
+				legacyVehicleMenuX = legacyMainMenuX + legacyMainMenuWidth + 15f;
+				legacyVehicleMenuY = legacyMainMenuY;
+				legacyVehicleMenuWidth = resolutionX / 2f;
+				legacyVehicleMenuHeight = resolutionY / 4.25f;
+
+				// Add available quickspawn items.
+				// TODO: Allow these to be user-selected?
+				quickSpawns.Add(new QuickSpawn() { gameObject = itemdatabase.d.goilcan, name = "Oil can" });
+				quickSpawns.Add(new QuickSpawn() { gameObject = itemdatabase.d.ggascan, name = "Jerry can" });
+				quickSpawns.Add(new QuickSpawn() { gameObject = itemdatabase.d.gbarrel, name = "Barrel" });
+
+				// Prepare items list.
+				thumbnailGenerator.PrepareCache();
+				foreach (GameObject item in itemdatabase.d.items)
+				{
+					try
+					{
+						// Remove vehicles and trailers from items array.
+						if (!utility.IsVehicleOrTrailer(item) && item.name != "ErrorPrefab")
+						{
+							items.Add(new Item() { item = item, thumbnail = thumbnailGenerator.GetThumbnail(item), category = utility.GetCategory(item, categories) });
+						}
+					}
+					catch (Exception ex)
+					{
+						logger.Log($"Failed to load item {item.name} - {ex}", Logger.LogLevel.Error);
+					}
+				}
+
+				vehicles = LoadVehicles();
+				POIs = LoadPOIs();
+
+				// Load and spawn saved POIs.
 				try
 				{
-					// Remove vehicles and trailers from items array.
-					if (!utility.IsVehicleOrTrailer(item) && item.name != "ErrorPrefab")
+					Save data = utility.UnserializeSaveData();
+					if (data.pois != null)
 					{
-						items.Add(new Item() { item = item, thumbnail = thumbnailGenerator.GetThumbnail(item), category = utility.GetCategory(item, categories) });
+						foreach (POIData poi in data.pois)
+						{
+							GameObject gameObject = POIs.Where(p => p.poi.name == poi.poi.Replace("(Clone)", "")).FirstOrDefault().poi;
+							if (gameObject != null)
+							{
+								spawnedPOIs.Add(utility.Spawn(new POI() { poi = gameObject }, false, poi.position, poi.rotation));
+							}
+						}
 					}
 				}
 				catch (Exception ex)
 				{
-					logger.Log($"Failed to load item {item.name} - {ex}", Logger.LogLevel.Error);
+					logger.Log($"POI load error - {ex}", Logger.LogLevel.Error);
 				}
-			}
 
-			vehicles = LoadVehicles();
-			POIs = LoadPOIs();
-
-			// Load and spawn saved POIs.
-			try
-			{
-				Save data = utility.UnserializeSaveData();
-				if (data.pois != null)
+				// Prepopulate any variables that use the fluidenum.
+				int maxFuelType = (int)Enum.GetValues(typeof(mainscript.fluidenum)).Cast<mainscript.fluidenum>().Max();
+				for (int i = 0; i < maxFuelType; i++)
 				{
-					foreach (POIData poi in data.pois)
-					{
-						GameObject gameObject = POIs.Where(p => p.poi.name == poi.poi.Replace("(Clone)", "")).FirstOrDefault().poi;
-						if (gameObject != null)
-						{
-							spawnedPOIs.Add(utility.Spawn(new POI() { poi = gameObject }, false, poi.position, poi.rotation));
-						}
-					}
+					fuelValues.Add(-1f);
+					fuelTypeInts.Add(-1);
+
+					coolants.Add((mainscript.fluidenum)i, 0);
+					oils.Add((mainscript.fluidenum)i, 0);
+					fuels.Add((mainscript.fluidenum)i, 0);
 				}
+
+				// Load configs.
+				try
+				{
+					legacyUI = config.GetLegacyMode(legacyUI);
+					scrollWidth = config.GetScrollWidth(scrollWidth);
+					settingsScrollWidth = scrollWidth;
+					noclipGodmodeDisable = config.GetNoclipGodmodeDisable(noclipGodmodeDisable);
+					accessibilityMode = config.GetAccessibilityMode(accessibilityMode);
+					noclipFastMoveFactor = config.GetNoclipFastMoveFactor(noclipFastMoveFactor);
+				}
+				catch (Exception ex)
+				{
+					logger.Log($"Config load error - {ex}", Logger.LogLevel.Error);
+				}
+
+				// Load keybinds.
+				binds.OnLoad();
+
+				// Find instance of temporaryTurnOffGeneration to spawn UFO.
+				temp = mainscript.M.menu.GetComponentInChildren<temporaryTurnOffGeneration>();
+
 			}
 			catch (Exception ex)
 			{
-				logger.Log($"POI load error - {ex}", Logger.LogLevel.Error);
+				logger.Log($"Error during OnLoad() - {ex}", Logger.LogLevel.Critical);
 			}
-
-			// Prepopulate fuel types and fuel values as all default.
-			int maxFuelType = (int)Enum.GetValues(typeof(mainscript.fluidenum)).Cast<mainscript.fluidenum>().Max();
-			for (int i = 0; i < maxFuelType; i++)
-			{
-				fuelValues.Add(-1f);
-				fuelTypeInts.Add(-1);
-			}
-
-			// Load configs.
-			try
-			{
-				legacyUI = config.GetLegacyMode(legacyUI);
-				scrollWidth = config.GetScrollWidth(scrollWidth);
-				settingsScrollWidth = scrollWidth;
-				noclipGodmodeDisable = config.GetNoclipGodmodeDisable(noclipGodmodeDisable);
-				accessibilityMode = config.GetAccessibilityMode(accessibilityMode);
-				noclipFastMoveFactor = config.GetNoclipFastMoveFactor(noclipFastMoveFactor);
-			}
-			catch (Exception ex)
-			{
-				logger.Log($"Config load error - {ex}", Logger.LogLevel.Error);
-			}
-
-			// Load keybinds.
-			binds.OnLoad();
-
-			// Find instance of temporaryTurnOffGeneration to spawn UFO.
-			temp = mainscript.M.menu.GetComponentInChildren<temporaryTurnOffGeneration>();
 		}
 
 		public void Update()
@@ -933,12 +963,16 @@ namespace SpawnerTLD.Modules
 					}
 					break;
 
-				// Current vehicle configuration tab.
+				// Vehicle configuration tab.
 				case 4:
-					float currVehicleX = tabX + 10f;
+					float startingCurrVehicleX = tabX + 10f;
+					float currVehicleX = startingCurrVehicleX;
 					float currVehicleY = tabY + 10f;
 					buttonWidth = 200f;
 					buttonHeight = 20f;
+					float sliderWidth = 300f;
+					float headerWidth = tabWidth - 20f;
+					float headerHeight = 40f;
 
 					if (mainscript.M.player.Car == null)
 					{
@@ -947,12 +981,443 @@ namespace SpawnerTLD.Modules
 					}
 
 					carscript car = mainscript.M.player.Car;
+					partconditionscript partconditionscript = car.gameObject.GetComponent<partconditionscript>();
+					coolantTankscript coolant = car.coolant;
+					enginescript engine = car.Engine;
+					tankscript fuel = car.Tank;
 
+					int buttonCount = 2;
+					int sliderCount = 3;
+					int fluidSlidersCount = 0;
+
+					if (coolant != null)
+						fluidSlidersCount++;
+
+					if (engine != null && engine.T != null)
+						fluidSlidersCount++;
+
+					if (fuel != null)
+						fluidSlidersCount++;
+
+					float buttonsHeight = buttonCount * (buttonHeight + 10f);
+					float slidersHeight = sliderCount * ((buttonHeight * 3) + 10f);
+					float fluidsHeight = fluidSlidersCount * ((buttonHeight + 10f) * Enum.GetValues(typeof(mainscript.fluidenum)).Cast<mainscript.fluidenum>().Count());
+					float currVehicleHeight = buttonsHeight + slidersHeight + fluidsHeight + 200f;
+
+					currentVehiclePosition = GUI.BeginScrollView(new Rect(currVehicleX, currVehicleY, tabWidth - 20f, tabHeight - 20f), currentVehiclePosition, new Rect(currVehicleX, currVehicleY, tabWidth - 20f, currVehicleHeight - 20f), new GUIStyle(), GUI.skin.verticalScrollbar);
+
+					// Vehicle god mode.
 					if (GUI.Button(new Rect(currVehicleX, currVehicleY, buttonWidth, buttonHeight), GetAccessibleString("Vehicle god mode", car.crashMultiplier <= 0.0)))
 					{
 						car.crashMultiplier *= -1f;
 					}
 
+					currVehicleY += buttonHeight + 10f;
+
+					// Condition.
+					GUI.Label(new Rect(currVehicleX, currVehicleY, headerWidth, headerHeight), $"Condition", headerStyle);
+					currVehicleY += headerHeight;
+					int maxCondition = (int)Enum.GetValues(typeof(Item.Condition)).Cast<Item.Condition>().Max();
+					float rawCondition = GUI.HorizontalSlider(new Rect(currVehicleX, currVehicleY, sliderWidth, buttonHeight), conditionInt, 0, maxCondition);
+					conditionInt = Mathf.RoundToInt(rawCondition);
+					currVehicleX += sliderWidth + 10f;
+					if (GUI.Button(new Rect(currVehicleX, currVehicleY, buttonWidth, buttonHeight), "Apply"))
+					{
+						List<partconditionscript> children = new List<partconditionscript>();
+						utility.FindPartChildren(partconditionscript, ref children);
+
+						partconditionscript.state = conditionInt;
+						partconditionscript.Refresh();
+						foreach (partconditionscript child in children)
+						{
+							child.state = conditionInt;
+							child.Refresh();
+						}
+					}
+					currVehicleX = startingCurrVehicleX;
+					currVehicleY += buttonHeight;
+					string conditionName = ((Item.Condition)conditionInt).ToString();
+					GUI.Label(new Rect(currVehicleX, currVehicleY, buttonWidth, buttonHeight), conditionName, labelStyle);
+
+					currVehicleY += buttonHeight + 10f;
+
+					// Vehicle colour sliders.
+					GUI.Label(new Rect(currVehicleX, currVehicleY, headerWidth, headerHeight), $"Color", headerStyle);
+					currVehicleY += headerHeight;
+					// Red.
+					GUI.Label(new Rect(currVehicleX, currVehicleY, buttonWidth, buttonHeight), "<color=#F00>Red:</color>", labelStyle);
+					currVehicleY += buttonHeight;
+					float red = GUI.HorizontalSlider(new Rect(currVehicleX, currVehicleY, sliderWidth, buttonHeight), color.r * 255, 0, 255);
+					red = Mathf.Round(red);
+					currVehicleY += buttonHeight;
+					bool redParse = float.TryParse(GUI.TextField(new Rect(currVehicleX, currVehicleY, buttonWidth, buttonHeight), red.ToString(), labelStyle), out red);
+					if (!redParse)
+						logger.Log($"{redParse} is not a number", Logger.LogLevel.Error);
+					red = Mathf.Clamp(red, 0f, 255f);
+					color.r = red / 255f;
+
+					// Green.
+					currVehicleY += buttonHeight + 10f;
+					GUI.Label(new Rect(currVehicleX, currVehicleY, buttonWidth, buttonHeight), "<color=#0F0>Green:</color>", labelStyle);
+					currVehicleY += buttonHeight;
+					float green = GUI.HorizontalSlider(new Rect(currVehicleX, currVehicleY, sliderWidth, buttonHeight), color.g * 255, 0, 255);
+					green = Mathf.Round(green);
+					currVehicleY += buttonHeight;
+					bool greenParse = float.TryParse(GUI.TextField(new Rect(currVehicleX, currVehicleY, buttonWidth, buttonHeight), green.ToString(), labelStyle), out green);
+					if (!greenParse)
+						logger.Log($"{greenParse} is not a number", Logger.LogLevel.Error);
+					green = Mathf.Clamp(green, 0f, 255f);
+					color.g = green / 255f;
+
+					// Blue.
+					currVehicleY += buttonHeight + 10f;
+					GUI.Label(new Rect(currVehicleX, currVehicleY, buttonWidth, buttonHeight), "<color=#00F>Blue:</color>", labelStyle);
+					currVehicleY += buttonHeight;
+					float blue = GUI.HorizontalSlider(new Rect(currVehicleX, currVehicleY, sliderWidth, buttonHeight), color.b * 255, 0, 255);
+					blue = Mathf.Round(blue);
+					currVehicleY += buttonHeight;
+					bool blueParse = float.TryParse(GUI.TextField(new Rect(currVehicleX, currVehicleY, buttonWidth, buttonHeight), blue.ToString(), labelStyle), out blue);
+					if (!blueParse)
+						logger.Log($"{blueParse.ToString()} is not a number", Logger.LogLevel.Error);
+					blue = Mathf.Clamp(blue, 0f, 255f);
+					color.b = blue / 255f;
+
+					currVehicleY += buttonHeight + 10f;
+
+					// Colour preview.
+					GUIStyle defaultStyle = GUI.skin.button;
+					GUIStyle previewStyle = new GUIStyle(defaultStyle);
+					Texture2D previewTexture = new Texture2D(1, 1);
+					Color[] pixels = new Color[] { color };
+					previewTexture.SetPixels(pixels);
+					previewTexture.Apply();
+					previewStyle.normal.background = previewTexture;
+					previewStyle.active.background = previewTexture;
+					previewStyle.hover.background = previewTexture;
+					previewStyle.margin = new RectOffset(0, 0, 0, 0);
+					GUI.skin.button = previewStyle;
+					GUI.Button(new Rect(currVehicleX, currVehicleY, sliderWidth, buttonHeight), "");
+					GUI.skin.button = defaultStyle;
+
+					currVehicleY += buttonHeight + 10f;
+
+					if (GUI.Button(new Rect(currVehicleX, currVehicleY, buttonWidth, buttonHeight), "Randomise colour"))
+					{
+						color.r = UnityEngine.Random.Range(0f, 255f) / 255f;
+						color.g = UnityEngine.Random.Range(0f, 255f) / 255f;
+						color.b = UnityEngine.Random.Range(0f, 255f) / 255f;
+					}
+
+					currVehicleX += buttonWidth + 10f;
+
+					if (GUI.Button(new Rect(currVehicleX, currVehicleY, buttonWidth, buttonHeight), "Apply"))
+					{
+						partconditionscript[] partconditionscripts = car.GetComponentsInChildren<partconditionscript>();
+						foreach (partconditionscript part in partconditionscripts)
+						{
+							part.Paint(color);
+						}
+					}
+
+					currVehicleX = startingCurrVehicleX;
+					currVehicleY += buttonHeight + 10f;
+
+					// Coolant settings.
+					GUI.Label(new Rect(currVehicleX, currVehicleY, headerWidth, headerHeight), "Radiator settings", headerStyle);
+					currVehicleY += headerHeight;
+					if (coolant != null)
+					{
+						float coolantMax = coolant.coolant.F.maxC;
+						int coolantPercentage = 0;
+
+						foreach (KeyValuePair<mainscript.fluidenum, int> fluid in coolants)
+						{
+							coolantPercentage += fluid.Value;
+						}
+
+						if (coolantPercentage > 100)
+							coolantPercentage = 100;
+
+						bool changed = false;
+
+						// Deep copy coolants dictionary.
+						Dictionary<mainscript.fluidenum, int> tempCoolants = coolants.ToDictionary(fluid => fluid.Key, fluid => fluid.Value);
+
+						foreach (KeyValuePair<mainscript.fluidenum, int> fluid in coolants)
+						{
+							GUI.Label(new Rect(currVehicleX, currVehicleY, buttonWidth / 3, buttonHeight), fluid.Key.ToString().ToSentenceCase(), labelStyle);
+							currVehicleX += buttonWidth / 3;
+							int percentage = Mathf.RoundToInt(GUI.HorizontalSlider(new Rect(currVehicleX, currVehicleY, sliderWidth, buttonHeight), fluid.Value, 0, 100));
+							if (percentage + (coolantPercentage - fluid.Value) <= 100)
+							{
+								tempCoolants[fluid.Key] = percentage;
+								changed = true;
+							}
+							currVehicleX += sliderWidth + 5f;
+							GUI.Label(new Rect(currVehicleX, currVehicleY, buttonWidth, buttonHeight), $"{percentage}%", labelStyle);
+							currVehicleX = startingCurrVehicleX;
+							currVehicleY += buttonHeight;
+						}
+
+						if (changed)
+							coolants = tempCoolants;
+
+						if (GUI.Button(new Rect(currVehicleX, currVehicleY, buttonWidth, buttonHeight), "Get current"))
+						{
+							tankscript tank = coolant.coolant;
+
+							tempCoolants = new Dictionary<fluidenum, int>();
+							foreach (KeyValuePair<mainscript.fluidenum, int> fluid in coolants)
+							{
+								tempCoolants[fluid.Key] = 0;
+							}
+
+							coolants = tempCoolants;
+
+							foreach (fluid fluid in tank.F.fluids)
+							{
+								int percentage = (int)(fluid.amount / tank.F.maxC * 100);
+								coolants[fluid.type] = percentage;
+							}
+						}
+
+						currVehicleX += buttonWidth + 10f;
+
+						if (GUI.Button(new Rect(currVehicleX, currVehicleY, buttonWidth, buttonHeight), "Apply"))
+						{
+							tankscript tank = coolant.coolant;
+							tank.F.fluids.Clear();
+							foreach (KeyValuePair<mainscript.fluidenum, int> fluid in coolants)
+							{
+								if (fluid.Value > 0)
+								{
+									tank.F.ChangeOne((coolantMax / 100) * fluid.Value, fluid.Key);
+								}
+							}
+						}
+
+						currVehicleX = startingCurrVehicleX;
+					}
+					else
+						GUI.Label(new Rect(currVehicleX, currVehicleY, buttonWidth, buttonHeight), "No radiator found.", labelStyle);
+
+					currVehicleY += buttonHeight + 20f;
+
+					// Engine settings.
+					GUI.Label(new Rect(currVehicleX, currVehicleY, headerWidth, headerHeight), "Engine settings", headerStyle);
+					currVehicleY += headerHeight;
+					if (engine != null)
+					{
+						if (engine.T != null)
+						{
+							float oilMax = engine.T.F.maxC;
+							int oilPercentage = 0;
+
+							foreach (KeyValuePair<mainscript.fluidenum, int> fluid in oils)
+							{
+								oilPercentage += fluid.Value;
+							}
+
+							if (oilPercentage > 100)
+								oilPercentage = 100;
+
+							bool changed = false;
+
+							// Deep copy oils dictionary.
+							Dictionary<mainscript.fluidenum, int> tempOils = oils.ToDictionary(fluid => fluid.Key, fluid => fluid.Value);
+
+							foreach (KeyValuePair<mainscript.fluidenum, int> fluid in oils)
+							{
+								GUI.Label(new Rect(currVehicleX, currVehicleY, buttonWidth / 3, buttonHeight), fluid.Key.ToString().ToSentenceCase(), labelStyle);
+								currVehicleX += buttonWidth / 3;
+								int percentage = Mathf.RoundToInt(GUI.HorizontalSlider(new Rect(currVehicleX, currVehicleY, sliderWidth, buttonHeight), fluid.Value, 0, 100));
+								if (percentage + (oilPercentage - fluid.Value) <= 100)
+								{
+									tempOils[fluid.Key] = percentage;
+									changed = true;
+								}
+								currVehicleX += sliderWidth + 5f;
+								GUI.Label(new Rect(currVehicleX, currVehicleY, buttonWidth, buttonHeight), $"{percentage}%", labelStyle);
+								currVehicleX = startingCurrVehicleX;
+								currVehicleY += buttonHeight;
+							}
+
+							if (changed)
+								oils = tempOils;
+
+							if (GUI.Button(new Rect(currVehicleX, currVehicleY, buttonWidth, buttonHeight), "Get current"))
+							{
+								tankscript tank = engine.T;
+
+								tempOils = new Dictionary<fluidenum, int>();
+								foreach (KeyValuePair<mainscript.fluidenum, int> fluid in oils)
+								{
+									tempOils[fluid.Key] = 0;
+								}
+
+								oils = tempOils;
+
+								foreach (fluid fluid in tank.F.fluids)
+								{
+									int percentage = (int)(fluid.amount / tank.F.maxC * 100);
+									oils[fluid.type] = percentage;
+								}
+							}
+
+							currVehicleX += buttonWidth + 10f;
+
+							if (GUI.Button(new Rect(currVehicleX, currVehicleY, buttonWidth, buttonHeight), "Apply"))
+							{
+								tankscript tank = engine.T;
+								tank.F.fluids.Clear();
+								foreach (KeyValuePair<mainscript.fluidenum, int> fluid in oils)
+								{
+									if (fluid.Value > 0)
+									{
+										tank.F.ChangeOne((oilMax / 100) * fluid.Value, fluid.Key);
+									}
+								}
+							}
+
+							currVehicleX = startingCurrVehicleX;
+						}
+						else
+							GUI.Label(new Rect(currVehicleX, currVehicleY, buttonWidth, buttonHeight), "Engine has no oil tank.", labelStyle);
+					}
+					else
+						GUI.Label(new Rect(currVehicleX, currVehicleY, buttonWidth, buttonHeight), "No engine found.", labelStyle);
+
+					currVehicleY += buttonHeight + 20f;
+
+					// Fuel settings.
+					GUI.Label(new Rect(currVehicleX, currVehicleY, headerWidth, headerHeight), "Fuel settings", headerStyle);
+					currVehicleY += headerHeight;
+					if (fuel != null)
+					{
+						float fuelMax = fuel.F.maxC;
+						int fuelPercentage = 0;
+
+						foreach (KeyValuePair<mainscript.fluidenum, int> fluid in fuels)
+						{
+							fuelPercentage += fluid.Value;
+						}
+
+						if (fuelPercentage > 100)
+							fuelPercentage = 100;
+
+						bool changed = false;
+
+						// Deep copy fuels dictionary.
+						Dictionary<mainscript.fluidenum, int> tempFuels = fuels.ToDictionary(fluid => fluid.Key, fluid => fluid.Value);
+
+						foreach (KeyValuePair<mainscript.fluidenum, int> fluid in fuels)
+						{
+							GUI.Label(new Rect(currVehicleX, currVehicleY, buttonWidth / 3, buttonHeight), fluid.Key.ToString().ToSentenceCase(), labelStyle);
+							currVehicleX += buttonWidth / 3;
+							int percentage = Mathf.RoundToInt(GUI.HorizontalSlider(new Rect(currVehicleX, currVehicleY, sliderWidth, buttonHeight), fluid.Value, 0, 100));
+							if (percentage + (fuelPercentage - fluid.Value) <= 100)
+							{
+								tempFuels[fluid.Key] = percentage;
+								changed = true;
+							}
+							currVehicleX += sliderWidth + 5f;
+							GUI.Label(new Rect(currVehicleX, currVehicleY, buttonWidth, buttonHeight), $"{percentage}%", labelStyle);
+							currVehicleX = startingCurrVehicleX;
+							currVehicleY += buttonHeight;
+						}
+
+						if (changed)
+							fuels = tempFuels;
+
+						if (GUI.Button(new Rect(currVehicleX, currVehicleY, buttonWidth, buttonHeight), "Get current"))
+						{
+							tankscript tank = fuel;
+
+							tempFuels = new Dictionary<fluidenum, int>();
+							foreach (KeyValuePair<mainscript.fluidenum, int> fluid in fuels)
+							{
+								tempFuels[fluid.Key] = 0;
+							}
+
+							fuels = tempFuels;
+
+							foreach (fluid fluid in tank.F.fluids)
+							{
+								int percentage = (int)(fluid.amount / tank.F.maxC * 100);
+								fuels[fluid.type] = percentage;
+							}
+						}
+
+						currVehicleX += buttonWidth + 10f;
+
+						if (GUI.Button(new Rect(currVehicleX, currVehicleY, buttonWidth, buttonHeight), "Apply"))
+						{
+							tankscript tank = fuel;
+							tank.F.fluids.Clear();
+							foreach (KeyValuePair<mainscript.fluidenum, int> fluid in fuels)
+							{
+								if (fluid.Value > 0)
+								{
+									tank.F.ChangeOne((fuelMax / 100) * fluid.Value, fluid.Key);
+								}
+							}
+						}
+
+						if (engine != null)
+						{
+							currVehicleX += buttonWidth + 10f;
+
+							if (GUI.Button(new Rect(currVehicleX, currVehicleY, buttonWidth, buttonHeight), "Fill with correct fuel"))
+							{
+								fuel.F.fluids.Clear();
+
+								// Find the correct fluid(s) from the engine.
+								List<mainscript.fluidenum> fluids = new List<mainscript.fluidenum>();
+								foreach (fluid fluid in engine.FuelConsumption.fluids)
+								{
+									fluids.Add(fluid.type);
+								}
+
+								if (fluids.Count > 0) 
+								{ 
+									// Two stoke.
+									if (fluids.Contains(mainscript.fluidenum.oil) && fluids.Contains(mainscript.fluidenum.gas))
+									{
+										fuel.F.ChangeOne(fuelMax / 100 * 97, mainscript.fluidenum.gas);
+										fuel.F.ChangeOne(fuelMax / 100 * 3, mainscript.fluidenum.oil);
+									}
+									else
+									{
+										// Just use the first fluid found by default.
+										// Only mixed fuel currently is two-stroke which we're
+										// accounting for already.
+										fuel.F.ChangeOne(fuelMax, fluids[0]);
+									}
+								}
+
+								// Update UI.
+								tempFuels = new Dictionary<fluidenum, int>();
+								foreach (KeyValuePair<mainscript.fluidenum, int> fluid in fuels)
+								{
+									tempFuels[fluid.Key] = 0;
+								}
+
+								fuels = tempFuels;
+
+								foreach (fluid fluid in fuel.F.fluids)
+								{
+									int percentage = (int)(fluid.amount / fuel.F.maxC * 100);
+									fuels[fluid.type] = percentage;
+								}
+							}
+						}
+
+						currVehicleX = startingCurrVehicleX;
+					}
+					else
+						GUI.Label(new Rect(currVehicleX, currVehicleY, buttonWidth, buttonHeight), "No fuel tank found.", labelStyle);
+
+					GUI.EndScrollView();
 					break;
 
 				// Miscellaneous tab.
@@ -1484,7 +1949,6 @@ namespace SpawnerTLD.Modules
 					GUIStyle previewStyle = new GUIStyle(defaultStyle);
 					Texture2D previewTexture = new Texture2D(1, 1);
 					Color[] pixels = new Color[] { color };
-					pixels = new Color[] { color };
 					previewTexture.SetPixels(pixels);
 					previewTexture.Apply();
 					previewStyle.normal.background = previewTexture;
@@ -1719,7 +2183,7 @@ namespace SpawnerTLD.Modules
 
 			// Quick spawns.
 			float quickSpawnY = itemsMenuY + 40f;
-			GUI.Label(new Rect(x, quickSpawnY, width, buttonHeight * 2), "<color=#FFF><size=14>Quick spawns</size>\n<size=12>Container fluids can be changed\n using vehicle menu</size></color>", headerStyle);
+			GUI.Label(new Rect(x, quickSpawnY, width, buttonHeight * 2), "<color=#FFF><size=14>Quick spawns</size>\n<size=12>Container fluids can be changed\n using vehicle menu</size></color>", legacyHeaderStyle);
 			quickSpawnY += 50f;
 			foreach (QuickSpawn spawn in quickSpawns)
 			{
@@ -1741,7 +2205,7 @@ namespace SpawnerTLD.Modules
 			// Vehicle spawner.
 			float scrollHeight = (buttonHeight + 5f) * vehicles.Count;
 			float scrollY = y + height / 2;
-			GUI.Label(new Rect(x, scrollY - 40f, width, buttonHeight * 2), "<color=#FFF><size=14>Vehicles</size>\n<size=12>Scroll for the full list</size></color>", headerStyle);
+			GUI.Label(new Rect(x, scrollY - 40f, width, buttonHeight * 2), "<color=#FFF><size=14>Vehicles</size>\n<size=12>Scroll for the full list</size></color>", legacyHeaderStyle);
 			scrollPosition = GUI.BeginScrollView(new Rect(x, scrollY, width, height / 2), scrollPosition, new Rect(x, scrollY, width, scrollHeight), GUIStyle.none, GUIStyle.none);
 			foreach (Vehicle vehicle in vehicles)
 			{

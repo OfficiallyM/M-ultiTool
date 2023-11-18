@@ -541,7 +541,7 @@ namespace SpawnerTLD.Modules
 		/// </summary>
 		/// <param name="root">Parent part</param>
 		/// <param name="allChildren">Current list of child parts</param>
-		private void FindPartChildren(partconditionscript root, ref List<partconditionscript> allChildren)
+		public void FindPartChildren(partconditionscript root, ref List<partconditionscript> allChildren)
 		{
 			foreach (partconditionscript child in root.childs)
 			{
