@@ -27,8 +27,8 @@ namespace SpawnerTLD.Modules
 			noclipSpeedUp,
 			noclipUp,
 			noclipDown,
-			copy,
-			paste
+			action1,
+			action2
 		}
 
 		public List<Key> keys = new List<Key>();
@@ -96,15 +96,15 @@ namespace SpawnerTLD.Modules
 				keys[4].defaultKey = KeyCode.LeftControl;
 				keys[4].name = "Noclip fly down";
 
-				// Copy.
+				// Action 1.
 				keys[5].key = KeyCode.Mouse0;
 				keys[5].defaultKey = KeyCode.Mouse0;
-				keys[5].name = "Copy";
+				keys[5].name = "Action 1";
 
-				// Paste.
+				// Action 2.
 				keys[6].key = KeyCode.Mouse1;
 				keys[6].defaultKey = KeyCode.Mouse1;
-				keys[6].name = "Paste";
+				keys[6].name = "Action 2";
 			}
 			catch (Exception ex)
 			{

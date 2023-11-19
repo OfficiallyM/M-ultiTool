@@ -1775,6 +1775,16 @@ namespace SpawnerTLD.Modules
 							settings.mode = "colorPicker";
 					}
 
+					miscY += buttonHeight + 10f;
+
+					if (GUI.Button(new Rect(miscX, miscY, buttonWidth, buttonHeight), GetAccessibleString("Toggle object scale mode", settings.mode == "scale")))
+					{
+						if (settings.mode == "scale")
+							settings.mode = null;
+						else
+							settings.mode = "scale";
+					}
+
 					break;
 			}
 		}
@@ -2075,20 +2085,19 @@ namespace SpawnerTLD.Modules
 		/// </summary>
 		private void RenderHUD()
 		{
+			float width = 400f;
+			float height = 40f;
+			float x = resolutionX / 2 - 100f;
+			float y = resolutionY * 0.90f;
 			switch (settings.mode)
 			{
 				case "colorPicker":
-					float width = 400f;
-					float height = 40f;
-					float x = resolutionX / 2 - 100f;
-					float y = resolutionY * 0.90f;
-
 					GUI.Box(new Rect(x, y, width, height), String.Empty);
 					GUI.Button(new Rect(x, y, width / 2, height / 2), "Copy");
 					GUI.Button(new Rect(x + width / 2, y, width / 2, height / 2), "Paste");
 
-					GUI.Button(new Rect(x, y + height / 2, width / 2, height / 2), binds.GetPrettyName((int)Keybinds.Inputs.copy));
-					GUI.Button(new Rect(x + width / 2, y + height / 2, width / 2, height / 2), binds.GetPrettyName((int)Keybinds.Inputs.paste));
+					GUI.Button(new Rect(x, y + height / 2, width / 2, height / 2), binds.GetPrettyName((int)Keybinds.Inputs.action1));
+					GUI.Button(new Rect(x + width / 2, y + height / 2, width / 2, height / 2), binds.GetPrettyName((int)Keybinds.Inputs.action2));
 
 					// Colour preview.
 					GUIStyle defaultStyle = GUI.skin.button;
@@ -2104,6 +2113,22 @@ namespace SpawnerTLD.Modules
 					GUI.skin.button = previewStyle;
 					GUI.Button(new Rect(x, y + height, width, height / 2), "");
 					GUI.skin.button = defaultStyle;
+					break;
+				case "scale":
+					GUI.Box(new Rect(x, y, width, height), String.Empty);
+					GUI.Button(new Rect(x, y, width / 2, height / 2), "Scale up");
+					GUI.Button(new Rect(x + width / 2, y, width / 2, height / 2), "Scale down");
+
+					GUI.Button(new Rect(x, y + height / 2, width / 2, height / 2), binds.GetPrettyName((int)Keybinds.Inputs.action1));
+					GUI.Button(new Rect(x + width / 2, y + height / 2, width / 2, height / 2), binds.GetPrettyName((int)Keybinds.Inputs.action2));
+
+					Physics.Raycast(mainscript.M.player.Cam.transform.position, mainscript.M.player.Cam.transform.forward, out var raycastHit, float.PositiveInfinity, mainscript.M.player.useLayer);
+					if (raycastHit.transform != null)
+					{
+						GameObject hitGameObject = raycastHit.transform.gameObject;
+						Vector3 scale = hitGameObject.transform.localScale;
+						GUI.Button(new Rect(x, y + height, width, height / 2), $"Scale: {scale.x}");
+					}
 					break;
 			}
 		}

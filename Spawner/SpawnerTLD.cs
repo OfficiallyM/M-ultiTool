@@ -123,7 +123,7 @@ namespace SpawnerTLD
 			switch (settings.mode)
 			{
 				case "colorPicker":
-					if (Input.GetKeyDown(binds.GetKeyByAction((int)Keybinds.Inputs.copy).key) && !renderer.show)
+					if (Input.GetKeyDown(binds.GetKeyByAction((int)Keybinds.Inputs.action1).key) && !renderer.show)
 					{
 						Physics.Raycast(mainscript.M.player.Cam.transform.position, mainscript.M.player.Cam.transform.forward, out var raycastHit, float.PositiveInfinity, mainscript.M.player.useLayer);
 						GameObject hitGameObject = raycastHit.transform.gameObject;
@@ -145,7 +145,7 @@ namespace SpawnerTLD
 						renderer.SetColor(objectColor);
 					}
 
-					if (Input.GetKeyDown(binds.GetKeyByAction((int)Keybinds.Inputs.paste).key) && !renderer.show)
+					if (Input.GetKeyDown(binds.GetKeyByAction((int)Keybinds.Inputs.action2).key) && !renderer.show)
 					{
 						Physics.Raycast(mainscript.M.player.Cam.transform.position, mainscript.M.player.Cam.transform.forward, out var raycastHit, float.PositiveInfinity, mainscript.M.player.useLayer);
 						GameObject hitGameObject = raycastHit.transform.gameObject;
@@ -156,6 +156,32 @@ namespace SpawnerTLD
 							return;
 
 						utility.Paint(renderer.GetColor(), part);
+					}
+					break;
+				case "scale":
+					if (!renderer.show)
+					{
+						Physics.Raycast(mainscript.M.player.Cam.transform.position, mainscript.M.player.Cam.transform.forward, out var raycastHit, float.PositiveInfinity, mainscript.M.player.useLayer);
+						if (raycastHit.transform != null)
+						{
+							GameObject hitGameObject = raycastHit.transform.gameObject;
+
+							// Return early if looking at terrain.
+							if (hitGameObject.GetComponent<terrainscript>() != null)
+								return;
+
+							Vector3 scale = hitGameObject.transform.localScale;
+							float scaleValue = 0.1f;
+							if (Input.GetKey(binds.GetKeyByAction((int)Keybinds.Inputs.action1).key))
+							{
+								hitGameObject.transform.localScale = new Vector3(scale.x + scaleValue, scale.y + scaleValue, scale.z + scaleValue);
+							}
+
+							if (Input.GetKey(binds.GetKeyByAction((int)Keybinds.Inputs.action2).key))
+							{
+								hitGameObject.transform.localScale = new Vector3(scale.x - scaleValue, scale.y - scaleValue, scale.z - scaleValue);
+							}
+						}
 					}
 					break;
 			}
