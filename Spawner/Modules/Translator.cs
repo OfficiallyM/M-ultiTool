@@ -16,12 +16,9 @@ namespace SpawnerTLD.Modules
 		private string language;
 		private Dictionary<string, ConfigWrapper> translations = new Dictionary<string, ConfigWrapper>();
 		private string configDirectory;
-		private Logger logger;
 
-		public Translator(Logger _logger, string _configDirectory)
+		public Translator(string _configDirectory)
 		{
-			logger = _logger;
-
 			configDirectory = _configDirectory;
 
 			LoadTranslationFiles();
@@ -44,7 +41,7 @@ namespace SpawnerTLD.Modules
 			// Return early if the config directory doesn't exist.
 			if (!Directory.Exists(configDirectory))
 			{
-				logger.Log("Config folder is missing, nothing will be translated", Logger.LogLevel.Error);
+				Logger.Log("Config folder is missing, nothing will be translated", Logger.LogLevel.Error);
 				return;
 			}
 
@@ -68,7 +65,7 @@ namespace SpawnerTLD.Modules
 				}
 				catch (Exception ex)
 				{
-					logger.Log($"Failed loading translation file {Path.GetFileNameWithoutExtension(file)} - error:\n{ex}", Logger.LogLevel.Error);
+					Logger.Log($"Failed loading translation file {Path.GetFileNameWithoutExtension(file)} - error:\n{ex}", Logger.LogLevel.Error);
 				}
 			}
 		}

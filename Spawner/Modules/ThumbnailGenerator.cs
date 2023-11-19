@@ -8,16 +8,14 @@ namespace SpawnerTLD.Modules
 {
 	internal class ThumbnailGenerator
 	{
-		private Logger logger;
 		private Utility utility;
 		private string configDirectory;
 
 		private string cacheDir = "";
 		private bool regenerateCache = false;
 
-		public ThumbnailGenerator(Logger _logger, Utility _utility, string _configDirectory)
+		public ThumbnailGenerator(Utility _utility, string _configDirectory)
 		{
-			logger = _logger;
 			utility = _utility;
 			configDirectory = _configDirectory;
 
@@ -97,8 +95,8 @@ namespace SpawnerTLD.Modules
 			if (itemCount != cacheCount)
 			{
 				regenerateCache = true;
-				logger.Log("Item count has changed, regenerating cached thumbnails", Logger.LogLevel.Info);
-				logger.Log($"Item count: {itemCount} - Cache count: {cacheCount}", Logger.LogLevel.Info);
+				Logger.Log("Item count has changed, regenerating cached thumbnails", Logger.LogLevel.Info);
+				Logger.Log($"Item count: {itemCount} - Cache count: {cacheCount}", Logger.LogLevel.Info);
 
 				foreach (FileInfo file in cache.GetFiles())
 				{

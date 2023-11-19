@@ -12,13 +12,7 @@ namespace SpawnerTLD.Modules
 {
 	internal class Utility
 	{
-		private Logger logger;
 		private Settings settings = new Settings();
-
-		public Utility(Logger _logger)
-		{
-			logger = _logger;
-		}
 
 		/// <summary>
 		/// Check if an object is a vehicle.
@@ -155,7 +149,7 @@ namespace SpawnerTLD.Modules
 			}
 			catch (Exception ex)
 			{
-				logger.Log($"Item spawning error - {ex}", Logger.LogLevel.Error);
+				Logger.Log($"Item spawning error - {ex}", Logger.LogLevel.Error);
 			}
 		}
 
@@ -289,7 +283,7 @@ namespace SpawnerTLD.Modules
 
 				//var components = POI.poi.GetComponents<MonoBehaviour>();
 				//foreach (var component in components)
-				//	logger.Log($"{component.GetType()}", Logger.LogLevel.Debug);
+				//	Logger.Log($"{component.GetType()}", Logger.LogLevel.Debug);
 
 				gameObject = UnityEngine.Object.Instantiate(POI.poi, pos, rot, mainscript.M.terrainGenerationSettings.roadBuildingGeneration.parent);
 
@@ -329,7 +323,7 @@ namespace SpawnerTLD.Modules
 			}
 			catch (Exception ex)
 			{
-				logger.Log($"Error spawning POI - {ex}", Logger.LogLevel.Error);
+				Logger.Log($"Error spawning POI - {ex}", Logger.LogLevel.Error);
 			}
 
 			return new SpawnedPOI()
@@ -378,7 +372,7 @@ namespace SpawnerTLD.Modules
 			}
 			catch (Exception ex)
 			{
-				logger.Log($"Failed to spawn {gameObject.name} - {ex}", Logger.LogLevel.Error);
+				Logger.Log($"Failed to spawn {gameObject.name} - {ex}", Logger.LogLevel.Error);
 			}
 		}
 
@@ -419,7 +413,7 @@ namespace SpawnerTLD.Modules
 			}
 			catch (Exception ex)
 			{
-				logger.Log($"Save read/write error - {ex}", Logger.LogLevel.Error);
+				Logger.Log($"Save read/write error - {ex}", Logger.LogLevel.Error);
 			}
 
 			return string.Empty;
@@ -497,7 +491,7 @@ namespace SpawnerTLD.Modules
 			}
 			catch (Exception ex)
 			{
-				logger.Log($"POI update error - {ex}", Logger.LogLevel.Error);
+				Logger.Log($"POI update error - {ex}", Logger.LogLevel.Error);
 			}
 
 			SerializeSaveData(data);

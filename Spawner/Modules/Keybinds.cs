@@ -11,7 +11,6 @@ namespace SpawnerTLD.Modules
 	internal class Keybinds
 	{
 		// Modules.
-		private Logger logger;
 		private Config config;
 
 		private GUIStyle labelStyle = new GUIStyle();
@@ -59,9 +58,8 @@ namespace SpawnerTLD.Modules
 			}
 		}
 
-		public Keybinds(Logger _logger, Config _config)
+		public Keybinds(Config _config)
 		{
-			logger = _logger;
 			config = _config;
 
 			try
@@ -110,7 +108,7 @@ namespace SpawnerTLD.Modules
 			}
 			catch (Exception ex)
 			{
-				logger.Log($"Keybind load error: {ex}", Logger.LogLevel.Error);
+				Logger.Log($"Keybind load error: {ex}", Logger.LogLevel.Error);
 			}
 
 			labelStyle.alignment = TextAnchor.MiddleLeft;
@@ -126,7 +124,7 @@ namespace SpawnerTLD.Modules
 			}
 			catch (Exception ex)
 			{
-				logger.Log($"Keybinds load error - {ex}", Logger.LogLevel.Error);
+				Logger.Log($"Keybinds load error - {ex}", Logger.LogLevel.Error);
 			}
 		}
 

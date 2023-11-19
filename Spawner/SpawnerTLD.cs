@@ -19,7 +19,6 @@ namespace SpawnerTLD
 		public override string Version => Meta.Version;
 
 		// Initialise modules.
-		private readonly Logger logger = new Logger();
 		private readonly GUIRenderer renderer;
 		private readonly Config config;
 		private readonly Translator translator;
@@ -34,19 +33,21 @@ namespace SpawnerTLD
 			// Initialise modules.
 			try
 			{
+				Logger.Init();
+
 				// We can't use GetModConfigFolder here as the mod isn't fully initialised yet.
 				string configDirectory = Path.Combine(ModLoader.ModsFolder, "Config", "Mod Settings", ID);
 
-				config = new Config(logger);
-				utility = new Utility(logger);
-				translator = new Translator(logger, configDirectory);
-				thumbnailGenerator = new ThumbnailGenerator(logger, utility, configDirectory);
-				binds = new Keybinds(logger, config);
-				renderer = new GUIRenderer(logger, config, translator, thumbnailGenerator, binds, utility);
+				config = new Config();
+				utility = new Utility();
+				translator = new Translator(configDirectory);
+				thumbnailGenerator = new ThumbnailGenerator(utility, configDirectory);
+				binds = new Keybinds(config);
+				renderer = new GUIRenderer(config, translator, thumbnailGenerator, binds, utility);
 			}
 			catch (Exception ex)
 			{
-				logger.Log($"Module initialisation failed - {ex}", Logger.LogLevel.Critical);
+				Logger.Log($"Module initialisation failed - {ex}", Logger.LogLevel.Critical);
 			}
 		}
 
@@ -67,7 +68,7 @@ namespace SpawnerTLD
 			// Return early if spawner is disabled.
 			if (!renderer.enabled)
 			{
-				logger.Log("Distance requirement not met, spawner disabled.", Logger.LogLevel.Warning);
+				Logger.Log("Distance requirement not met, spawner disabled.", Logger.LogLevel.Warning);
 				return;
 			}
 
@@ -115,7 +116,7 @@ namespace SpawnerTLD
 				}
 				catch (Exception ex)
 				{
-					logger.Log($"Failed to delete entity - {ex}", Logger.LogLevel.Warning);
+					Logger.Log($"Failed to delete entity - {ex}", Logger.LogLevel.Warning);
 				}
 			}
 

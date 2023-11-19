@@ -14,14 +14,6 @@ namespace SpawnerTLD.Modules
 		private ConfigSerializable config = new ConfigSerializable();
 		private string configPath = String.Empty;
 
-		// Modules.
-		private Logger logger;
-
-		public Config(Logger _logger)
-		{
-			logger = _logger;
-		}
-
 		/// <summary>
 		/// Load the config from the config file.
 		/// </summary>
@@ -44,7 +36,7 @@ namespace SpawnerTLD.Modules
 			}
 			catch (Exception ex)
 			{
-				logger.Log($"Error loading config file: {ex}", Logger.LogLevel.Error);
+				Logger.Log($"Error loading config file: {ex}", Logger.LogLevel.Error);
 			}
 		}
 
@@ -238,7 +230,7 @@ namespace SpawnerTLD.Modules
 		{
 			if (configPath == String.Empty)
 			{
-				logger.Log("Config path not found", Logger.LogLevel.Error);
+				Logger.Log("Config path not found", Logger.LogLevel.Error);
 				return;
 			}
 
@@ -256,7 +248,7 @@ namespace SpawnerTLD.Modules
 			}
 			catch (Exception ex)
 			{
-				logger.Log($"Config write error: {ex}", Logger.LogLevel.Error);
+				Logger.Log($"Config write error: {ex}", Logger.LogLevel.Error);
 			}
 		}
 	}

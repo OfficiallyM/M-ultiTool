@@ -18,7 +18,6 @@ namespace SpawnerTLD.Modules
 		private Settings settings = new Settings();
 
 		// Modules.
-		private Logger logger;
 		private Config config;
 		private Translator translator;
 		private ThumbnailGenerator thumbnailGenerator;
@@ -172,9 +171,8 @@ namespace SpawnerTLD.Modules
 
 		private temporaryTurnOffGeneration temp;
 
-		public GUIRenderer(Logger _logger, Config _config, Translator _translator, ThumbnailGenerator _thumbnailGenerator, Keybinds _binds, Utility _utility)
+		public GUIRenderer(Config _config, Translator _translator, ThumbnailGenerator _thumbnailGenerator, Keybinds _binds, Utility _utility)
 		{
-			logger = _logger;
 			config = _config;
 			translator = _translator;
 			thumbnailGenerator = _thumbnailGenerator;
@@ -303,7 +301,7 @@ namespace SpawnerTLD.Modules
 					}
 					catch (Exception ex)
 					{
-						logger.Log($"Failed to load item {item.name} - {ex}", Logger.LogLevel.Error);
+						Logger.Log($"Failed to load item {item.name} - {ex}", Logger.LogLevel.Error);
 					}
 				}
 
@@ -328,7 +326,7 @@ namespace SpawnerTLD.Modules
 				}
 				catch (Exception ex)
 				{
-					logger.Log($"POI load error - {ex}", Logger.LogLevel.Error);
+					Logger.Log($"POI load error - {ex}", Logger.LogLevel.Error);
 				}
 
 				// Prepopulate any variables that use the fluidenum.
@@ -355,7 +353,7 @@ namespace SpawnerTLD.Modules
 				}
 				catch (Exception ex)
 				{
-					logger.Log($"Config load error - {ex}", Logger.LogLevel.Error);
+					Logger.Log($"Config load error - {ex}", Logger.LogLevel.Error);
 				}
 
 				// Load keybinds.
@@ -367,7 +365,7 @@ namespace SpawnerTLD.Modules
 			}
 			catch (Exception ex)
 			{
-				logger.Log($"Error during OnLoad() - {ex}", Logger.LogLevel.Critical);
+				Logger.Log($"Error during OnLoad() - {ex}", Logger.LogLevel.Critical);
 			}
 		}
 
@@ -458,7 +456,7 @@ namespace SpawnerTLD.Modules
 				}
 				catch (Exception ex)
 				{
-					logger.Log($"Error building settings rebind menu - {ex}", Logger.LogLevel.Error);
+					Logger.Log($"Error building settings rebind menu - {ex}", Logger.LogLevel.Error);
 				}
 
 				// Other settings.
@@ -1052,7 +1050,7 @@ namespace SpawnerTLD.Modules
 					currVehicleY += buttonHeight;
 					bool redParse = float.TryParse(GUI.TextField(new Rect(currVehicleX, currVehicleY, buttonWidth, buttonHeight), red.ToString(), labelStyle), out red);
 					if (!redParse)
-						logger.Log($"{redParse} is not a number", Logger.LogLevel.Error);
+						Logger.Log($"{redParse} is not a number", Logger.LogLevel.Error);
 					red = Mathf.Clamp(red, 0f, 255f);
 					color.r = red / 255f;
 
@@ -1065,7 +1063,7 @@ namespace SpawnerTLD.Modules
 					currVehicleY += buttonHeight;
 					bool greenParse = float.TryParse(GUI.TextField(new Rect(currVehicleX, currVehicleY, buttonWidth, buttonHeight), green.ToString(), labelStyle), out green);
 					if (!greenParse)
-						logger.Log($"{greenParse} is not a number", Logger.LogLevel.Error);
+						Logger.Log($"{greenParse} is not a number", Logger.LogLevel.Error);
 					green = Mathf.Clamp(green, 0f, 255f);
 					color.g = green / 255f;
 
@@ -1078,7 +1076,7 @@ namespace SpawnerTLD.Modules
 					currVehicleY += buttonHeight;
 					bool blueParse = float.TryParse(GUI.TextField(new Rect(currVehicleX, currVehicleY, buttonWidth, buttonHeight), blue.ToString(), labelStyle), out blue);
 					if (!blueParse)
-						logger.Log($"{blueParse.ToString()} is not a number", Logger.LogLevel.Error);
+						Logger.Log($"{blueParse.ToString()} is not a number", Logger.LogLevel.Error);
 					blue = Mathf.Clamp(blue, 0f, 255f);
 					color.b = blue / 255f;
 
@@ -1461,7 +1459,7 @@ namespace SpawnerTLD.Modules
 						if (settings.noclip)
 						{
 							Noclip noclip = mainscript.M.player.gameObject.AddComponent<Noclip>();
-							noclip.constructor(binds, logger, noclipFastMoveFactor);
+							noclip.constructor(binds, noclipFastMoveFactor);
 							localRotation = mainscript.M.player.transform.localRotation;
 							mainscript.M.player.Th.localEulerAngles = new Vector3(0f, 0f, 0f);
 							settings.godMode = true;
@@ -1539,7 +1537,7 @@ namespace SpawnerTLD.Modules
 						}
 						catch (Exception ex)
 						{
-							logger.Log($"Failed to spawn UFO - {ex}", Logger.LogLevel.Error);
+							Logger.Log($"Failed to spawn UFO - {ex}", Logger.LogLevel.Error);
 						}
 					}
 
@@ -1575,7 +1573,7 @@ namespace SpawnerTLD.Modules
 							}
 							catch (Exception ex)
 							{
-								logger.Log($"Error deleting POI - {ex}", Logger.LogLevel.Error);
+								Logger.Log($"Error deleting POI - {ex}", Logger.LogLevel.Error);
 							}
 						}
 					}
@@ -1721,7 +1719,7 @@ namespace SpawnerTLD.Modules
 
 						bool fuelValueParse = float.TryParse(GUI.TextField(new Rect(configX, configY, configWidth, configHeight), fuelValues[i].ToString(), labelStyle), out float tempFuelValue);
 						if (!fuelValueParse)
-							logger.Log($"{tempFuelValue} is not a number", Logger.LogLevel.Error);
+							Logger.Log($"{tempFuelValue} is not a number", Logger.LogLevel.Error);
 						else
 							fuelValues[i] = tempFuelValue;
 					}
@@ -1737,7 +1735,7 @@ namespace SpawnerTLD.Modules
 					configY += configHeight;
 					redParse = float.TryParse(GUI.TextField(new Rect(configX, configY, configWidth, configHeight), red.ToString(), labelStyle), out red);
 					if (!redParse)
-						logger.Log($"{redParse} is not a number", Logger.LogLevel.Error);
+						Logger.Log($"{redParse} is not a number", Logger.LogLevel.Error);
 					red = Mathf.Clamp(red, 0f, 255f);
 					color.r = red / 255f;
 					//GUI.Label(new Rect(configX, configY, configWidth, configHeight), red.ToString(), labelStyle);
@@ -1751,7 +1749,7 @@ namespace SpawnerTLD.Modules
 					configY += configHeight;
 					greenParse = float.TryParse(GUI.TextField(new Rect(configX, configY, configWidth, configHeight), green.ToString(), labelStyle), out green);
 					if (!greenParse)
-						logger.Log($"{greenParse} is not a number", Logger.LogLevel.Error);
+						Logger.Log($"{greenParse} is not a number", Logger.LogLevel.Error);
 					green = Mathf.Clamp(green, 0f, 255f);
 					color.g = green / 255f;
 					//GUI.Label(new Rect(configX, configY, configWidth, configHeight), green.ToString(), labelStyle);
@@ -1765,7 +1763,7 @@ namespace SpawnerTLD.Modules
 					configY += configHeight;
 					blueParse = float.TryParse(GUI.TextField(new Rect(configX, configY, configWidth, configHeight), blue.ToString(), labelStyle), out blue);
 					if (!blueParse)
-						logger.Log($"{blueParse.ToString()} is not a number", Logger.LogLevel.Error);
+						Logger.Log($"{blueParse.ToString()} is not a number", Logger.LogLevel.Error);
 					blue = Mathf.Clamp(blue, 0f, 255f);
 					color.b = blue / 255f;
 					//GUI.Label(new Rect(configX, configY, configWidth, configHeight), blue.ToString(), labelStyle);
@@ -1817,7 +1815,7 @@ namespace SpawnerTLD.Modules
 					configY += configHeight;
 					redParse = float.TryParse(GUI.TextField(new Rect(configX, configY, configWidth, configHeight), red.ToString(), labelStyle), out red);
 					if (!redParse)
-						logger.Log($"{redParse} is not a number", Logger.LogLevel.Error);
+						Logger.Log($"{redParse} is not a number", Logger.LogLevel.Error);
 					red = Mathf.Clamp(red, 0f, 255f);
 					color.r = red / 255f;
 
@@ -1830,7 +1828,7 @@ namespace SpawnerTLD.Modules
 					configY += configHeight;
 					greenParse = float.TryParse(GUI.TextField(new Rect(configX, configY, configWidth, configHeight), green.ToString(), labelStyle), out green);
 					if (!greenParse)
-						logger.Log($"{greenParse} is not a number", Logger.LogLevel.Error);
+						Logger.Log($"{greenParse} is not a number", Logger.LogLevel.Error);
 					green = Mathf.Clamp(green, 0f, 255f);
 					color.g = green / 255f;
 
@@ -1843,7 +1841,7 @@ namespace SpawnerTLD.Modules
 					configY += configHeight;
 					blueParse = float.TryParse(GUI.TextField(new Rect(configX, configY, configWidth, configHeight), blue.ToString(), labelStyle), out blue);
 					if (!blueParse)
-						logger.Log($"{blueParse.ToString()} is not a number", Logger.LogLevel.Error);
+						Logger.Log($"{blueParse.ToString()} is not a number", Logger.LogLevel.Error);
 					blue = Mathf.Clamp(blue, 0f, 255f);
 					color.b = blue / 255f;
 
@@ -2008,7 +2006,7 @@ namespace SpawnerTLD.Modules
 				}
 				catch
 				{
-					logger.Log($"Something went wrong loading vehicle {gameObject.name}", Logger.LogLevel.Error);
+					Logger.Log($"Something went wrong loading vehicle {gameObject.name}", Logger.LogLevel.Error);
 				}
 			}
 
@@ -2035,7 +2033,7 @@ namespace SpawnerTLD.Modules
 				}
 				catch (Exception ex)
 				{
-					logger.Log($"POI init error - {ex}", Logger.LogLevel.Error);
+					Logger.Log($"POI init error - {ex}", Logger.LogLevel.Error);
 				}
 			}
 
@@ -2303,7 +2301,7 @@ namespace SpawnerTLD.Modules
 
 				bool fuelValueParse = float.TryParse(GUI.TextField(new Rect(textX, sliderY - 2.5f, textWidth, sliderHeight), fuelValues[i].ToString(), labelStyle), out float tempFuelValue);
 				if (!fuelValueParse)
-					logger.Log($"{tempFuelValue} is not a number", Logger.LogLevel.Error);
+					Logger.Log($"{tempFuelValue} is not a number", Logger.LogLevel.Error);
 				else
 					fuelValues[i] = tempFuelValue;
 			}
@@ -2316,7 +2314,7 @@ namespace SpawnerTLD.Modules
 			red = Mathf.Round(red);
 			bool redParse = float.TryParse(GUI.TextField(new Rect(textX, sliderY - 2.5f, textWidth, sliderHeight), red.ToString(), labelStyle), out red);
 			if (!redParse)
-				logger.Log($"{redParse.ToString()} is not a number", Logger.LogLevel.Error);
+				Logger.Log($"{redParse.ToString()} is not a number", Logger.LogLevel.Error);
 			red = Mathf.Clamp(red, 0f, 255f);
 			color.r = red / 255f;
 			GUI.Label(new Rect(textX, sliderY - 2.5f, textWidth, sliderHeight), red.ToString(), labelStyle);
@@ -2328,7 +2326,7 @@ namespace SpawnerTLD.Modules
 			green = Mathf.Round(green);
 			bool greenParse = float.TryParse(GUI.TextField(new Rect(textX, sliderY - 2.5f, textWidth, sliderHeight), green.ToString(), labelStyle), out green);
 			if (!greenParse)
-				logger.Log($"{greenParse.ToString()} is not a number", Logger.LogLevel.Error);
+				Logger.Log($"{greenParse.ToString()} is not a number", Logger.LogLevel.Error);
 			green = Mathf.Clamp(green, 0f, 255f);
 			color.g = green / 255f;
 			GUI.Label(new Rect(textX, sliderY - 2.5f, textWidth, sliderHeight), green.ToString(), labelStyle);
@@ -2340,7 +2338,7 @@ namespace SpawnerTLD.Modules
 			blue = Mathf.Round(blue);
 			bool blueParse = float.TryParse(GUI.TextField(new Rect(textX, sliderY - 2.5f, textWidth, sliderHeight), blue.ToString(), labelStyle), out blue);
 			if (!blueParse)
-				logger.Log($"{blueParse.ToString()} is not a number", Logger.LogLevel.Error);
+				Logger.Log($"{blueParse.ToString()} is not a number", Logger.LogLevel.Error);
 			blue = Mathf.Clamp(blue, 0f, 255f);
 			color.b = blue / 255f;
 			GUI.Label(new Rect(textX, sliderY - 2.5f, textWidth, sliderHeight), blue.ToString(), labelStyle);
@@ -2427,7 +2425,7 @@ namespace SpawnerTLD.Modules
 				}
 				catch (Exception ex)
 				{
-					logger.Log($"Failed to spawn UFO - {ex}", Logger.LogLevel.Error);
+					Logger.Log($"Failed to spawn UFO - {ex}", Logger.LogLevel.Error);
 				}
 			}
 

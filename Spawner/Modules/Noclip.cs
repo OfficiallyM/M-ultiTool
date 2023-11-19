@@ -10,7 +10,6 @@ namespace SpawnerTLD.Modules
 	internal class Noclip : MonoBehaviour
 	{
 		private Keybinds binds;
-		private Logger logger;
 
 
 		public float cameraSensitivity = 90f;
@@ -20,10 +19,9 @@ namespace SpawnerTLD.Modules
 		private float rotationX;
 		private float rotationY;
 
-		public void constructor(Keybinds _binds, Logger _logger, float _fastMoveFactor)
+		public void constructor(Keybinds _binds, float _fastMoveFactor)
 		{
 			binds = _binds;
-			logger = _logger;
 			fastMoveFactor = _fastMoveFactor;
 		}
 
