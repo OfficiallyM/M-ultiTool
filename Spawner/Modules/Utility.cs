@@ -500,27 +500,27 @@ namespace SpawnerTLD.Modules
 		}
 
 		/// <summary>
-		/// Update sunroof data in save
+		/// Update glass data in save
 		/// </summary>
-		/// <param name="sunroof">Sunroof to</param>
-		public void UpdateSunroofs(SunroofData sunroof)
+		/// <param name="glas">Glass data</param>
+		public void UpdateGlass(GlassData glass)
 		{
 			Save data = UnserializeSaveData();
 
 			try
 			{
-				if (data.sunroofs == null)
-					data.sunroofs = new List<SunroofData>();
+				if (data.glass == null)
+					data.glass = new List<GlassData>();
 
-				SunroofData existing = data.sunroofs.Where(s => s.ID == sunroof.ID).FirstOrDefault();
+				GlassData existing = data.glass.Where(g => g.ID == glass.ID && g.type == glass.type).FirstOrDefault();
 				if (existing != null)
-					existing.color = sunroof.color;
+					existing.color = glass.color;
 				else
-					data.sunroofs.Add(sunroof);
+					data.glass.Add(glass);
 			}
 			catch (Exception ex)
 			{
-				Logger.Log($"Sunroof update error - {ex}", Logger.LogLevel.Error);
+				Logger.Log($"Glass update error - {ex}", Logger.LogLevel.Error);
 			}
 
 			SerializeSaveData(data);

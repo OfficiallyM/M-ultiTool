@@ -151,6 +151,7 @@ namespace SpawnerTLD.Modules
 		private Dictionary<mainscript.fluidenum, int> oils = new Dictionary<mainscript.fluidenum, int>();
 		private Dictionary<mainscript.fluidenum, int> fuels = new Dictionary<mainscript.fluidenum, int>();
 		private Color sunRoofColor = new Color(255f / 255f, 255f / 255f, 255f / 255f, 0.5f);
+		private Color windowColor = new Color(255f / 255f, 255f / 255f, 255f / 255f, 0.5f);
 
 		// Settings.
 		private List<QuickSpawn> quickSpawns = new List<QuickSpawn>();
@@ -330,31 +331,47 @@ namespace SpawnerTLD.Modules
 					Logger.Log($"POI load error - {ex}", Logger.LogLevel.Error);
 				}
 
-				// Load sunroof data.
+				// Load glass data.
 				try
 				{
 					Save data = utility.UnserializeSaveData();
-					if (data.sunroofs != null)
+					if (data.glass != null)
 					{
-						foreach (SunroofData sunroof in data.sunroofs)
+						foreach (GlassData glass in data.glass)
 						{
 							// Find all savable objects.
-                            List<tosaveitemscript> saves = UnityEngine.Object.FindObjectsOfType<tosaveitemscript>().ToList();
+							List<tosaveitemscript> saves = UnityEngine.Object.FindObjectsOfType<tosaveitemscript>().ToList();
 							foreach (tosaveitemscript save in saves)
 							{
 								// Check ID matches.
-								if (save.idInSave == sunroof.ID)
+								if (save.idInSave == glass.ID)
 								{
-									// Set sunroof colour.
-									GameObject car = save.gameObject;
-									Transform sunRoofSlot = car.transform.FindRecursive("SunRoofSlot");
-									Transform outerGlass = sunRoofSlot.FindRecursive("sunroof outer glass", exact: false);
-									if (outerGlass != null)
+									switch (glass.type)
 									{
-										MeshRenderer meshRenderer = outerGlass.GetComponent<MeshRenderer>();
-										meshRenderer.material.color = sunroof.color;
+										case "windows":
+											// Set window colour.
+											List<MeshRenderer> renderers = save.gameObject.GetComponentsInChildren<MeshRenderer>().ToList();
+											foreach (MeshRenderer meshRenderer in renderers)
+											{
+												string materialName = meshRenderer.material.name.Replace(" (Instance)", "");
+												if (materialName == "Glass")
+												{
+													meshRenderer.material.color = glass.color;
+												}
+											}
+											break;
+										case "sunroof":
+											// Set sunroof colour.
+											GameObject car = save.gameObject;
+											Transform sunRoofSlot = car.transform.FindRecursive("SunRoofSlot");
+											Transform outerGlass = sunRoofSlot.FindRecursive("sunroof outer glass", exact: false);
+											if (outerGlass != null)
+											{
+												MeshRenderer meshRenderer = outerGlass.GetComponent<MeshRenderer>();
+												meshRenderer.material.color = glass.color;
+											}
+											break;
 									}
-									break;
 								}
 							}
 						}
@@ -362,7 +379,7 @@ namespace SpawnerTLD.Modules
 				}
 				catch (Exception ex)
 				{
-					Logger.Log($"Sunroof load error - {ex}", Logger.LogLevel.Error);
+					Logger.Log($"Glass load error - {ex}", Logger.LogLevel.Error);
 				}
 
 				// Prepopulate any variables that use the fluidenum.
@@ -1024,7 +1041,7 @@ namespace SpawnerTLD.Modules
 					tosaveitemscript save = carObject.GetComponent<tosaveitemscript>();
 
 					int buttonCount = 2;
-					int sliderCount = 3;
+					int sliderCount = 8;
 					int fluidSlidersCount = 0;
 
 					if (coolant != null)
@@ -1037,7 +1054,7 @@ namespace SpawnerTLD.Modules
 						fluidSlidersCount++;
 
 					if (sunRoofSlot != null)
-						sliderCount += 5;
+						sliderCount += 6;
 
 					float buttonsHeight = buttonCount * (buttonHeight + 10f);
 					float slidersHeight = sliderCount * ((buttonHeight * 3) + 10f);
@@ -1457,6 +1474,108 @@ namespace SpawnerTLD.Modules
 					else
 						GUI.Label(new Rect(currVehicleX, currVehicleY, buttonWidth, buttonHeight), "No fuel tank found.", labelStyle);
 
+					currVehicleY += buttonHeight + 20f;
+					GUI.Label(new Rect(currVehicleX, currVehicleY, headerWidth, headerHeight), "Window settings", headerStyle);
+					currVehicleY += headerHeight;
+
+					// Window colour sliders.
+					// Red.
+					GUI.Label(new Rect(currVehicleX, currVehicleY, buttonWidth, buttonHeight), "<color=#F00>Red:</color>", labelStyle);
+					currVehicleY += buttonHeight;
+					float windowRed = GUI.HorizontalSlider(new Rect(currVehicleX, currVehicleY, sliderWidth, buttonHeight), windowColor.r * 255, 0, 255);
+					windowRed = Mathf.Round(windowRed);
+					currVehicleY += buttonHeight;
+					bool windowRedParse = float.TryParse(GUI.TextField(new Rect(currVehicleX, currVehicleY, buttonWidth, buttonHeight), windowRed.ToString(), labelStyle), out windowRed);
+					if (!windowRedParse)
+						Logger.Log($"{windowRedParse} is not a number", Logger.LogLevel.Error);
+					windowRed = Mathf.Clamp(windowRed, 0f, 255f);
+					windowColor.r = windowRed / 255f;
+
+					// Green.
+					currVehicleY += buttonHeight + 10f;
+					GUI.Label(new Rect(currVehicleX, currVehicleY, buttonWidth, buttonHeight), "<color=#0F0>Green:</color>", labelStyle);
+					currVehicleY += buttonHeight;
+					float windowGreen = GUI.HorizontalSlider(new Rect(currVehicleX, currVehicleY, sliderWidth, buttonHeight), windowColor.g * 255, 0, 255);
+					windowGreen = Mathf.Round(windowGreen);
+					currVehicleY += buttonHeight;
+					bool windowGreenParse = float.TryParse(GUI.TextField(new Rect(currVehicleX, currVehicleY, buttonWidth, buttonHeight), windowGreen.ToString(), labelStyle), out windowGreen);
+					if (!windowGreenParse)
+						Logger.Log($"{windowGreenParse} is not a number", Logger.LogLevel.Error);
+					windowGreen = Mathf.Clamp(windowGreen, 0f, 255f);
+					windowColor.g = windowGreen / 255f;
+
+					// Blue.
+					currVehicleY += buttonHeight + 10f;
+					GUI.Label(new Rect(currVehicleX, currVehicleY, buttonWidth, buttonHeight), "<color=#00F>Blue:</color>", labelStyle);
+					currVehicleY += buttonHeight;
+					float windowBlue = GUI.HorizontalSlider(new Rect(currVehicleX, currVehicleY, sliderWidth, buttonHeight), windowColor.b * 255, 0, 255);
+					windowBlue = Mathf.Round(windowBlue);
+					currVehicleY += buttonHeight;
+					bool windowBlueParse = float.TryParse(GUI.TextField(new Rect(currVehicleX, currVehicleY, buttonWidth, buttonHeight), windowBlue.ToString(), labelStyle), out windowBlue);
+					if (!windowBlueParse)
+						Logger.Log($"{windowBlueParse.ToString()} is not a number", Logger.LogLevel.Error);
+					windowBlue = Mathf.Clamp(windowBlue, 0f, 255f);
+					windowColor.b = windowBlue / 255f;
+
+					// Alpha.
+					currVehicleY += buttonHeight + 10f;
+					GUI.Label(new Rect(currVehicleX, currVehicleY, buttonWidth, buttonHeight), "Alpha:", labelStyle);
+					currVehicleY += buttonHeight;
+					float windowAlpha = GUI.HorizontalSlider(new Rect(currVehicleX, currVehicleY, sliderWidth, buttonHeight), windowColor.a * 255, 0, 255);
+					windowAlpha = Mathf.Round(windowAlpha);
+					currVehicleY += buttonHeight;
+					bool windowAlphaParse = float.TryParse(GUI.TextField(new Rect(currVehicleX, currVehicleY, buttonWidth, buttonHeight), windowAlpha.ToString(), labelStyle), out windowAlpha);
+					if (!windowAlphaParse)
+						Logger.Log($"{windowAlphaParse.ToString()} is not a number", Logger.LogLevel.Error);
+					windowAlpha = Mathf.Clamp(windowAlpha, 0f, 255f);
+					windowColor.a = windowAlpha / 255f;
+
+					currVehicleY += buttonHeight + 10f;
+
+					// Colour preview.
+					// Override alpha for colour preview.
+					Color windowPreview = windowColor;
+					windowPreview.a = 1;
+					pixels = new Color[] { windowPreview };
+					previewTexture.SetPixels(pixels);
+					previewTexture.Apply();
+					previewStyle.normal.background = previewTexture;
+					previewStyle.active.background = previewTexture;
+					previewStyle.hover.background = previewTexture;
+					previewStyle.margin = new RectOffset(0, 0, 0, 0);
+					GUI.skin.button = previewStyle;
+					GUI.Button(new Rect(currVehicleX, currVehicleY, sliderWidth, buttonHeight), "");
+					GUI.skin.button = defaultStyle;
+
+					currVehicleY += buttonHeight + 10f;
+
+					if (GUI.Button(new Rect(currVehicleX, currVehicleY, buttonWidth, buttonHeight), "Randomise colour"))
+					{
+						windowColor.r = UnityEngine.Random.Range(0f, 255f) / 255f;
+						windowColor.g = UnityEngine.Random.Range(0f, 255f) / 255f;
+						windowColor.b = UnityEngine.Random.Range(0f, 255f) / 255f;
+					}
+
+					currVehicleX += buttonWidth + 10f;
+
+					if (GUI.Button(new Rect(currVehicleX, currVehicleY, buttonWidth, buttonHeight), "Apply"))
+					{
+						List<MeshRenderer> renderers = carObject.GetComponentsInChildren<MeshRenderer>().ToList();
+						foreach (MeshRenderer meshRenderer in renderers)
+						{
+							string materialName = meshRenderer.material.name.Replace(" (Instance)", "");
+							if (materialName == "Glass")
+							{
+								meshRenderer.material.color = windowColor;
+							}
+						}
+
+						utility.UpdateGlass(new GlassData() { ID = save.idInSave, color = windowColor, type = "windows" });
+					}
+
+					currVehicleX = startingCurrVehicleX;
+					currVehicleY += buttonHeight + 10f;
+
 					// Sunroof settings.
 					if (sunRoofSlot != null)
 					{
@@ -1553,7 +1672,7 @@ namespace SpawnerTLD.Modules
 							{
 								meshRenderer.material.color = sunRoofColor;
 
-								utility.UpdateSunroofs(new SunroofData() { ID = save.idInSave, color = sunRoofColor });
+								utility.UpdateGlass(new GlassData() { ID = save.idInSave, color = sunRoofColor, type = "sunroof" });
 							}
 
 							currVehicleX = startingCurrVehicleX;

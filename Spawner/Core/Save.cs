@@ -14,16 +14,17 @@ namespace SpawnerTLD.Core
 	}
 
 	[DataContract]
-	internal class SunroofData
+	internal class GlassData
 	{
 		[DataMember] public int ID { get; set; }
 		[DataMember] public Color color { get; set; }
+		[DataMember] public string type { get; set; }
 	}
 
 	[DataContract]
 	internal class Save
 	{
 		[DataMember] public List<POIData> pois { get; set; }
-		[DataMember] public List<SunroofData> sunroofs { get; set; }
+		[DataMember] public List<GlassData> glass { get; set; }
 	}
 }
