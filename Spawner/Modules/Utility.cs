@@ -500,6 +500,33 @@ namespace SpawnerTLD.Modules
 		}
 
 		/// <summary>
+		/// Update sunroof data in save
+		/// </summary>
+		/// <param name="sunroof">Sunroof to</param>
+		public void UpdateSunroofs(SunroofData sunroof)
+		{
+			Save data = UnserializeSaveData();
+
+			try
+			{
+				if (data.sunroofs == null)
+					data.sunroofs = new List<SunroofData>();
+
+				SunroofData existing = data.sunroofs.Where(s => s.ID == sunroof.ID).FirstOrDefault();
+				if (existing != null)
+					existing.color = sunroof.color;
+				else
+					data.sunroofs.Add(sunroof);
+			}
+			catch (Exception ex)
+			{
+				Logger.Log($"Sunroof update error - {ex}", Logger.LogLevel.Error);
+			}
+
+			SerializeSaveData(data);
+		}
+
+		/// <summary>
 		/// Paint all child parts of a vehicle.
 		/// </summary>
 		/// <param name="c">The colour to paint</param>
