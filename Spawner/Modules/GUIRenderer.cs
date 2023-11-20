@@ -10,6 +10,7 @@ using UnityEngine;
 using SpawnerTLD.Extensions;
 using Settings = SpawnerTLD.Core.Settings;
 using static mainscript;
+using Unity.Profiling;
 
 namespace SpawnerTLD.Modules
 {
@@ -1043,23 +1044,30 @@ namespace SpawnerTLD.Modules
 					int buttonCount = 2;
 					int sliderCount = 8;
 					int fluidSlidersCount = 0;
+					float fluidsHeight = 0;
 
 					if (coolant != null)
 						fluidSlidersCount++;
+					else
+						fluidsHeight += headerHeight * 2 + 30f;
 
 					if (engine != null && engine.T != null)
 						fluidSlidersCount++;
+					else
+						fluidsHeight += headerHeight * 2 + 30f;
 
 					if (fuel != null)
 						fluidSlidersCount++;
+					else
+						fluidsHeight += headerHeight * 2 + 30f;
 
 					if (sunRoofSlot != null)
 						sliderCount += 6;
 
-					float buttonsHeight = buttonCount * (buttonHeight + 10f);
-					float slidersHeight = sliderCount * ((buttonHeight * 3) + 10f);
-					float fluidsHeight = fluidSlidersCount * ((buttonHeight + 10f) * Enum.GetValues(typeof(mainscript.fluidenum)).Cast<mainscript.fluidenum>().Count());
-					float currVehicleHeight = buttonsHeight + slidersHeight + fluidsHeight + 200f;
+					float buttonsHeight = buttonCount * (buttonHeight + 10f + headerHeight);
+					float slidersHeight = sliderCount * ((buttonHeight * 3) + 10f) + headerHeight;
+					fluidsHeight += fluidSlidersCount * ((buttonHeight + 10f) * Enum.GetValues(typeof(mainscript.fluidenum)).Cast<mainscript.fluidenum>().Count()) + (fluidSlidersCount * headerHeight);
+					float currVehicleHeight = buttonsHeight + slidersHeight + fluidsHeight;
 
 					currentVehiclePosition = GUI.BeginScrollView(new Rect(currVehicleX, currVehicleY, tabWidth - 20f, tabHeight - 20f), currentVehiclePosition, new Rect(currVehicleX, currVehicleY, tabWidth - 20f, currVehicleHeight - 20f), new GUIStyle(), GUI.skin.verticalScrollbar);
 
