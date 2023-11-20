@@ -355,9 +355,23 @@ namespace SpawnerTLD.Modules
 											foreach (MeshRenderer meshRenderer in renderers)
 											{
 												string materialName = meshRenderer.material.name.Replace(" (Instance)", "");
-												if (materialName == "Glass")
+												switch (materialName)
 												{
-													meshRenderer.material.color = glass.color;
+													// Outer glass.
+													case "Glass":
+														// Use selected colour.
+														meshRenderer.material.color = glass.color;
+														break;
+
+													// Inner glass.
+													case "GlassNoReflection":
+														// Use a more transparent version of the selected colour
+														// for the inner glass to ensure it's still see-through.
+														Color innerColor = glass.color;
+														if (innerColor.a > 0.2f)
+															innerColor.a = 0.2f;
+														meshRenderer.material.color = innerColor;
+														break;
 												}
 											}
 											break;
@@ -1572,9 +1586,23 @@ namespace SpawnerTLD.Modules
 						foreach (MeshRenderer meshRenderer in renderers)
 						{
 							string materialName = meshRenderer.material.name.Replace(" (Instance)", "");
-							if (materialName == "Glass")
+							switch (materialName)
 							{
-								meshRenderer.material.color = windowColor;
+								// Outer glass.
+								case "Glass":
+									// Use selected colour.
+									meshRenderer.material.color = windowColor;
+									break;
+
+								// Inner glass.
+								case "GlassNoReflection":
+									// Use a more transparent version of the selected colour
+									// for the inner glass to ensure it's still see-through.
+									Color innerColor = windowColor;
+									if (innerColor.a > 0.2f)
+										innerColor.a = 0.2f;
+									meshRenderer.material.color = innerColor;
+									break;
 							}
 						}
 
