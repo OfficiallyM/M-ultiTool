@@ -399,7 +399,7 @@ namespace SpawnerTLD.Modules
 
 				// Prepopulate any variables that use the fluidenum.
 				int maxFuelType = (int)Enum.GetValues(typeof(mainscript.fluidenum)).Cast<mainscript.fluidenum>().Max();
-				for (int i = 0; i < maxFuelType; i++)
+				for (int i = 0; i <= maxFuelType; i++)
 				{
 					fuelValues.Add(-1f);
 					fuelTypeInts.Add(-1);
@@ -640,7 +640,9 @@ namespace SpawnerTLD.Modules
 					"Jessica",
 					"Doubt",
 					"dela",
-					"DummyModder"
+					"DummyModder",
+					"Cerulean",
+					"Cassidy"
 				};
 
 				float totalCreditsHeight = (credits.Count + other.Count) * 20f;
@@ -1080,7 +1082,7 @@ namespace SpawnerTLD.Modules
 
 					float buttonsHeight = buttonCount * (buttonHeight + 10f + headerHeight);
 					float slidersHeight = sliderCount * ((buttonHeight * 3) + 10f) + headerHeight;
-					fluidsHeight += fluidSlidersCount * ((buttonHeight + 10f) * Enum.GetValues(typeof(mainscript.fluidenum)).Cast<mainscript.fluidenum>().Count()) + (fluidSlidersCount * headerHeight);
+					fluidsHeight += fluidSlidersCount * ((buttonHeight + 10f) * Enum.GetValues(typeof(mainscript.fluidenum)).Cast<mainscript.fluidenum>().Count()) + (fluidSlidersCount * headerHeight) + (buttonHeight + 10f) + 10f;
 					float currVehicleHeight = buttonsHeight + slidersHeight + fluidsHeight;
 
 					currentVehiclePosition = GUI.BeginScrollView(new Rect(currVehicleX, currVehicleY, tabWidth - 20f, tabHeight - 20f), currentVehiclePosition, new Rect(currVehicleX, currVehicleY, tabWidth - 20f, currVehicleHeight - 20f), new GUIStyle(), GUI.skin.verticalScrollbar);
