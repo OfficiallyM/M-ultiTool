@@ -26,3 +26,4 @@
 
 ## Contributors
 - RUNDEN: Thumbnail generation
+- Jessica: New mod name suggestion

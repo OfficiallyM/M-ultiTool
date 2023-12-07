@@ -647,7 +647,8 @@ namespace MultiTool.Modules
 					"M- - Maintainer",
 					"RUNDEN - Thumbnail generator",
 					"FreakShow - Original spawner",
-					"_RainBowSheep_ - Original spawner"
+					"_RainBowSheep_ - Original spawner",
+					"Jessica - New mod name suggestion",
 				};
 
 				List<string> other = new List<string>()
