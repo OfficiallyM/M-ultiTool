@@ -40,6 +40,10 @@ namespace MultiTool.Modules
 		/// </summary>
 		private static void LoadTranslationFiles()
 		{
+			// Return early if translations are already loaded.
+			if (translations.Count > 0)
+				return;
+
 			string[] files = Directory.GetFiles(translationDir, "*.json");
 			foreach (string file in files)
 			{
