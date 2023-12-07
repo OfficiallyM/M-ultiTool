@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using UnityEngine;
 
-namespace SpawnerTLD.Modules
+namespace MultiTool.Modules
 {
 	internal class Noclip : MonoBehaviour
 	{

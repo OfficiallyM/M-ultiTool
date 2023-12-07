@@ -1,4 +1,4 @@
-﻿using SpawnerTLD.Core;
+﻿using MultiTool.Core;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -7,7 +7,7 @@ using System.Text;
 using System.Threading.Tasks;
 using TLDLoader;
 
-namespace SpawnerTLD.Modules
+namespace MultiTool.Modules
 {
 	public static class Logger
 	{
@@ -30,8 +30,8 @@ namespace SpawnerTLD.Modules
 				if (Directory.Exists(ModLoader.ModsFolder))
 				{
 					Directory.CreateDirectory(Path.Combine(ModLoader.ModsFolder, "Logs"));
-					logFile = ModLoader.ModsFolder + "\\Logs\\SpawnerTLD.log";
-					File.WriteAllText(logFile, $"SpawnerTLD v{Meta.Version} initialised\r\n");
+					logFile = ModLoader.ModsFolder + "\\Logs\\M-ultiTool.log";
+					File.WriteAllText(logFile, $"M-ultiTool v{Meta.Version} initialised\r\n");
 					initialised = true;
 				}
 			}

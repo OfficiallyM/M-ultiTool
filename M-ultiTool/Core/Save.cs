@@ -2,7 +2,7 @@
 using System.Runtime.Serialization;
 using UnityEngine;
 
-namespace SpawnerTLD.Core
+namespace MultiTool.Core
 {
 	[DataContract]
 	internal class POIData

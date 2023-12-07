@@ -4,7 +4,7 @@ using System.IO;
 using TLDLoader;
 using UnityEngine;
 
-namespace SpawnerTLD.Modules
+namespace MultiTool.Modules
 {
 	internal class ThumbnailGenerator
 	{

@@ -4,9 +4,9 @@ using System.Linq;
 using System.Runtime.Serialization;
 using System.Text;
 using System.Threading.Tasks;
-using static SpawnerTLD.Modules.Keybinds;
+using static MultiTool.Modules.Keybinds;
 
-namespace SpawnerTLD.Core
+namespace MultiTool.Core
 {
 	// Serializable vehicle wrapper for translation config.
 	[DataContract]

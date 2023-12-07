@@ -1,4 +1,4 @@
-﻿using SpawnerTLD.Core;
+﻿using MultiTool.Core;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -7,7 +7,7 @@ using System.Runtime.Serialization.Json;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace SpawnerTLD.Modules
+namespace MultiTool.Modules
 {
 	internal class Config
 	{

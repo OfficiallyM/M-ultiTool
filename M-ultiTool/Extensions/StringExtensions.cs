@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace SpawnerTLD.Extensions
+namespace MultiTool.Extensions
 {
 	public static class StringExtensions
 	{

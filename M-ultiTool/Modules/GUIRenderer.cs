@@ -1,4 +1,4 @@
-﻿using SpawnerTLD.Core;
+﻿using MultiTool.Core;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -7,12 +7,12 @@ using System.Text;
 using System.Threading.Tasks;
 using TLDLoader;
 using UnityEngine;
-using SpawnerTLD.Extensions;
-using Settings = SpawnerTLD.Core.Settings;
+using MultiTool.Extensions;
+using Settings = MultiTool.Core.Settings;
 using static mainscript;
 using Unity.Profiling;
 
-namespace SpawnerTLD.Modules
+namespace MultiTool.Modules
 {
 	internal class GUIRenderer
 	{
@@ -100,6 +100,16 @@ namespace SpawnerTLD.Modules
 				textColor = Color.white,
 			}
 		};
+		private GUIStyle alertStyle = new GUIStyle()
+		{
+			fontSize = 24,
+			alignment = TextAnchor.UpperLeft,
+			wordWrap = true,
+			normal = new GUIStyleState()
+			{
+				textColor = Color.red,
+			}
+		};
 
 		// General variables.
 		private string search = String.Empty;
@@ -173,6 +183,7 @@ namespace SpawnerTLD.Modules
 		private float noclipFastMoveFactor = 10f;
 
 		private temporaryTurnOffGeneration temp;
+		private bool spawnerDetected = false;
 
 		public GUIRenderer(Config _config, Translator _translator, ThumbnailGenerator _thumbnailGenerator, Keybinds _binds, Utility _utility)
 		{
@@ -185,7 +196,7 @@ namespace SpawnerTLD.Modules
 
 		public void OnGUI()
 		{
-			// Return early if spawner is disabled.
+			// Return early if M-ultiTool is disabled.
 			if (!enabled)
 				return;
 
@@ -208,6 +219,8 @@ namespace SpawnerTLD.Modules
 			{
 				ToggleVisibility();
 			}
+			else if (spawnerDetected)
+				GUIExtensions.DrawOutline(new Rect(resolutionX - 360f, 10f, 350f, 50f), "Old SpawnerTLD detected.\nPlease delete from mods folder.", alertStyle, Color.black);
 
 			// Return early if the UI isn't supposed to be visible.
 			if (!show)
@@ -430,6 +443,13 @@ namespace SpawnerTLD.Modules
 				// Find instance of temporaryTurnOffGeneration to spawn UFO.
 				temp = mainscript.M.menu.GetComponentInChildren<temporaryTurnOffGeneration>();
 
+				// Check if old spawner is installed.
+				foreach (var mod in ModLoader.LoadedMods)
+				{
+					if (mod.ID == "SpawnerTLD")
+						spawnerDetected = true;
+				}
+
 			}
 			catch (Exception ex)
 			{
@@ -470,7 +490,7 @@ namespace SpawnerTLD.Modules
 				legacyUI = true;
 				config.UpdateLegacyMode(legacyUI);
 			}
-			binds.RenderRebindMenu("Spawner menu key", new int[] { (int)Keybinds.Inputs.menu }, resolutionX - 350f, 50f);
+			binds.RenderRebindMenu("M-ultiTool menu key", new int[] { (int)Keybinds.Inputs.menu }, resolutionX - 350f, 50f);
 		}
 
 		/// <summary>
@@ -486,7 +506,7 @@ namespace SpawnerTLD.Modules
 				// Hide the menu in case it's currently visible.
 				show = false;
 			}
-			if (GUI.Button(new Rect(230f, 30f, 200f, 50f), show ? "<size=28><color=#0F0>Spawner</color></size>" : "<size=28><color=#F00>Spawner</color></size>"))
+			if (GUI.Button(new Rect(230f, 30f, 200f, 50f), show ? "<size=28><color=#0F0>M-ultiTool</color></size>" : "<size=28><color=#F00>M-ultiTool</color></size>"))
 				show = !show;
 		}
 
@@ -500,7 +520,8 @@ namespace SpawnerTLD.Modules
 			float width = mainMenuWidth;
 			float height = mainMenuHeight;
 
-			GUI.Box(new Rect(x, y, width, height), $"<color=#f87ffa><size=18><b>{Meta.Name}</b></size>\n<size=16>v{Meta.Version} - made with ❤️ by {Meta.Author}</size></color>");
+			// TODO: Remove formerly message next update.
+			GUI.Box(new Rect(x, y, width, height), $"<color=#f87ffa><size=18><b>{Meta.Name} - Formerly SpawnerTLD</b></size>\n<size=16>v{Meta.Version} - made with ❤️ by {Meta.Author}</size></color>");
 
 			// Settings button.
 			if (GUI.Button(new Rect(x + 5f, y + 5f, 150f, 25f), GetAccessibleString("Show settings", settingsShow)))

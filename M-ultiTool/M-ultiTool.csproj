@@ -49,7 +49,7 @@
 
   <Target Name="PostBuild" AfterTargets="PostBuildEvent">
     <Exec Command="move /Y &quot;$(TargetPath)&quot; &quot;%userprofile%\Documents\TheLongDrive\Mods\$(TargetFileName)&quot;" />
-    <Exec Command="copy /Y &quot;$(TargetDir)Configs&quot; &quot;%userprofile%\Documents\TheLongDrive\Mods\Config\Mod Settings\SpawnerTLD&quot;" />
+    <Exec Command="copy /Y &quot;$(TargetDir)Configs&quot; &quot;%userprofile%\Documents\TheLongDrive\Mods\Config\Mod Settings\M-ultiTool&quot;" />
   </Target>
 
 </Project>

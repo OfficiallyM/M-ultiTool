@@ -1,4 +1,4 @@
-﻿using SpawnerTLD.Core;
+﻿using MultiTool.Core;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -6,9 +6,11 @@ using System.Linq;
 using System.Runtime.Serialization.Json;
 using System.Text;
 using System.Threading.Tasks;
+using TLDLoader;
 using UnityEngine;
+using Settings = MultiTool.Core.Settings;
 
-namespace SpawnerTLD.Modules
+namespace MultiTool.Modules
 {
 	internal class Utility
 	{
@@ -568,6 +570,41 @@ namespace SpawnerTLD.Modules
 			{
 				allChildren.Add(child);
 				FindPartChildren(child, ref allChildren);
+			}
+		}
+
+		/// <summary>
+		/// Migrate SpawnerTLD config to M-ultiTool.
+		/// </summary>
+		public void MigrateFromSpawner()
+		{
+			string spawnerSettings = Path.Combine(ModLoader.ModsFolder, "Config", "Mod Settings", "SpawnerTLD");
+			string path = ModLoader.GetModConfigFolder(MultiTool.mod);
+			if (File.Exists(Path.Combine(spawnerSettings, "Config.json")))
+			{
+				// Delete existing config if it exists.
+				if (File.Exists(Path.Combine(path, "Config.json")))
+				{
+					try
+					{
+						File.Delete(Path.Combine(path, "Config.json"));
+					}
+					catch (Exception ex)
+					{
+						Logger.Log($"Error removing M-ultiTool Config.json - {ex}", Logger.LogLevel.Error);
+						return;
+					}
+				}
+
+				try
+				{
+					File.Move(Path.Combine(spawnerSettings, "Config.json"), Path.Combine(path, "Config.json"));
+					Logger.Log("Successfully migrated config from SpawnerTLD to M-ultiTool.");
+				}
+				catch (Exception ex)
+				{
+					Logger.Log($"Error migrating config from SpawnerTLD to M-ultiTool - {ex}", Logger.LogLevel.Error);
+				}
 			}
 		}
 	}

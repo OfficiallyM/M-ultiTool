@@ -1,4 +1,4 @@
-﻿using SpawnerTLD.Core;
+﻿using MultiTool.Core;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -8,7 +8,7 @@ using System.Text;
 using System.Threading.Tasks;
 using TLDLoader;
 
-namespace SpawnerTLD.Modules
+namespace MultiTool.Modules
 {
 	internal class Translator
 	{

@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using UnityEngine;
 
-namespace SpawnerTLD.Extensions
+namespace MultiTool.Extensions
 {
 	public static class TransformExtensions
 	{

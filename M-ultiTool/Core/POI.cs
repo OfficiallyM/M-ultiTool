@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using UnityEngine;
 
-namespace SpawnerTLD.Core
+namespace MultiTool.Core
 {
 	internal class POI
 	{

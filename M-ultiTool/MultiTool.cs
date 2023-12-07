@@ -1,22 +1,24 @@
-﻿using SpawnerTLD.Core;
-using SpawnerTLD.Modules;
+﻿using MultiTool.Core;
+using MultiTool.Modules;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Runtime.CompilerServices;
 using TLDLoader;
 using UnityEngine;
-using Logger = SpawnerTLD.Modules.Logger;
-using Settings = SpawnerTLD.Core.Settings;
+using Logger = MultiTool.Modules.Logger;
+using Settings = MultiTool.Core.Settings;
 
-namespace SpawnerTLD
+namespace MultiTool
 {
-	public class SpawnerTLD : Mod
+	public class MultiTool : Mod
 	{
 		// Mod meta stuff.
 		public override string ID => Meta.ID;
 		public override string Name => Meta.Name;
 		public override string Author => Meta.Author;
 		public override string Version => Meta.Version;
+		public override bool LoadInMenu => true;
 
 		// Initialise modules.
 		private readonly GUIRenderer renderer;
@@ -28,7 +30,9 @@ namespace SpawnerTLD
 
 		private Settings settings = new Settings();
 
-		public SpawnerTLD()
+		internal static Mod mod;
+
+		public MultiTool()
 		{
 			// Initialise modules.
 			try
@@ -49,9 +53,29 @@ namespace SpawnerTLD
 			{
 				Logger.Log($"Module initialisation failed - {ex}", Logger.LogLevel.Critical);
 			}
+
+			mod = this;
 		}
 
 		// Override functions.
+		public override void OnMenuLoad()
+		{
+			// Check for and delete old spawner.
+			string file = Path.Combine(ModLoader.ModsFolder, "SpawnerTLD.dll");
+			if (File.Exists(file))
+			{
+				try
+				{
+					File.Delete(file);
+					Logger.Log("Detected and removed old SpawnerTLD.");
+				}
+				catch (Exception ex)
+				{
+					Logger.Log($"Failed to delete old SpawnerTLD, this will cause conflicts - {ex}", Logger.LogLevel.Critical);
+				}
+			}
+		}
+
 		public override void OnGUI()
 		{
 			renderer.OnGUI();
@@ -65,12 +89,15 @@ namespace SpawnerTLD
 			if (distance >= minDistance)
 				renderer.enabled = true;
 
-			// Return early if spawner is disabled.
+			// Return early if M-ultiTool is disabled.
 			if (!renderer.enabled)
 			{
-				Logger.Log("Distance requirement not met, spawner disabled.", Logger.LogLevel.Warning);
+				Logger.Log("Distance requirement not met, M-ultiTool disabled.", Logger.LogLevel.Warning);
 				return;
 			}
+
+			// Run spawner migration.
+			utility.MigrateFromSpawner();
 
 			// Set the configuration path.
 			config.SetConfigPath(ModLoader.GetModConfigFolder(this) + "\\Config.json");
@@ -83,7 +110,7 @@ namespace SpawnerTLD
 
 		public override void Update()
 		{
-			// Return early if spawner isn't enabled.
+			// Return early if M-ultiTool isn't enabled.
 			if (!renderer.enabled)
 				return;
 

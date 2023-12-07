@@ -4,13 +4,13 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace SpawnerTLD.Core
+namespace MultiTool.Core
 {
 	internal static class Meta
 	{
-		public static string ID => "SpawnerTLD";
-		public static string Name => "Spawner";
+		public static string ID => "M-ultiTool";
+		public static string Name => "M-ultiTool";
 		public static string Author => "M-";
-		public static string Version => "2.6.0";
+		public static string Version => "3.0.0";
 	}
 }
