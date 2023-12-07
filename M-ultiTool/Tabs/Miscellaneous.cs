@@ -1,0 +1,236 @@
+﻿using MultiTool.Core;
+using MultiTool.Modules;
+using MultiTool.Utilities;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using UnityEngine;
+using Settings = MultiTool.Core.Settings;
+using Logger = MultiTool.Modules.Logger;
+
+namespace MultiTool.Tabs
+{
+	internal class MiscellaneousTab : Tab
+	{
+		public override string Name => "Miscellaneous";
+
+		private Vector2 toggleScrollPosition;
+		private Settings settings = new Settings();
+		public override void RenderTab(Dimensions dimensions)
+		{
+			float miscX = dimensions.x + 10f;
+			float miscY = dimensions.y + 10f;
+			float buttonWidth = 200f;
+			float buttonHeight = 20f;
+
+			float miscWidth = 250f;
+			float labelWidth = dimensions.width - 20f;
+
+			int toggleCount = 3;
+			float toggleWidth = (buttonWidth + 10f) * toggleCount;
+
+			float toggleX = miscX;
+
+			toggleScrollPosition = GUI.BeginScrollView(new Rect(miscX, miscY, toggleWidth, buttonHeight), toggleScrollPosition, new Rect(miscX, miscY, toggleWidth, buttonHeight));
+
+			// Delete mode.
+			if (GUI.Button(new Rect(toggleX, miscY, buttonWidth, buttonHeight), GUIRenderer.GetAccessibleString("Delete mode", settings.deleteMode) + $" (Press {GUIRenderer.binds.GetKeyByAction((int)Keybinds.Inputs.deleteMode).key})"))
+			{
+				settings.deleteMode = !settings.deleteMode;
+			}
+			toggleX += buttonWidth + 10f;
+
+			// God toggle.
+			if (GUI.Button(new Rect(toggleX, miscY, buttonWidth, buttonHeight), GUIRenderer.GetAccessibleString("God mode", settings.godMode)))
+			{
+				settings.godMode = !settings.godMode;
+				mainscript.M.ChGodMode(settings.godMode);
+			}
+			toggleX += buttonWidth + 10f;
+
+			// Noclip toggle.
+			if (GUI.Button(new Rect(toggleX, miscY, buttonWidth, buttonHeight), GUIRenderer.GetAccessibleString("Noclip", settings.noclip)))
+			{
+				settings.noclip = !settings.noclip;
+
+				if (settings.noclip)
+				{
+					Noclip noclip = mainscript.M.player.gameObject.AddComponent<Noclip>();
+					noclip.constructor(GUIRenderer.binds, GUIRenderer.noclipFastMoveFactor);
+					GUIRenderer.localRotation = mainscript.M.player.transform.localRotation;
+					mainscript.M.player.Th.localEulerAngles = new Vector3(0f, 0f, 0f);
+					settings.godMode = true;
+
+					// Disable colliders.
+					foreach (Collider collider in mainscript.M.player.C)
+					{
+						collider.enabled = false;
+					}
+				}
+				else
+				{
+					Noclip noclip = mainscript.M.player.gameObject.GetComponent<Noclip>();
+					if (noclip != null)
+					{
+						UnityEngine.Object.Destroy(noclip);
+
+						// Resetting localRotation stops the player from flying infinitely
+						// upwards when coming out of noclip.
+						// I have no idea why, it just works.
+						mainscript.M.player.transform.localRotation = GUIRenderer.localRotation;
+
+						// Re-enable colliders.
+						foreach (Collider collider in mainscript.M.player.C)
+						{
+							collider.enabled = true;
+						}
+					}
+
+					if (GUIRenderer.noclipGodmodeDisable)
+						settings.godMode = false;
+				}
+				mainscript.M.ChGodMode(settings.godMode);
+			}
+			toggleX += buttonWidth + 10f;
+
+			GUI.EndScrollView();
+
+			miscY += buttonHeight + 20f;
+
+			// Time setting.
+			// TODO: Work out what the time actually is.
+			GUI.Label(new Rect(miscX, miscY, labelWidth, buttonHeight), "Time:", GUIRenderer.labelStyle);
+			miscY += buttonHeight;
+			float time = GUI.HorizontalSlider(new Rect(miscX, miscY, miscWidth, buttonHeight), GUIRenderer.selectedTime, 0f, 360f);
+			GUIRenderer.selectedTime = Mathf.Round(time);
+			if (GUI.Button(new Rect(miscX + miscWidth + 10f, miscY, buttonWidth, buttonHeight), "Set"))
+			{
+				mainscript.M.napszak.tekeres = GUIRenderer.selectedTime;
+			}
+
+			if (GUI.Button(new Rect(miscX + miscWidth + buttonWidth + 20f, miscY, buttonWidth, buttonHeight), GUIRenderer.GetAccessibleString("Unlock", "Lock", GUIRenderer.isTimeLocked)))
+			{
+				GUIRenderer.isTimeLocked = !GUIRenderer.isTimeLocked;
+
+				mainscript.M.napszak.enabled = !GUIRenderer.isTimeLocked;
+			}
+
+			miscY += buttonHeight + 10f;
+
+			GUI.Label(new Rect(miscX, miscY, labelWidth, buttonHeight), "UFO spawning (doesn't save):", GUIRenderer.labelStyle);
+
+			if (GUI.Button(new Rect(miscX + miscWidth + 10f, miscY, buttonWidth, buttonHeight), "Spawn"))
+			{
+				try
+				{
+					// Destory existing UFO.
+					if (GUIRenderer.ufo != null)
+						UnityEngine.Object.Destroy(GUIRenderer.ufo);
+
+					GUIRenderer.ufo = UnityEngine.Object.Instantiate(GUIRenderer.temp.FEDOSPAWN.prefab, mainscript.M.player.lookPoint + Vector3.up * 0.75f, Quaternion.FromToRotation(Vector3.forward, -mainscript.M.player.transform.right));
+					fedoscript ufoScript = GUIRenderer.ufo.GetComponent<fedoscript>();
+					ufoScript.ai = false;
+					ufoScript.followRoad = false;
+				}
+				catch (Exception ex)
+				{
+					Logger.Log($"Failed to spawn UFO - {ex}", Logger.LogLevel.Error);
+				}
+			}
+
+			if (GUI.Button(new Rect(miscX + miscWidth + buttonWidth + 20f, miscY, buttonWidth, buttonHeight), "Delete"))
+			{
+				if (GUIRenderer.ufo != null)
+				{
+					fedoscript ufoScript = GUIRenderer.ufo.GetComponent<fedoscript>();
+					if (!ufoScript.seat.inUse)
+						UnityEngine.Object.Destroy(GUIRenderer.ufo);
+				}
+			}
+
+			miscY += buttonHeight + 10f;
+
+			if (GUI.Button(new Rect(miscX, miscY, buttonWidth, buttonHeight), "Delete last building"))
+			{
+				if (GUIRenderer.spawnedPOIs.Count > 0)
+				{
+					try
+					{
+						SpawnedPOI poi = GUIRenderer.spawnedPOIs.Last();
+
+						// Remove POI from save.
+						if (poi.ID != null)
+							SaveUtilities.UpdatePOISaveData(new POIData()
+							{
+								ID = poi.ID.Value,
+							}, "delete");
+
+						GUIRenderer.spawnedPOIs.Remove(poi);
+						GameObject.Destroy(poi.poi);
+					}
+					catch (Exception ex)
+					{
+						Logger.Log($"Error deleting POI - {ex}", Logger.LogLevel.Error);
+					}
+				}
+			}
+
+			miscY += buttonHeight + 10f;
+
+			if (GUI.Button(new Rect(miscX, miscY, buttonWidth, buttonHeight), "Respawn nearest building items"))
+			{
+				Vector3 playerPosition = mainscript.M.player.transform.position;
+
+				// Find closest building.
+				float distance = float.MaxValue;
+				GameObject closestBuilding = null;
+
+				List<GameObject> buildings = new List<GameObject>();
+
+				foreach (KeyValuePair<int, GameObject> building in mainscript.M.terrainGenerationSettings.roadBuildingGeneration.placedBuildings)
+				{
+					buildings.Add(building.Value);
+				}
+
+				foreach (SpawnedPOI spawnedPOI in GUIRenderer.spawnedPOIs)
+				{
+					buildings.Add(spawnedPOI.poi);
+				}
+
+				foreach (GameObject building in buildings)
+				{
+					Vector3 position = building.transform.position;
+					float buildingDistance = Vector3.Distance(position, playerPosition);
+					if (buildingDistance < distance)
+					{
+						distance = buildingDistance;
+						closestBuilding = building;
+					}
+				}
+
+				// Trigger item respawn.
+				buildingscript buildingscript = closestBuilding.GetComponent<buildingscript>();
+				buildingscript.itemsSpawned = false;
+				buildingscript.SpawnStuff(0);
+			}
+			miscY += buttonHeight + 10f;
+
+			if (GUI.Button(new Rect(miscX, miscY, buttonWidth, buttonHeight), GUIRenderer.GetAccessibleString("Toggle color picker", settings.mode == "colorPicker")))
+			{
+				if (settings.mode == "colorPicker")
+					settings.mode = null;
+				else
+					settings.mode = "colorPicker";
+			}
+			miscY += buttonHeight + 10f;
+
+			if (GUI.Button(new Rect(miscX, miscY, buttonWidth, buttonHeight), GUIRenderer.GetAccessibleString("Toggle object scale mode", settings.mode == "scale")))
+			{
+				if (settings.mode == "scale")
+					settings.mode = null;
+				else
+					settings.mode = "scale";
+			}
+		}
+	}
+}
