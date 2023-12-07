@@ -1,5 +1,6 @@
 ﻿using MultiTool.Core;
 using MultiTool.Modules;
+using MultiTool.Utilities;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -26,7 +27,6 @@ namespace MultiTool
 		private readonly Translator translator;
 		private readonly ThumbnailGenerator thumbnailGenerator;
 		private readonly Keybinds binds;
-		private readonly Utility utility;
 
 		private Settings settings = new Settings();
 
@@ -43,11 +43,10 @@ namespace MultiTool
 				string configDirectory = Path.Combine(ModLoader.ModsFolder, "Config", "Mod Settings", ID);
 
 				config = new Config();
-				utility = new Utility();
 				translator = new Translator(configDirectory);
-				thumbnailGenerator = new ThumbnailGenerator(utility, configDirectory);
+				thumbnailGenerator = new ThumbnailGenerator(configDirectory);
 				binds = new Keybinds(config);
-				renderer = new GUIRenderer(config, translator, thumbnailGenerator, binds, utility);
+				renderer = new GUIRenderer(config, translator, thumbnailGenerator, binds);
 			}
 			catch (Exception ex)
 			{
@@ -97,7 +96,7 @@ namespace MultiTool
 			}
 
 			// Run spawner migration.
-			utility.MigrateFromSpawner();
+			MigrateUtilities.MigrateFromSpawner();
 
 			// Set the configuration path.
 			config.SetConfigPath(ModLoader.GetModConfigFolder(this) + "\\Config.json");
@@ -182,7 +181,7 @@ namespace MultiTool
 						if (part == null)
 							return;
 
-						utility.Paint(renderer.GetColor(), part);
+						GameUtilities.Paint(renderer.GetColor(), part);
 					}
 					break;
 				case "scale":

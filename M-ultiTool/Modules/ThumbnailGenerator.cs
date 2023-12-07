@@ -1,4 +1,5 @@
-﻿using System;
+﻿using MultiTool.Utilities;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using TLDLoader;
@@ -8,15 +9,13 @@ namespace MultiTool.Modules
 {
 	internal class ThumbnailGenerator
 	{
-		private Utility utility;
 		private string configDirectory;
 
 		private string cacheDir = "";
 		private bool regenerateCache = false;
 
-		public ThumbnailGenerator(Utility _utility, string _configDirectory)
+		public ThumbnailGenerator(string _configDirectory)
 		{
-			utility = _utility;
 			configDirectory = _configDirectory;
 
 			// Create cache directory.
@@ -39,7 +38,7 @@ namespace MultiTool.Modules
 			{
 				if (item.name != "ErrorPrefab")
 				{
-					if (utility.IsVehicleOrTrailer(item))
+					if (GameUtilities.IsVehicleOrTrailer(item))
 					{
 						// Get vehicle variants.
 						randomTypeSelector randoms = item.GetComponent<randomTypeSelector>();

@@ -11,6 +11,7 @@ using MultiTool.Extensions;
 using Settings = MultiTool.Core.Settings;
 using static mainscript;
 using Unity.Profiling;
+using MultiTool.Utilities;
 
 namespace MultiTool.Modules
 {
@@ -23,7 +24,6 @@ namespace MultiTool.Modules
 		private Translator translator;
 		private ThumbnailGenerator thumbnailGenerator;
 		private Keybinds binds;
-		private Utility utility;
 
 		// Menu control.
 		public bool enabled = false;
@@ -185,13 +185,12 @@ namespace MultiTool.Modules
 		private temporaryTurnOffGeneration temp;
 		private bool spawnerDetected = false;
 
-		public GUIRenderer(Config _config, Translator _translator, ThumbnailGenerator _thumbnailGenerator, Keybinds _binds, Utility _utility)
+		public GUIRenderer(Config _config, Translator _translator, ThumbnailGenerator _thumbnailGenerator, Keybinds _binds)
 		{
 			config = _config;
 			translator = _translator;
 			thumbnailGenerator = _thumbnailGenerator;
 			binds = _binds;
-			utility = _utility;
 		}
 
 		public void OnGUI()
@@ -310,9 +309,9 @@ namespace MultiTool.Modules
 					try
 					{
 						// Remove vehicles and trailers from items array.
-						if (!utility.IsVehicleOrTrailer(item) && item.name != "ErrorPrefab")
+						if (!GameUtilities.IsVehicleOrTrailer(item) && item.name != "ErrorPrefab")
 						{
-							items.Add(new Item() { item = item, thumbnail = thumbnailGenerator.GetThumbnail(item), category = utility.GetCategory(item, categories) });
+							items.Add(new Item() { item = item, thumbnail = thumbnailGenerator.GetThumbnail(item), category = GameUtilities.GetCategory(item, categories) });
 						}
 					}
 					catch (Exception ex)
@@ -327,7 +326,7 @@ namespace MultiTool.Modules
 				// Load and spawn saved POIs.
 				try
 				{
-					Save data = utility.UnserializeSaveData();
+					Save data = SaveUtilities.UnserializeSaveData();
 					if (data.pois != null)
 					{
 						foreach (POIData poi in data.pois)
@@ -335,7 +334,7 @@ namespace MultiTool.Modules
 							GameObject gameObject = POIs.Where(p => p.poi.name == poi.poi.Replace("(Clone)", "")).FirstOrDefault().poi;
 							if (gameObject != null)
 							{
-								spawnedPOIs.Add(utility.Spawn(new POI() { poi = gameObject }, false, poi.position, poi.rotation));
+								spawnedPOIs.Add(SpawnUtilities.Spawn(new POI() { poi = gameObject }, false, poi.position, poi.rotation));
 							}
 						}
 					}
@@ -348,7 +347,7 @@ namespace MultiTool.Modules
 				// Load glass data.
 				try
 				{
-					Save data = utility.UnserializeSaveData();
+					Save data = SaveUtilities.UnserializeSaveData();
 					if (data.glass != null)
 					{
 						foreach (GlassData glass in data.glass)
@@ -817,7 +816,7 @@ namespace MultiTool.Modules
 							GUI.Button(new Rect(itemX, itemY, itemWidth, thumbnailHeight), currentVehicle.thumbnail) ||
 							GUI.Button(new Rect(itemX, itemY + thumbnailHeight, itemWidth, textHeight), currentVehicle.name))
 						{
-							utility.Spawn(new Vehicle()
+							SpawnUtilities.Spawn(new Vehicle()
 							{
 								vehicle = currentVehicle.vehicle,
 								variant = currentVehicle.variant,
@@ -883,7 +882,7 @@ namespace MultiTool.Modules
 							GUI.Button(new Rect(itemX, itemY, itemWidth, thumbnailHeight), currentItem.thumbnail) ||
 							GUI.Button(new Rect(itemX, itemY + thumbnailHeight, itemWidth, textHeight), item.name))
 						{
-							utility.Spawn(new Item()
+							SpawnUtilities.Spawn(new Item()
 							{
 								item = item,
 								conditionInt = conditionInt,
@@ -979,7 +978,7 @@ namespace MultiTool.Modules
 							GUI.Button(new Rect(itemX, itemY, itemWidth, thumbnailHeight), currentPOI.thumbnail) ||
 							GUI.Button(new Rect(itemX, itemY + thumbnailHeight, itemWidth, textHeight), currentPOI.name))
 						{
-							SpawnedPOI spawnedPOI = utility.Spawn(currentPOI, poiSpawnItems);
+							SpawnedPOI spawnedPOI = SpawnUtilities.Spawn(currentPOI, poiSpawnItems);
 							if (spawnedPOI != null)
 								spawnedPOIs.Add(spawnedPOI);
 						}
@@ -1127,7 +1126,7 @@ namespace MultiTool.Modules
 					if (GUI.Button(new Rect(currVehicleX, currVehicleY, buttonWidth, buttonHeight), "Apply"))
 					{
 						List<partconditionscript> children = new List<partconditionscript>();
-						utility.FindPartChildren(partconditionscript, ref children);
+						GameUtilities.FindPartChildren(partconditionscript, ref children);
 
 						partconditionscript.state = conditionInt;
 						partconditionscript.Refresh();
@@ -1630,7 +1629,7 @@ namespace MultiTool.Modules
 							}
 						}
 
-						utility.UpdateGlass(new GlassData() { ID = save.idInSave, color = windowColor, type = "windows" });
+						SaveUtilities.UpdateGlass(new GlassData() { ID = save.idInSave, color = windowColor, type = "windows" });
 					}
 
 					currVehicleX = startingCurrVehicleX;
@@ -1732,7 +1731,7 @@ namespace MultiTool.Modules
 							{
 								meshRenderer.material.color = sunRoofColor;
 
-								utility.UpdateGlass(new GlassData() { ID = save.idInSave, color = sunRoofColor, type = "sunroof" });
+								SaveUtilities.UpdateGlass(new GlassData() { ID = save.idInSave, color = sunRoofColor, type = "sunroof" });
 							}
 
 							currVehicleX = startingCurrVehicleX;
@@ -1890,7 +1889,7 @@ namespace MultiTool.Modules
 
 								// Remove POI from save.
 								if (poi.ID != null)
-									utility.UpdatePOISaveData(new POIData()
+									SaveUtilities.UpdatePOISaveData(new POIData()
 									{
 										ID = poi.ID.Value,
 									}, "delete");
@@ -2323,7 +2322,7 @@ namespace MultiTool.Modules
 			{
 				try
 				{
-					if (utility.IsVehicleOrTrailer(gameObject))
+					if (GameUtilities.IsVehicleOrTrailer(gameObject))
 					{
 						// Check for variants.
 						randomTypeSelector randoms = gameObject.GetComponent<randomTypeSelector>();
@@ -2539,7 +2538,7 @@ namespace MultiTool.Modules
 			{
 				if (GUI.Button(new Rect(x, quickSpawnY, width, buttonHeight), spawn.name))
 				{
-					utility.Spawn(new Item()
+					SpawnUtilities.Spawn(new Item()
 					{
 						item = spawn.gameObject,
 						conditionInt = conditionInt,
@@ -2564,7 +2563,7 @@ namespace MultiTool.Modules
 
 				if (GUI.Button(new Rect(x, scrollY, width, buttonHeight), name))
 				{
-					utility.Spawn(new Vehicle()
+					SpawnUtilities.Spawn(new Vehicle()
 					{
 						vehicle = vehicle.vehicle,
 						variant = vehicle.variant,
@@ -2829,7 +2828,7 @@ namespace MultiTool.Modules
 					GUI.Button(new Rect(itemX, itemY, itemWidth, thumbnailHeight), currentItem.thumbnail) ||
 					GUI.Button(new Rect(itemX, itemY + thumbnailHeight, itemWidth, textHeight), item.name))
 				{
-					utility.Spawn(currentItem.Clone());
+					SpawnUtilities.Spawn(currentItem.Clone());
 				}
 			}
 
