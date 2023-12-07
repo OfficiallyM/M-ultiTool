@@ -10,17 +10,16 @@ using TLDLoader;
 
 namespace MultiTool.Modules
 {
-	internal class Translator
+	public static class Translator
 	{
 		// Translation-related variables.
-		private string language;
-		private Dictionary<string, ConfigWrapper> translations = new Dictionary<string, ConfigWrapper>();
-		private string configDirectory;
+		private static string language;
+		private static Dictionary<string, ConfigWrapper> translations = new Dictionary<string, ConfigWrapper>();
+		private static string configDirectory;
 
-		public Translator(string _configDirectory)
+		public static void Init()
 		{
-			configDirectory = _configDirectory;
-
+			configDirectory = Path.Combine(ModLoader.GetModConfigFolder(MultiTool.mod), "Translations");
 			LoadTranslationFiles();
 		}
 
@@ -28,7 +27,7 @@ namespace MultiTool.Modules
 		/// Set translator language
 		/// </summary>
 		/// <param name="_language">The language to set the translator to</param>
-		public void SetLanguage(string _language)
+		public static void SetLanguage(string _language)
 		{
 			language = _language;
 		}
@@ -36,7 +35,7 @@ namespace MultiTool.Modules
 		/// <summary>
 		/// Load translation JSON files from mod config folder.
 		/// </summary>
-		private void LoadTranslationFiles()
+		private static void LoadTranslationFiles()
 		{
 			// Return early if the config directory doesn't exist.
 			if (!Directory.Exists(configDirectory))
@@ -76,7 +75,7 @@ namespace MultiTool.Modules
 		/// <param name="objectName">The object name to translate</param>
 		/// <param name="variant">The vehicle variant (optional)</param>
 		/// <returns>Translated object name or untranslated name if no translation is found</returns>
-		public string T(string objectName, string type, int? variant = null)
+		public static string T(string objectName, string type, int? variant = null)
 		{
 			// Fallback to English if the current language isn't supported.
 			if (!translations.ContainsKey(language))
@@ -125,5 +124,4 @@ namespace MultiTool.Modules
 			return objectName;
 		}
 	}
-
 }

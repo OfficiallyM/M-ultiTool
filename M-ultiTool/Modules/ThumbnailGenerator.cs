@@ -7,29 +7,21 @@ using UnityEngine;
 
 namespace MultiTool.Modules
 {
-	internal class ThumbnailGenerator
+	internal static class ThumbnailGenerator
 	{
-		private string configDirectory;
+		private static string cacheDir = null;
+		private static bool regenerateCache = false;
 
-		private string cacheDir = "";
-		private bool regenerateCache = false;
-
-		public ThumbnailGenerator(string _configDirectory)
+		public static void Init()
 		{
-			configDirectory = _configDirectory;
-
-			// Create cache directory.
-			if (Directory.Exists(configDirectory))
-			{
-				DirectoryInfo dir = Directory.CreateDirectory(Path.Combine(configDirectory, "Cache"));
-				cacheDir = dir.FullName;
-			}
+			DirectoryInfo dir = Directory.CreateDirectory(Path.Combine(ModLoader.GetModConfigFolder(MultiTool.mod), "Cache"));
+			cacheDir = dir.FullName;
 		}
 
 		/// <summary>
 		/// Prepare cache for thumbnail generation.
 		/// </summary>
-		public void PrepareCache()
+		public static void PrepareCache()
 		{
 			List<string> tempItems = new List<string>();
 
@@ -110,7 +102,7 @@ namespace MultiTool.Modules
 		/// <param name="item">Item to generate the thumbnail for</param>
 		/// <param name="variant">Optional variant index for the item</param>
 		/// <returns>Texture2D thumbnail of the item</returns>
-		public Texture2D GetThumbnail(GameObject item, int? variant = null, bool POI = false)
+		public static Texture2D GetThumbnail(GameObject item, int? variant = null, bool POI = false)
 		{
 			string fileName = item.name.ToUpper().Replace("/", "or");
 			if (variant != null)
@@ -137,7 +129,7 @@ namespace MultiTool.Modules
 		/// <param name="item">The item to generate a thumbnail for</param>
 		/// <param name="variant">Optional variant index for the item</param>
 		/// <returns>Texture2D thumbnail of the item</returns>
-		private Texture2D GenerateThumbnail(GameObject item, int? variant = null, bool POI = false)
+		private static Texture2D GenerateThumbnail(GameObject item, int? variant = null, bool POI = false)
 		{
 			GameObject gameObject = new GameObject("THUMBNAIL GENERATOR FOR " + item.name.ToUpper());
 			gameObject.transform.position = new Vector3(UnityEngine.Random.Range(-100f, 100f), UnityEngine.Random.Range(-200f, -100f), UnityEngine.Random.Range(-100f, 100f));

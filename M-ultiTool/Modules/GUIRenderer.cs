@@ -21,8 +21,6 @@ namespace MultiTool.Modules
 
 		// Modules.
 		private Config config;
-		private Translator translator;
-		private ThumbnailGenerator thumbnailGenerator;
 		private Keybinds binds;
 
 		// Menu control.
@@ -185,11 +183,9 @@ namespace MultiTool.Modules
 		private temporaryTurnOffGeneration temp;
 		private bool spawnerDetected = false;
 
-		public GUIRenderer(Config _config, Translator _translator, ThumbnailGenerator _thumbnailGenerator, Keybinds _binds)
+		public GUIRenderer(Config _config, Keybinds _binds)
 		{
 			config = _config;
-			translator = _translator;
-			thumbnailGenerator = _thumbnailGenerator;
 			binds = _binds;
 		}
 
@@ -297,13 +293,12 @@ namespace MultiTool.Modules
 				legacyVehicleMenuHeight = resolutionY / 4.25f;
 
 				// Add available quickspawn items.
-				// TODO: Allow these to be user-selected?
 				quickSpawns.Add(new QuickSpawn() { gameObject = itemdatabase.d.goilcan, name = "Oil can" });
 				quickSpawns.Add(new QuickSpawn() { gameObject = itemdatabase.d.ggascan, name = "Jerry can" });
 				quickSpawns.Add(new QuickSpawn() { gameObject = itemdatabase.d.gbarrel, name = "Barrel" });
 
 				// Prepare items list.
-				thumbnailGenerator.PrepareCache();
+				ThumbnailGenerator.PrepareCache();
 				foreach (GameObject item in itemdatabase.d.items)
 				{
 					try
@@ -311,7 +306,7 @@ namespace MultiTool.Modules
 						// Remove vehicles and trailers from items array.
 						if (!GameUtilities.IsVehicleOrTrailer(item) && item.name != "ErrorPrefab")
 						{
-							items.Add(new Item() { item = item, thumbnail = thumbnailGenerator.GetThumbnail(item), category = GameUtilities.GetCategory(item, categories) });
+							items.Add(new Item() { item = item, thumbnail = ThumbnailGenerator.GetThumbnail(item), category = GameUtilities.GetCategory(item, categories) });
 						}
 					}
 					catch (Exception ex)
@@ -320,94 +315,13 @@ namespace MultiTool.Modules
 					}
 				}
 
-				vehicles = LoadVehicles();
-				POIs = LoadPOIs();
+				// Load data from database.
+				vehicles = DatabaseUtilities.LoadVehicles();
+				POIs = DatabaseUtilities.LoadPOIs();
 
-				// Load and spawn saved POIs.
-				try
-				{
-					Save data = SaveUtilities.UnserializeSaveData();
-					if (data.pois != null)
-					{
-						foreach (POIData poi in data.pois)
-						{
-							GameObject gameObject = POIs.Where(p => p.poi.name == poi.poi.Replace("(Clone)", "")).FirstOrDefault().poi;
-							if (gameObject != null)
-							{
-								spawnedPOIs.Add(SpawnUtilities.Spawn(new POI() { poi = gameObject }, false, poi.position, poi.rotation));
-							}
-						}
-					}
-				}
-				catch (Exception ex)
-				{
-					Logger.Log($"POI load error - {ex}", Logger.LogLevel.Error);
-				}
-
-				// Load glass data.
-				try
-				{
-					Save data = SaveUtilities.UnserializeSaveData();
-					if (data.glass != null)
-					{
-						foreach (GlassData glass in data.glass)
-						{
-							// Find all savable objects.
-							List<tosaveitemscript> saves = UnityEngine.Object.FindObjectsOfType<tosaveitemscript>().ToList();
-							foreach (tosaveitemscript save in saves)
-							{
-								// Check ID matches.
-								if (save.idInSave == glass.ID)
-								{
-									switch (glass.type)
-									{
-										case "windows":
-											// Set window colour.
-											List<MeshRenderer> renderers = save.gameObject.GetComponentsInChildren<MeshRenderer>().ToList();
-											foreach (MeshRenderer meshRenderer in renderers)
-											{
-												string materialName = meshRenderer.material.name.Replace(" (Instance)", "");
-												switch (materialName)
-												{
-													// Outer glass.
-													case "Glass":
-														// Use selected colour.
-														meshRenderer.material.color = glass.color;
-														break;
-
-													// Inner glass.
-													case "GlassNoReflection":
-														// Use a more transparent version of the selected colour
-														// for the inner glass to ensure it's still see-through.
-														Color innerColor = glass.color;
-														if (innerColor.a > 0.2f)
-															innerColor.a = 0.2f;
-														meshRenderer.material.color = innerColor;
-														break;
-												}
-											}
-											break;
-										case "sunroof":
-											// Set sunroof colour.
-											GameObject car = save.gameObject;
-											Transform sunRoofSlot = car.transform.FindRecursive("SunRoofSlot");
-											Transform outerGlass = sunRoofSlot.FindRecursive("sunroof outer glass", exact: false);
-											if (outerGlass != null)
-											{
-												MeshRenderer meshRenderer = outerGlass.GetComponent<MeshRenderer>();
-												meshRenderer.material.color = glass.color;
-											}
-											break;
-									}
-								}
-							}
-						}
-					}
-				}
-				catch (Exception ex)
-				{
-					Logger.Log($"Glass load error - {ex}", Logger.LogLevel.Error);
-				}
+				// Load save data.
+				spawnedPOIs = SaveUtilities.LoadPOIs();
+				SaveUtilities.LoadGlass();
 
 				// Prepopulate any variables that use the fluidenum.
 				int maxFuelType = (int)Enum.GetValues(typeof(mainscript.fluidenum)).Cast<mainscript.fluidenum>().Max();
@@ -2312,111 +2226,6 @@ namespace MultiTool.Modules
 		}
 
 		/// <summary>
-		/// Load all vehicles and generate thumbnails
-		/// </summary>
-		/// <returns>List of vehicles</returns>
-		public List<Vehicle> LoadVehicles()
-		{
-			List<Vehicle> vehicles = new List<Vehicle>();
-			foreach (GameObject gameObject in itemdatabase.d.items)
-			{
-				try
-				{
-					if (GameUtilities.IsVehicleOrTrailer(gameObject))
-					{
-						// Check for variants.
-						randomTypeSelector randoms = gameObject.GetComponent<randomTypeSelector>();
-						if (randoms != null && randoms.tipusok.Length > 0)
-						{
-							int variants = randoms.tipusok.Length;
-
-							for (int i = 0; i < variants; i++)
-							{
-								Vehicle vehicle = new Vehicle()
-								{
-									vehicle = gameObject,
-									variant = i + 1,
-									thumbnail = thumbnailGenerator.GetThumbnail(gameObject, i + 2), // I have no idea why +1 produces the wrong variant in the thumbnail.
-									name = translator.T(gameObject.name, "vehicle", i + 1),
-								};
-								vehicles.Add(vehicle);
-							}
-						}
-						else
-						{
-							Vehicle vehicle = new Vehicle()
-							{
-								vehicle = gameObject,
-								variant = -1,
-								thumbnail = thumbnailGenerator.GetThumbnail(gameObject),
-								name = translator.T(gameObject.name, "vehicle", -1),
-							};
-							vehicles.Add(vehicle);
-						}
-					}
-				}
-				catch
-				{
-					Logger.Log($"Something went wrong loading vehicle {gameObject.name}", Logger.LogLevel.Error);
-				}
-			}
-
-			return vehicles;
-		}
-
-		public List<POI> LoadPOIs()
-		{
-			List<POI> POIs = new List<POI>();
-
-			foreach (GameObject POI in itemdatabase.d.buildings)
-			{
-				if (POI.name == "ErrorPrefab" || POI.name == "Falu01") continue;
-					
-				try
-				{
-					// TODO: Some building thumbnails are a bit fucked.
-					POIs.Add(new POI()
-					{
-						poi = POI,
-						thumbnail = thumbnailGenerator.GetThumbnail(POI, POI: true),
-						name = translator.T(POI.name, "POI"),
-					});
-				}
-				catch (Exception ex)
-				{
-					Logger.Log($"POI init error - {ex}", Logger.LogLevel.Error);
-				}
-			}
-
-			// Foliage objects.
-			foreach (ObjClass objClass in mainscript.M.terrainGenerationSettings.objGeneration.objTypes)
-			{
-				POIs.Add(new POI()
-				{
-					poi = objClass.prefab,
-					thumbnail = thumbnailGenerator.GetThumbnail(objClass.prefab, POI: true),
-					name = translator.T(objClass.prefab.name, "POI"),
-				});
-			}
-
-			// Desert tower buildings (ship, water tower, etc).
-			foreach (ObjClass objClass in mainscript.M.terrainGenerationSettings.desertTowerGeneration.objTypes)
-			{
-				// Exclude POIs already loaded.
-				if (POIs.Where(p => p.poi.name == objClass.prefab.name).ToList().Count() > 0) continue;
-
-				POIs.Add(new POI()
-				{
-					poi = objClass.prefab,
-					thumbnail = thumbnailGenerator.GetThumbnail(objClass.prefab, POI: true),
-					name = translator.T(objClass.prefab.name, "POI"),
-				});
-			}
-
-			return POIs;
-		}
-
-		/// <summary>
 		/// Translate a string appropriate for the selected accessibility mode
 		/// </summary>
 		/// <param name="str">The string to translate</param>
@@ -2559,7 +2368,7 @@ namespace MultiTool.Modules
 			foreach (Vehicle vehicle in vehicles)
 			{
 				GameObject gameObject = vehicle.vehicle;
-				string name = translator.T(gameObject.name, "vehicle", vehicle.variant);
+				string name = Translator.T(gameObject.name, "vehicle", vehicle.variant);
 
 				if (GUI.Button(new Rect(x, scrollY, width, buttonHeight), name))
 				{

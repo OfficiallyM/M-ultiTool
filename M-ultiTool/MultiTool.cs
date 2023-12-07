@@ -24,8 +24,6 @@ namespace MultiTool
 		// Initialise modules.
 		private readonly GUIRenderer renderer;
 		private readonly Config config;
-		private readonly Translator translator;
-		private readonly ThumbnailGenerator thumbnailGenerator;
 		private readonly Keybinds binds;
 
 		private Settings settings = new Settings();
@@ -38,15 +36,15 @@ namespace MultiTool
 			try
 			{
 				Logger.Init();
+				Translator.Init();
+				ThumbnailGenerator.Init();
 
 				// We can't use GetModConfigFolder here as the mod isn't fully initialised yet.
 				string configDirectory = Path.Combine(ModLoader.ModsFolder, "Config", "Mod Settings", ID);
 
 				config = new Config();
-				translator = new Translator(configDirectory);
-				thumbnailGenerator = new ThumbnailGenerator(configDirectory);
 				binds = new Keybinds(config);
-				renderer = new GUIRenderer(config, translator, thumbnailGenerator, binds);
+				renderer = new GUIRenderer(config, binds);
 			}
 			catch (Exception ex)
 			{
@@ -101,7 +99,7 @@ namespace MultiTool
 			// Set the configuration path.
 			config.SetConfigPath(ModLoader.GetModConfigFolder(this) + "\\Config.json");
 
-			translator.SetLanguage(mainscript.M.menu.language.languageNames[mainscript.M.menu.language.selectedLanguage]);
+			Translator.SetLanguage(mainscript.M.menu.language.languageNames[mainscript.M.menu.language.selectedLanguage]);
 
 			// Load the GUI renderer.
 			renderer.OnLoad();

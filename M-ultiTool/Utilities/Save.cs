@@ -1,4 +1,5 @@
 ﻿using MultiTool.Core;
+using MultiTool.Extensions;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -164,6 +165,109 @@ namespace MultiTool.Utilities
 			}
 
 			SerializeSaveData(data);
+		}
+
+		/// <summary>
+		/// Load POIs from save.
+		/// </summary>
+		/// <returns>List of newly spawned POIs</returns>
+		internal static List<SpawnedPOI> LoadPOIs()
+		{
+			List<POI> POIs = DatabaseUtilities.LoadPOIs();
+			List<SpawnedPOI> spawnedPOIs = new List<SpawnedPOI>();
+			// Load and spawn saved POIs.
+			try
+			{
+				Save data = SaveUtilities.UnserializeSaveData();
+				if (data.pois != null)
+				{
+					foreach (POIData poi in data.pois)
+					{
+						GameObject gameObject = POIs.Where(p => p.poi.name == poi.poi.Replace("(Clone)", "")).FirstOrDefault().poi;
+						if (gameObject != null)
+						{
+							spawnedPOIs.Add(SpawnUtilities.Spawn(new POI() { poi = gameObject }, false, poi.position, poi.rotation));
+						}
+					}
+				}
+			}
+			catch (Exception ex)
+			{
+				Logger.Log($"POI load error - {ex}", Logger.LogLevel.Error);
+			}
+
+			return spawnedPOIs;
+		}
+
+		/// <summary>
+		/// Load glass saved data.
+		/// </summary>
+		internal static void LoadGlass()
+		{
+			// Load glass data.
+			try
+			{
+				Save data = UnserializeSaveData();
+				if (data.glass != null)
+				{
+					foreach (GlassData glass in data.glass)
+					{
+						// Find all savable objects.
+						List<tosaveitemscript> saves = UnityEngine.Object.FindObjectsOfType<tosaveitemscript>().ToList();
+						foreach (tosaveitemscript save in saves)
+						{
+							// Check ID matches.
+							if (save.idInSave == glass.ID)
+							{
+								switch (glass.type)
+								{
+									case "windows":
+										// Set window colour.
+										List<MeshRenderer> renderers = save.gameObject.GetComponentsInChildren<MeshRenderer>().ToList();
+										foreach (MeshRenderer meshRenderer in renderers)
+										{
+											string materialName = meshRenderer.material.name.Replace(" (Instance)", "");
+											switch (materialName)
+											{
+												// Outer glass.
+												case "Glass":
+													// Use selected colour.
+													meshRenderer.material.color = glass.color;
+													break;
+
+												// Inner glass.
+												case "GlassNoReflection":
+													// Use a more transparent version of the selected colour
+													// for the inner glass to ensure it's still see-through.
+													Color innerColor = glass.color;
+													if (innerColor.a > 0.2f)
+														innerColor.a = 0.2f;
+													meshRenderer.material.color = innerColor;
+													break;
+											}
+										}
+										break;
+									case "sunroof":
+										// Set sunroof colour.
+										GameObject car = save.gameObject;
+										Transform sunRoofSlot = car.transform.FindRecursive("SunRoofSlot");
+										Transform outerGlass = sunRoofSlot.FindRecursive("sunroof outer glass", exact: false);
+										if (outerGlass != null)
+										{
+											MeshRenderer meshRenderer = outerGlass.GetComponent<MeshRenderer>();
+											meshRenderer.material.color = glass.color;
+										}
+										break;
+								}
+							}
+						}
+					}
+				}
+			}
+			catch (Exception ex)
+			{
+				Logger.Log($"Glass load error - {ex}", Logger.LogLevel.Error);
+			}
 		}
 	}
 }
