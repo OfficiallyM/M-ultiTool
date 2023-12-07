@@ -30,9 +30,15 @@ namespace MultiTool.Utilities
 				save_rendszam saveRendszam = null;
 				save_prefab savePrefab1;
 
+				save_rendszam spawnerSaveRendszam = null;
+
 				// Attempt to find existing plate.
 				if ((savedatascript.d.data.farStuff.TryGetValue(Mathf.Abs(Meta.ID.GetHashCode()), out savePrefab1) || savedatascript.d.data.nearStuff.TryGetValue(Mathf.Abs(Meta.ID.GetHashCode()), out savePrefab1)) && savePrefab1.rendszam != null)
 					saveRendszam = savePrefab1.rendszam;
+
+				// Attempt to find old SpawnerTLD plate.
+				if ((savedatascript.d.data.farStuff.TryGetValue(Mathf.Abs("SpawnerTLD".GetHashCode()), out savePrefab1) || savedatascript.d.data.nearStuff.TryGetValue(Mathf.Abs("SpawnerTLD".GetHashCode()), out savePrefab1)) && savePrefab1.rendszam != null)
+					spawnerSaveRendszam = savePrefab1.rendszam;
 
 				// Plate doesn't exist.
 				if (saveRendszam == null)
@@ -44,6 +50,14 @@ namespace MultiTool.Utilities
 					saveRendszam = savePrefab2.rendszam;
 					saveRendszam.S = string.Empty;
 					savedatascript.d.data.farStuff.Add(Mathf.Abs(Meta.ID.GetHashCode()), savePrefab2);
+				}
+
+				// Copy old spawner data to new plate.
+				if (spawnerSaveRendszam != null)
+				{
+					saveRendszam.S = spawnerSaveRendszam.S;
+					// Delete old spawner plate.
+					savedatascript.d.data.farStuff.Remove(Mathf.Abs("SpawnerTLD".GetHashCode()));
 				}
 
 				// Write the input to the plate.
