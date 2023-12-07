@@ -1,4 +1,5 @@
-﻿using MultiTool.Utilities;
+﻿using MultiTool.Core;
+using MultiTool.Utilities;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -14,7 +15,8 @@ namespace MultiTool.Modules
 
 		public static void Init()
 		{
-			DirectoryInfo dir = Directory.CreateDirectory(Path.Combine(ModLoader.GetModConfigFolder(MultiTool.mod), "Cache"));
+			string configDir =  Path.Combine(ModLoader.ModsFolder, "Config", "Mod Settings", Meta.ID);
+			DirectoryInfo dir = Directory.CreateDirectory(Path.Combine(configDir, "Cache"));
 			cacheDir = dir.FullName;
 		}
 

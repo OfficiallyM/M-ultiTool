@@ -15,11 +15,14 @@ namespace MultiTool.Modules
 		// Translation-related variables.
 		private static string language;
 		private static Dictionary<string, ConfigWrapper> translations = new Dictionary<string, ConfigWrapper>();
-		private static string configDirectory;
+		private static string translationDir;
 
 		public static void Init()
 		{
-			configDirectory = Path.Combine(ModLoader.GetModConfigFolder(MultiTool.mod), "Translations");
+			string configDir = Path.Combine(ModLoader.ModsFolder, "Config", "Mod Settings", Meta.ID);
+			DirectoryInfo dir = Directory.CreateDirectory(Path.Combine(configDir, "Translations"));
+			translationDir = dir.FullName;
+
 			LoadTranslationFiles();
 		}
 
@@ -37,14 +40,7 @@ namespace MultiTool.Modules
 		/// </summary>
 		private static void LoadTranslationFiles()
 		{
-			// Return early if the config directory doesn't exist.
-			if (!Directory.Exists(configDirectory))
-			{
-				Logger.Log("Config folder is missing, nothing will be translated", Logger.LogLevel.Error);
-				return;
-			}
-
-			string[] files = Directory.GetFiles(configDirectory, "*.json");
+			string[] files = Directory.GetFiles(translationDir, "*.json");
 			foreach (string file in files)
 			{
 				if (!File.Exists(file))
