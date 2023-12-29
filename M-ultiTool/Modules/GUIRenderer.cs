@@ -31,6 +31,7 @@ namespace MultiTool.Modules
 		private bool legacyUI = false;
 		private bool settingsShow = false;
 		private bool creditsShow = false;
+		private bool loaded = false;
 
 		private int resolutionX;
 		private int resolutionY;
@@ -242,6 +243,9 @@ namespace MultiTool.Modules
 
 		public void OnLoad()
 		{
+			// Return early if we're already loaded.
+			if (loaded) return;
+
 			try
 			{
 				// Set label styling.
@@ -353,6 +357,7 @@ namespace MultiTool.Modules
 						spawnerDetected = true;
 				}
 
+				loaded = true;
 			}
 			catch (Exception ex)
 			{
