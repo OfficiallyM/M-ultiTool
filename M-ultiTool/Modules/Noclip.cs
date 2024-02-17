@@ -10,7 +10,7 @@ namespace MultiTool.Modules
 	internal class Noclip : MonoBehaviour
 	{
 		private Keybinds binds;
-
+		private Config config;
 
 		public float cameraSensitivity = 90f;
 		public float climbSpeed = 10f;
@@ -19,10 +19,10 @@ namespace MultiTool.Modules
 		private float rotationX;
 		private float rotationY;
 
-		public void constructor(Keybinds _binds, float _fastMoveFactor)
+		public void constructor(Keybinds _binds, Config _config)
 		{
 			binds = _binds;
-			fastMoveFactor = _fastMoveFactor;
+			config = _config;
 		}
 
 		private void Update()
@@ -38,8 +38,8 @@ namespace MultiTool.Modules
 			float climbSpeed = this.climbSpeed;
             if (Input.GetKey(binds.GetKeyByAction((int)Keybinds.Inputs.noclipSpeedUp).key))
 			{
-                speed *= fastMoveFactor;
-				climbSpeed *= fastMoveFactor;
+				speed *= config.GetNoclipFastMoveFactor(fastMoveFactor);
+				climbSpeed *= config.GetNoclipFastMoveFactor(fastMoveFactor);
 			}
 
             transform.position += transform.forward * speed * Input.GetAxis("Vertical") * Time.deltaTime;

@@ -9,11 +9,8 @@ using TLDLoader;
 using UnityEngine;
 using MultiTool.Extensions;
 using Settings = MultiTool.Core.Settings;
-using static mainscript;
-using Unity.Profiling;
 using MultiTool.Utilities;
 using System.Reflection;
-using System.Globalization;
 
 namespace MultiTool.Modules
 {
@@ -22,7 +19,7 @@ namespace MultiTool.Modules
 		private Settings settings = new Settings();
 
 		// Modules.
-		private Config config;
+		internal static Config config;
 		internal static Keybinds binds;
 
 		// Menu control.
@@ -530,6 +527,7 @@ namespace MultiTool.Modules
 				settingsY += configHeight;
 				float factor = GUI.HorizontalSlider(new Rect(settingsX, settingsY, settingsWidth, configHeight), noclipFastMoveFactor, 2f, 100f);
 				noclipFastMoveFactor = Mathf.Round(factor);
+				config.UpdateNoclipFastMoveFactor(noclipFastMoveFactor);
 				settingsY += configHeight;
 				GUI.Label(new Rect(settingsX, settingsY, settingsWidth, configHeight), noclipFastMoveFactor.ToString());
 

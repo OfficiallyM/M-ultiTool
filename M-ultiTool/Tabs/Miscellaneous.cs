@@ -56,7 +56,7 @@ namespace MultiTool.Tabs
 				if (settings.noclip)
 				{
 					Noclip noclip = mainscript.M.player.gameObject.AddComponent<Noclip>();
-					noclip.constructor(GUIRenderer.binds, GUIRenderer.noclipFastMoveFactor);
+					noclip.constructor(GUIRenderer.binds, GUIRenderer.config);
 					GUIRenderer.localRotation = mainscript.M.player.transform.localRotation;
 					mainscript.M.player.Th.localEulerAngles = new Vector3(0f, 0f, 0f);
 					settings.godMode = true;
