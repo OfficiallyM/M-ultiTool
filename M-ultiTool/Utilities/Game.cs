@@ -85,7 +85,7 @@ namespace MultiTool.Utilities
 		}
 
 		/// <summary>
-		/// Randomise condition of all parts
+		/// Randomise condition of all parts.
 		/// </summary>
 		/// <param name="partconditionscript">Base vehicle partconditionscript</param>
 		public static void RandomiseCondition(partconditionscript partconditionscript)
@@ -101,7 +101,7 @@ namespace MultiTool.Utilities
 		}
 
 		/// <summary>
-		/// Recursively find all child parts
+		/// Recursively find all child parts.
 		/// </summary>
 		/// <param name="root">Parent part</param>
 		/// <param name="allChildren">Current list of child parts</param>
@@ -112,6 +112,26 @@ namespace MultiTool.Utilities
 				allChildren.Add(child);
 				FindPartChildren(child, ref allChildren);
 			}
+		}
+
+		/// <summary>
+		/// Get global position of an object.
+		/// </summary>
+		/// <param name="objPos">Object to get global position of</param>
+		/// <returns>Vector3 global object position</returns>
+		public static Vector3 GetGlobalObjectPosition(Vector3 objPos)
+		{
+			return new Vector3((float)(-mainscript.M.mainWorld.coord.x + objPos.x), (float)(-mainscript.M.mainWorld.coord.y + objPos.y), (float)(-mainscript.M.mainWorld.coord.z + objPos.z));
+		}
+
+		/// <summary>
+		/// Get object local position from global.
+		/// </summary>
+		/// <param name="globalPos">Current global position</param>
+		/// <returns>Vector3 local object position</returns>
+		public static Vector3 GetLocalObjectPosition(Vector3 globalPos)
+		{
+			return new Vector3((float)-(-mainscript.M.mainWorld.coord.x - globalPos.x), (float)-(-mainscript.M.mainWorld.coord.y - globalPos.y), (float)-(-mainscript.M.mainWorld.coord.z - globalPos.z));
 		}
 	}
 }

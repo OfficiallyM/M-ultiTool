@@ -220,7 +220,7 @@ namespace MultiTool.Utilities
 
 				rot = Quaternion.FromToRotation(Vector3.forward, -mainscript.M.player.transform.right);
 
-				if (position != null && position != null)
+				if (position != null && rotation != null)
 				{
 					pos = position.GetValueOrDefault();
 					rot = rotation.GetValueOrDefault();

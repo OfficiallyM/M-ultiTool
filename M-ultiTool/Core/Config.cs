@@ -67,6 +67,13 @@ namespace MultiTool.Core
 			get { return s_mode; }
 			set { s_mode = value; }
 		}
+
+		public static bool s_showCoords = false;
+		public bool showCoords
+		{
+			get { return s_showCoords; }
+			set { s_showCoords = value; }
+		}
 	}
 
 	[DataContract]

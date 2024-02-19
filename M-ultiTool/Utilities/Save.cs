@@ -132,6 +132,9 @@ namespace MultiTool.Utilities
 						poi.ID = data.pois.Count;
 						ID = poi.ID;
 
+						// Save POI with global position.
+						poi.position = GameUtilities.GetGlobalObjectPosition(poi.position);
+
 						data.pois.Add(poi);
 						break;
 					case "delete":
@@ -200,7 +203,8 @@ namespace MultiTool.Utilities
 						GameObject gameObject = POIs.Where(p => p.poi.name == poi.poi.Replace("(Clone)", "")).FirstOrDefault().poi;
 						if (gameObject != null)
 						{
-							spawnedPOIs.Add(SpawnUtilities.Spawn(new POI() { poi = gameObject }, false, poi.position, poi.rotation));
+							Vector3 position = GameUtilities.GetLocalObjectPosition(poi.position);
+							spawnedPOIs.Add(SpawnUtilities.Spawn(new POI() { poi = gameObject }, false, position, poi.rotation));
 						}
 					}
 				}

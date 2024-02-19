@@ -94,6 +94,15 @@ namespace MultiTool.Modules
 				textColor = Color.red,
 			}
 		};
+		private GUIStyle hudStyle = new GUIStyle()
+		{
+			fontSize = 20,
+			alignment = TextAnchor.MiddleLeft,
+			normal = new GUIStyleState()
+			{
+				textColor = Color.white,
+			}
+		};
 
 		// General variables.
 		public static string search = String.Empty;
@@ -285,8 +294,10 @@ namespace MultiTool.Modules
 				AddTab(new Tabs.ItemsTab());
 				AddTab(new Tabs.POIsTab());
 				AddTab(new Tabs.ShapesTab());
+				AddTab(new Tabs.PlayerTab());
 				AddTab(new Tabs.VehicleConfigurationTab());
 				AddTab(new Tabs.MiscellaneousTab());
+				AddTab(new Tabs.DeveloperTab());
 
 				// Prepare items list.
 				ThumbnailGenerator.PrepareCache();
@@ -428,7 +439,7 @@ namespace MultiTool.Modules
 			tab.Source = callerMod.Name;
 			tab.Id = tabs.Count;
 
-			Logger.Log($"Tab {tab.Name} added by {tab.Source}");
+			Logger.Log($"Registered tab {tab.Name} via {tab.Source}");
 
 			tabs.Add(tab);
 		}
@@ -1027,6 +1038,12 @@ namespace MultiTool.Modules
 						GUI.Button(new Rect(x, y + height, width, height / 2), $"Scale: {scale.x}");
 					}
 					break;
+			}
+
+			if (settings.showCoords)
+			{
+				GUIExtensions.DrawOutline(new Rect(20f, 20f, 600f, 30f), $"Local position: {mainscript.M.player.transform.position}", hudStyle, Color.black);
+				GUIExtensions.DrawOutline(new Rect(20f, 50f, 600f, 30f), $"Global position: {GameUtilities.GetGlobalObjectPosition(mainscript.M.player.transform.position)}", hudStyle, Color.black);
 			}
 		}
 
