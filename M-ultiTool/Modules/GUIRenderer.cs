@@ -28,7 +28,6 @@ namespace MultiTool.Modules
 		private bool legacyUI = false;
 		private bool settingsShow = false;
 		private bool creditsShow = false;
-		private bool loaded = false;
 
 		private int resolutionX;
 		private int resolutionY;
@@ -249,9 +248,6 @@ namespace MultiTool.Modules
 
 		public void OnLoad()
 		{
-			// Return early if we're already loaded.
-			if (loaded) return;
-
 			try
 			{
 				// Set label styling.
@@ -325,6 +321,14 @@ namespace MultiTool.Modules
 				spawnedPOIs = SaveUtilities.LoadPOIs();
 				SaveUtilities.LoadGlass();
 
+
+				// Clear any existing static values.
+				fuelValues.Clear();
+				fuelTypeInts.Clear();
+				coolants.Clear();
+				oils.Clear();
+				fuels.Clear();
+
 				// Prepopulate any variables that use the fluidenum.
 				int maxFuelType = (int)Enum.GetValues(typeof(mainscript.fluidenum)).Cast<mainscript.fluidenum>().Max();
 				for (int i = 0; i <= maxFuelType; i++)
@@ -364,8 +368,6 @@ namespace MultiTool.Modules
 					if (mod.ID == "SpawnerTLD")
 						spawnerDetected = true;
 				}
-
-				loaded = true;
 			}
 			catch (Exception ex)
 			{
