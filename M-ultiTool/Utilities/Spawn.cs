@@ -306,13 +306,12 @@ namespace MultiTool.Utilities
 					if (fullRandom)
 					{
 						GameUtilities.RandomiseCondition(component1);
+						GameUtilities.Paint(color, component1);
 					}
 					else
 					{
 						GameUtilities.SetConditionAndPaint(condition, color, component1);
 					}
-
-					GameUtilities.Paint(color, component1);
 				}
 				mainscript.M.PostSpawn(spawned);
 			}

@@ -80,11 +80,13 @@ namespace MultiTool.Utilities
 		/// Paint all child parts of a vehicle.
 		/// </summary>
 		/// <param name="c">The colour to paint</param>
-		/// <param name="partconditionscript">The root vehicle partconditionscript</param>
-		public static void Paint(Color c, partconditionscript partconditionscript)
+		/// <param name="root">The root vehicle partconditionscript</param>
+		public static void Paint(Color c, partconditionscript root)
 		{
-			partconditionscript.Paint(c);
-			foreach (partconditionscript child in FindPartChildren(partconditionscript))
+			root.Paint(c);
+			List<partconditionscript> children = new List<partconditionscript>();
+			FindPartChildren(root, ref children);
+			foreach (partconditionscript child in children)
 			{
 				Paint(c, child);
 			}
@@ -99,9 +101,11 @@ namespace MultiTool.Utilities
 		public static void SetConditionAndPaint(int condition, Color color, partconditionscript root)
 		{
 			root.Refresh(condition, color);
-			foreach (partconditionscript child in FindPartChildren(root))
+			List<partconditionscript> children = new List<partconditionscript>();
+			FindPartChildren(root, ref children);
+			foreach (partconditionscript child in children)
 			{
-				child.Refresh(condition, color);
+				SetConditionAndPaint(condition, color, child);
 			}
 		}
 
