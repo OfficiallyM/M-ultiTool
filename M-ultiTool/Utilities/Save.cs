@@ -185,6 +185,40 @@ namespace MultiTool.Utilities
 		}
 
 		/// <summary>
+		/// Update material data in save.
+		/// </summary>
+		/// <param name="material">Material data</param>
+		internal static void UpdateMaterials(MaterialData material)
+		{
+			Save data = UnserializeSaveData();
+
+			try
+			{
+				if (data.materials == null)
+					data.materials = new List<MaterialData>();
+
+				MaterialData existing = data.materials.Where(m => m.ID == material.ID && m.part == material.part).FirstOrDefault();
+				if (existing != null)
+				{
+					// Update existing saved part.
+					existing.type = material.type;
+					existing.color = material.color;
+				}
+				else
+				{
+					// Add a new saved part.
+					data.materials.Add(material);
+				}
+			}
+			catch (Exception ex)
+			{
+				Logger.Log($"Material update error - {ex}", Logger.LogLevel.Error);
+			}
+
+			SerializeSaveData(data);
+		}
+
+		/// <summary>
 		/// Load POIs from save.
 		/// </summary>
 		/// <returns>List of newly spawned POIs</returns>
@@ -285,6 +319,43 @@ namespace MultiTool.Utilities
 			catch (Exception ex)
 			{
 				Logger.Log($"Glass load error - {ex}", Logger.LogLevel.Error);
+			}
+		}
+
+		/// <summary>
+		/// Load material save data.
+		/// </summary>
+		internal static void LoadMaterials()
+		{
+			try
+			{
+				Save data = UnserializeSaveData();
+				// Return early if no material data is set.
+				if (data.materials == null) return;
+
+				foreach (MaterialData material in data.materials)
+				{
+					// Find all savable objects.
+					List<tosaveitemscript> saves = UnityEngine.Object.FindObjectsOfType<tosaveitemscript>().ToList();
+					foreach (tosaveitemscript save in saves)
+					{
+						// Check ID matches.
+						if (save.idInSave == material.ID)
+						{
+							partconditionscript part = save.GetComponentInChildren<partconditionscript>();
+
+							// Find part by name if save ID is that of a vehicle.
+							if (GameUtilities.IsVehicleOrTrailer(save.gameObject, false) && material.part != null)
+								part = GameUtilities.GetVehiclePartByName(save.gameObject, material.part);
+
+							GameUtilities.SetPartMaterial(part, material.type, material.color);
+						}
+					}
+				}
+			}
+			catch (Exception ex)
+			{
+				Logger.Log($"Material data load error - {ex}", Logger.LogLevel.Error);
 			}
 		}
 	}

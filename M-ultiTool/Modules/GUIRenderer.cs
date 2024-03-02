@@ -149,6 +149,7 @@ namespace MultiTool.Modules
 		internal static Dictionary<mainscript.fluidenum, int> fuels = new Dictionary<mainscript.fluidenum, int>();
 		internal static Color sunRoofColor = new Color(255f / 255f, 255f / 255f, 255f / 255f, 0.5f);
 		internal static Color windowColor = new Color(255f / 255f, 255f / 255f, 255f / 255f, 0.5f);
+		internal static Color seatColor = new Color(0f, 0f, 0f);
 
 		// Settings.
 		private List<QuickSpawn> quickSpawns = new List<QuickSpawn>();
@@ -320,7 +321,7 @@ namespace MultiTool.Modules
 				// Load save data.
 				spawnedPOIs = SaveUtilities.LoadPOIs();
 				SaveUtilities.LoadGlass();
-
+				SaveUtilities.LoadMaterials();
 
 				// Clear any existing static values.
 				fuelValues.Clear();

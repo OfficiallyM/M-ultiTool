@@ -19,20 +19,62 @@ namespace MultiTool.Tabs
 		public override string Name => "Vehicle Configuration";
 
 		private Vector2 currentVehiclePosition;
+
+		private Dictionary<string, string> materials = new Dictionary<string, string>()
+		{
+			{ "coloredleather", "Seat Leather" },
+			{ "leather", "Sun visor leather" },
+			{ "huzat01", "Fabric 1" },
+			{ "huzat02", "Fabric 2" },
+			{ "huzat03", "Fabric 3" },
+			{ "huzat04", "Fabric 4" },
+			{ "karpit", "Headliner" },
+			{ "wood", "Wood" },
+			{ "firearmwood", "Wood 2" },
+			{ "metals", "Metal" },
+			{ "metals2", "Metal 2" },
+			{ "darkmetal", "Dark metal" },
+			{ "regilampaszin", "Lamp metal" },
+			{ "gumi", "Tire rubber" },
+			{ "nyulsz01", "Rabbit fur" },
+			{ "szivacs2", "Sponge" },
+		};
+		private bool partSelectorOpen = false;
+		private bool materialSelectorOpen = false;
+		private partconditionscript selectedPart = null;
+		private string selectedMaterial = null;
+		private bool colorSelectorOpen = false;
+
+		// Caching.
+		private List<partconditionscript> materialParts = new List<partconditionscript>();
+		private float nextUpdateTime = 0;
+		private float updateFrequency = 2;
+
 		public override void RenderTab(Dimensions dimensions)
 		{
+			bool refreshedCache = false;
+			nextUpdateTime -= Time.fixedDeltaTime;
+
+			int columns = 2;
+			if (dimensions.width <= 650f)
+				columns = 1;
+
 			float startingCurrVehicleX = dimensions.x + 10f;
 			float currVehicleX = startingCurrVehicleX;
 			float currVehicleY = dimensions.y + 10f;
 			float buttonWidth = 200f;
 			float buttonHeight = 20f;
 			float sliderWidth = 300f;
-			float headerWidth = dimensions.width - 20f;
+			float headerWidth = (dimensions.width / 2) - 20f;
 			float headerHeight = 40f;
+
+			if (columns == 1)
+				headerWidth = dimensions.width - 20f;
 
 			if (mainscript.M.player.Car == null)
 			{
 				GUI.Label(new Rect(currVehicleX, currVehicleY, dimensions.width - 20f, dimensions.height - 20f), "No current vehicle\nSit in a vehicle to show configuration", GUIRenderer.messageStyle);
+				nextUpdateTime = 0;
 				return;
 			}
 
@@ -92,8 +134,7 @@ namespace MultiTool.Tabs
 			currVehicleX += sliderWidth + 10f;
 			if (GUI.Button(new Rect(currVehicleX, currVehicleY, buttonWidth, buttonHeight), "Apply"))
 			{
-				List<partconditionscript> children = new List<partconditionscript>();
-				GameUtilities.FindPartChildren(partconditionscript, ref children);
+				List<partconditionscript> children = GameUtilities.FindPartChildren(partconditionscript);
 
 				partconditionscript.state = GUIRenderer.conditionInt;
 				partconditionscript.Refresh();
@@ -708,7 +749,230 @@ namespace MultiTool.Tabs
 					GUI.Label(new Rect(currVehicleX, currVehicleY, buttonWidth, buttonHeight), "No sunroof mounted.", GUIRenderer.labelStyle);
 			}
 
+			// Material changer.
+			if (columns > 1)
+			{
+				currVehicleX = dimensions.width / 2;
+				currVehicleY = dimensions.y + 10f;
+			}
+
+			GUI.Label(new Rect(currVehicleX, currVehicleY, headerWidth, headerHeight), "Material changer", GUIRenderer.headerStyle);
+			currVehicleY += headerHeight;
+
+			// Find and cache all the parts we can set the material for.
+			if (nextUpdateTime <= 0)
+			{
+				materialParts.Clear();
+				partconditionscript mainSeat = GameUtilities.GetVehiclePartByName(carObject, "PartConColorLeather");
+				if (mainSeat != null)
+					materialParts.Add(mainSeat);
+				List<partconditionscript> removableSeats = GameUtilities.GetVehiclePartsByPartialName(carObject, "seat");
+				if (removableSeats.Count > 0)
+					materialParts.AddRange(removableSeats);
+				List<partconditionscript> sunVisors = GameUtilities.GetVehiclePartsByPartialName(carObject, "Napellenzo");
+				if (sunVisors.Count > 0)
+					materialParts.AddRange(sunVisors);
+				partconditionscript headliner = GameUtilities.GetVehiclePartByName(carObject, "PartConKarpit");
+				if (headliner != null)
+					materialParts.Add(headliner);
+
+				// Remove any duplicates.
+				materialParts = materialParts.Distinct().ToList();
+
+				refreshedCache = true;
+			}
+
+			// Part selector.
+			string partSelectString = "Select part";
+			if (selectedPart != null)
+				partSelectString = $"Part: {GetPrettyPartName(selectedPart.name)}";
+			if (GUI.Button(new Rect(currVehicleX, currVehicleY, buttonWidth, buttonHeight), partSelectString))
+				partSelectorOpen = !partSelectorOpen;
+
+			currVehicleY += buttonHeight + 10f;
+
+			if (partSelectorOpen)
+			{
+				if (GUI.Button(new Rect(currVehicleX, currVehicleY, buttonWidth, buttonHeight), "None"))
+				{
+					selectedPart = null;
+					partSelectorOpen = false;
+				}
+				currVehicleY += buttonHeight + 2f;
+				foreach (partconditionscript part in materialParts)
+				{
+					if (GUI.Button(new Rect(currVehicleX, currVehicleY, buttonWidth, buttonHeight), GetPrettyPartName(part.name)))
+					{
+						selectedPart = part;
+						partSelectorOpen = false;
+					}
+
+					currVehicleY += buttonHeight + 2f;
+				}
+				currVehicleY += buttonHeight + 10f;
+			}
+
+			if (selectedPart != null)
+			{
+				// Material selector.
+				string materialSelectString = "Select material";
+				if (selectedMaterial != null)
+					materialSelectString = $"Material: {materials[selectedMaterial]}";
+				if (GUI.Button(new Rect(currVehicleX, currVehicleY, buttonWidth, buttonHeight), materialSelectString))
+					materialSelectorOpen = !materialSelectorOpen;
+
+				currVehicleY += buttonHeight + 10f;
+
+				if (materialSelectorOpen)
+				{
+					if (GUI.Button(new Rect(currVehicleX, currVehicleY, buttonWidth, buttonHeight), "None"))
+					{
+						selectedMaterial = null;
+						materialSelectorOpen = false;
+					}
+					currVehicleY += buttonHeight + 2f;
+					foreach (KeyValuePair<string, string> material in materials)
+					{
+						if (GUI.Button(new Rect(currVehicleX, currVehicleY, buttonWidth, buttonHeight), material.Value))
+						{
+							selectedMaterial = material.Key;
+							materialSelectorOpen = false;
+						}
+
+						currVehicleY += buttonHeight + 2f;
+					}
+					currVehicleY += buttonHeight + 10f;
+				}
+
+				Color? seatColor = null;
+
+				// Colour selector.
+				if (selectedMaterial != null)
+				{
+					if (GUI.Button(new Rect(currVehicleX, currVehicleY, buttonWidth, buttonHeight), "Toggle color selector"))
+						colorSelectorOpen = !colorSelectorOpen;
+					currVehicleY += buttonHeight + 10f;
+				}
+
+				if (colorSelectorOpen)
+				{
+					// Red.
+					GUI.Label(new Rect(currVehicleX, currVehicleY, buttonWidth, buttonHeight), "<color=#F00>Red:</color>", GUIRenderer.labelStyle);
+					currVehicleY += buttonHeight;
+					float seatRed = GUI.HorizontalSlider(new Rect(currVehicleX, currVehicleY, sliderWidth, buttonHeight), GUIRenderer.seatColor.r * 255, 0, 255);
+					seatRed = Mathf.Round(seatRed);
+					currVehicleY += buttonHeight;
+					bool seatRedParse = float.TryParse(GUI.TextField(new Rect(currVehicleX, currVehicleY, buttonWidth, buttonHeight), seatRed.ToString(), GUIRenderer.labelStyle), out seatRed);
+					if (!seatRedParse)
+						Logger.Log($"{seatRedParse} is not a number", Logger.LogLevel.Error);
+					seatRed = Mathf.Clamp(seatRed, 0f, 255f);
+					GUIRenderer.seatColor.r = seatRed / 255f;
+
+					// Green.
+					currVehicleY += buttonHeight + 10f;
+					GUI.Label(new Rect(currVehicleX, currVehicleY, buttonWidth, buttonHeight), "<color=#0F0>Green:</color>", GUIRenderer.labelStyle);
+					currVehicleY += buttonHeight;
+					float seatGreen = GUI.HorizontalSlider(new Rect(currVehicleX, currVehicleY, sliderWidth, buttonHeight), GUIRenderer.seatColor.g * 255, 0, 255);
+					seatGreen = Mathf.Round(seatGreen);
+					currVehicleY += buttonHeight;
+					bool seatGreenParse = float.TryParse(GUI.TextField(new Rect(currVehicleX, currVehicleY, buttonWidth, buttonHeight), seatGreen.ToString(), GUIRenderer.labelStyle), out seatGreen);
+					if (!seatGreenParse)
+						Logger.Log($"{seatGreenParse} is not a number", Logger.LogLevel.Error);
+					seatGreen = Mathf.Clamp(seatGreen, 0f, 255f);
+					GUIRenderer.seatColor.g = seatGreen / 255f;
+
+					// Blue.
+					currVehicleY += buttonHeight + 10f;
+					GUI.Label(new Rect(currVehicleX, currVehicleY, buttonWidth, buttonHeight), "<color=#00F>Blue:</color>", GUIRenderer.labelStyle);
+					currVehicleY += buttonHeight;
+					float seatBlue = GUI.HorizontalSlider(new Rect(currVehicleX, currVehicleY, sliderWidth, buttonHeight), GUIRenderer.seatColor.b * 255, 0, 255);
+					seatBlue = Mathf.Round(seatBlue);
+					currVehicleY += buttonHeight;
+					bool seatBlueParse = float.TryParse(GUI.TextField(new Rect(currVehicleX, currVehicleY, buttonWidth, buttonHeight), seatBlue.ToString(), GUIRenderer.labelStyle), out seatBlue);
+					if (!seatBlueParse)
+						Logger.Log($"{seatBlueParse.ToString()} is not a number", Logger.LogLevel.Error);
+					seatBlue = Mathf.Clamp(seatBlue, 0f, 255f);
+					GUIRenderer.seatColor.b = seatBlue / 255f;
+
+					currVehicleY += buttonHeight + 10f;
+
+					// Colour preview.
+					// Override alpha for colour preview.
+					Color seatPreview = GUIRenderer.seatColor;
+					seatPreview.a = 1;
+					pixels = new Color[] { seatPreview };
+					previewTexture.SetPixels(pixels);
+					previewTexture.Apply();
+					previewStyle.normal.background = previewTexture;
+					previewStyle.active.background = previewTexture;
+					previewStyle.hover.background = previewTexture;
+					previewStyle.margin = new RectOffset(0, 0, 0, 0);
+					GUI.skin.button = previewStyle;
+					GUI.Button(new Rect(currVehicleX, currVehicleY, sliderWidth, buttonHeight), "");
+					GUI.skin.button = defaultStyle;
+
+					currVehicleY += buttonHeight + 10f;
+
+					if (GUI.Button(new Rect(currVehicleX, currVehicleY, buttonWidth, buttonHeight), "Randomise colour"))
+					{
+						GUIRenderer.seatColor.r = UnityEngine.Random.Range(0f, 255f) / 255f;
+						GUIRenderer.seatColor.g = UnityEngine.Random.Range(0f, 255f) / 255f;
+						GUIRenderer.seatColor.b = UnityEngine.Random.Range(0f, 255f) / 255f;
+					}
+
+					currVehicleY += buttonHeight + 10f;
+
+					seatColor = GUIRenderer.seatColor;
+				}
+
+				if (selectedMaterial != null && GUI.Button(new Rect(currVehicleX, currVehicleY, buttonWidth, buttonHeight), "Apply"))
+				{
+					GameUtilities.SetPartMaterial(selectedPart, selectedMaterial, seatColor);
+					int saveId = carObject.GetComponent<tosaveitemscript>().idInSave;
+					if (selectedPart.tosave != null)
+						saveId = selectedPart.tosave.idInSave;
+					SaveUtilities.UpdateMaterials(new MaterialData()
+					{
+						ID = saveId,
+						part = selectedPart.name,
+						type = selectedMaterial,
+						color = seatColor
+					});
+				}
+			}
+
 			GUI.EndScrollView();
+
+			// Cache has been refreshed, set the next cache refresh time.
+			if (refreshedCache)
+				nextUpdateTime = updateFrequency;
+		}
+
+		/// <summary>
+		/// Make part name more user friendly.
+		/// </summary>
+		/// <param name="part">Part name to translate</param>
+		/// <returns>Prettified part name</returns>
+		private string GetPrettyPartName(string part)
+		{
+			part = part.Replace("(Clone)", string.Empty);
+
+			switch (part)
+			{
+				case "PartConColorLeather":
+					return "Main seats";
+				case "NapellenzoLeft":
+					return "Left sun visor";
+				case "NapellenzoRight":
+					return "Right sun visor";
+				case "PartConKarpit":
+					return "Headliner";
+			}
+
+			if (part.ToLower().Contains("seat"))
+				return "Removable seat";
+
+			return part;
 		}
 	}
 }

@@ -19,9 +19,16 @@ namespace MultiTool.Utilities
 		/// </summary>
 		/// <param name="gameObject">The object to check</param>
 		/// <returns>true if the object is a vehicle or trailer; otherwise, false</returns>
-		public static bool IsVehicleOrTrailer(GameObject gameObject)
+		public static bool IsVehicleOrTrailer(GameObject gameObject, bool strict = true)
 		{
-			if (gameObject.name.ToLower().Contains("full") && (gameObject.GetComponentsInChildren<carscript>().Length > 0 || gameObject.GetComponentsInChildren<utanfutoscript>().Length > 0))
+			string name = gameObject.name.ToLower();
+			bool nameCheck = name.Contains("full");
+
+			// Non-strict name check includes all items containing car or bus.
+			if (!strict)
+				nameCheck = name.Contains("full") || name.Contains("car") || name.Contains("bus");
+
+			if (nameCheck && (gameObject.GetComponentsInChildren<carscript>().Length > 0 || gameObject.GetComponentsInChildren<utanfutoscript>().Length > 0))
 				return true;
 			return false;
 		}
@@ -90,8 +97,7 @@ namespace MultiTool.Utilities
 		/// <param name="partconditionscript">Base vehicle partconditionscript</param>
 		public static void RandomiseCondition(partconditionscript partconditionscript)
 		{
-			List<partconditionscript> children = new List<partconditionscript>();
-			FindPartChildren(partconditionscript, ref children);
+			List<partconditionscript> children = FindPartChildren(partconditionscript);
 
 			foreach (partconditionscript child in children)
 			{
@@ -101,17 +107,113 @@ namespace MultiTool.Utilities
 		}
 
 		/// <summary>
-		/// Recursively find all child parts.
+		/// Get all child parts.
 		/// </summary>
-		/// <param name="root">Parent part</param>
-		/// <param name="allChildren">Current list of child parts</param>
-		public static void FindPartChildren(partconditionscript root, ref List<partconditionscript> allChildren)
+		/// <param name="root">Root part</param>
+		/// <returns>List of all child parts</returns>
+		public static List<partconditionscript> FindPartChildren(partconditionscript root)
 		{
-			foreach (partconditionscript child in root.childs)
+			return root.GetComponentsInChildren<partconditionscript>().ToList();
+		}
+
+		/// <summary>
+		/// Find all child parts recursively from tosaveitemscript.
+		/// </summary>
+		/// <param name="root">Root part</param>
+		/// <param name="children">Child partconditionscript passed by reference</param>
+		public static void FindPartChildren(partconditionscript root, ref List<partconditionscript> children)
+		{
+			tosaveitemscript tosave = root.GetComponent<tosaveitemscript>();
+			if (tosave == null) return;
+
+			foreach (partslotscript slot in tosave.partslotscripts)
 			{
-				allChildren.Add(child);
-				FindPartChildren(child, ref allChildren);
+				if (slot.part == null || slot.part.condition == null)
+					continue;
+
+				children.Add(slot.part.condition);
+				FindPartChildren(slot.part.condition, ref children);
 			}
+		}
+
+		/// <summary>
+		/// Get all parts for a vehicle.
+		/// </summary>
+		/// <param name="vehicle">Vehicle to get parts for</param>
+		/// <returns>Current list of child parts</returns>
+		public static List<partconditionscript> GetVehicleParts(GameObject vehicle)
+		{
+			List<partconditionscript> parts = new List<partconditionscript>();
+			partconditionscript vehicleCondition = vehicle.GetComponent<partconditionscript>();
+			if (vehicleCondition == null)
+				return parts;
+
+			return FindPartChildren(vehicleCondition);
+		}
+
+		/// <summary>
+		/// Get specific vehicle part by name.
+		/// </summary>
+		/// <param name="vehicle">Vehicle to get part from</param>
+		/// <param name="name">Name of part to find</param>
+		/// <returns>Part if name exists, otherwise null</returns>
+		public static partconditionscript GetVehiclePartByName(GameObject vehicle, string name)
+		{
+			List<partconditionscript> parts = GetVehicleParts(vehicle);
+			return parts.Where(part => part.name.ToLower() == name.ToLower()).FirstOrDefault();
+		}
+
+		/// <summary>
+		/// Get all parts matching a partial name.
+		/// </summary>
+		/// <param name="vehicle">Vehicle to get part from</param>
+		/// <param name="name">Partial name of parts to find</param>
+		/// <returns>List of parts if name matches any, otherwise empty list</returns>
+		public static List<partconditionscript> GetVehiclePartsByPartialName(GameObject vehicle, string name)
+		{
+			List<partconditionscript> parts = GetVehicleParts(vehicle);
+			return parts.Where(part => part.name.ToLower().Contains(name.ToLower())).ToList();
+		}
+
+		/// <summary>
+		/// Set material of a part.
+		/// </summary>
+		/// <param name="part">Part to set material for</param>
+		/// <param name="type">Material type to set</param>
+		public static void SetPartMaterial(partconditionscript part, string type, Color? color = null)
+		{
+			// Remove all existing materials.
+			part.mNew = null;
+			part.mUsed = null;
+			part.mMiddle = null;
+			part.mOld = null;
+			part.mRusty = null;
+
+			// Set the new type.
+			if (part.useOnlyMaterialTipusForMaterial)
+				part.materialTipus = type;
+			else
+				part.tipus = type;
+
+			// Force part colour.
+			if (color != null)
+			{
+				Color c = color.Value;
+				part.color = c;
+				part.forceColor = true;
+				part.disableColor = false;
+			}
+			else
+			{
+				part.disableColor = true;
+			}
+
+			// Re-start the part to force the material change.
+			part.started = false;
+			part.randomStart = false;
+			part.useRandomTipus = false;
+			part.loaded = true;
+			part.FStart();
 		}
 
 		/// <summary>
