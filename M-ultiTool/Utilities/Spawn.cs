@@ -309,7 +309,7 @@ namespace MultiTool.Utilities
 					}
 					else
 					{
-						component1.StartPaint(condition, color);
+						GameUtilities.SetConditionAndPaint(condition, color, component1);
 					}
 
 					GameUtilities.Paint(color, component1);

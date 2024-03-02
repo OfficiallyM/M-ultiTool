@@ -84,10 +84,24 @@ namespace MultiTool.Utilities
 		public static void Paint(Color c, partconditionscript partconditionscript)
 		{
 			partconditionscript.Paint(c);
-			foreach (partconditionscript child in partconditionscript.childs)
+			foreach (partconditionscript child in FindPartChildren(partconditionscript))
 			{
-				if (!child.isChild && !child.loaded)
-					Paint(c, child);
+				Paint(c, child);
+			}
+		}
+
+		/// <summary>
+		/// Set condition and paint of root vehicle and all child parts
+		/// </summary>
+		/// <param name="condition">Condition state to set</param>
+		/// <param name="color">Color to set</param>
+		/// <param name="root">Root vehicle partconditionscript</param>
+		public static void SetConditionAndPaint(int condition, Color color, partconditionscript root)
+		{
+			root.Refresh(condition, color);
+			foreach (partconditionscript child in FindPartChildren(root))
+			{
+				child.Refresh(condition, color);
 			}
 		}
 
