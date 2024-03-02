@@ -1095,6 +1095,8 @@ namespace MultiTool.Modules
 		/// <param name="_color">Color to select</param>
 		public void SetColor(Color _color)
 		{
+			if (_color.a == 0)
+				_color.a = 1;
 			color = _color;
 		}
 
