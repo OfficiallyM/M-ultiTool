@@ -105,7 +105,6 @@ namespace MultiTool
 			renderer.OnLoad();
 		}
 
-		bool carChecked = false;
 		public override void Update()
 		{
 			// Return early if M-ultiTool isn't enabled.
