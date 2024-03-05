@@ -153,18 +153,26 @@ namespace MultiTool
 						Physics.Raycast(mainscript.M.player.Cam.transform.position, mainscript.M.player.Cam.transform.forward, out var raycastHit, float.PositiveInfinity, mainscript.M.player.useLayer);
 						GameObject hitGameObject = raycastHit.transform.gameObject;
 						partconditionscript part = hitGameObject.GetComponent<partconditionscript>();
+						sprayscript spray = hitGameObject.GetComponent<sprayscript>();
 
-						// Return early if hit GameObject has no partconditionscript.
-						if (part == null)
+						// Return early if hit GameObject has no partconditionscript or sprayscript.
+						if (part == null && spray == null)
 							return;
 
 						Color objectColor = new Color();
-						foreach (Renderer renderer in part.renderers)
+						if (spray != null)
 						{
-							if (renderer.material == null)
-								continue;
+							objectColor = spray.color.color;
+						}
+						else
+						{
+							foreach (Renderer renderer in part.renderers)
+							{
+								if (renderer.material == null)
+									continue;
 
-							objectColor = renderer.material.color;
+								objectColor = renderer.material.color;
+							}
 						}
 
 						renderer.SetColor(objectColor);
@@ -175,12 +183,19 @@ namespace MultiTool
 						Physics.Raycast(mainscript.M.player.Cam.transform.position, mainscript.M.player.Cam.transform.forward, out var raycastHit, float.PositiveInfinity, mainscript.M.player.useLayer);
 						GameObject hitGameObject = raycastHit.transform.gameObject;
 						partconditionscript part = hitGameObject.transform.root.GetComponent<partconditionscript>();
+						sprayscript spray = hitGameObject.transform.root.GetComponent<sprayscript>();
 
-						// Return early if hit GameObject has no partconditionscript.
-						if (part == null)
+						// Return early if hit GameObject has no partconditionscript or sprayscript.
+						if (part == null && spray == null)
 							return;
 
-						GameUtilities.Paint(renderer.GetColor(), part);
+						if (spray != null)
+						{
+							spray.color.color = renderer.GetColor();
+							spray.UpdColor();
+						}
+						else
+							GameUtilities.Paint(renderer.GetColor(), part);
 					}
 					break;
 				case "scale":
