@@ -201,6 +201,7 @@ namespace MultiTool.Utilities
 				if (existing != null)
 				{
 					// Update existing saved part.
+					existing.exact = material.exact;
 					existing.type = material.type;
 					existing.color = material.color;
 				}
@@ -342,13 +343,34 @@ namespace MultiTool.Utilities
 						// Check ID matches.
 						if (save.idInSave == material.ID)
 						{
-							partconditionscript part = save.GetComponentInChildren<partconditionscript>();
+							Logger.Log($"Found match for {save.gameObject.name} ({material.ID}):\nPart: {material.part}\nExact: {(material.exact ? "Yes" : "No")}\nType: {material.type}\nColor: {material.color}");
+							List<partconditionscript> parts = new List<partconditionscript>();
 
-							// Find part by name if save ID is that of a vehicle.
-							if (GameUtilities.IsVehicleOrTrailer(save.gameObject, false) && material.part != null)
-								part = GameUtilities.GetVehiclePartByName(save.gameObject, material.part);
+							if (material.exact)
+							{
+								partconditionscript part = GameUtilities.GetVehiclePartByName(save.gameObject, material.part);
+								if (part != null)
+									parts.Add(part);
+								// Match by partial name as a failover.
+								else
+								{
+									List<partconditionscript> matchedParts = GameUtilities.GetVehiclePartsByPartialName(save.gameObject, material.part);
+									if (matchedParts.Count > 0)
+										parts.AddRange(matchedParts);
+								}
+							}
+							else
+							{
+								List<partconditionscript> matchedParts = GameUtilities.GetVehiclePartsByPartialName(save.gameObject, material.part);
+								if (matchedParts.Count > 0)
+									parts.AddRange(matchedParts);
+							}
+							Logger.Log($"Applying to {parts.Count} parts");
 
-							GameUtilities.SetPartMaterial(part, material.type, material.color);
+							foreach (partconditionscript part in parts)
+							{
+								GameUtilities.SetPartMaterial(part, material.type, material.color);
+							}
 						}
 					}
 				}

@@ -26,6 +26,7 @@ namespace MultiTool.Core
 	{
 		[DataMember] public int ID { get; set; }
 		[DataMember] public string part { get; set; }
+		[DataMember] public bool exact { get; set; }
 		[DataMember] public string type { get; set; }
 		[DataMember] public Color? color { get; set; }
 	}

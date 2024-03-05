@@ -28,7 +28,7 @@ namespace MultiTool.Tabs
 			{ "huzat02", "Fabric 2" },
 			{ "huzat03", "Fabric 3" },
 			{ "huzat04", "Fabric 4" },
-			{ "karpit", "Headliner" },
+			{ "karpit", "Cardboard" },
 			{ "wood", "Wood" },
 			{ "firearmwood", "Wood 2" },
 			{ "metals", "Metal" },
@@ -38,15 +38,16 @@ namespace MultiTool.Tabs
 			{ "gumi", "Tire rubber" },
 			{ "nyulsz01", "Rabbit fur" },
 			{ "szivacs2", "Sponge" },
+			{ "tarbanckarpit", "Bakelite" },
 		};
 		private bool partSelectorOpen = false;
 		private bool materialSelectorOpen = false;
-		private partconditionscript selectedPart = null;
+		private PartGroup selectedPart = null;
 		private string selectedMaterial = null;
 		private bool colorSelectorOpen = false;
 
 		// Caching.
-		private List<partconditionscript> materialParts = new List<partconditionscript>();
+		private List<PartGroup> materialParts = new List<PartGroup>();
 		private float nextUpdateTime = 0;
 		private float updateFrequency = 2;
 
@@ -765,16 +766,24 @@ namespace MultiTool.Tabs
 				materialParts.Clear();
 				partconditionscript mainSeat = GameUtilities.GetVehiclePartByName(carObject, "PartConColorLeather");
 				if (mainSeat != null)
-					materialParts.Add(mainSeat);
+					materialParts.Add(PartGroup.Create("PartConColorLeather", mainSeat));
 				List<partconditionscript> removableSeats = GameUtilities.GetVehiclePartsByPartialName(carObject, "seat");
 				if (removableSeats.Count > 0)
-					materialParts.AddRange(removableSeats);
+					foreach (partconditionscript seat in removableSeats)
+						materialParts.Add(PartGroup.Create("seat", seat));
 				List<partconditionscript> sunVisors = GameUtilities.GetVehiclePartsByPartialName(carObject, "Napellenzo");
 				if (sunVisors.Count > 0)
-					materialParts.AddRange(sunVisors);
-				partconditionscript headliner = GameUtilities.GetVehiclePartByName(carObject, "PartConKarpit");
-				if (headliner != null)
-					materialParts.Add(headliner);
+					foreach (partconditionscript visor in sunVisors)
+						materialParts.Add(PartGroup.Create(visor.name.Replace("(Clone)", string.Empty), visor));
+				List<partconditionscript> headliner = GameUtilities.GetVehiclePartsByPartialName(carObject, "PartConKarpit");
+				List<partconditionscript> headliner2 = GameUtilities.GetVehiclePartsByPartialName(carObject, "PartConCar03Karpit");
+				if (headliner2.Count > 0)
+					headliner.AddRange(headliner2);
+				if (headliner.Count > 0)
+					materialParts.Add(PartGroup.Create("Karpit", headliner));
+				List<partconditionscript> furyStripe = GameUtilities.GetVehiclePartsByPartialName(carObject, "PartConCsik");
+				if (furyStripe.Count > 0)
+					materialParts.Add(PartGroup.Create("PartConCsik", furyStripe));
 
 				// Remove any duplicates.
 				materialParts = materialParts.Distinct().ToList();
@@ -799,11 +808,11 @@ namespace MultiTool.Tabs
 					partSelectorOpen = false;
 				}
 				currVehicleY += buttonHeight + 2f;
-				foreach (partconditionscript part in materialParts)
+				foreach (PartGroup group in materialParts)
 				{
-					if (GUI.Button(new Rect(currVehicleX, currVehicleY, buttonWidth, buttonHeight), GetPrettyPartName(part.name)))
+					if (GUI.Button(new Rect(currVehicleX, currVehicleY, buttonWidth, buttonHeight), GetPrettyPartName(group.name)))
 					{
-						selectedPart = part;
+						selectedPart = group;
 						partSelectorOpen = false;
 					}
 
@@ -927,17 +936,18 @@ namespace MultiTool.Tabs
 
 				if (selectedMaterial != null && GUI.Button(new Rect(currVehicleX, currVehicleY, buttonWidth, buttonHeight), "Apply"))
 				{
-					GameUtilities.SetPartMaterial(selectedPart, selectedMaterial, seatColor);
-					int saveId = carObject.GetComponent<tosaveitemscript>().idInSave;
-					if (selectedPart.tosave != null)
-						saveId = selectedPart.tosave.idInSave;
-					SaveUtilities.UpdateMaterials(new MaterialData()
+					foreach (partconditionscript part in selectedPart.parts)
 					{
-						ID = saveId,
-						part = selectedPart.name,
-						type = selectedMaterial,
-						color = seatColor
-					});
+						GameUtilities.SetPartMaterial(part, selectedMaterial, seatColor);
+						SaveUtilities.UpdateMaterials(new MaterialData()
+						{
+							ID = save.idInSave,
+							part = selectedPart.name,
+							exact = IsExact(selectedPart.name),
+							type = selectedMaterial,
+							color = seatColor
+						});
+					}
 				}
 			}
 
@@ -965,14 +975,33 @@ namespace MultiTool.Tabs
 					return "Left sun visor";
 				case "NapellenzoRight":
 					return "Right sun visor";
-				case "PartConKarpit":
+				case "Karpit":
 					return "Headliner";
+				case "PartConCsik":
+					return "Fury stripe";
 			}
 
 			if (part.ToLower().Contains("seat"))
 				return "Removable seat";
 
 			return part;
+		}
+
+		/// <summary>
+		/// Whether the part matches by exact name.
+		/// </summary>
+		/// <param name="part">Part name to check</param>
+		/// <returns>Returns true if the part matches off exact name, otherwise false.</returns>
+		private bool IsExact(string part)
+		{
+			switch (part)
+			{
+				case "PartConColorLeather":
+				case "NapellenzoLeft":
+				case "NapellenzoRight":
+					return true;
+			}
+			return false;
 		}
 	}
 }
