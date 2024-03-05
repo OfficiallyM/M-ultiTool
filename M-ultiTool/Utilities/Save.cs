@@ -343,7 +343,6 @@ namespace MultiTool.Utilities
 						// Check ID matches.
 						if (save.idInSave == material.ID)
 						{
-							Logger.Log($"Found match for {save.gameObject.name} ({material.ID}):\nPart: {material.part}\nExact: {(material.exact ? "Yes" : "No")}\nType: {material.type}\nColor: {material.color}");
 							List<partconditionscript> parts = new List<partconditionscript>();
 
 							if (material.exact)
@@ -365,7 +364,6 @@ namespace MultiTool.Utilities
 								if (matchedParts.Count > 0)
 									parts.AddRange(matchedParts);
 							}
-							Logger.Log($"Applying to {parts.Count} parts");
 
 							foreach (partconditionscript part in parts)
 							{
