@@ -46,8 +46,13 @@ namespace MultiTool.Tabs
 		private string selectedMaterial = null;
 		private bool colorSelectorOpen = false;
 
+		// Random selector.
+		private bool randomSelectorOpen = false;
+		private randomTypeSelector selectedRandom = null;
+
 		// Caching.
 		private List<PartGroup> materialParts = new List<PartGroup>();
+		private List<randomTypeSelector> randomParts = new List<randomTypeSelector>();
 		private float nextUpdateTime = 0;
 		private float updateFrequency = 2;
 
@@ -951,6 +956,61 @@ namespace MultiTool.Tabs
 				}
 			}
 
+			currVehicleY += buttonHeight + 10f;
+			GUI.Label(new Rect(currVehicleX, currVehicleY, headerWidth, headerHeight), "Randomiser changer", GUIRenderer.headerStyle);
+			currVehicleY += headerHeight;
+
+			// Randomised part selector.
+			if (nextUpdateTime <= 0)
+			{
+				randomParts.Clear();
+				randomParts = carObject.GetComponentsInChildren<randomTypeSelector>().ToList();
+
+				refreshedCache = true;
+			}
+
+			// Random selector.
+			string randomSelectString = "Select randomised part";
+			if (selectedRandom != null)
+				randomSelectString = $"Selected: {GetPrettyRandomName(selectedRandom.name)}";
+			if (GUI.Button(new Rect(currVehicleX, currVehicleY, buttonWidth, buttonHeight), randomSelectString))
+				randomSelectorOpen = !randomSelectorOpen;
+
+			currVehicleY += buttonHeight + 10f;
+
+			if (randomSelectorOpen)
+			{
+				if (GUI.Button(new Rect(currVehicleX, currVehicleY, buttonWidth, buttonHeight), "None"))
+				{
+					selectedRandom = null;
+					randomSelectorOpen = false;
+				}
+				currVehicleY += buttonHeight + 2f;
+				foreach (randomTypeSelector random in randomParts)
+				{
+					if (GUI.Button(new Rect(currVehicleX, currVehicleY, buttonWidth, buttonHeight), GetPrettyRandomName(random.name)))
+					{
+						selectedRandom = random;
+						randomSelectorOpen = false;
+					}
+					currVehicleY += buttonHeight + 2f;
+				}
+				currVehicleY += buttonHeight + 10f;
+			}
+
+			if (selectedRandom != null)
+			{
+				for (int i = 0; i < selectedRandom.tipusok.Length; i++)
+				{
+					if (GUI.Button(new Rect(currVehicleX, currVehicleY, buttonWidth, buttonHeight), $"Option {i + 1}"))
+					{
+						selectedRandom.rtipus = i;
+						selectedRandom.Refresh();
+					}
+					currVehicleY += buttonHeight + 2f;
+				}
+			}
+
 			GUI.EndScrollView();
 
 			// Cache has been refreshed, set the next cache refresh time.
@@ -1002,6 +1062,17 @@ namespace MultiTool.Tabs
 					return true;
 			}
 			return false;
+		}
+
+		/// <summary>
+		/// Make random selector part more user friendly.
+		/// </summary>
+		/// <param name="random">Randomised part to prettify</param>
+		/// <returns>Prettified random part name</returns>
+		private string GetPrettyRandomName(string random)
+		{
+			random = random.Replace("(Clone)", string.Empty);
+			return random;
 		}
 	}
 }
