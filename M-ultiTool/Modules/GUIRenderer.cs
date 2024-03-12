@@ -168,6 +168,7 @@ namespace MultiTool.Modules
 		private bool accessibilityShow = false;
 		private static string accessibilityMode = "none";
 		internal static float noclipFastMoveFactor = 10f;
+		internal static List<Color> palette = new List<Color>();
 
 		internal static temporaryTurnOffGeneration temp;
 		private bool spawnerDetected = false;
@@ -342,6 +343,9 @@ namespace MultiTool.Modules
 					fuels.Add((mainscript.fluidenum)i, 0);
 				}
 
+				// Set default palette to all white.
+				palette = Enumerable.Repeat(Color.white, 60).ToList();
+
 				// Load configs.
 				try
 				{
@@ -351,6 +355,7 @@ namespace MultiTool.Modules
 					noclipGodmodeDisable = config.GetNoclipGodmodeDisable(noclipGodmodeDisable);
 					accessibilityMode = config.GetAccessibilityMode(accessibilityMode);
 					noclipFastMoveFactor = config.GetNoclipFastMoveFactor(noclipFastMoveFactor);
+					palette = config.GetPalette(palette);
 				}
 				catch (Exception ex)
 				{
@@ -843,6 +848,9 @@ namespace MultiTool.Modules
 
 						configY += configHeight + 10f;
 
+						color = GUIRenderer.RenderColourPalette(configX, configY, configWidth, color);
+						configY += GUIRenderer.GetPaletteHeight(configWidth) + 10f;
+
 						// Colour preview.
 						pixels = new Color[] { color };
 						previewTexture.SetPixels(pixels);
@@ -933,6 +941,10 @@ namespace MultiTool.Modules
 						GUI.skin.button = defaultStyle;
 
 						configY += configHeight + 10f;
+
+						color = GUIRenderer.RenderColourPalette(configX, configY, configWidth, color);
+						configY += GUIRenderer.GetPaletteHeight(configWidth) + 10f;
+
 						if (GUI.Button(new Rect(configX, configY, configWidth, configHeight), GetAccessibleString("Link scale axis", linkScale)))
 							linkScale = !linkScale;
 
@@ -1048,6 +1060,89 @@ namespace MultiTool.Modules
 				GUIExtensions.DrawOutline(new Rect(20f, 20f, 600f, 30f), $"Local position: {mainscript.M.player.transform.position}", hudStyle, Color.black);
 				GUIExtensions.DrawOutline(new Rect(20f, 50f, 600f, 30f), $"Global position: {GameUtilities.GetGlobalObjectPosition(mainscript.M.player.transform.position)}", hudStyle, Color.black);
 			}
+		}
+
+		/// <summary>
+		/// Render colour palette.
+		/// </summary>
+		/// <param name="posX">Palette starting X position</param>
+		/// <param name="posY">Palette starting Y position</param>
+		/// <param name="width">Palette max width</param>
+		/// <param name="currentColor">Current selected colour</param>
+		/// <returns>Selected colour</returns>
+		internal static Color RenderColourPalette(float posX, float posY, float width, Color currentColor)
+		{
+			Color selectedColor = currentColor;
+			float buttonWidth = 30f;
+			float buttonHeight = 30f;
+
+			int rowLength = Mathf.FloorToInt(width / (buttonWidth + 2f));
+
+			float x = posX;
+			float y = posY;
+			for (int i = 0; i < palette.Count; i++)
+			{
+				Color color = palette[i];
+
+				if (i > 0)
+				{
+					x += buttonWidth + 2f;
+					if (i % rowLength == 0)
+					{
+						x = posX;
+						y += buttonHeight + 2f;
+					}
+				}
+
+				// Apply colour to button.
+				GUIStyle defaultStyle = GUI.skin.button;
+				GUIStyle previewStyle = new GUIStyle(defaultStyle);
+				Texture2D previewTexture = new Texture2D(1, 1);
+				Color[] pixels = new Color[] { color };
+				previewTexture.SetPixels(pixels);
+				previewTexture.Apply();
+				previewStyle.normal.background = previewTexture;
+				previewStyle.active.background = previewTexture;
+				previewStyle.hover.background = previewTexture;
+				previewStyle.margin = new RectOffset(0, 0, 0, 0);
+				GUI.skin.button = previewStyle;
+				if (GUI.Button(new Rect(x, y, buttonWidth, buttonHeight), ""))
+				{
+					switch (Event.current.button)
+					{
+						// Left click, apply colour.
+						case 0:
+							selectedColor = color;
+							break;
+						
+						// Right click, set new colour.
+						case 1:
+							// Override alpha.
+							currentColor.a = 1;
+
+							// Update palette index colour.
+							palette[i] = currentColor;
+							config.UpdatePalette(palette);
+							break;
+					}
+				}
+				GUI.skin.button = defaultStyle;
+			}
+
+			return selectedColor;
+		}
+
+		/// <summary>
+		/// Get height of the palette UI.
+		/// </summary>
+		/// <param name="width"></param>
+		/// <returns></returns>
+		internal static float GetPaletteHeight(float width)
+		{
+			float buttonWidth = 30f;
+			float buttonHeight = 30f;
+			int rowLength = Mathf.FloorToInt(width / (buttonWidth + 2f));
+			return Mathf.CeilToInt((float)palette.Count / rowLength) * (buttonHeight + 2f);
 		}
 
 		/// <summary>

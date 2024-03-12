@@ -6,6 +6,7 @@ using System.Linq;
 using System.Runtime.Serialization.Json;
 using System.Text;
 using System.Threading.Tasks;
+using UnityEngine;
 
 namespace MultiTool.Modules
 {
@@ -118,6 +119,17 @@ namespace MultiTool.Modules
 		}
 
 		/// <summary>
+		/// Update colour palette in config.
+		/// </summary>
+		/// <param name="palette">New palette</param>
+		public void UpdatePalette(List<Color> palette)
+		{
+			config.palette = palette;
+
+			Commit();
+		}
+
+		/// <summary>
 		/// Get keybinds from the config file
 		/// </summary>
 		/// <returns>A list of keys</returns>
@@ -221,6 +233,22 @@ namespace MultiTool.Modules
 			}
 
 			return config.noclipFastMoveFactor;
+		}
+
+		/// <summary>
+		/// Get palette from config.
+		/// </summary>
+		/// <param name="defaultPalette">Default colour palette</param>
+		/// <returns>Colour palette</returns>
+		public List<Color> GetPalette(List<Color> defaultPalette)
+		{
+			loadFromConfigFile();
+
+			if (config.palette == null || config.palette.Count == 0)
+				// No palette, set default.
+				config.palette = defaultPalette;
+
+			return config.palette;
 		}
 
 		/// <summary>

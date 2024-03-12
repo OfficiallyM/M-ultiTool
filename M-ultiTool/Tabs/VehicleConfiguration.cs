@@ -114,7 +114,11 @@ namespace MultiTool.Tabs
 				fluidsHeight += headerHeight * 2 + 30f;
 
 			if (sunRoofSlot != null)
+			{
 				sliderCount += 6;
+				fluidsHeight += GUIRenderer.GetPaletteHeight(sliderWidth + 20f) + 10f;
+			}
+			fluidsHeight += (GUIRenderer.GetPaletteHeight(sliderWidth + 20f) + 10f) * 2;
 
 			float buttonsHeight = buttonCount * (buttonHeight + 10f + headerHeight);
 			float slidersHeight = sliderCount * ((buttonHeight * 3) + 10f) + headerHeight;
@@ -216,6 +220,8 @@ namespace MultiTool.Tabs
 			GUI.skin.button = defaultStyle;
 
 			currVehicleY += buttonHeight + 10f;
+			GUIRenderer.color = GUIRenderer.RenderColourPalette(currVehicleX, currVehicleY, sliderWidth + 20f, GUIRenderer.color);
+			currVehicleY += GUIRenderer.GetPaletteHeight(sliderWidth + 20f) + 10f;
 
 			if (GUI.Button(new Rect(currVehicleX, currVehicleY, buttonWidth, buttonHeight), "Randomise colour"))
 			{
@@ -608,6 +614,9 @@ namespace MultiTool.Tabs
 
 			currVehicleY += buttonHeight + 10f;
 
+			GUIRenderer.windowColor = GUIRenderer.RenderColourPalette(currVehicleX, currVehicleY, sliderWidth + 20f, GUIRenderer.windowColor);
+			currVehicleY += GUIRenderer.GetPaletteHeight(sliderWidth + 20f) + 10f;
+
 			if (GUI.Button(new Rect(currVehicleX, currVehicleY, buttonWidth, buttonHeight), "Randomise colour"))
 			{
 				GUIRenderer.windowColor.r = UnityEngine.Random.Range(0f, 255f) / 255f;
@@ -731,6 +740,8 @@ namespace MultiTool.Tabs
 					GUI.skin.button = defaultStyle;
 
 					currVehicleY += buttonHeight + 10f;
+					GUIRenderer.sunRoofColor = GUIRenderer.RenderColourPalette(currVehicleX, currVehicleY, sliderWidth + 20f, GUIRenderer.sunRoofColor);
+					currVehicleY += GUIRenderer.GetPaletteHeight(sliderWidth + 20f) + 10f;
 
 					if (GUI.Button(new Rect(currVehicleX, currVehicleY, buttonWidth, buttonHeight), "Randomise colour"))
 					{
@@ -935,6 +946,9 @@ namespace MultiTool.Tabs
 					}
 
 					currVehicleY += buttonHeight + 10f;
+
+					GUIRenderer.seatColor = GUIRenderer.RenderColourPalette(currVehicleX, currVehicleY, sliderWidth + 20f, GUIRenderer.seatColor);
+					currVehicleY += GUIRenderer.GetPaletteHeight(sliderWidth + 20f) + 10f;
 
 					seatColor = GUIRenderer.seatColor;
 				}

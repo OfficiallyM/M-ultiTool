@@ -4,6 +4,7 @@ using System.Linq;
 using System.Runtime.Serialization;
 using System.Text;
 using System.Threading.Tasks;
+using UnityEngine;
 using static MultiTool.Modules.Keybinds;
 
 namespace MultiTool.Core
@@ -85,5 +86,6 @@ namespace MultiTool.Core
 		[DataMember] public bool? noclipGodmodeDisable { get; set; }
 		[DataMember] public string accessibilityMode { get; set; }
 		[DataMember] public float noclipFastMoveFactor { get; set; }
+		[DataMember] public List<Color> palette { get; set; }
 	}
 }
