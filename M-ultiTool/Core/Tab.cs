@@ -15,6 +15,11 @@ namespace MultiTool.Core
 
 		internal virtual string Source { get; set; }
 		internal virtual int Id { get; set; }
+
+		bool disabled = false;
+		int errors = 0;
+		internal virtual bool IsDisabled { get => disabled; set => disabled = value; }
+		internal virtual int Errors { get => errors; set => errors = value; }
 	}
 
 	public class Dimensions

@@ -640,6 +640,9 @@ namespace MultiTool.Modules
 				tabScrollPosition = GUI.BeginScrollView(new Rect(tabX, y + 50f, tabWidth, tabHeight), tabScrollPosition, new Rect(tabX, y + 50f, tabWidth, tabHeight));
 				for (int tabIndex = 0; tabIndex < tabs.Count; tabIndex++)
 				{
+					// Don't render disabled tabs.
+					if (tabs[tabIndex].IsDisabled) continue;
+
 					if (GUI.Button(new Rect(tabX, y + 50f, tabButtonWidth, tabHeight), tab == tabIndex ? $"<color=#0F0>{tabs[tabIndex].Name}</color>" : tabs[tabIndex].Name))
 					{
 						tab = tabIndex;
@@ -674,6 +677,9 @@ namespace MultiTool.Modules
 			float configWidth = (mainMenuWidth * 0.25f);
 			float configX = mainMenuX + mainMenuWidth - configWidth - 10f;
 
+			// Return early if tab is disabled.
+			if (tab.IsDisabled) return;
+
 			// Config pane.
 			if (tab.HasConfigPane)
 			{
@@ -690,12 +696,40 @@ namespace MultiTool.Modules
 					height = tabDimensions.height,	
 				};
 
-				RenderConfig(tab, configDimensions);
+				try
+				{
+					RenderConfig(tab, configDimensions);
+				}
+				catch (Exception ex)
+				{
+                    tab.Errors++;
+                    Logger.Log($"Error occurred during tab \"{tab.Name}\" config render ({tab.Errors}/5). Details: {ex}", Logger.LogLevel.Error);
+
+                    if (tab.Errors >= 5)
+                    {
+                        tab.IsDisabled = true;
+                        Logger.Log($"Tab {tab.Name} threw too many errors and has been disabled.", Logger.LogLevel.Warning);
+                    }
+                }
 			}
 
 			GUI.Box(new Rect(tabDimensions.x, tabDimensions.y, tabDimensions.width, tabDimensions.height), String.Empty);
 
-			tab.RenderTab(tabDimensions);
+			try
+			{
+				tab.RenderTab(tabDimensions);
+			}
+			catch (Exception ex)
+			{
+				tab.Errors++;
+				Logger.Log($"Error occurred during tab \"{tab.Name}\" render ({tab.Errors}/5). Details: {ex}", Logger.LogLevel.Error);
+
+				if (tab.Errors >= 5)
+				{
+					tab.IsDisabled = true;
+					Logger.Log($"Tab {tab.Name} threw too many errors and has been disabled.", Logger.LogLevel.Warning);
+				}
+			}
 		}
 
 		/// <summary>
