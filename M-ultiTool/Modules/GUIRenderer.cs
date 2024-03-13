@@ -169,6 +169,7 @@ namespace MultiTool.Modules
 		private static string accessibilityMode = "none";
 		internal static float noclipFastMoveFactor = 10f;
 		internal static List<Color> palette = new List<Color>();
+		private static Dictionary<int, Texture2D> paletteCache = new Dictionary<int, Texture2D>();
 
 		internal static temporaryTurnOffGeneration temp;
 		private bool spawnerDetected = false;
@@ -1128,18 +1129,19 @@ namespace MultiTool.Modules
 					}
 				}
 
-				// Apply colour to button.
+				// Build cache if empty.
+				if (!paletteCache.ContainsKey(i))
+				{
+					paletteCache.Add(i, GUIExtensions.ColorTexture(1, 1, color));
+				}
+
 				GUIStyle defaultStyle = GUI.skin.button;
-				GUIStyle previewStyle = new GUIStyle(defaultStyle);
-				Texture2D previewTexture = new Texture2D(1, 1);
-				Color[] pixels = new Color[] { color };
-				previewTexture.SetPixels(pixels);
-				previewTexture.Apply();
-				previewStyle.normal.background = previewTexture;
-				previewStyle.active.background = previewTexture;
-				previewStyle.hover.background = previewTexture;
-				previewStyle.margin = new RectOffset(0, 0, 0, 0);
-				GUI.skin.button = previewStyle;
+				GUIStyle swatchStyle = new GUIStyle(defaultStyle);
+                swatchStyle.normal.background = paletteCache[i];
+                swatchStyle.active.background = paletteCache[i];
+                swatchStyle.hover.background = paletteCache[i];
+                swatchStyle.margin = new RectOffset(0, 0, 0, 0);
+				GUI.skin.button = swatchStyle;
 				if (GUI.Button(new Rect(x, y, buttonWidth, buttonHeight), ""))
 				{
 					switch (Event.current.button)
@@ -1157,6 +1159,9 @@ namespace MultiTool.Modules
 							// Update palette index colour.
 							palette[i] = currentColor;
 							config.UpdatePalette(palette);
+
+							// Update texture cache.
+							paletteCache[i] = GUIExtensions.ColorTexture(1, 1, currentColor);
 							break;
 					}
 				}
