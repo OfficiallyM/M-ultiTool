@@ -169,7 +169,7 @@ namespace MultiTool.Modules
 		private static string accessibilityMode = "none";
 		internal static float noclipFastMoveFactor = 10f;
 		internal static List<Color> palette = new List<Color>();
-		private static Dictionary<int, Texture2D> paletteCache = new Dictionary<int, Texture2D>();
+		private static Dictionary<int, GUIStyle> paletteCache = new Dictionary<int, GUIStyle>();
 
 		internal static temporaryTurnOffGeneration temp;
 		private bool spawnerDetected = false;
@@ -1129,19 +1129,21 @@ namespace MultiTool.Modules
 					}
 				}
 
+				GUIStyle defaultStyle = GUI.skin.button;
+
 				// Build cache if empty.
 				if (!paletteCache.ContainsKey(i))
 				{
-					paletteCache.Add(i, GUIExtensions.ColorTexture(1, 1, color));
+                    GUIStyle swatchStyle = new GUIStyle(defaultStyle);
+					Texture2D swatchTexture = GUIExtensions.ColorTexture(1, 1, color);
+                    swatchStyle.normal.background = swatchTexture;
+                    swatchStyle.active.background = swatchTexture;
+                    swatchStyle.hover.background = swatchTexture;
+					swatchStyle.margin = new RectOffset(0, 0, 0, 0);
+                    paletteCache.Add(i, swatchStyle);
 				}
-
-				GUIStyle defaultStyle = GUI.skin.button;
-				GUIStyle swatchStyle = new GUIStyle(defaultStyle);
-                swatchStyle.normal.background = paletteCache[i];
-                swatchStyle.active.background = paletteCache[i];
-                swatchStyle.hover.background = paletteCache[i];
-                swatchStyle.margin = new RectOffset(0, 0, 0, 0);
-				GUI.skin.button = swatchStyle;
+				
+				GUI.skin.button = paletteCache[i];
 				if (GUI.Button(new Rect(x, y, buttonWidth, buttonHeight), ""))
 				{
 					switch (Event.current.button)
@@ -1160,8 +1162,14 @@ namespace MultiTool.Modules
 							palette[i] = currentColor;
 							config.UpdatePalette(palette);
 
-							// Update texture cache.
-							paletteCache[i] = GUIExtensions.ColorTexture(1, 1, currentColor);
+                            // Update texture cache.
+                            GUIStyle swatchStyle = new GUIStyle(defaultStyle);
+                            Texture2D swatchTexture = GUIExtensions.ColorTexture(1, 1, currentColor);
+                            swatchStyle.normal.background = swatchTexture;
+                            swatchStyle.active.background = swatchTexture;
+                            swatchStyle.hover.background = swatchTexture;
+                            swatchStyle.margin = new RectOffset(0, 0, 0, 0);
+                            paletteCache[i] = swatchStyle;
 							break;
 					}
 				}
