@@ -75,6 +75,34 @@ namespace MultiTool.Core
 			get { return s_showCoords; }
 			set { s_showCoords = value; }
 		}
+
+		public static bool s_objectDebug = false;
+		public bool objectDebug
+		{
+			get { return s_objectDebug; }
+			set { s_objectDebug = value; }
+		}
+
+		public static bool s_advancedObjectDebug = false;
+		public bool advancedObjectDebug
+        {
+			get { return s_advancedObjectDebug; }
+			set { s_advancedObjectDebug = value; }
+		}
+
+		public static bool s_objectDebugShowUnity = true;
+		public bool objectDebugShowUnity
+		{
+			get { return s_objectDebugShowUnity; }
+			set { s_objectDebugShowUnity = value; }
+		}
+
+		public static bool s_objectDebugShowCore = true;
+		public bool objectDebugShowCore
+		{
+			get { return s_objectDebugShowCore; }
+			set { s_objectDebugShowCore = value; }
+		}
 	}
 
 	[DataContract]

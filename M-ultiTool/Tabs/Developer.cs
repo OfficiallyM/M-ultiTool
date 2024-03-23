@@ -42,6 +42,44 @@ namespace MultiTool.Tabs
 			}
 			y += buttonHeight + 10f;
 
+            // Toggle show object debug.
+            if (GUI.Button(new Rect(x, y, buttonWidth, buttonHeight), GUIRenderer.GetAccessibleString("Object debug mode", settings.objectDebug)))
+            {
+                settings.objectDebug = !settings.objectDebug;
+            }
+
+            if (settings.objectDebug)
+			{
+				y += buttonHeight + 10f;
+
+                // Toggle advanced object debug.
+                if (GUI.Button(new Rect(x, y, buttonWidth, buttonHeight), GUIRenderer.GetAccessibleString("Enable advanced debug", settings.advancedObjectDebug)))
+                {
+                    settings.advancedObjectDebug = !settings.advancedObjectDebug;
+                }
+            }
+
+			if (settings.advancedObjectDebug)
+			{
+				y += buttonHeight + 10f;
+
+				// Toggle showing Unity components.
+				if (GUI.Button(new Rect(x, y, buttonWidth, buttonHeight), GUIRenderer.GetAccessibleString("Show Unity components", settings.objectDebugShowUnity)))
+				{
+					settings.objectDebugShowUnity = !settings.objectDebugShowUnity;
+				}
+
+				y += buttonHeight + 10f;
+
+				// Toggle showing core components.
+				if (GUI.Button(new Rect(x, y, buttonWidth, buttonHeight), GUIRenderer.GetAccessibleString("Show core game components", settings.objectDebugShowCore)))
+				{
+					settings.objectDebugShowCore = !settings.objectDebugShowCore;
+				}
+			}
+
+			y += buttonHeight + 10f;
+
 			GUI.EndScrollView();
 		}
 	}

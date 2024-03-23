@@ -168,6 +168,11 @@ namespace MultiTool.Modules
 		private bool accessibilityShow = false;
 		private static string accessibilityMode = "none";
 		internal static float noclipFastMoveFactor = 10f;
+
+		// HUD variables.
+		GameObject debugObject = null;
+
+		// Colour palettes.
 		internal static List<Color> palette = new List<Color>();
 		private static Dictionary<int, GUIStyle> paletteCache = new Dictionary<int, GUIStyle>();
 
@@ -402,6 +407,33 @@ namespace MultiTool.Modules
 				mainscript.M.crsrLocked = !show;
 				mainscript.M.SetCursorVisible(show);
 				mainscript.M.menu.gameObject.SetActive(!show);
+			}
+
+			// Detect item when item debugging is enabled.
+			if (settings.objectDebug)
+			{
+				try
+				{
+					GameObject foundObject = null;
+					// Find object the player is looking at.
+					Physics.Raycast(mainscript.M.player.Cam.transform.position, mainscript.M.player.Cam.transform.forward, out var raycastHit, float.PositiveInfinity, mainscript.M.player.useLayer);
+
+					tosaveitemscript save = raycastHit.transform.gameObject.GetComponent<tosaveitemscript>();
+					if (save != null)
+					{
+						foundObject = raycastHit.transform.gameObject;
+					}
+
+					// Debug held item if player is holding something.
+					if (mainscript.M.player.pickedUp != null)
+						foundObject = mainscript.M.player.pickedUp.gameObject;
+
+					debugObject = foundObject;
+				}
+				catch (Exception ex)
+				{
+					Logger.Log($"Error determining debug object - {ex}", Logger.LogLevel.Error);
+				}
 			}
 		}
 
@@ -1095,6 +1127,55 @@ namespace MultiTool.Modules
 				GUIExtensions.DrawOutline(new Rect(20f, 20f, 600f, 30f), $"Local position: {mainscript.M.player.transform.position}", hudStyle, Color.black);
 				GUIExtensions.DrawOutline(new Rect(20f, 50f, 600f, 30f), $"Global position: {GameUtilities.GetGlobalObjectPosition(mainscript.M.player.transform.position)}", hudStyle, Color.black);
 			}
+
+			width = resolutionX / 4f;
+			height = resolutionY / 4;
+			if (settings.advancedObjectDebug)
+				height = resolutionY;
+			x = resolutionX - width;
+			y = 0;
+			float contentWidth = width - 20f;
+
+			if (settings.objectDebug && debugObject != null)
+			{
+				GUI.Box(new Rect(x, y, width, height), $"<color=#fff><size=18>Object: {debugObject.name.Replace("(Clone)", string.Empty)}</size></color>");
+
+				x += 10f;
+				y += 30f;
+
+				// Basic object information.
+                GUI.Label(new Rect(x, y, contentWidth, 20f), $"Local position: {debugObject.transform.position}", labelStyle);
+				y += 22f;
+                GUI.Label(new Rect(x, y, contentWidth, 20f), $"Global position: {GameUtilities.GetGlobalObjectPosition(debugObject.transform.position)}", labelStyle);
+                y += 22f;
+                GUI.Label(new Rect(x, y, contentWidth, 20f), $"Rotation (Euler angles): {debugObject.transform.rotation.eulerAngles}", labelStyle);
+                y += 22f;
+                GUI.Label(new Rect(x, y, contentWidth, 20f), $"Rotation (Quaternion): {debugObject.transform.rotation}", labelStyle);
+
+				if (settings.advancedObjectDebug)
+				{
+					y += 35f;
+					GUI.Label(new Rect(x, y, contentWidth, 60f), "<color=#fff><size=18>Components</size>\nAssembly - Class</color>");
+                    y += 65f;
+
+					foreach (Component component in debugObject.GetComponents(typeof(Component)))
+					{
+						Type type = component.GetType();
+						string assembly = type.Assembly.GetName().Name;
+
+						// Skip core components if hidden.
+						if (!settings.objectDebugShowCore && assembly == "Assembly-CSharp")
+							continue;
+
+						// Skip Unity components if hidden.
+						if (!settings.objectDebugShowUnity && assembly.Contains("UnityEngine"))
+							continue;
+
+						GUI.Label(new Rect(x, y, contentWidth, 20f), $"{assembly} - {type.Name}");
+						y += 22f;
+					}
+                }
+            }
 		}
 
 		/// <summary>
