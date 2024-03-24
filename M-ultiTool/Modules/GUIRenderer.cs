@@ -447,9 +447,13 @@ namespace MultiTool.Modules
 						foundObject = raycastHit.transform.gameObject;
 					}
 
-					// Debug held item if player is holding something.
+					// Debug picked up if player is holding something.
 					if (mainscript.M.player.pickedUp != null)
 						foundObject = mainscript.M.player.pickedUp.gameObject;
+
+					// Debug held item if something is equipped.
+					if (mainscript.M.player.inHandP != null)
+						foundObject = mainscript.M.player.inHandP.gameObject;
 
 					debugObject = foundObject;
 				}
