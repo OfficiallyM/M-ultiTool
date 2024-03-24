@@ -106,6 +106,16 @@ namespace MultiTool.Core
 	}
 
 	[DataContract]
+	internal class PlayerData
+	{
+		[DataMember] public float walkSpeed { get; set; }
+		[DataMember] public float runSpeed { get; set; }
+		[DataMember] public float jumpForce { get; set; }
+		[DataMember] public float pushForce { get; set; }
+		[DataMember] public float carryWeight { get; set; }
+	}
+
+	[DataContract]
 	internal class ConfigSerializable
 	{
 		[DataMember] public List<Key> keybinds { get; set; }
@@ -115,5 +125,6 @@ namespace MultiTool.Core
 		[DataMember] public string accessibilityMode { get; set; }
 		[DataMember] public float noclipFastMoveFactor { get; set; }
 		[DataMember] public List<Color> palette { get; set; }
+		[DataMember] public PlayerData playerData { get; set; }
 	}
 }

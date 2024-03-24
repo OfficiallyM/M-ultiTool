@@ -1,4 +1,5 @@
 ﻿using MultiTool.Core;
+using MultiTool.Extensions;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -130,6 +131,17 @@ namespace MultiTool.Modules
 		}
 
 		/// <summary>
+		/// Update player data in config.
+		/// </summary>
+		/// <param name="playerData">New player data</param>
+		public void UpdatePlayerData(PlayerData playerData)
+		{
+			config.playerData = playerData;
+
+			Commit();
+		}
+
+		/// <summary>
 		/// Get keybinds from the config file
 		/// </summary>
 		/// <returns>A list of keys</returns>
@@ -249,6 +261,21 @@ namespace MultiTool.Modules
 				config.palette = defaultPalette;
 
 			return config.palette;
+		}
+
+		/// <summary>
+		/// Get player data from config.
+		/// </summary>
+		/// <param name="defaultPlayerData">Default player data</param>
+		/// <returns>Player data</returns>
+		public PlayerData GetPlayerData(PlayerData defaultPlayerData)
+		{
+			loadFromConfigFile();
+
+			if (config.playerData == null)
+				config.playerData = defaultPlayerData.Copy();
+
+			return config.playerData;
 		}
 
 		/// <summary>

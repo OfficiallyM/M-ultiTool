@@ -230,6 +230,20 @@ namespace MultiTool
 			// gets enabled again immediately by the fpscontroller.
 			if (settings.noclip)
 				mainscript.M.player.ladderV = 1;
+
+			// Apply player settings.
+			if (GUIRenderer.playerData != null)
+			{
+				PlayerData playerData = GUIRenderer.playerData;
+				fpscontroller player = mainscript.M.player;
+
+				player.FdefMaxSpeed = playerData.walkSpeed;
+				player.FrunM = playerData.runSpeed;
+				player.FjumpForce = playerData.jumpForce;
+				mainscript.M.pushForce = playerData.pushForce;
+				player.maxWeight = playerData.carryWeight;
+				player.maxPickupForce = playerData.carryWeight;
+			}
 		}
 	}
 }

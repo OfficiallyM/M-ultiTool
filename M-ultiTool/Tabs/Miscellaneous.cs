@@ -14,7 +14,6 @@ namespace MultiTool.Tabs
 	{
 		public override string Name => "Miscellaneous";
 
-		private Vector2 toggleScrollPosition;
 		private Settings settings = new Settings();
 		public override void RenderTab(Dimensions dimensions)
 		{
@@ -26,74 +25,11 @@ namespace MultiTool.Tabs
 			float miscWidth = 250f;
 			float labelWidth = dimensions.width - 20f;
 
-			int toggleCount = 3;
-			float toggleWidth = (buttonWidth + 10f) * toggleCount;
-
-			float toggleX = miscX;
-
-			toggleScrollPosition = GUI.BeginScrollView(new Rect(miscX, miscY, toggleWidth, buttonHeight), toggleScrollPosition, new Rect(miscX, miscY, toggleWidth, buttonHeight));
-
 			// Delete mode.
-			if (GUI.Button(new Rect(toggleX, miscY, buttonWidth, buttonHeight), GUIRenderer.GetAccessibleString("Delete mode", settings.deleteMode) + $" (Press {GUIRenderer.binds.GetKeyByAction((int)Keybinds.Inputs.deleteMode).key})"))
+			if (GUI.Button(new Rect(miscX, miscY, buttonWidth, buttonHeight), GUIRenderer.GetAccessibleString("Delete mode", settings.deleteMode) + $" (Press {GUIRenderer.binds.GetKeyByAction((int)Keybinds.Inputs.deleteMode).key})"))
 			{
 				settings.deleteMode = !settings.deleteMode;
 			}
-			toggleX += buttonWidth + 10f;
-
-			// God toggle.
-			if (GUI.Button(new Rect(toggleX, miscY, buttonWidth, buttonHeight), GUIRenderer.GetAccessibleString("God mode", settings.godMode)))
-			{
-				settings.godMode = !settings.godMode;
-				mainscript.M.ChGodMode(settings.godMode);
-			}
-			toggleX += buttonWidth + 10f;
-
-			// Noclip toggle.
-			if (GUI.Button(new Rect(toggleX, miscY, buttonWidth, buttonHeight), GUIRenderer.GetAccessibleString("Noclip", settings.noclip)))
-			{
-				settings.noclip = !settings.noclip;
-
-				if (settings.noclip)
-				{
-					Noclip noclip = mainscript.M.player.gameObject.AddComponent<Noclip>();
-					noclip.constructor(GUIRenderer.binds, GUIRenderer.config);
-					GUIRenderer.localRotation = mainscript.M.player.transform.localRotation;
-					mainscript.M.player.Th.localEulerAngles = new Vector3(0f, 0f, 0f);
-					settings.godMode = true;
-
-					// Disable colliders.
-					foreach (Collider collider in mainscript.M.player.C)
-					{
-						collider.enabled = false;
-					}
-				}
-				else
-				{
-					Noclip noclip = mainscript.M.player.gameObject.GetComponent<Noclip>();
-					if (noclip != null)
-					{
-						UnityEngine.Object.Destroy(noclip);
-
-						// Resetting localRotation stops the player from flying infinitely
-						// upwards when coming out of noclip.
-						// I have no idea why, it just works.
-						mainscript.M.player.transform.localRotation = GUIRenderer.localRotation;
-
-						// Re-enable colliders.
-						foreach (Collider collider in mainscript.M.player.C)
-						{
-							collider.enabled = true;
-						}
-					}
-
-					if (GUIRenderer.noclipGodmodeDisable)
-						settings.godMode = false;
-				}
-				mainscript.M.ChGodMode(settings.godMode);
-			}
-			toggleX += buttonWidth + 10f;
-
-			GUI.EndScrollView();
 
 			miscY += buttonHeight + 20f;
 

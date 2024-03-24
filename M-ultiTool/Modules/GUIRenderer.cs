@@ -143,6 +143,10 @@ namespace MultiTool.Modules
 		internal static Vector3 scale = Vector3.one;
 		private bool linkScale = false;
 
+		// Player variables.
+		internal static PlayerData playerData;
+		internal static PlayerData defaultPlayerData;
+
 		// Vehicle configuration variables.
 		internal static Dictionary<mainscript.fluidenum, int> coolants = new Dictionary<mainscript.fluidenum, int>();
 		internal static Dictionary<mainscript.fluidenum, int> oils = new Dictionary<mainscript.fluidenum, int>();
@@ -362,6 +366,21 @@ namespace MultiTool.Modules
 					accessibilityMode = config.GetAccessibilityMode(accessibilityMode);
 					noclipFastMoveFactor = config.GetNoclipFastMoveFactor(noclipFastMoveFactor);
 					palette = config.GetPalette(palette);
+
+					// Get default player data values.
+					if (defaultPlayerData == null)
+					{
+						fpscontroller player = mainscript.M.player;
+						defaultPlayerData = new PlayerData()
+						{
+							walkSpeed = player.FdefMaxSpeed,
+							runSpeed = player.FrunM,
+							jumpForce = player.FjumpForce,
+							pushForce = mainscript.M.pushForce,
+							carryWeight = player.maxWeight,
+						};
+					}
+					playerData = config.GetPlayerData(defaultPlayerData);
 				}
 				catch (Exception ex)
 				{
