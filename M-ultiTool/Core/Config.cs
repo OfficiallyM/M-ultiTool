@@ -113,6 +113,9 @@ namespace MultiTool.Core
 		[DataMember] public float jumpForce { get; set; }
 		[DataMember] public float pushForce { get; set; }
 		[DataMember] public float carryWeight { get; set; }
+		[DataMember] public float pickupForce { get; set; }
+		[DataMember] public bool infiniteAmmo { get; set; }
+		[DataMember] public float fireSpeed { get; set; }
 	}
 
 	[DataContract]

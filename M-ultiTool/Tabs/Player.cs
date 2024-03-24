@@ -34,6 +34,8 @@ namespace MultiTool.Tabs
 
 			float scrollHeight = 280f;
 
+			bool update = false;
+
 			currentPosition = GUI.BeginScrollView(new Rect(x, y, dimensions.width - 20f, dimensions.height - 20f), currentPosition, new Rect(x, y, dimensions.width - 20f, scrollHeight), new GUIStyle(), GUI.skin.verticalScrollbar);
 
 			// God toggle.
@@ -88,10 +90,18 @@ namespace MultiTool.Tabs
 				mainscript.M.ChGodMode(settings.godMode);
 			}
 
+			x += buttonWidth + 10f;
+
+			// Infinite ammo toggle.
+			if (GUI.Button(new Rect(x, y, buttonWidth, buttonHeight), GUIRenderer.GetAccessibleString("Infinite ammo", GUIRenderer.playerData.infiniteAmmo)))
+			{
+				GUIRenderer.playerData.infiniteAmmo = !GUIRenderer.playerData.infiniteAmmo;
+				update = true;
+			}
+
 			x = startingX;
 			y += buttonHeight + 10f;
 
-			bool update = false;
 
 			// Walk speed.
 			GUI.Label(new Rect(x, y, headerWidth, buttonHeight), $"Walk speed: {GUIRenderer.playerData.walkSpeed} (Default: {GUIRenderer.defaultPlayerData.walkSpeed})", GUIRenderer.labelStyle);
@@ -202,6 +212,53 @@ namespace MultiTool.Tabs
 			}
 			x = startingX;
 			y += buttonHeight + 10f;
+
+			// Pickup force.
+			GUI.Label(new Rect(x, y, headerWidth, buttonHeight), $"Pickup force: {GUIRenderer.playerData.pickupForce} (Default: {GUIRenderer.defaultPlayerData.pickupForce})", GUIRenderer.labelStyle);
+			y += buttonHeight;
+			float pickupForce = GUI.HorizontalSlider(new Rect(x, y, sliderWidth, buttonHeight), GUIRenderer.playerData.pickupForce, 1f, 1000f);
+			x += sliderWidth + 10f;
+			if (GUI.Button(new Rect(x, y, buttonWidth, buttonHeight), "Reset"))
+			{
+				GUIRenderer.playerData.pickupForce = GUIRenderer.defaultPlayerData.pickupForce;
+				update = true;
+			}
+			else
+			{
+				pickupForce = Mathf.Round(pickupForce);
+				if (pickupForce != GUIRenderer.playerData.pickupForce)
+				{
+					GUIRenderer.playerData.pickupForce = pickupForce;
+					update = true;
+				}
+			}
+			x = startingX;
+			y += buttonHeight + 10f;
+
+			// Fire speed.
+			if (mainscript.M.player.inHandP != null && mainscript.M.player.inHandP.weapon != null)
+			{
+				GUI.Label(new Rect(x, y, headerWidth, buttonHeight), $"Fire speed: {GUIRenderer.playerData.fireSpeed} (Default: {GUIRenderer.defaultFireSpeed})", GUIRenderer.labelStyle);
+				y += buttonHeight;
+				float fireSpeed = GUI.HorizontalSlider(new Rect(x, y, sliderWidth, buttonHeight), GUIRenderer.playerData.fireSpeed, 0.001f, 0.5f);
+				x += sliderWidth + 10f;
+				if (GUI.Button(new Rect(x, y, buttonWidth, buttonHeight), "Reset") && GUIRenderer.defaultFireSpeed != null)
+				{
+					GUIRenderer.playerData.fireSpeed = GUIRenderer.defaultFireSpeed.GetValueOrDefault();
+					update = true;
+				}
+				else
+				{
+					fireSpeed = (float)Math.Round(fireSpeed, 3);
+					if (fireSpeed != GUIRenderer.playerData.fireSpeed)
+					{
+						GUIRenderer.playerData.fireSpeed = fireSpeed;
+						update = true;
+					}
+				}
+				x = startingX;
+				y += buttonHeight + 10f;
+			}
 
 			// Trigger update if values have changed.
 			if (update)

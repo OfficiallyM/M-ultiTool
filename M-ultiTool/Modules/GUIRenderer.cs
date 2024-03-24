@@ -146,6 +146,8 @@ namespace MultiTool.Modules
 		// Player variables.
 		internal static PlayerData playerData;
 		internal static PlayerData defaultPlayerData;
+		internal static int lastWeaponId;
+		internal static float? defaultFireSpeed;
 
 		// Vehicle configuration variables.
 		internal static Dictionary<mainscript.fluidenum, int> coolants = new Dictionary<mainscript.fluidenum, int>();
@@ -378,6 +380,8 @@ namespace MultiTool.Modules
 							jumpForce = player.FjumpForce,
 							pushForce = mainscript.M.pushForce,
 							carryWeight = player.maxWeight,
+							pickupForce = player.maxPickupForce,
+							infiniteAmmo = false,
 						};
 					}
 					playerData = config.GetPlayerData(defaultPlayerData);

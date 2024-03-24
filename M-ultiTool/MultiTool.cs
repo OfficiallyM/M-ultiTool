@@ -242,7 +242,19 @@ namespace MultiTool
 				player.FjumpForce = playerData.jumpForce;
 				mainscript.M.pushForce = playerData.pushForce;
 				player.maxWeight = playerData.carryWeight;
-				player.maxPickupForce = playerData.carryWeight;
+				player.maxPickupForce = playerData.pickupForce;
+
+				if (player.inHandP != null && player.inHandP.weapon != null)
+				{
+					tosaveitemscript save = player.inHandP.weapon.GetComponent<tosaveitemscript>();
+					if (save.idInSave != GUIRenderer.lastWeaponId)
+					{
+						GUIRenderer.lastWeaponId = save.idInSave;
+						GUIRenderer.defaultFireSpeed = player.inHandP.weapon.minShootTime;
+					}
+					player.inHandP.weapon.infinite = playerData.infiniteAmmo;
+					player.inHandP.weapon.minShootTime = playerData.fireSpeed;
+				}
 			}
 		}
 	}
