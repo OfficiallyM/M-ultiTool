@@ -28,7 +28,10 @@ namespace MultiTool.Modules
 			noclipUp,
 			noclipDown,
 			action1,
-			action2
+			action2,
+			action3,
+			action4,
+			action5,
 		}
 
 		public List<Key> keys = new List<Key>();
@@ -105,6 +108,21 @@ namespace MultiTool.Modules
 				keys[6].key = KeyCode.Mouse1;
 				keys[6].defaultKey = KeyCode.Mouse1;
 				keys[6].name = "Action 2";
+
+				// Action 3.
+				keys[7].key = KeyCode.E;
+				keys[7].defaultKey = KeyCode.E;
+				keys[7].name = "Action 3";
+
+				// Action 4.
+				keys[8].key = KeyCode.R;
+				keys[8].defaultKey = KeyCode.R;
+				keys[8].name = "Action 4";
+
+				// Action 5.
+				keys[9].key = KeyCode.F;
+				keys[9].defaultKey = KeyCode.F;
+				keys[9].name = "Action 5";
 			}
 			catch (Exception ex)
 			{

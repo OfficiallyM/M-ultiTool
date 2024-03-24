@@ -220,6 +220,33 @@ namespace MultiTool.Utilities
 		}
 
 		/// <summary>
+		/// Update scale data in save.
+		/// </summary>
+		/// <param name="scale">Scale data</param>
+		internal static void UpdateScale(ScaleData scale)
+		{
+			Save data = UnserializeSaveData();
+
+			try
+			{
+				if (data.scale == null)
+					data.scale = new List<ScaleData>();
+
+				ScaleData existing = data.scale.Where(s => s.ID == scale.ID).FirstOrDefault();
+				if (existing != null)
+					existing.scale = scale.scale;
+				else
+					data.scale.Add(scale);
+			}
+			catch (Exception ex)
+			{
+				Logger.Log($"Scale update error - {ex}", Logger.LogLevel.Error);
+			}
+
+			SerializeSaveData(data);
+		}
+
+		/// <summary>
 		/// Load POIs from save.
 		/// </summary>
 		/// <returns>List of newly spawned POIs</returns>
@@ -265,7 +292,7 @@ namespace MultiTool.Utilities
 				{
 					foreach (GlassData glass in data.glass)
 					{
-						// Find all savable objects.
+						// Find all saveable objects.
 						List<tosaveitemscript> saves = UnityEngine.Object.FindObjectsOfType<tosaveitemscript>().ToList();
 						foreach (tosaveitemscript save in saves)
 						{
@@ -336,7 +363,7 @@ namespace MultiTool.Utilities
 
 				foreach (MaterialData material in data.materials)
 				{
-					// Find all savable objects.
+					// Find all saveable objects.
 					List<tosaveitemscript> saves = UnityEngine.Object.FindObjectsOfType<tosaveitemscript>().ToList();
 					foreach (tosaveitemscript save in saves)
 					{
@@ -376,6 +403,37 @@ namespace MultiTool.Utilities
 			catch (Exception ex)
 			{
 				Logger.Log($"Material data load error - {ex}", Logger.LogLevel.Error);
+			}
+		}
+
+		/// <summary>
+		/// Load scale data.
+		/// </summary>
+		internal static void LoadScale()
+		{
+			try
+			{
+				Save data = UnserializeSaveData();
+				// Return early if no scale data is set.
+				if (data.scale == null) return;
+
+				foreach (ScaleData scale in data.scale)
+				{
+					// Find all saveable objects.
+					List<tosaveitemscript> saves = UnityEngine.Object.FindObjectsOfType<tosaveitemscript>().ToList();
+					foreach (tosaveitemscript save in saves)
+					{
+						// Check ID matches.
+						if (save.idInSave == scale.ID)
+						{
+							save.gameObject.transform.localScale = scale.scale;
+						}
+					}
+				}
+			}
+			catch (Exception ex)
+			{
+				Logger.Log($"Scale data load error - {ex}", Logger.LogLevel.Error);
 			}
 		}
 	}

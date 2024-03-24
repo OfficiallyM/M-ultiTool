@@ -32,10 +32,18 @@ namespace MultiTool.Core
 	}
 
 	[DataContract]
+	internal class ScaleData
+	{
+		[DataMember] public int ID { get; set; }
+		[DataMember] public Vector3 scale { get; set; }
+	}
+
+	[DataContract]
 	internal class Save
 	{
 		[DataMember] public List<POIData> pois { get; set; }
 		[DataMember] public List<GlassData> glass { get; set; }
 		[DataMember] public List<MaterialData> materials { get; set; }
+		[DataMember] public List<ScaleData> scale { get; set; }
 	}
 }

@@ -209,16 +209,93 @@ namespace MultiTool
 							if (hitGameObject.GetComponent<terrainscript>() != null)
 								return;
 
+							tosaveitemscript save = hitGameObject.GetComponent<tosaveitemscript>();
+							bool update = false;
+
 							Vector3 scale = hitGameObject.transform.localScale;
-							float scaleValue = 0.1f;
+							float scaleValue = GUIRenderer.scaleValue;
+							// Scale up.
 							if (Input.GetKey(binds.GetKeyByAction((int)Keybinds.Inputs.action1).key))
 							{
-								hitGameObject.transform.localScale = new Vector3(scale.x + scaleValue, scale.y + scaleValue, scale.z + scaleValue);
+								switch (GUIRenderer.axis)
+								{
+									case "all":
+										hitGameObject.transform.localScale = new Vector3(scale.x + scaleValue, scale.y + scaleValue, scale.z + scaleValue);
+										break;
+									case "x":
+										scale.x += scaleValue;
+										hitGameObject.transform.localScale = scale;
+										break;
+									case "y":
+										scale.y += scaleValue;
+										hitGameObject.transform.localScale = scale;
+										break;
+									case "z":
+										scale.z += scaleValue;
+										hitGameObject.transform.localScale = scale;
+										break;
+								}
+								update = true;
 							}
 
+							// Scale down.
 							if (Input.GetKey(binds.GetKeyByAction((int)Keybinds.Inputs.action2).key))
 							{
-								hitGameObject.transform.localScale = new Vector3(scale.x - scaleValue, scale.y - scaleValue, scale.z - scaleValue);
+								switch (GUIRenderer.axis)
+								{
+									case "all":
+										hitGameObject.transform.localScale = new Vector3(scale.x - scaleValue, scale.y - scaleValue, scale.z - scaleValue);
+										break;
+									case "x":
+										scale.x -= scaleValue;
+										hitGameObject.transform.localScale = scale;
+										break;
+									case "y":
+										scale.y -= scaleValue;
+										hitGameObject.transform.localScale = scale;
+										break;
+									case "z":
+										scale.z -= scaleValue;
+										hitGameObject.transform.localScale = scale;
+										break;
+								}
+								update = true;
+							}
+
+							// Reset scale to default.
+							if (Input.GetKey(binds.GetKeyByAction((int)Keybinds.Inputs.action4).key))
+							{
+								// No easy way to store default, just assume it's 1.
+								switch (GUIRenderer.axis)
+								{
+									case "all":
+										hitGameObject.transform.localScale = new Vector3(1, 1, 1);
+										break;
+									case "x":
+										scale.x = 1;
+										hitGameObject.transform.localScale = scale;
+										break;
+									case "y":
+										scale.y = 1;
+										hitGameObject.transform.localScale = scale;
+										break;
+									case "z":
+										scale.z = 1;
+										hitGameObject.transform.localScale = scale;
+										break;
+								}
+								update = true;
+							}
+
+
+							// Trigger scale save if available.
+							if (save != null && update)
+							{
+								SaveUtilities.UpdateScale(new ScaleData()
+								{
+									ID = save.idInSave,
+									scale = hitGameObject.transform.localScale
+								});
 							}
 						}
 					}
