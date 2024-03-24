@@ -243,6 +243,8 @@ namespace MultiTool
 				mainscript.M.pushForce = playerData.pushForce;
 				player.maxWeight = playerData.carryWeight;
 				player.maxPickupForce = playerData.pickupForce;
+				if (player.mass.Mass() != playerData.mass)
+					player.mass.SetMass(playerData.mass);
 
 				if (player.inHandP != null && player.inHandP.weapon != null)
 				{

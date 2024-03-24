@@ -148,6 +148,7 @@ namespace MultiTool.Modules
 		internal static PlayerData defaultPlayerData;
 		internal static int lastWeaponId;
 		internal static float? defaultFireSpeed;
+		internal static Dictionary<mainscript.fluidenum, int> piss = new Dictionary<mainscript.fluidenum, int>();
 
 		// Vehicle configuration variables.
 		internal static Dictionary<mainscript.fluidenum, int> coolants = new Dictionary<mainscript.fluidenum, int>();
@@ -342,6 +343,7 @@ namespace MultiTool.Modules
 				coolants.Clear();
 				oils.Clear();
 				fuels.Clear();
+				piss.Clear();
 
 				// Prepopulate any variables that use the fluidenum.
 				int maxFuelType = (int)Enum.GetValues(typeof(mainscript.fluidenum)).Cast<mainscript.fluidenum>().Max();
@@ -353,6 +355,7 @@ namespace MultiTool.Modules
 					coolants.Add((mainscript.fluidenum)i, 0);
 					oils.Add((mainscript.fluidenum)i, 0);
 					fuels.Add((mainscript.fluidenum)i, 0);
+					piss.Add((mainscript.fluidenum)i, 0);
 				}
 
 				// Set default palette to all white.
@@ -381,6 +384,7 @@ namespace MultiTool.Modules
 							pushForce = mainscript.M.pushForce,
 							carryWeight = player.maxWeight,
 							pickupForce = player.maxPickupForce,
+							mass = player.mass.Mass(),
 							infiniteAmmo = false,
 						};
 					}

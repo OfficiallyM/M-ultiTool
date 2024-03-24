@@ -11,7 +11,7 @@ using MultiTool.Modules;
 using Logger = MultiTool.Modules.Logger;
 using Settings = MultiTool.Core.Settings;
 using TLDLoader;
-using System.Data.Odbc;
+using static mainscript;
 
 namespace MultiTool.Tabs
 {
@@ -32,7 +32,7 @@ namespace MultiTool.Tabs
 			float headerWidth = dimensions.width - 20f;
 			float headerHeight = 40f;
 
-			float scrollHeight = 280f;
+			float scrollHeight = 540f;
 
 			bool update = false;
 
@@ -259,6 +259,104 @@ namespace MultiTool.Tabs
 				x = startingX;
 				y += buttonHeight + 10f;
 			}
+
+			// Mass.
+			GUI.Label(new Rect(x, y, headerWidth, buttonHeight), $"Mass: {GUIRenderer.playerData.mass} (Default: {GUIRenderer.defaultPlayerData.mass})", GUIRenderer.labelStyle);
+			y += buttonHeight;
+			float mass = GUI.HorizontalSlider(new Rect(x, y, sliderWidth, buttonHeight), GUIRenderer.playerData.mass, 1f, 1000f);
+			x += sliderWidth + 10f;
+			if (GUI.Button(new Rect(x, y, buttonWidth, buttonHeight), "Reset"))
+			{
+				GUIRenderer.playerData.mass = GUIRenderer.defaultPlayerData.mass;
+				update = true;
+			}
+			else
+			{
+				mass = (float)Math.Round(mass, 2);
+				if (mass != GUIRenderer.playerData.mass)
+				{
+					GUIRenderer.playerData.mass = mass;
+					update = true;
+				}
+			}
+			x = startingX;
+			y += buttonHeight + 10f;
+
+			// Bladder control.
+			GUI.Label(new Rect(x, y, headerWidth, buttonHeight), $"Bladder control:", GUIRenderer.labelStyle);
+			y += buttonHeight + 10f;
+
+			float pissMax = mainscript.M.player.piss.Tank.F.maxC;
+			int pissPercentage = 0;
+
+			foreach (KeyValuePair<mainscript.fluidenum, int> fluid in GUIRenderer.piss)
+			{
+				pissPercentage += fluid.Value;
+			}
+
+			if (pissPercentage > 100)
+				pissPercentage = 100;
+
+			bool changed = false;
+
+			// Deep copy piss dictionary.
+			Dictionary<mainscript.fluidenum, int> tempPiss = GUIRenderer.piss.ToDictionary(fluid => fluid.Key, fluid => fluid.Value);
+
+			foreach (KeyValuePair<mainscript.fluidenum, int> fluid in GUIRenderer.piss)
+			{
+				GUI.Label(new Rect(x, y, buttonWidth / 3, buttonHeight), fluid.Key.ToString().ToSentenceCase(), GUIRenderer.labelStyle);
+				x += buttonWidth / 3;
+				int percentage = Mathf.RoundToInt(GUI.HorizontalSlider(new Rect(x, y, sliderWidth, buttonHeight), fluid.Value, 0, 100));
+				if (percentage + (pissPercentage - fluid.Value) <= 100)
+				{
+					tempPiss[fluid.Key] = percentage;
+					changed = true;
+				}
+				x += sliderWidth + 5f;
+				GUI.Label(new Rect(x, y, buttonWidth, buttonHeight), $"{percentage}%", GUIRenderer.labelStyle);
+				x = startingX;
+				y += buttonHeight;
+			}
+
+			if (changed)
+				GUIRenderer.piss = tempPiss;
+
+			if (GUI.Button(new Rect(x, y, buttonWidth, buttonHeight), "Get current"))
+			{
+				tankscript tank = mainscript.M.player.piss.Tank;
+
+				tempPiss = new Dictionary<fluidenum, int>();
+				foreach (KeyValuePair<mainscript.fluidenum, int> fluid in GUIRenderer.piss)
+				{
+					tempPiss[fluid.Key] = 0;
+				}
+
+				GUIRenderer.piss = tempPiss;
+
+				foreach (fluid fluid in tank.F.fluids)
+				{
+					int percentage = (int)(fluid.amount / tank.F.maxC * 100);
+					GUIRenderer.piss[fluid.type] = percentage;
+				}
+			}
+
+			x += buttonWidth + 10f;
+
+			if (GUI.Button(new Rect(x, y, buttonWidth, buttonHeight), "Apply"))
+			{
+				tankscript tank = mainscript.M.player.piss.Tank;
+				tank.F.fluids.Clear();
+				foreach (KeyValuePair<mainscript.fluidenum, int> fluid in GUIRenderer.piss)
+				{
+					if (fluid.Value > 0)
+					{
+						tank.F.ChangeOne((pissMax / 100) * fluid.Value, fluid.Key);
+					}
+				}
+			}
+			
+			x = startingX;
+			y += buttonHeight + 10f;
 
 			// Trigger update if values have changed.
 			if (update)
