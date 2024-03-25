@@ -11,6 +11,7 @@ using static settingsscript;
 using UnityEngine;
 using MultiTool.Modules;
 using Logger = MultiTool.Modules.Logger;
+using System.Configuration;
 
 namespace MultiTool.Tabs
 {
@@ -19,6 +20,8 @@ namespace MultiTool.Tabs
 		public override string Name => "Vehicle Configuration";
 
 		private Vector2 currentVehiclePosition;
+
+		private Settings settings = new Settings();
 
 		private Dictionary<string, string> materials = new Dictionary<string, string>()
 		{
@@ -766,13 +769,31 @@ namespace MultiTool.Tabs
 					GUI.Label(new Rect(currVehicleX, currVehicleY, buttonWidth, buttonHeight), "No sunroof mounted.", GUIRenderer.labelStyle);
 			}
 
-			// Material changer.
+			// Column two.
 			if (columns > 1)
 			{
 				currVehicleX = dimensions.width / 2;
 				currVehicleY = dimensions.y + 10f;
 			}
 
+			// Toggle slot mover.
+			if (GUI.Button(new Rect(currVehicleX, currVehicleY, buttonWidth, buttonHeight), GUIRenderer.GetAccessibleString("Toggle slot mover", settings.mode == "slotControl")))
+			{
+				if (settings.mode == "slotControl")
+				{
+					GUIRenderer.SlotMoverDispose();
+				}
+				else
+				{
+					settings.mode = "slotControl";
+					settings.car = car;
+					settings.slotStage = "slotSelect";
+				}
+			}
+
+			currVehicleY += buttonHeight + 10f;
+
+			// Material changer.
 			GUI.Label(new Rect(currVehicleX, currVehicleY, headerWidth, headerHeight), "Material changer", GUIRenderer.headerStyle);
 			currVehicleY += headerHeight;
 

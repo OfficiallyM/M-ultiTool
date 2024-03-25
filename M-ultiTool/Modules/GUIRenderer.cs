@@ -158,6 +158,12 @@ namespace MultiTool.Modules
 		internal static Color windowColor = new Color(255f / 255f, 255f / 255f, 255f / 255f, 0.5f);
 		internal static Color seatColor = new Color(0f, 0f, 0f);
 
+		// Slot mover variables.
+		internal static partslotscript selectedSlot;
+		private static int selectedSlotIndex = 0;
+		private static int previousSelectedSlotIndex = 0;
+		private static bool slotMoverFirstRun = true;
+
 		// Settings.
 		private List<QuickSpawn> quickSpawns = new List<QuickSpawn>();
 		internal static float selectedTime;
@@ -490,6 +496,115 @@ namespace MultiTool.Modules
 					scaleValue = scaleOptions[0];
 				else
 					scaleValue = scaleOptions[currentIndex + 1];
+			}
+
+			if (settings.mode == "slotControl")
+			{
+				// Unset slotControl mode when exiting a vehicle.
+				if (mainscript.M.player.Car == null)
+				{
+					SlotMoverDispose();
+				}
+
+				if (settings.slotStage == "slotSelect")
+				{
+					partslotscript[] slots = settings.car.GetComponentsInChildren<partslotscript>();
+
+					bool slotChanged = false;
+
+					// Render collider on first load.
+					if (slotMoverFirstRun)
+					{
+						slotChanged = true;
+						selectedSlot = slots[selectedSlotIndex];
+					}
+
+					// Move selector left.
+					if (Input.GetKeyDown(binds.GetKeyByAction((int)Keybinds.Inputs.left).key))
+					{
+						previousSelectedSlotIndex = selectedSlotIndex;
+						selectedSlotIndex--;
+						if (selectedSlotIndex < 0)
+							selectedSlotIndex = slots.Length - 1;
+
+						selectedSlot = slots[selectedSlotIndex];
+						slotChanged = true;
+					}
+
+					// Move selector right.
+					if (Input.GetKeyDown(binds.GetKeyByAction((int)Keybinds.Inputs.right).key))
+					{
+						previousSelectedSlotIndex = selectedSlotIndex;
+						selectedSlotIndex++;
+						if (selectedSlotIndex >= slots.Length)
+							selectedSlotIndex = 0;
+
+						selectedSlot = slots[selectedSlotIndex];
+						slotChanged = true;
+					}
+
+					if (slotChanged)
+					{
+						// Create material based off Standard shader.
+						Material source;
+						source = new Material(Shader.Find("Standard"));
+						source.SetColor("_Color", new Color(1f, 0.0f, 0.0f, 0.5f));
+						source.SetFloat("_Mode", 3f);
+						source.SetInt("_SrcBlend", 5);
+						source.SetInt("_DstBlend", 10);
+						source.SetInt("_ZWrite", 0);
+						source.renderQueue = 3000;
+
+						foreach (Collider collider in selectedSlot.GetComponents<Collider>())
+						{
+							string name = $"COLLIDER CUBE {collider.GetInstanceID()}";
+
+							// Create collider.
+							GameObject gameObject = new GameObject(name);
+							gameObject.transform.SetParent(collider.transform, false);
+							if (collider.GetType() == typeof(BoxCollider))
+							{
+								gameObject.transform.localPosition = ((BoxCollider)collider).center;
+								gameObject.transform.localScale = ((BoxCollider)collider).size;
+								gameObject.transform.localRotation = Quaternion.identity;
+								// Get the mesh based on the cube primitive mesh.
+								gameObject.AddComponent<MeshFilter>().mesh = GameObject.CreatePrimitive(PrimitiveType.Cube).GetComponent<MeshFilter>().mesh;
+							}
+							else if (collider.GetType() == typeof(MeshCollider))
+							{
+								gameObject.transform.localEulerAngles = gameObject.transform.localPosition = Vector3.zero;
+								gameObject.transform.localScale = new Vector3(1f, 1f, 1f);
+								gameObject.AddComponent<MeshFilter>().mesh = ((MeshCollider)collider).sharedMesh;
+							}
+
+							try
+							{
+								// Set collider color.
+								source = new Material(source);
+								Color color = new Color(1f, 0.0f, 0.0f, 0.5f);
+								source.SetColor("_Color", color);
+							}
+							catch
+							{
+							}
+							gameObject.AddComponent<MeshRenderer>().material = source;
+						}
+
+						if (!slotMoverFirstRun)
+						{
+							partslotscript previousSlot = slots[previousSelectedSlotIndex];
+
+							foreach (Collider collider in previousSlot.GetComponents<Collider>())
+							{
+								string name = $"COLLIDER CUBE {collider.GetInstanceID()}";
+
+								// Delete collider.
+								UnityEngine.Object.DestroyImmediate(collider.transform.Find(name).gameObject);
+							}
+						}
+					}
+					slotMoverFirstRun = false;
+				}
 			}
 		}
 
@@ -1205,6 +1320,69 @@ namespace MultiTool.Modules
 						}
 					}
 					break;
+				case "slotControl":
+					switch (settings.slotStage)
+					{
+						case "slotSelect":
+							width = resolutionX;
+							x = 0;
+							y = resolutionY - 30f;
+							int displayedSlots = 7;
+
+							partslotscript[] slots = settings.car.GetComponentsInChildren<partslotscript>();
+
+							// Possibly over-complicated method to show selected slot in the middle.
+							int lowerHalf = Mathf.FloorToInt((displayedSlots - 1) / 2);
+							int upperHalf = Mathf.CeilToInt(displayedSlots / 2) + 1;
+
+							List<int> displayedIndexes = new List<int>();
+							int countFrom = selectedSlotIndex - lowerHalf - 1;
+							if (countFrom < 0)
+								countFrom = slots.Length - 1 - displayedSlots + upperHalf + selectedSlotIndex;
+							else if (countFrom > slots.Length - 1)
+								countFrom = 0;
+							for (int i = 1; i <= displayedSlots; i++)
+							{
+								int nextIndex;
+
+								if (i <= lowerHalf || i >= upperHalf)
+								{
+									nextIndex = countFrom + 1;
+									if (nextIndex > slots.Length - 1)
+									{
+										nextIndex = 0;
+										countFrom = 0;
+									}
+									else
+									{
+										countFrom = nextIndex;
+									}
+
+									displayedIndexes.Add(nextIndex);
+								}
+								else
+								{
+									displayedIndexes.Add(selectedSlotIndex);
+									countFrom = selectedSlotIndex;
+								}
+							}
+
+							for (int index = 0; index < displayedIndexes.Count; index++)
+							{
+								int slotIndex = displayedIndexes[index];
+								partslotscript slot = slots[slotIndex];
+								string name = $"{slotIndex + 1} - {slot.name}";
+								if (slotIndex == selectedSlotIndex)
+								{
+									name = $"<b>{name}</b>";
+								}
+								GUI.Button(new Rect(x + width / displayedIndexes.Count * index, y, width / displayedIndexes.Count, 30f), name);
+							}
+							GUI.Button(new Rect(x, y - 30f, width / displayedIndexes.Count, 30f), $"< ({binds.GetPrettyName((int)Keybinds.Inputs.left)})");
+							GUI.Button(new Rect(resolutionX - width / displayedIndexes.Count, y - 30f, width / displayedIndexes.Count, 30f), $"({binds.GetPrettyName((int)Keybinds.Inputs.right)}) >");
+							break;
+					}
+					break;
 			}
 
 			if (settings.showCoords)
@@ -1417,6 +1595,31 @@ namespace MultiTool.Modules
 		public Color GetColor()
 		{
 			return color;
+		}
+
+		/// <summary>
+		/// Dispose of anything pertaining to slot mover.
+		/// </summary>
+		internal static void SlotMoverDispose()
+		{
+			Settings settings = new Settings();
+			settings.mode = null;
+			settings.car = null;
+			settings.slotStage = null;
+
+			// Remove any active colliders.
+			foreach (Collider collider in selectedSlot.GetComponents<Collider>())
+			{
+				string name = $"COLLIDER CUBE {collider.GetInstanceID()}";
+
+				// Delete collider.
+				UnityEngine.Object.DestroyImmediate(collider.transform.Find(name).gameObject);
+			}
+
+			selectedSlot = null;
+			selectedSlotIndex = 0;
+			previousSelectedSlotIndex = 0;
+			slotMoverFirstRun = true;
 		}
 
 		/// <summary> 

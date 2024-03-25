@@ -32,6 +32,11 @@ namespace MultiTool.Modules
 			action3,
 			action4,
 			action5,
+			up,
+			down,
+			left,
+			right,
+			select,
 		}
 
 		public List<Key> keys = new List<Key>();
@@ -123,6 +128,31 @@ namespace MultiTool.Modules
 				keys[9].key = KeyCode.F;
 				keys[9].defaultKey = KeyCode.F;
 				keys[9].name = "Action 5";
+
+				// Up.
+				keys[10].key = KeyCode.UpArrow;
+				keys[10].defaultKey = KeyCode.UpArrow;
+				keys[10].name = "Up";
+
+				// Down.
+				keys[11].key = KeyCode.DownArrow;
+				keys[11].defaultKey = KeyCode.DownArrow;
+				keys[11].name = "Down";
+
+				// Left.
+				keys[12].key = KeyCode.LeftArrow;
+				keys[12].defaultKey = KeyCode.LeftArrow;
+				keys[12].name = "Left";
+
+				// Right.
+				keys[13].key = KeyCode.RightArrow;
+				keys[13].defaultKey = KeyCode.RightArrow;
+				keys[13].name = "Right";
+
+				// Select.
+				keys[14].key = KeyCode.Return;
+				keys[14].defaultKey = KeyCode.Return;
+				keys[14].name = "Select";
 			}
 			catch (Exception ex)
 			{

@@ -69,6 +69,20 @@ namespace MultiTool.Core
 			set { s_mode = value; }
 		}
 
+		public static carscript s_car = null;
+		public carscript car
+		{
+			get { return s_car; }
+			set { s_car = value; }
+		}
+
+		public static string s_slotStage = null;
+		public string slotStage
+		{
+			get { return s_slotStage; }
+			set { s_slotStage = value; }
+		}
+
 		public static bool s_showCoords = false;
 		public bool showCoords
 		{
