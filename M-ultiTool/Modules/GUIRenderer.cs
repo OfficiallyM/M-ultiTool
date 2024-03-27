@@ -160,9 +160,13 @@ namespace MultiTool.Modules
 
 		// Slot mover variables.
 		internal static partslotscript selectedSlot;
-		private static int selectedSlotIndex = 0;
-		private static int previousSelectedSlotIndex = 0;
+		internal static partslotscript hoveredSlot;
+		private static int hoveredSlotIndex = 0;
+		private static int previoushoveredSlotIndex = 0;
 		private static bool slotMoverFirstRun = true;
+		private static Vector3 selectedSlotResetPosition;
+		private float[] moveOptions = new float[] { 10f, 1f, 0.1f, 0.01f, 0.001f };
+		private float moveValue = 0.1f;
 
 		// Settings.
 		private List<QuickSpawn> quickSpawns = new List<QuickSpawn>();
@@ -506,104 +510,158 @@ namespace MultiTool.Modules
 					SlotMoverDispose();
 				}
 
-				if (settings.slotStage == "slotSelect")
+				switch (settings.slotStage)
 				{
-					partslotscript[] slots = settings.car.GetComponentsInChildren<partslotscript>();
+					case "slotSelect":
+						partslotscript[] slots = settings.car.GetComponentsInChildren<partslotscript>();
 
-					bool slotChanged = false;
+						bool slotChanged = false;
 
-					// Render collider on first load.
-					if (slotMoverFirstRun)
-					{
-						slotChanged = true;
-						selectedSlot = slots[selectedSlotIndex];
-					}
-
-					// Move selector left.
-					if (Input.GetKeyDown(binds.GetKeyByAction((int)Keybinds.Inputs.left).key))
-					{
-						previousSelectedSlotIndex = selectedSlotIndex;
-						selectedSlotIndex--;
-						if (selectedSlotIndex < 0)
-							selectedSlotIndex = slots.Length - 1;
-
-						selectedSlot = slots[selectedSlotIndex];
-						slotChanged = true;
-					}
-
-					// Move selector right.
-					if (Input.GetKeyDown(binds.GetKeyByAction((int)Keybinds.Inputs.right).key))
-					{
-						previousSelectedSlotIndex = selectedSlotIndex;
-						selectedSlotIndex++;
-						if (selectedSlotIndex >= slots.Length)
-							selectedSlotIndex = 0;
-
-						selectedSlot = slots[selectedSlotIndex];
-						slotChanged = true;
-					}
-
-					if (slotChanged)
-					{
-						// Create material based off Standard shader.
-						Material source;
-						source = new Material(Shader.Find("Standard"));
-						source.SetColor("_Color", new Color(1f, 0.0f, 0.0f, 0.5f));
-						source.SetFloat("_Mode", 3f);
-						source.SetInt("_SrcBlend", 5);
-						source.SetInt("_DstBlend", 10);
-						source.SetInt("_ZWrite", 0);
-						source.renderQueue = 3000;
-
-						foreach (Collider collider in selectedSlot.GetComponents<Collider>())
+						// Render collider on first load.
+						if (slotMoverFirstRun)
 						{
-							string name = $"COLLIDER CUBE {collider.GetInstanceID()}";
-
-							// Create collider.
-							GameObject gameObject = new GameObject(name);
-							gameObject.transform.SetParent(collider.transform, false);
-							if (collider.GetType() == typeof(BoxCollider))
-							{
-								gameObject.transform.localPosition = ((BoxCollider)collider).center;
-								gameObject.transform.localScale = ((BoxCollider)collider).size;
-								gameObject.transform.localRotation = Quaternion.identity;
-								// Get the mesh based on the cube primitive mesh.
-								gameObject.AddComponent<MeshFilter>().mesh = GameObject.CreatePrimitive(PrimitiveType.Cube).GetComponent<MeshFilter>().mesh;
-							}
-							else if (collider.GetType() == typeof(MeshCollider))
-							{
-								gameObject.transform.localEulerAngles = gameObject.transform.localPosition = Vector3.zero;
-								gameObject.transform.localScale = new Vector3(1f, 1f, 1f);
-								gameObject.AddComponent<MeshFilter>().mesh = ((MeshCollider)collider).sharedMesh;
-							}
-
-							try
-							{
-								// Set collider color.
-								source = new Material(source);
-								Color color = new Color(1f, 0.0f, 0.0f, 0.5f);
-								source.SetColor("_Color", color);
-							}
-							catch
-							{
-							}
-							gameObject.AddComponent<MeshRenderer>().material = source;
+							slotChanged = true;
+							hoveredSlot = slots[hoveredSlotIndex];
 						}
 
-						if (!slotMoverFirstRun)
+						// Move selector left.
+						if (Input.GetKeyDown(binds.GetKeyByAction((int)Keybinds.Inputs.left).key))
 						{
-							partslotscript previousSlot = slots[previousSelectedSlotIndex];
+							previoushoveredSlotIndex = hoveredSlotIndex;
+							hoveredSlotIndex--;
+							if (hoveredSlotIndex < 0)
+								hoveredSlotIndex = slots.Length - 1;
 
-							foreach (Collider collider in previousSlot.GetComponents<Collider>())
-							{
-								string name = $"COLLIDER CUBE {collider.GetInstanceID()}";
-
-								// Delete collider.
-								UnityEngine.Object.DestroyImmediate(collider.transform.Find(name).gameObject);
-							}
+							hoveredSlot = slots[hoveredSlotIndex];
+							slotChanged = true;
 						}
-					}
-					slotMoverFirstRun = false;
+
+						// Move selector right.
+						if (Input.GetKeyDown(binds.GetKeyByAction((int)Keybinds.Inputs.right).key))
+						{
+							previoushoveredSlotIndex = hoveredSlotIndex;
+							hoveredSlotIndex++;
+							if (hoveredSlotIndex >= slots.Length)
+								hoveredSlotIndex = 0;
+
+							hoveredSlot = slots[hoveredSlotIndex];
+							slotChanged = true;
+						}
+
+						// Select the hovered slot.
+						if (Input.GetKeyDown(binds.GetKeyByAction((int)Keybinds.Inputs.select).key))
+						{
+							settings.slotStage = "move";
+							selectedSlot = hoveredSlot;
+							selectedSlotResetPosition = selectedSlot.transform.localPosition;
+							SlotMoverSelectDispose();
+
+							ObjectUtilities.ShowColliders(selectedSlot.gameObject, Color.blue);
+						}
+
+						if (slotChanged)
+						{
+							ObjectUtilities.ShowColliders(hoveredSlot.gameObject, Color.red);
+
+							if (!slotMoverFirstRun)
+							{
+								partslotscript previousSlot = slots[previoushoveredSlotIndex];
+
+								ObjectUtilities.DestroyColliders(previousSlot.gameObject);
+							}
+							slotMoverFirstRun = false;
+						}
+						break;
+					case "move":
+						// Deselect slot.
+						if (Input.GetKeyDown(binds.GetKeyByAction((int)Keybinds.Inputs.select).key))
+						{
+							settings.slotStage = "slotSelect";
+							SlotMoverMoveDispose();
+						}
+
+						// Switch to rotate mode.
+						if (Input.GetKeyDown(binds.GetKeyByAction((int)Keybinds.Inputs.action3).key))
+						{
+							settings.slotStage = "rotate";
+						}
+
+						// Change move amount.
+						if (Input.GetKeyDown(binds.GetKeyByAction((int)Keybinds.Inputs.action1).key))
+						{
+							int currentIndex = Array.FindIndex(moveOptions, s => s == moveValue);
+							if (currentIndex == -1 || currentIndex == moveOptions.Length - 1)
+								moveValue = moveOptions[0];
+							else
+								moveValue = moveOptions[currentIndex + 1];
+						}
+
+						Transform carTransform = settings.car.transform;
+						Transform partTransform = selectedSlot.transform;
+
+						// Move forward.
+						if (Input.GetKeyDown(binds.GetKeyByAction((int)Keybinds.Inputs.up).key))
+						{
+							partTransform.localPosition += carTransform.forward * moveValue;
+						}
+
+						// Move backwards.
+						if (Input.GetKeyDown(binds.GetKeyByAction((int)Keybinds.Inputs.down).key))
+						{
+							partTransform.localPosition += -carTransform.forward * moveValue;
+						}
+
+						// Move left.
+						if (Input.GetKeyDown(binds.GetKeyByAction((int)Keybinds.Inputs.left).key))
+						{
+							partTransform.localPosition += -carTransform.right * moveValue;
+						}
+
+						// Move right.
+						if (Input.GetKeyDown(binds.GetKeyByAction((int)Keybinds.Inputs.right).key))
+						{
+							partTransform.localPosition += carTransform.right * moveValue;
+						}
+
+						// Move up.
+						if (Input.GetKeyDown(binds.GetKeyByAction((int)Keybinds.Inputs.noclipSpeedUp).key))
+						{
+							partTransform.localPosition += carTransform.up * moveValue;
+						}
+
+						// Move down.
+						if (Input.GetKeyDown(binds.GetKeyByAction((int)Keybinds.Inputs.noclipDown).key))
+						{
+							partTransform.localPosition += -carTransform.up * moveValue;
+						}
+
+						// Confirm.
+						if (Input.GetKeyDown(binds.GetKeyByAction((int)Keybinds.Inputs.action5).key))
+						{
+							Logger.Log("Position confirmed.");
+						}
+
+						// Reset position.
+						if (Input.GetKeyDown(binds.GetKeyByAction((int)Keybinds.Inputs.action4).key))
+						{
+							partTransform.localPosition = selectedSlotResetPosition;
+						}
+
+						break;
+					case "rotate":
+						// Deselect slot.
+						if (Input.GetKeyDown(binds.GetKeyByAction((int)Keybinds.Inputs.select).key))
+						{
+							settings.slotStage = "slotSelect";
+							SlotMoverMoveDispose();
+						}
+
+						// Switch to move mode.
+						if (Input.GetKeyDown(binds.GetKeyByAction((int)Keybinds.Inputs.action3).key))
+						{
+							settings.slotStage = "move";
+						}
+						break;
 				}
 			}
 		}
@@ -1321,12 +1379,12 @@ namespace MultiTool.Modules
 					}
 					break;
 				case "slotControl":
+					width = resolutionX;
+					x = 0;
+					y = resolutionY - 30f;
 					switch (settings.slotStage)
 					{
 						case "slotSelect":
-							width = resolutionX;
-							x = 0;
-							y = resolutionY - 30f;
 							int displayedSlots = 7;
 
 							partslotscript[] slots = settings.car.GetComponentsInChildren<partslotscript>();
@@ -1336,9 +1394,9 @@ namespace MultiTool.Modules
 							int upperHalf = Mathf.CeilToInt(displayedSlots / 2) + 1;
 
 							List<int> displayedIndexes = new List<int>();
-							int countFrom = selectedSlotIndex - lowerHalf - 1;
+							int countFrom = hoveredSlotIndex - lowerHalf - 1;
 							if (countFrom < 0)
-								countFrom = slots.Length - 1 - displayedSlots + upperHalf + selectedSlotIndex;
+								countFrom = slots.Length - 1 - displayedSlots + upperHalf + hoveredSlotIndex;
 							else if (countFrom > slots.Length - 1)
 								countFrom = 0;
 							for (int i = 1; i <= displayedSlots; i++)
@@ -1362,8 +1420,8 @@ namespace MultiTool.Modules
 								}
 								else
 								{
-									displayedIndexes.Add(selectedSlotIndex);
-									countFrom = selectedSlotIndex;
+									displayedIndexes.Add(hoveredSlotIndex);
+									countFrom = hoveredSlotIndex;
 								}
 							}
 
@@ -1372,14 +1430,45 @@ namespace MultiTool.Modules
 								int slotIndex = displayedIndexes[index];
 								partslotscript slot = slots[slotIndex];
 								string name = $"{slotIndex + 1} - {slot.name}";
-								if (slotIndex == selectedSlotIndex)
+								if (slotIndex == hoveredSlotIndex)
 								{
 									name = $"<b>{name}</b>";
 								}
 								GUI.Button(new Rect(x + width / displayedIndexes.Count * index, y, width / displayedIndexes.Count, 30f), name);
 							}
 							GUI.Button(new Rect(x, y - 30f, width / displayedIndexes.Count, 30f), $"< ({binds.GetPrettyName((int)Keybinds.Inputs.left)})");
+							GUI.Button(new Rect(resolutionX / 2 - (width / displayedIndexes.Count) / 2, y - 30f, width / displayedIndexes.Count, 30f), $"Select ({binds.GetPrettyName((int)Keybinds.Inputs.select)})");
 							GUI.Button(new Rect(resolutionX - width / displayedIndexes.Count, y - 30f, width / displayedIndexes.Count, 30f), $"({binds.GetPrettyName((int)Keybinds.Inputs.right)}) >");
+							break;
+						case "move":
+							GUI.Button(new Rect(resolutionX / 2 - 100f, 10f, 300f, 30f), $"Moving: {selectedSlot.name}");
+
+							int moveControls = 5;
+							GUI.Button(new Rect(x, y, width / moveControls, 30f), $"Back to slot select ({binds.GetPrettyName((int)Keybinds.Inputs.select)})");
+							GUI.Button(new Rect(x + width / moveControls * 4, y, width / moveControls, 30f), $"Switch to rotate ({binds.GetPrettyName((int)Keybinds.Inputs.action3)})");
+
+							// Movement control UI.
+							// Column 2.
+							GUI.Button(new Rect(x + width / moveControls, y, width / moveControls, 30f), $"Move by: {moveValue} ({binds.GetPrettyName((int)Keybinds.Inputs.action1)})");
+							GUI.Button(new Rect(x + width / moveControls, y - 30f, width / moveControls, 30f), $"Left ({binds.GetPrettyName((int)Keybinds.Inputs.left)})");
+							GUI.Button(new Rect(x + width / moveControls, y - 60f, width / moveControls, 30f), $"Up ({binds.GetPrettyName((int)Keybinds.Inputs.noclipSpeedUp)})");
+							
+							// Column 3.
+							GUI.Button(new Rect(x + width / moveControls * 2, y, width / moveControls, 30f), $"Back ({binds.GetPrettyName((int)Keybinds.Inputs.down)})");
+							GUI.Button(new Rect(x + width / moveControls * 2, y - 30f, width / moveControls, 30f), $"Confirm ({binds.GetPrettyName((int)Keybinds.Inputs.action5)})");
+							GUI.Button(new Rect(x + width / moveControls * 2, y - 60f, width / moveControls, 30f), $"Forward ({binds.GetPrettyName((int)Keybinds.Inputs.up)})");
+
+							// Column 4.
+							GUI.Button(new Rect(x + width / moveControls * 3, y, width / moveControls, 30f), $"Reset ({binds.GetPrettyName((int)Keybinds.Inputs.action4)})");
+							GUI.Button(new Rect(x + width / moveControls * 3, y - 30f, width / moveControls, 30f), $"Right ({binds.GetPrettyName((int)Keybinds.Inputs.right)})");
+							GUI.Button(new Rect(x + width / moveControls * 3, y - 60f, width / moveControls, 30f), $"Down ({binds.GetPrettyName((int)Keybinds.Inputs.noclipDown)})");
+							break;
+						case "rotate":
+							GUI.Button(new Rect(resolutionX / 2 - 100f, 10f, 300f, 30f), $"Rotating: {selectedSlot.name}");
+
+							int rotateControls = 5;
+							GUI.Button(new Rect(x, y, width / rotateControls, 30f), $"Back to slot select ({binds.GetPrettyName((int)Keybinds.Inputs.select)})");
+							GUI.Button(new Rect(x + width / rotateControls * 2, y, width / rotateControls, 30f), $"Switch to move ({binds.GetPrettyName((int)Keybinds.Inputs.action3)})");
 							break;
 					}
 					break;
@@ -1607,19 +1696,42 @@ namespace MultiTool.Modules
 			settings.car = null;
 			settings.slotStage = null;
 
-			// Remove any active colliders.
-			foreach (Collider collider in selectedSlot.GetComponents<Collider>())
-			{
-				string name = $"COLLIDER CUBE {collider.GetInstanceID()}";
+			SlotMoverSelectDispose();
 
-				// Delete collider.
-				UnityEngine.Object.DestroyImmediate(collider.transform.Find(name).gameObject);
+			
+		}
+
+		/// <summary>
+		/// Dispose of slot mover select stage.
+		/// </summary>
+		internal static void SlotMoverSelectDispose()
+		{
+			try
+			{
+				if (hoveredSlot != null)
+					ObjectUtilities.DestroyColliders(hoveredSlot.gameObject);
+
+				hoveredSlot = null;
+				hoveredSlotIndex = 0;
+				previoushoveredSlotIndex = 0;
+				slotMoverFirstRun = true;
 			}
+			catch (Exception ex)
+			{
+				Logger.Log($"Failed to dispose of slot mover stage - {ex}", Logger.LogLevel.Warning);
+			}
+		}
+
+		/// <summary>
+		/// Dispose of slot mover move stage.
+		/// </summary>
+		internal static void SlotMoverMoveDispose()
+		{
+			if (selectedSlot != null)
+				ObjectUtilities.DestroyColliders(selectedSlot.gameObject);
 
 			selectedSlot = null;
-			selectedSlotIndex = 0;
-			previousSelectedSlotIndex = 0;
-			slotMoverFirstRun = true;
+			selectedSlotResetPosition = Vector3.zero;
 		}
 
 		/// <summary> 
