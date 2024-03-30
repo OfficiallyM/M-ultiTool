@@ -29,7 +29,7 @@ namespace MultiTool.Utilities
 			source.SetInt("_ZWrite", 0);
 			source.renderQueue = 3000;
 
-			foreach (Collider collider in obj.GetComponents<Collider>())
+			foreach (Collider collider in obj.GetComponentsInChildren<Collider>())
 			{
 				string name = $"COLLIDER CUBE {collider.GetInstanceID()}";
 
@@ -70,7 +70,7 @@ namespace MultiTool.Utilities
 		/// <param name="obj">GameObject to destroy visible colliders of</param>
 		public static void DestroyColliders(GameObject obj)
 		{
-			foreach (Collider collider in obj.GetComponents<Collider>())
+			foreach (Collider collider in obj.GetComponentsInChildren<Collider>())
 			{
 				string name = $"COLLIDER CUBE {collider.GetInstanceID()}";
 

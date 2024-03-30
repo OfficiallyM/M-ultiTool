@@ -159,14 +159,16 @@ namespace MultiTool.Modules
 		internal static Color seatColor = new Color(0f, 0f, 0f);
 
 		// Slot mover variables.
-		internal static partslotscript selectedSlot;
-		internal static partslotscript hoveredSlot;
+		internal static GameObject selectedSlot;
+		internal static GameObject hoveredSlot;
 		private static int hoveredSlotIndex = 0;
 		private static int previoushoveredSlotIndex = 0;
 		private static bool slotMoverFirstRun = true;
 		private static Vector3 selectedSlotResetPosition;
+		private static Quaternion selectedSlotResetRotation;
 		private float[] moveOptions = new float[] { 10f, 1f, 0.1f, 0.01f, 0.001f };
 		private float moveValue = 0.1f;
+		private static List<GameObject> slots = new List<GameObject>();
 
 		// Settings.
 		private List<QuickSpawn> quickSpawns = new List<QuickSpawn>();
@@ -351,6 +353,7 @@ namespace MultiTool.Modules
 				SaveUtilities.LoadGlass();
 				SaveUtilities.LoadMaterials();
 				SaveUtilities.LoadScale();
+				SaveUtilities.LoadSlots();
 
 				// Clear any existing static values.
 				fuelValues.Clear();
@@ -509,12 +512,41 @@ namespace MultiTool.Modules
 				{
 					SlotMoverDispose();
 				}
+				else if (slots.Count == 0)
+				{
+					partslotscript[] partSlots = settings.car.GetComponentsInChildren<partslotscript>();
+					foreach (partslotscript slot in partSlots)
+					{
+						GameObject obj = slot.gameObject;
+						
+						// Required as some slots don't have the actual part as a
+						// child of the slot. These parts instead use a collider
+						// which will either contain Col or Collider, so look for
+						// either and use the parent instead.
+						if (slot.name.Contains("Col"))
+						{
+							obj = slot.transform.parent.gameObject;
+						}
+
+						// Try and find the muffler as it's a child of the engine.
+						foreach (MeshRenderer child in obj.GetComponentsInChildren<MeshRenderer>())
+						{
+							string name = child.name.ToLower();
+							if ((name.Contains("muffler") || name.Contains("exhaust")) && child.gameObject.activeSelf)
+							{
+								slots.Add(child.gameObject);
+							}
+						}
+
+						slots.Add(obj);
+					}
+				}
+
+				tosaveitemscript carSave = settings.car.GetComponent<tosaveitemscript>();
 
 				switch (settings.slotStage)
 				{
 					case "slotSelect":
-						partslotscript[] slots = settings.car.GetComponentsInChildren<partslotscript>();
-
 						bool slotChanged = false;
 
 						// Render collider on first load.
@@ -530,7 +562,7 @@ namespace MultiTool.Modules
 							previoushoveredSlotIndex = hoveredSlotIndex;
 							hoveredSlotIndex--;
 							if (hoveredSlotIndex < 0)
-								hoveredSlotIndex = slots.Length - 1;
+								hoveredSlotIndex = slots.Count - 1;
 
 							hoveredSlot = slots[hoveredSlotIndex];
 							slotChanged = true;
@@ -541,7 +573,7 @@ namespace MultiTool.Modules
 						{
 							previoushoveredSlotIndex = hoveredSlotIndex;
 							hoveredSlotIndex++;
-							if (hoveredSlotIndex >= slots.Length)
+							if (hoveredSlotIndex >= slots.Count)
 								hoveredSlotIndex = 0;
 
 							hoveredSlot = slots[hoveredSlotIndex];
@@ -553,21 +585,32 @@ namespace MultiTool.Modules
 						{
 							settings.slotStage = "move";
 							selectedSlot = hoveredSlot;
+
 							selectedSlotResetPosition = selectedSlot.transform.localPosition;
+							selectedSlotResetRotation = selectedSlot.transform.localRotation;
+
+							// Get reset positions from save data.
+							SlotData slotData = SaveUtilities.GetSlotData(carSave.idInSave, selectedSlot.name);
+							if (slotData != null)
+							{
+								selectedSlotResetPosition = slotData.resetPosition;
+								selectedSlotResetRotation = slotData.resetRotation;
+							}
+
 							SlotMoverSelectDispose();
 
-							ObjectUtilities.ShowColliders(selectedSlot.gameObject, Color.blue);
+							ObjectUtilities.ShowColliders(selectedSlot, Color.blue);
 						}
 
 						if (slotChanged)
 						{
-							ObjectUtilities.ShowColliders(hoveredSlot.gameObject, Color.red);
+							ObjectUtilities.ShowColliders(hoveredSlot, Color.red);
 
 							if (!slotMoverFirstRun)
 							{
-								partslotscript previousSlot = slots[previoushoveredSlotIndex];
+								GameObject previousSlot = slots[previoushoveredSlotIndex];
 
-								ObjectUtilities.DestroyColliders(previousSlot.gameObject);
+								ObjectUtilities.DestroyColliders(previousSlot);
 							}
 							slotMoverFirstRun = false;
 						}
@@ -577,6 +620,7 @@ namespace MultiTool.Modules
 						if (Input.GetKeyDown(binds.GetKeyByAction((int)Keybinds.Inputs.select).key))
 						{
 							settings.slotStage = "slotSelect";
+							hoveredSlotIndex = Array.FindIndex(slots.ToArray(), s => s.name == selectedSlot.name);
 							SlotMoverMoveDispose();
 						}
 
@@ -587,7 +631,7 @@ namespace MultiTool.Modules
 						}
 
 						// Change move amount.
-						if (Input.GetKeyDown(binds.GetKeyByAction((int)Keybinds.Inputs.action1).key))
+						if (Input.GetKeyDown(binds.GetKeyByAction((int)Keybinds.Inputs.action5).key))
 						{
 							int currentIndex = Array.FindIndex(moveOptions, s => s == moveValue);
 							if (currentIndex == -1 || currentIndex == moveOptions.Length - 1)
@@ -596,49 +640,43 @@ namespace MultiTool.Modules
 								moveValue = moveOptions[currentIndex + 1];
 						}
 
-						Transform carTransform = settings.car.transform;
 						Transform partTransform = selectedSlot.transform;
+						Vector3 oldPos = partTransform.localPosition;
 
 						// Move forward.
 						if (Input.GetKeyDown(binds.GetKeyByAction((int)Keybinds.Inputs.up).key))
 						{
-							partTransform.localPosition += carTransform.forward * moveValue;
+							partTransform.localPosition += Vector3.forward * moveValue;
 						}
 
 						// Move backwards.
 						if (Input.GetKeyDown(binds.GetKeyByAction((int)Keybinds.Inputs.down).key))
 						{
-							partTransform.localPosition += -carTransform.forward * moveValue;
+							partTransform.localPosition += -Vector3.forward * moveValue;
 						}
 
 						// Move left.
 						if (Input.GetKeyDown(binds.GetKeyByAction((int)Keybinds.Inputs.left).key))
 						{
-							partTransform.localPosition += -carTransform.right * moveValue;
+							partTransform.localPosition += -Vector3.right * moveValue;
 						}
 
 						// Move right.
 						if (Input.GetKeyDown(binds.GetKeyByAction((int)Keybinds.Inputs.right).key))
 						{
-							partTransform.localPosition += carTransform.right * moveValue;
+							partTransform.localPosition += Vector3.right * moveValue;
 						}
 
 						// Move up.
 						if (Input.GetKeyDown(binds.GetKeyByAction((int)Keybinds.Inputs.noclipSpeedUp).key))
 						{
-							partTransform.localPosition += carTransform.up * moveValue;
+							partTransform.localPosition += Vector3.up * moveValue;
 						}
 
 						// Move down.
 						if (Input.GetKeyDown(binds.GetKeyByAction((int)Keybinds.Inputs.noclipDown).key))
 						{
-							partTransform.localPosition += -carTransform.up * moveValue;
-						}
-
-						// Confirm.
-						if (Input.GetKeyDown(binds.GetKeyByAction((int)Keybinds.Inputs.action5).key))
-						{
-							Logger.Log("Position confirmed.");
+							partTransform.localPosition += -Vector3.up * moveValue;
 						}
 
 						// Reset position.
@@ -647,12 +685,28 @@ namespace MultiTool.Modules
 							partTransform.localPosition = selectedSlotResetPosition;
 						}
 
+						// Check if position has changed.
+						if (oldPos != partTransform.localPosition)
+						{
+							SlotData slotData = new SlotData()
+							{
+								ID = carSave.idInSave,
+								slot = selectedSlot.name,
+								position = partTransform.localPosition,
+								resetPosition = selectedSlotResetPosition,
+								rotation = partTransform.localRotation,
+								resetRotation = selectedSlotResetRotation,
+							};
+							SaveUtilities.UpdateSlot(slotData);
+						}
+
 						break;
 					case "rotate":
 						// Deselect slot.
 						if (Input.GetKeyDown(binds.GetKeyByAction((int)Keybinds.Inputs.select).key))
 						{
 							settings.slotStage = "slotSelect";
+							hoveredSlotIndex = Array.FindIndex(slots.ToArray(), s => s.name == selectedSlot.name);
 							SlotMoverMoveDispose();
 						}
 
@@ -660,6 +714,76 @@ namespace MultiTool.Modules
 						if (Input.GetKeyDown(binds.GetKeyByAction((int)Keybinds.Inputs.action3).key))
 						{
 							settings.slotStage = "move";
+						}
+
+						// Change move amount.
+						if (Input.GetKeyDown(binds.GetKeyByAction((int)Keybinds.Inputs.action5).key))
+						{
+							int currentIndex = Array.FindIndex(moveOptions, s => s == moveValue);
+							if (currentIndex == -1 || currentIndex == moveOptions.Length - 1)
+								moveValue = moveOptions[0];
+							else
+								moveValue = moveOptions[currentIndex + 1];
+						}
+
+						Transform rotatePartTransform = selectedSlot.transform;
+						Quaternion oldRot = rotatePartTransform.localRotation;
+
+						// Rotate forward.
+						if (Input.GetKeyDown(binds.GetKeyByAction((int)Keybinds.Inputs.up).key))
+						{
+							rotatePartTransform.Rotate(Vector3.right, moveValue);
+						}
+
+						// Rotate backwards.
+						if (Input.GetKeyDown(binds.GetKeyByAction((int)Keybinds.Inputs.down).key))
+						{
+							rotatePartTransform.Rotate(-Vector3.right, moveValue);
+						}
+
+						// Rotate left.
+						if (Input.GetKeyDown(binds.GetKeyByAction((int)Keybinds.Inputs.left).key))
+						{
+							rotatePartTransform.Rotate(-Vector3.forward, moveValue);
+						}
+
+						// Rotate right.
+						if (Input.GetKeyDown(binds.GetKeyByAction((int)Keybinds.Inputs.right).key))
+						{
+							rotatePartTransform.Rotate(Vector3.forward, moveValue);
+						}
+
+						// Rotate anticlockwise.
+						if (Input.GetKeyDown(binds.GetKeyByAction((int)Keybinds.Inputs.noclipSpeedUp).key))
+						{
+							rotatePartTransform.Rotate(Vector3.up, moveValue);
+						}
+
+						// Rotate clockwise.
+						if (Input.GetKeyDown(binds.GetKeyByAction((int)Keybinds.Inputs.noclipDown).key))
+						{
+							rotatePartTransform.Rotate(-Vector3.up, moveValue);
+						}
+
+						// Reset position.
+						if (Input.GetKeyDown(binds.GetKeyByAction((int)Keybinds.Inputs.action4).key))
+						{
+							rotatePartTransform.localRotation = selectedSlotResetRotation;
+						}
+
+						// Check if rotation has changed.
+						if (oldRot != rotatePartTransform.localRotation)
+						{
+							SlotData slotData = new SlotData()
+							{
+								ID = carSave.idInSave,
+								slot = selectedSlot.name,
+								position = rotatePartTransform.localPosition,
+								resetPosition = selectedSlotResetPosition,
+								rotation = rotatePartTransform.localRotation,
+								resetRotation = selectedSlotResetRotation,
+							};
+							SaveUtilities.UpdateSlot(slotData);
 						}
 						break;
 				}
@@ -1387,8 +1511,6 @@ namespace MultiTool.Modules
 						case "slotSelect":
 							int displayedSlots = 7;
 
-							partslotscript[] slots = settings.car.GetComponentsInChildren<partslotscript>();
-
 							// Possibly over-complicated method to show selected slot in the middle.
 							int lowerHalf = Mathf.FloorToInt((displayedSlots - 1) / 2);
 							int upperHalf = Mathf.CeilToInt(displayedSlots / 2) + 1;
@@ -1396,8 +1518,8 @@ namespace MultiTool.Modules
 							List<int> displayedIndexes = new List<int>();
 							int countFrom = hoveredSlotIndex - lowerHalf - 1;
 							if (countFrom < 0)
-								countFrom = slots.Length - 1 - displayedSlots + upperHalf + hoveredSlotIndex;
-							else if (countFrom > slots.Length - 1)
+								countFrom = slots.Count - 1 - displayedSlots + upperHalf + hoveredSlotIndex;
+							else if (countFrom > slots.Count - 1)
 								countFrom = 0;
 							for (int i = 1; i <= displayedSlots; i++)
 							{
@@ -1406,7 +1528,7 @@ namespace MultiTool.Modules
 								if (i <= lowerHalf || i >= upperHalf)
 								{
 									nextIndex = countFrom + 1;
-									if (nextIndex > slots.Length - 1)
+									if (nextIndex > slots.Count - 1)
 									{
 										nextIndex = 0;
 										countFrom = 0;
@@ -1428,7 +1550,7 @@ namespace MultiTool.Modules
 							for (int index = 0; index < displayedIndexes.Count; index++)
 							{
 								int slotIndex = displayedIndexes[index];
-								partslotscript slot = slots[slotIndex];
+								GameObject slot = slots[slotIndex];
 								string name = $"{slotIndex + 1} - {slot.name}";
 								if (slotIndex == hoveredSlotIndex)
 								{
@@ -1443,32 +1565,46 @@ namespace MultiTool.Modules
 						case "move":
 							GUI.Button(new Rect(resolutionX / 2 - 100f, 10f, 300f, 30f), $"Moving: {selectedSlot.name}");
 
-							int moveControls = 5;
+							int moveControls = 4;
 							GUI.Button(new Rect(x, y, width / moveControls, 30f), $"Back to slot select ({binds.GetPrettyName((int)Keybinds.Inputs.select)})");
-							GUI.Button(new Rect(x + width / moveControls * 4, y, width / moveControls, 30f), $"Switch to rotate ({binds.GetPrettyName((int)Keybinds.Inputs.action3)})");
+							GUI.Button(new Rect(x + width / moveControls * 3, y, width / moveControls, 30f), $"Switch to rotate ({binds.GetPrettyName((int)Keybinds.Inputs.action3)})");
 
 							// Movement control UI.
 							// Column 2.
-							GUI.Button(new Rect(x + width / moveControls, y, width / moveControls, 30f), $"Move by: {moveValue} ({binds.GetPrettyName((int)Keybinds.Inputs.action1)})");
+							GUI.Button(new Rect(x + width / moveControls, y, width / moveControls, 30f), $"Move by: {moveValue} ({binds.GetPrettyName((int)Keybinds.Inputs.action5)})");
 							GUI.Button(new Rect(x + width / moveControls, y - 30f, width / moveControls, 30f), $"Left ({binds.GetPrettyName((int)Keybinds.Inputs.left)})");
 							GUI.Button(new Rect(x + width / moveControls, y - 60f, width / moveControls, 30f), $"Up ({binds.GetPrettyName((int)Keybinds.Inputs.noclipSpeedUp)})");
 							
 							// Column 3.
 							GUI.Button(new Rect(x + width / moveControls * 2, y, width / moveControls, 30f), $"Back ({binds.GetPrettyName((int)Keybinds.Inputs.down)})");
-							GUI.Button(new Rect(x + width / moveControls * 2, y - 30f, width / moveControls, 30f), $"Confirm ({binds.GetPrettyName((int)Keybinds.Inputs.action5)})");
+							GUI.Button(new Rect(x + width / moveControls * 2, y - 30f, width / moveControls, 30f), $"Reset ({binds.GetPrettyName((int)Keybinds.Inputs.action4)})");
 							GUI.Button(new Rect(x + width / moveControls * 2, y - 60f, width / moveControls, 30f), $"Forward ({binds.GetPrettyName((int)Keybinds.Inputs.up)})");
 
 							// Column 4.
-							GUI.Button(new Rect(x + width / moveControls * 3, y, width / moveControls, 30f), $"Reset ({binds.GetPrettyName((int)Keybinds.Inputs.action4)})");
 							GUI.Button(new Rect(x + width / moveControls * 3, y - 30f, width / moveControls, 30f), $"Right ({binds.GetPrettyName((int)Keybinds.Inputs.right)})");
 							GUI.Button(new Rect(x + width / moveControls * 3, y - 60f, width / moveControls, 30f), $"Down ({binds.GetPrettyName((int)Keybinds.Inputs.noclipDown)})");
 							break;
 						case "rotate":
 							GUI.Button(new Rect(resolutionX / 2 - 100f, 10f, 300f, 30f), $"Rotating: {selectedSlot.name}");
 
-							int rotateControls = 5;
+							int rotateControls = 4;
 							GUI.Button(new Rect(x, y, width / rotateControls, 30f), $"Back to slot select ({binds.GetPrettyName((int)Keybinds.Inputs.select)})");
-							GUI.Button(new Rect(x + width / rotateControls * 2, y, width / rotateControls, 30f), $"Switch to move ({binds.GetPrettyName((int)Keybinds.Inputs.action3)})");
+							GUI.Button(new Rect(x + width / rotateControls * 3, y, width / rotateControls, 30f), $"Switch to move ({binds.GetPrettyName((int)Keybinds.Inputs.action3)})");
+
+							// Rotate control UI.
+							// Column 2.
+							GUI.Button(new Rect(x + width / rotateControls, y, width / rotateControls, 30f), $"Rotate by: {moveValue} ({binds.GetPrettyName((int)Keybinds.Inputs.action5)})");
+							GUI.Button(new Rect(x + width / rotateControls, y - 30f, width / rotateControls, 30f), $"Left ({binds.GetPrettyName((int)Keybinds.Inputs.left)})");
+							GUI.Button(new Rect(x + width / rotateControls, y - 60f, width / rotateControls, 30f), $"Anticlockwise ({binds.GetPrettyName((int)Keybinds.Inputs.noclipSpeedUp)})");
+
+							// Column 3.
+							GUI.Button(new Rect(x + width / rotateControls * 2, y, width / rotateControls, 30f), $"Back ({binds.GetPrettyName((int)Keybinds.Inputs.down)})");
+							GUI.Button(new Rect(x + width / rotateControls * 2, y - 30f, width / rotateControls, 30f), $"Reset ({binds.GetPrettyName((int)Keybinds.Inputs.action4)})");
+							GUI.Button(new Rect(x + width / rotateControls * 2, y - 60f, width / rotateControls, 30f), $"Forward ({binds.GetPrettyName((int)Keybinds.Inputs.up)})");
+
+							// Column 4.
+							GUI.Button(new Rect(x + width / rotateControls * 3, y - 30f, width / rotateControls, 30f), $"Right ({binds.GetPrettyName((int)Keybinds.Inputs.right)})");
+							GUI.Button(new Rect(x + width / rotateControls * 3, y - 60f, width / rotateControls, 30f), $"Clockwise ({binds.GetPrettyName((int)Keybinds.Inputs.noclipDown)})");
 							break;
 					}
 					break;
@@ -1696,9 +1832,10 @@ namespace MultiTool.Modules
 			settings.car = null;
 			settings.slotStage = null;
 
-			SlotMoverSelectDispose();
+			slots.Clear();
 
-			
+			SlotMoverSelectDispose();
+			SlotMoverMoveDispose();
 		}
 
 		/// <summary>
@@ -1732,6 +1869,7 @@ namespace MultiTool.Modules
 
 			selectedSlot = null;
 			selectedSlotResetPosition = Vector3.zero;
+			selectedSlotResetRotation.Set(0, 0, 0, 0);
 		}
 
 		/// <summary> 

@@ -247,6 +247,36 @@ namespace MultiTool.Utilities
 		}
 
 		/// <summary>
+		/// Update slot data in save.
+		/// </summary>
+		/// <param name="slot">Slot data</param>
+		internal static void UpdateSlot(SlotData slot)
+		{
+			Save data = UnserializeSaveData();
+
+			try
+			{
+				if (data.slots == null)
+					data.slots = new List<SlotData>();
+
+				SlotData existing = data.slots.Where(s => s.ID == slot.ID && s.slot == slot.slot).FirstOrDefault();
+				if (existing != null)
+				{
+					existing.position = slot.position;
+					existing.rotation = slot.rotation;
+				}
+				else
+					data.slots.Add(slot);
+			}
+			catch (Exception ex)
+			{
+				Logger.Log($"Slot update error - {ex}", Logger.LogLevel.Error);
+			}
+
+			SerializeSaveData(data);
+		}
+
+		/// <summary>
 		/// Load POIs from save.
 		/// </summary>
 		/// <returns>List of newly spawned POIs</returns>
@@ -435,6 +465,62 @@ namespace MultiTool.Utilities
 			{
 				Logger.Log($"Scale data load error - {ex}", Logger.LogLevel.Error);
 			}
+		}
+
+		/// <summary>
+		/// Load slot data.
+		/// </summary>
+		internal static void LoadSlots()
+		{
+			try
+			{
+				Save data = UnserializeSaveData();
+				// Return early if no slot data is set.
+				if (data.slots == null) return;
+
+				foreach (SlotData slot in data.slots)
+				{
+					// Find all saveable objects.
+					List<tosaveitemscript> saves = UnityEngine.Object.FindObjectsOfType<tosaveitemscript>().ToList();
+					foreach (tosaveitemscript save in saves)
+					{
+						// Check ID matches.
+						if (save.idInSave == slot.ID)
+						{
+							// Find the child part.
+							foreach (Transform transform in save.GetComponentsInChildren<Transform>())
+							{
+								// Apply position and rotation changes.
+								if (transform.name == slot.slot)
+								{
+									transform.localPosition = slot.position;
+									transform.localRotation = slot.rotation;
+								}
+							}
+						}
+					}
+				}
+			}
+			catch (Exception ex)
+			{
+				Logger.Log($"Slot data load error - {ex}", Logger.LogLevel.Error);
+			}
+		}
+
+		/// <summary>
+		/// Get slot data by ID and slot name.
+		/// </summary>
+		/// <param name="ID">Car save ID</param>
+		/// <param name="slot">Slot name</param>
+		/// <returns>SlotData if exists, otherwise null</returns>
+		internal static SlotData GetSlotData(int ID, string slot)
+		{
+			Save data = UnserializeSaveData();
+
+			// Return early if no slot data is set.
+			if (data.slots == null) return null;
+
+			return data.slots.Where(s => s.ID == ID && s.slot == slot).FirstOrDefault();
 		}
 	}
 }

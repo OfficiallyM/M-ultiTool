@@ -39,11 +39,23 @@ namespace MultiTool.Core
 	}
 
 	[DataContract]
+	internal class SlotData
+	{
+		[DataMember] public int ID { get; set; }
+		[DataMember] public string slot { get; set; }
+		[DataMember] public Vector3 position { get; set; }
+		[DataMember] public Vector3 resetPosition { get; set; }
+		[DataMember] public Quaternion rotation { get; set; }
+		[DataMember] public Quaternion resetRotation { get; set; }
+	}
+
+	[DataContract]
 	internal class Save
 	{
 		[DataMember] public List<POIData> pois { get; set; }
 		[DataMember] public List<GlassData> glass { get; set; }
 		[DataMember] public List<MaterialData> materials { get; set; }
 		[DataMember] public List<ScaleData> scale { get; set; }
+		[DataMember] public List<SlotData> slots { get; set; }
 	}
 }
