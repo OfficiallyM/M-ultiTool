@@ -162,7 +162,7 @@ namespace MultiTool.Modules
 		internal static GameObject selectedSlot;
 		internal static GameObject hoveredSlot;
 		private static int hoveredSlotIndex = 0;
-		private static int previoushoveredSlotIndex = 0;
+		private static int previousHoveredSlotIndex = 0;
 		private static bool slotMoverFirstRun = true;
 		private static Vector3 selectedSlotResetPosition;
 		private static Quaternion selectedSlotResetRotation;
@@ -507,285 +507,294 @@ namespace MultiTool.Modules
 
 			if (settings.mode == "slotControl")
 			{
-				// Unset slotControl mode when exiting a vehicle.
-				if (mainscript.M.player.Car == null)
+				try
 				{
-					SlotMoverDispose();
-				}
-				else if (slots.Count == 0)
-				{
-					partslotscript[] partSlots = settings.car.GetComponentsInChildren<partslotscript>();
-					foreach (partslotscript slot in partSlots)
+					// Unset slotControl mode when exiting a vehicle.
+					if (mainscript.M.player.Car == null)
 					{
-						GameObject obj = slot.gameObject;
+						SlotMoverDispose();
+					}
+					else if (slots.Count == 0)
+					{
+						partslotscript[] partSlots = settings.car.GetComponentsInChildren<partslotscript>();
+						foreach (partslotscript slot in partSlots)
+						{
+							GameObject obj = slot.gameObject;
 						
-						// Required as some slots don't have the actual part as a
-						// child of the slot. These parts instead use a collider
-						// which will either contain Col or Collider, so look for
-						// either and use the parent instead.
-						if (slot.name.Contains("Col"))
-						{
-							obj = slot.transform.parent.gameObject;
-						}
-
-						// Try and find the muffler as it's a child of the engine.
-						foreach (MeshRenderer child in obj.GetComponentsInChildren<MeshRenderer>())
-						{
-							string name = child.name.ToLower();
-							if ((name.Contains("muffler") || name.Contains("exhaust")) && child.gameObject.activeSelf)
+							// Required as some slots don't have the actual part as a
+							// child of the slot. These parts instead use a collider
+							// which will either contain Col or Collider, so look for
+							// either and use the parent instead.
+							if (slot.name.Contains("Col"))
 							{
-								slots.Add(child.gameObject);
+								obj = slot.transform.parent.gameObject;
 							}
-						}
 
-						slots.Add(obj);
+							// Try and find the muffler as it's a child of the engine.
+							foreach (MeshRenderer child in obj.GetComponentsInChildren<MeshRenderer>())
+							{
+								string name = child.name.ToLower();
+								if ((name.Contains("muffler") || name.Contains("exhaust")) && child.gameObject.activeSelf)
+								{
+									slots.Add(child.gameObject);
+								}
+							}
+
+							slots.Add(obj);
+						}
+					}
+
+					tosaveitemscript carSave = settings.car.GetComponent<tosaveitemscript>();
+
+					switch (settings.slotStage)
+					{
+						case "slotSelect":
+							bool slotChanged = false;
+
+							// Render collider on first load.
+							if (slotMoverFirstRun)
+							{
+								slotChanged = true;
+								hoveredSlot = slots[hoveredSlotIndex];
+							}
+
+							// Move selector left.
+							if (Input.GetKeyDown(binds.GetKeyByAction((int)Keybinds.Inputs.left).key))
+							{
+								previousHoveredSlotIndex = hoveredSlotIndex;
+								hoveredSlotIndex--;
+								if (hoveredSlotIndex < 0)
+									hoveredSlotIndex = slots.Count - 1;
+
+								hoveredSlot = slots[hoveredSlotIndex];
+								slotChanged = true;
+							}
+
+							// Move selector right.
+							if (Input.GetKeyDown(binds.GetKeyByAction((int)Keybinds.Inputs.right).key))
+							{
+								previousHoveredSlotIndex = hoveredSlotIndex;
+								hoveredSlotIndex++;
+								if (hoveredSlotIndex >= slots.Count)
+									hoveredSlotIndex = 0;
+
+								hoveredSlot = slots[hoveredSlotIndex];
+								slotChanged = true;
+							}
+
+							// Select the hovered slot.
+							if (Input.GetKeyDown(binds.GetKeyByAction((int)Keybinds.Inputs.select).key))
+							{
+								settings.slotStage = "move";
+								selectedSlot = hoveredSlot;
+
+								selectedSlotResetPosition = selectedSlot.transform.localPosition;
+								selectedSlotResetRotation = selectedSlot.transform.localRotation;
+
+								// Get reset positions from save data.
+								SlotData slotData = SaveUtilities.GetSlotData(carSave.idInSave, selectedSlot.name);
+								if (slotData != null)
+								{
+									selectedSlotResetPosition = slotData.resetPosition;
+									selectedSlotResetRotation = slotData.resetRotation;
+								}
+
+								SlotMoverSelectDispose();
+
+								ObjectUtilities.ShowColliders(selectedSlot, Color.blue);
+							}
+
+							if (slotChanged)
+							{
+								ObjectUtilities.ShowColliders(hoveredSlot, Color.red);
+
+								if (!slotMoverFirstRun)
+								{
+									GameObject previousSlot = slots[previousHoveredSlotIndex];
+
+									ObjectUtilities.DestroyColliders(previousSlot);
+								}
+								slotMoverFirstRun = false;
+							}
+							break;
+						case "move":
+							// Deselect slot.
+							if (Input.GetKeyDown(binds.GetKeyByAction((int)Keybinds.Inputs.select).key))
+							{
+								settings.slotStage = "slotSelect";
+								hoveredSlotIndex = Array.FindIndex(slots.ToArray(), s => s.name == selectedSlot.name);
+								SlotMoverMoveDispose();
+								return;
+							}
+
+							// Switch to rotate mode.
+							if (Input.GetKeyDown(binds.GetKeyByAction((int)Keybinds.Inputs.action3).key))
+							{
+								settings.slotStage = "rotate";
+							}
+
+							// Change move amount.
+							if (Input.GetKeyDown(binds.GetKeyByAction((int)Keybinds.Inputs.action5).key))
+							{
+								int currentIndex = Array.FindIndex(moveOptions, s => s == moveValue);
+								if (currentIndex == -1 || currentIndex == moveOptions.Length - 1)
+									moveValue = moveOptions[0];
+								else
+									moveValue = moveOptions[currentIndex + 1];
+							}
+
+							Transform partTransform = selectedSlot.transform;
+							Vector3 oldPos = partTransform.localPosition;
+
+							// Move forward.
+							if (Input.GetKeyDown(binds.GetKeyByAction((int)Keybinds.Inputs.up).key))
+							{
+								partTransform.localPosition += Vector3.forward * moveValue;
+							}
+
+							// Move backwards.
+							if (Input.GetKeyDown(binds.GetKeyByAction((int)Keybinds.Inputs.down).key))
+							{
+								partTransform.localPosition += -Vector3.forward * moveValue;
+							}
+
+							// Move left.
+							if (Input.GetKeyDown(binds.GetKeyByAction((int)Keybinds.Inputs.left).key))
+							{
+								partTransform.localPosition += -Vector3.right * moveValue;
+							}
+
+							// Move right.
+							if (Input.GetKeyDown(binds.GetKeyByAction((int)Keybinds.Inputs.right).key))
+							{
+								partTransform.localPosition += Vector3.right * moveValue;
+							}
+
+							// Move up.
+							if (Input.GetKeyDown(binds.GetKeyByAction((int)Keybinds.Inputs.noclipSpeedUp).key))
+							{
+								partTransform.localPosition += Vector3.up * moveValue;
+							}
+
+							// Move down.
+							if (Input.GetKeyDown(binds.GetKeyByAction((int)Keybinds.Inputs.noclipDown).key))
+							{
+								partTransform.localPosition += -Vector3.up * moveValue;
+							}
+
+							// Reset position.
+							if (Input.GetKeyDown(binds.GetKeyByAction((int)Keybinds.Inputs.action4).key))
+							{
+								partTransform.localPosition = selectedSlotResetPosition;
+							}
+
+							// Check if position has changed.
+							if (oldPos != partTransform.localPosition)
+							{
+								SlotData slotData = new SlotData()
+								{
+									ID = carSave.idInSave,
+									slot = selectedSlot.name,
+									position = partTransform.localPosition,
+									resetPosition = selectedSlotResetPosition,
+									rotation = partTransform.localRotation,
+									resetRotation = selectedSlotResetRotation,
+								};
+								SaveUtilities.UpdateSlot(slotData);
+							}
+
+							break;
+						case "rotate":
+							// Deselect slot.
+							if (Input.GetKeyDown(binds.GetKeyByAction((int)Keybinds.Inputs.select).key))
+							{
+								settings.slotStage = "slotSelect";
+								hoveredSlotIndex = Array.FindIndex(slots.ToArray(), s => s.name == selectedSlot.name);
+								SlotMoverMoveDispose();
+								return;
+							}
+
+							// Switch to move mode.
+							if (Input.GetKeyDown(binds.GetKeyByAction((int)Keybinds.Inputs.action3).key))
+							{
+								settings.slotStage = "move";
+							}
+
+							// Change move amount.
+							if (Input.GetKeyDown(binds.GetKeyByAction((int)Keybinds.Inputs.action5).key))
+							{
+								int currentIndex = Array.FindIndex(moveOptions, s => s == moveValue);
+								if (currentIndex == -1 || currentIndex == moveOptions.Length - 1)
+									moveValue = moveOptions[0];
+								else
+									moveValue = moveOptions[currentIndex + 1];
+							}
+
+							Transform rotatePartTransform = selectedSlot.transform;
+							Quaternion oldRot = rotatePartTransform.localRotation;
+
+							// Rotate forward.
+							if (Input.GetKeyDown(binds.GetKeyByAction((int)Keybinds.Inputs.up).key))
+							{
+								rotatePartTransform.Rotate(Vector3.right, moveValue);
+							}
+
+							// Rotate backwards.
+							if (Input.GetKeyDown(binds.GetKeyByAction((int)Keybinds.Inputs.down).key))
+							{
+								rotatePartTransform.Rotate(-Vector3.right, moveValue);
+							}
+
+							// Rotate left.
+							if (Input.GetKeyDown(binds.GetKeyByAction((int)Keybinds.Inputs.left).key))
+							{
+								rotatePartTransform.Rotate(-Vector3.forward, moveValue);
+							}
+
+							// Rotate right.
+							if (Input.GetKeyDown(binds.GetKeyByAction((int)Keybinds.Inputs.right).key))
+							{
+								rotatePartTransform.Rotate(Vector3.forward, moveValue);
+							}
+
+							// Rotate anticlockwise.
+							if (Input.GetKeyDown(binds.GetKeyByAction((int)Keybinds.Inputs.noclipSpeedUp).key))
+							{
+								rotatePartTransform.Rotate(Vector3.up, moveValue);
+							}
+
+							// Rotate clockwise.
+							if (Input.GetKeyDown(binds.GetKeyByAction((int)Keybinds.Inputs.noclipDown).key))
+							{
+								rotatePartTransform.Rotate(-Vector3.up, moveValue);
+							}
+
+							// Reset position.
+							if (Input.GetKeyDown(binds.GetKeyByAction((int)Keybinds.Inputs.action4).key))
+							{
+								rotatePartTransform.localRotation = selectedSlotResetRotation;
+							}
+
+							// Check if rotation has changed.
+							if (oldRot != rotatePartTransform.localRotation)
+							{
+								SlotData slotData = new SlotData()
+								{
+									ID = carSave.idInSave,
+									slot = selectedSlot.name,
+									position = rotatePartTransform.localPosition,
+									resetPosition = selectedSlotResetPosition,
+									rotation = rotatePartTransform.localRotation,
+									resetRotation = selectedSlotResetRotation,
+								};
+								SaveUtilities.UpdateSlot(slotData);
+							}
+							break;
 					}
 				}
-
-				tosaveitemscript carSave = settings.car.GetComponent<tosaveitemscript>();
-
-				switch (settings.slotStage)
+				catch (Exception ex)
 				{
-					case "slotSelect":
-						bool slotChanged = false;
-
-						// Render collider on first load.
-						if (slotMoverFirstRun)
-						{
-							slotChanged = true;
-							hoveredSlot = slots[hoveredSlotIndex];
-						}
-
-						// Move selector left.
-						if (Input.GetKeyDown(binds.GetKeyByAction((int)Keybinds.Inputs.left).key))
-						{
-							previoushoveredSlotIndex = hoveredSlotIndex;
-							hoveredSlotIndex--;
-							if (hoveredSlotIndex < 0)
-								hoveredSlotIndex = slots.Count - 1;
-
-							hoveredSlot = slots[hoveredSlotIndex];
-							slotChanged = true;
-						}
-
-						// Move selector right.
-						if (Input.GetKeyDown(binds.GetKeyByAction((int)Keybinds.Inputs.right).key))
-						{
-							previoushoveredSlotIndex = hoveredSlotIndex;
-							hoveredSlotIndex++;
-							if (hoveredSlotIndex >= slots.Count)
-								hoveredSlotIndex = 0;
-
-							hoveredSlot = slots[hoveredSlotIndex];
-							slotChanged = true;
-						}
-
-						// Select the hovered slot.
-						if (Input.GetKeyDown(binds.GetKeyByAction((int)Keybinds.Inputs.select).key))
-						{
-							settings.slotStage = "move";
-							selectedSlot = hoveredSlot;
-
-							selectedSlotResetPosition = selectedSlot.transform.localPosition;
-							selectedSlotResetRotation = selectedSlot.transform.localRotation;
-
-							// Get reset positions from save data.
-							SlotData slotData = SaveUtilities.GetSlotData(carSave.idInSave, selectedSlot.name);
-							if (slotData != null)
-							{
-								selectedSlotResetPosition = slotData.resetPosition;
-								selectedSlotResetRotation = slotData.resetRotation;
-							}
-
-							SlotMoverSelectDispose();
-
-							ObjectUtilities.ShowColliders(selectedSlot, Color.blue);
-						}
-
-						if (slotChanged)
-						{
-							ObjectUtilities.ShowColliders(hoveredSlot, Color.red);
-
-							if (!slotMoverFirstRun)
-							{
-								GameObject previousSlot = slots[previoushoveredSlotIndex];
-
-								ObjectUtilities.DestroyColliders(previousSlot);
-							}
-							slotMoverFirstRun = false;
-						}
-						break;
-					case "move":
-						// Deselect slot.
-						if (Input.GetKeyDown(binds.GetKeyByAction((int)Keybinds.Inputs.select).key))
-						{
-							settings.slotStage = "slotSelect";
-							hoveredSlotIndex = Array.FindIndex(slots.ToArray(), s => s.name == selectedSlot.name);
-							SlotMoverMoveDispose();
-						}
-
-						// Switch to rotate mode.
-						if (Input.GetKeyDown(binds.GetKeyByAction((int)Keybinds.Inputs.action3).key))
-						{
-							settings.slotStage = "rotate";
-						}
-
-						// Change move amount.
-						if (Input.GetKeyDown(binds.GetKeyByAction((int)Keybinds.Inputs.action5).key))
-						{
-							int currentIndex = Array.FindIndex(moveOptions, s => s == moveValue);
-							if (currentIndex == -1 || currentIndex == moveOptions.Length - 1)
-								moveValue = moveOptions[0];
-							else
-								moveValue = moveOptions[currentIndex + 1];
-						}
-
-						Transform partTransform = selectedSlot.transform;
-						Vector3 oldPos = partTransform.localPosition;
-
-						// Move forward.
-						if (Input.GetKeyDown(binds.GetKeyByAction((int)Keybinds.Inputs.up).key))
-						{
-							partTransform.localPosition += Vector3.forward * moveValue;
-						}
-
-						// Move backwards.
-						if (Input.GetKeyDown(binds.GetKeyByAction((int)Keybinds.Inputs.down).key))
-						{
-							partTransform.localPosition += -Vector3.forward * moveValue;
-						}
-
-						// Move left.
-						if (Input.GetKeyDown(binds.GetKeyByAction((int)Keybinds.Inputs.left).key))
-						{
-							partTransform.localPosition += -Vector3.right * moveValue;
-						}
-
-						// Move right.
-						if (Input.GetKeyDown(binds.GetKeyByAction((int)Keybinds.Inputs.right).key))
-						{
-							partTransform.localPosition += Vector3.right * moveValue;
-						}
-
-						// Move up.
-						if (Input.GetKeyDown(binds.GetKeyByAction((int)Keybinds.Inputs.noclipSpeedUp).key))
-						{
-							partTransform.localPosition += Vector3.up * moveValue;
-						}
-
-						// Move down.
-						if (Input.GetKeyDown(binds.GetKeyByAction((int)Keybinds.Inputs.noclipDown).key))
-						{
-							partTransform.localPosition += -Vector3.up * moveValue;
-						}
-
-						// Reset position.
-						if (Input.GetKeyDown(binds.GetKeyByAction((int)Keybinds.Inputs.action4).key))
-						{
-							partTransform.localPosition = selectedSlotResetPosition;
-						}
-
-						// Check if position has changed.
-						if (oldPos != partTransform.localPosition)
-						{
-							SlotData slotData = new SlotData()
-							{
-								ID = carSave.idInSave,
-								slot = selectedSlot.name,
-								position = partTransform.localPosition,
-								resetPosition = selectedSlotResetPosition,
-								rotation = partTransform.localRotation,
-								resetRotation = selectedSlotResetRotation,
-							};
-							SaveUtilities.UpdateSlot(slotData);
-						}
-
-						break;
-					case "rotate":
-						// Deselect slot.
-						if (Input.GetKeyDown(binds.GetKeyByAction((int)Keybinds.Inputs.select).key))
-						{
-							settings.slotStage = "slotSelect";
-							hoveredSlotIndex = Array.FindIndex(slots.ToArray(), s => s.name == selectedSlot.name);
-							SlotMoverMoveDispose();
-						}
-
-						// Switch to move mode.
-						if (Input.GetKeyDown(binds.GetKeyByAction((int)Keybinds.Inputs.action3).key))
-						{
-							settings.slotStage = "move";
-						}
-
-						// Change move amount.
-						if (Input.GetKeyDown(binds.GetKeyByAction((int)Keybinds.Inputs.action5).key))
-						{
-							int currentIndex = Array.FindIndex(moveOptions, s => s == moveValue);
-							if (currentIndex == -1 || currentIndex == moveOptions.Length - 1)
-								moveValue = moveOptions[0];
-							else
-								moveValue = moveOptions[currentIndex + 1];
-						}
-
-						Transform rotatePartTransform = selectedSlot.transform;
-						Quaternion oldRot = rotatePartTransform.localRotation;
-
-						// Rotate forward.
-						if (Input.GetKeyDown(binds.GetKeyByAction((int)Keybinds.Inputs.up).key))
-						{
-							rotatePartTransform.Rotate(Vector3.right, moveValue);
-						}
-
-						// Rotate backwards.
-						if (Input.GetKeyDown(binds.GetKeyByAction((int)Keybinds.Inputs.down).key))
-						{
-							rotatePartTransform.Rotate(-Vector3.right, moveValue);
-						}
-
-						// Rotate left.
-						if (Input.GetKeyDown(binds.GetKeyByAction((int)Keybinds.Inputs.left).key))
-						{
-							rotatePartTransform.Rotate(-Vector3.forward, moveValue);
-						}
-
-						// Rotate right.
-						if (Input.GetKeyDown(binds.GetKeyByAction((int)Keybinds.Inputs.right).key))
-						{
-							rotatePartTransform.Rotate(Vector3.forward, moveValue);
-						}
-
-						// Rotate anticlockwise.
-						if (Input.GetKeyDown(binds.GetKeyByAction((int)Keybinds.Inputs.noclipSpeedUp).key))
-						{
-							rotatePartTransform.Rotate(Vector3.up, moveValue);
-						}
-
-						// Rotate clockwise.
-						if (Input.GetKeyDown(binds.GetKeyByAction((int)Keybinds.Inputs.noclipDown).key))
-						{
-							rotatePartTransform.Rotate(-Vector3.up, moveValue);
-						}
-
-						// Reset position.
-						if (Input.GetKeyDown(binds.GetKeyByAction((int)Keybinds.Inputs.action4).key))
-						{
-							rotatePartTransform.localRotation = selectedSlotResetRotation;
-						}
-
-						// Check if rotation has changed.
-						if (oldRot != rotatePartTransform.localRotation)
-						{
-							SlotData slotData = new SlotData()
-							{
-								ID = carSave.idInSave,
-								slot = selectedSlot.name,
-								position = rotatePartTransform.localPosition,
-								resetPosition = selectedSlotResetPosition,
-								rotation = rotatePartTransform.localRotation,
-								resetRotation = selectedSlotResetRotation,
-							};
-							SaveUtilities.UpdateSlot(slotData);
-						}
-						break;
+					Logger.Log($"Error during slotControl - {ex}");
 				}
 			}
 		}
@@ -1846,16 +1855,16 @@ namespace MultiTool.Modules
 			try
 			{
 				if (hoveredSlot != null)
-					ObjectUtilities.DestroyColliders(hoveredSlot.gameObject);
+					ObjectUtilities.DestroyColliders(hoveredSlot);
 
 				hoveredSlot = null;
 				hoveredSlotIndex = 0;
-				previoushoveredSlotIndex = 0;
+				previousHoveredSlotIndex = 0;
 				slotMoverFirstRun = true;
 			}
 			catch (Exception ex)
 			{
-				Logger.Log($"Failed to dispose of slot mover stage - {ex}", Logger.LogLevel.Warning);
+				Logger.Log($"Error occurred during slot mover select stage dispose - {ex}", Logger.LogLevel.Warning);
 			}
 		}
 
@@ -1864,12 +1873,19 @@ namespace MultiTool.Modules
 		/// </summary>
 		internal static void SlotMoverMoveDispose()
 		{
-			if (selectedSlot != null)
-				ObjectUtilities.DestroyColliders(selectedSlot.gameObject);
+			try 
+			{ 
+				if (selectedSlot != null)
+					ObjectUtilities.DestroyColliders(selectedSlot);
 
-			selectedSlot = null;
-			selectedSlotResetPosition = Vector3.zero;
-			selectedSlotResetRotation.Set(0, 0, 0, 0);
+				selectedSlot = null;
+				selectedSlotResetPosition = Vector3.zero;
+				selectedSlotResetRotation.Set(0, 0, 0, 0);
+			}
+			catch (Exception ex)
+			{
+				Logger.Log($"Error occurred during slot mover move stage dispose - {ex}", Logger.LogLevel.Warning);
+			}
 		}
 
 		/// <summary> 
