@@ -86,33 +86,6 @@ namespace MultiTool.Tabs
 
 			miscY += buttonHeight + 10f;
 
-			if (GUI.Button(new Rect(miscX, miscY, buttonWidth, buttonHeight), "Delete last building"))
-			{
-				if (GUIRenderer.spawnedPOIs.Count > 0)
-				{
-					try
-					{
-						SpawnedPOI poi = GUIRenderer.spawnedPOIs.Last();
-
-						// Remove POI from save.
-						if (poi.ID != null)
-							SaveUtilities.UpdatePOISaveData(new POIData()
-							{
-								ID = poi.ID.Value,
-							}, "delete");
-
-						GUIRenderer.spawnedPOIs.Remove(poi);
-						GameObject.Destroy(poi.poi);
-					}
-					catch (Exception ex)
-					{
-						Logger.Log($"Error deleting POI - {ex}", Logger.LogLevel.Error);
-					}
-				}
-			}
-
-			miscY += buttonHeight + 10f;
-
 			if (GUI.Button(new Rect(miscX, miscY, buttonWidth, buttonHeight), "Respawn nearest building items"))
 			{
 				Vector3 playerPosition = mainscript.M.player.transform.position;

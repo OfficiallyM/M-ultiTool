@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using Logger = MultiTool.Modules.Logger;
 
 namespace MultiTool.Tabs
 {
@@ -37,6 +38,33 @@ namespace MultiTool.Tabs
 			GUIRenderer.search = GUI.TextField(new Rect(dimensions.x + 70f, dimensions.y + 10f, dimensions.width * 0.25f, searchHeight), GUIRenderer.search, GUIRenderer.labelStyle);
 			if (GUI.Button(new Rect(dimensions.x + 60f + dimensions.width * 0.25f + 10f, dimensions.y + 10f, 100f, searchHeight), "Reset"))
 				GUIRenderer.search = String.Empty;
+
+
+			if (GUI.Button(new Rect(dimensions.x + dimensions.width - 320f, dimensions.y + 10f, 200f, searchHeight), "Delete last building"))
+			{
+				if (GUIRenderer.spawnedPOIs.Count > 0)
+				{
+					try
+					{
+						SpawnedPOI poi = GUIRenderer.spawnedPOIs.Last();
+
+						// Remove POI from save.
+						if (poi.ID != null)
+							SaveUtilities.UpdatePOISaveData(new POIData()
+							{
+								ID = poi.ID.Value,
+							}, "delete");
+
+						GUIRenderer.spawnedPOIs.Remove(poi);
+						GameObject.Destroy(poi.poi);
+					}
+					catch (Exception ex)
+					{
+						Logger.Log($"Error deleting POI - {ex}", Logger.LogLevel.Error);
+					}
+				}
+			}
+
 			if (GUI.Button(new Rect(dimensions.x + dimensions.width - 100f - 10f, dimensions.y + 10f, 100f, searchHeight), GUIRenderer.GetAccessibleString("Spawn items", poiSpawnItems)))
 				poiSpawnItems = !poiSpawnItems;
 
