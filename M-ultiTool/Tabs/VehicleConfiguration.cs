@@ -12,6 +12,7 @@ using UnityEngine;
 using MultiTool.Modules;
 using Logger = MultiTool.Modules.Logger;
 using System.Configuration;
+using System.Threading;
 
 namespace MultiTool.Tabs
 {
@@ -978,15 +979,19 @@ namespace MultiTool.Tabs
 				{
 					foreach (partconditionscript part in selectedPart.parts)
 					{
-						GameUtilities.SetPartMaterial(part, selectedMaterial, seatColor);
-						SaveUtilities.UpdateMaterials(new MaterialData()
+						Thread thread = new Thread(() =>
 						{
-							ID = save.idInSave,
-							part = selectedPart.name,
-							exact = IsExact(selectedPart.name),
-							type = selectedMaterial,
-							color = seatColor
+							GameUtilities.SetPartMaterial(part, selectedMaterial, seatColor);
+							SaveUtilities.UpdateMaterials(new MaterialData()
+							{
+								ID = save.idInSave,
+								part = selectedPart.name,
+								exact = IsExact(selectedPart.name),
+								type = selectedMaterial,
+								color = seatColor
+							});
 						});
+						thread.Start();
 					}
 				}
 			}
