@@ -377,7 +377,9 @@ namespace MultiTool.Modules
 				}
 
 				// Set default palette to all white.
+				palette.Clear();
 				palette = Enumerable.Repeat(Color.white, 60).ToList();
+				paletteCache.Clear();
 
 				// Load configs.
 				try
