@@ -886,7 +886,7 @@ namespace MultiTool.Modules
 						if (startVehicleColor.HasValue)
 							color = startVehicleColor.Value;
 
-						bool random = startVehicleCondition == -1 ? true : false;
+						bool random = startVehicleCondition == -1;
 
 						// Destroying the actual starter car doesn't want to cooperate
 						// so drop it out the map instead.
