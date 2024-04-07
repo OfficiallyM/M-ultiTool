@@ -1640,6 +1640,9 @@ namespace MultiTool.Modules
 			float x = resolutionX - resolutionX / 3;
 			float y = 100f;
 
+			// Don't render the UI if any game menus are open.
+			if (mainmenuscript.mainmenu.SettingsScreenObj.activeSelf || mainmenuscript.mainmenu.SaveScreenObj.activeSelf) return;
+
 			if (!show) { 
 				if (GUI.Button(new Rect(resolutionX - 200f, resolutionY / 3 - 10f, 200f, 60f), "New game settings"))
 				{
