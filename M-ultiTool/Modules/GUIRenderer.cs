@@ -695,13 +695,13 @@ namespace MultiTool.Modules
 							// Move backwards.
 							if (Input.GetKeyDown(binds.GetKeyByAction((int)Keybinds.Inputs.down).key))
 							{
-								partTransform.localPosition += -Vector3.forward * moveValue;
+								partTransform.localPosition += Vector3.back * moveValue;
 							}
 
 							// Move left.
 							if (Input.GetKeyDown(binds.GetKeyByAction((int)Keybinds.Inputs.left).key))
 							{
-								partTransform.localPosition += -Vector3.right * moveValue;
+								partTransform.localPosition += Vector3.left * moveValue;
 							}
 
 							// Move right.
@@ -719,7 +719,7 @@ namespace MultiTool.Modules
 							// Move down.
 							if (Input.GetKeyDown(binds.GetKeyByAction((int)Keybinds.Inputs.noclipDown).key))
 							{
-								partTransform.localPosition += -Vector3.up * moveValue;
+								partTransform.localPosition += Vector3.down * moveValue;
 							}
 
 							// Reset position.
