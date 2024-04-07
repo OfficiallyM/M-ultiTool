@@ -114,6 +114,16 @@ namespace MultiTool.Modules
 							}
 						}
 						break;
+					case "menuVehicles":
+						List<ConfigVehicle> menuVehicles = config.menuVehicles;
+						foreach (ConfigVehicle vehicle in menuVehicles)
+						{
+							if (vehicle.objectName == objectName)
+							{
+								return vehicle.name;
+							}
+						}
+						break;
 				}
 			}
 

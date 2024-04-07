@@ -23,8 +23,9 @@ namespace MultiTool.Modules
 		internal static Keybinds binds;
 
 		// Menu control.
-		public bool enabled = false;
-		public bool show = false;
+		internal bool enabled = false;
+		internal bool show = false;
+		private bool loaded = false;
 		private bool legacyUI = false;
 		private bool settingsShow = false;
 		private bool creditsShow = false;
@@ -60,8 +61,8 @@ namespace MultiTool.Modules
 		private Vector2 creditScrollPosition;
 
 		// Styling.
-		public static GUIStyle labelStyle = new GUIStyle();
-		public static GUIStyle headerStyle = new GUIStyle()
+		internal static GUIStyle labelStyle = new GUIStyle();
+		internal static GUIStyle headerStyle = new GUIStyle()
 		{
 			fontSize = 24,
 			alignment = TextAnchor.UpperLeft,
@@ -73,7 +74,7 @@ namespace MultiTool.Modules
 		};
 		private GUIStyle legacyHeaderStyle = new GUIStyle();
 		private float scrollWidth = 10f;
-		public static GUIStyle messageStyle = new GUIStyle()
+		internal static GUIStyle messageStyle = new GUIStyle()
 		{
 			fontSize = 40,
 			alignment = TextAnchor.MiddleCenter,
@@ -104,7 +105,7 @@ namespace MultiTool.Modules
 		};
 
 		// General variables.
-		public static string search = String.Empty;
+		internal static string search = String.Empty;
 
 		// Vehicle-related variables.
 		internal static List<Vehicle> vehicles = new List<Vehicle>();
@@ -199,16 +200,41 @@ namespace MultiTool.Modules
 		internal static List<Color> palette = new List<Color>();
 		private static Dictionary<int, GUIStyle> paletteCache = new Dictionary<int, GUIStyle>();
 
+		// Other.
 		internal static temporaryTurnOffGeneration temp;
 		private bool spawnerDetected = false;
 
-		public GUIRenderer(Config _config, Keybinds _binds)
+		// Main menu variables.
+		private bool mainMenuLoaded = false;
+		private bool stateChanged = false;
+		private Vector2 currentMainMenuPosition;
+		private static string[] mainMenuStages = new string[] { "vehicle", "basics", "color" };
+		private string mainMenuStage = mainMenuStages[0];
+		private Color? startVehicleColor = null;
+		private int startVehicleCondition = -1;
+		private string startVehiclePlate = string.Empty;
+		private bool appliedStartVehicleChanges = false;
+		private string[] largeVehicles = new string[]
+		{
+			"bus01",
+			"bus02",
+			"bus03",
+			"car07",
+			"car09T",
+		};
+		private string[] bikes = new string[]
+		{
+			"bike01",
+			"bike03",
+		};
+
+		internal GUIRenderer(Config _config, Keybinds _binds)
 		{
 			config = _config;
 			binds = _binds;
 		}
 
-		public void OnGUI()
+		internal void OnGUI()
 		{
 			// Return early if M-ultiTool is disabled.
 			if (!enabled)
@@ -218,30 +244,41 @@ namespace MultiTool.Modules
 			GUI.skin.verticalScrollbar.fixedWidth = scrollWidth;
 			GUI.skin.verticalScrollbarThumb.fixedWidth = scrollWidth;
 
-			if (!show && !mainscript.M.menu.Menu.activeSelf)
-				RenderHUD();
-
-			// Render the legacy UI if enabled.
-			if (legacyUI)
+			// In game.
+			if (mainscript.M != null)
 			{
-				RenderLegacyUI();
-				return;
-			}
+				if (!loaded) return;
 
-			// Only show visibility menu on pause menu.
-			if (mainscript.M.menu.Menu.activeSelf)
+				if (!show && !mainscript.M.menu.Menu.activeSelf)
+					RenderHUD();
+
+				// Render the legacy UI if enabled.
+				if (legacyUI)
+				{
+					RenderLegacyUI();
+					return;
+				}
+
+				// Only show visibility menu on pause menu.
+				if (mainscript.M.menu.Menu.activeSelf)
+				{
+					ToggleVisibility();
+				}
+				else if (spawnerDetected)
+					GUIExtensions.DrawOutline(new Rect(resolutionX - 360f, 10f, 350f, 50f), "Old SpawnerTLD detected.\nPlease delete from mods folder.", alertStyle, Color.black);
+
+				// Return early if the UI isn't supposed to be visible.
+				if (!show)
+					return;
+
+				// Main menu always shows.
+				MainMenu();
+			}
+			// Main menu.
+			else
 			{
-				ToggleVisibility();
+				GameMainMenuUI();
 			}
-			else if (spawnerDetected)
-				GUIExtensions.DrawOutline(new Rect(resolutionX - 360f, 10f, 350f, 50f), "Old SpawnerTLD detected.\nPlease delete from mods folder.", alertStyle, Color.black);
-
-			// Return early if the UI isn't supposed to be visible.
-			if (!show)
-				return;
-
-			// Main menu always shows.
-			MainMenu();
 		}
 
 		/// <summary>
@@ -277,18 +314,12 @@ namespace MultiTool.Modules
 			}
 		}
 
-		public void OnLoad()
+		internal void OnLoad()
 		{
 			try
 			{
-				// Set label styling.
-				labelStyle.alignment = TextAnchor.UpperLeft;
-				labelStyle.normal.textColor = Color.white;
-
-				// Set header styling.
-				legacyHeaderStyle.alignment = TextAnchor.MiddleCenter;
-				legacyHeaderStyle.fontSize = 16;
-				legacyHeaderStyle.normal.textColor = Color.white;
+				// Ensure UI loads hidden.
+				show = false;
 
 				resolutionX = mainscript.M.SettingObj.S.IResolutionX;
 				resolutionY = mainscript.M.SettingObj.S.IResolutionY;
@@ -381,14 +412,12 @@ namespace MultiTool.Modules
 				palette = Enumerable.Repeat(Color.white, 60).ToList();
 				paletteCache.Clear();
 
-				// Load configs.
+				// Load any configs not loaded on the main menu.
 				try
 				{
 					legacyUI = config.GetLegacyMode(legacyUI);
-					scrollWidth = config.GetScrollWidth(scrollWidth);
 					settingsScrollWidth = scrollWidth;
 					noclipGodmodeDisable = config.GetNoclipGodmodeDisable(noclipGodmodeDisable);
-					accessibilityMode = config.GetAccessibilityMode(accessibilityMode);
 					noclipFastMoveFactor = config.GetNoclipFastMoveFactor(noclipFastMoveFactor);
 					palette = config.GetPalette(palette);
 
@@ -432,13 +461,21 @@ namespace MultiTool.Modules
 			{
 				Logger.Log($"Error during OnLoad() - {ex}", Logger.LogLevel.Critical);
 			}
+
+			loaded = true;
 		}
 
-		public void Update()
+		internal void Update()
 		{
 			// Return early if the legacy UI is enabled.
 			if (legacyUI)
 				return;
+
+			if (mainscript.M == null)
+			{
+				MainMenuUpdate();
+				return;
+			}
 
 			if (Input.GetKeyDown(binds.GetKeyByAction((int)Keybinds.Inputs.menu).key) && !mainscript.M.menu.Menu.activeSelf && !mainscript.M.settingsOpen && !mainscript.M.menu.saveScreen.gameObject.activeSelf)
 			{
@@ -798,6 +835,164 @@ namespace MultiTool.Modules
 				{
 					Logger.Log($"Error during slotControl - {ex}");
 				}
+			}
+
+			// Apply starter vehicle customisation here as OnLoad() is too early.
+			// Other mods that potentially modify paintable parts won't have loaded yet.
+			if (!appliedStartVehicleChanges && loaded && !ModLoader.loading.activeSelf)
+			{
+				try
+				{
+					// Don't apply any new game changes when loading a save.
+					if (mainscript.M.menu.DFMS.load)
+						appliedStartVehicleChanges = true;
+
+					GameObject starterVehicle = null;
+					string starterVehicleName = mainscript.M.StartCar.ToString();
+					bool isLargeVehicle = largeVehicles.Contains(starterVehicleName);
+					bool isBike = bikes.Contains(starterVehicleName);
+					foreach (var car in mainscript.M.Cars)
+					{
+						if ((isLargeVehicle || isBike) && !car.name.ToLower().Contains("bike"))
+						{
+							// Attempt to find the position of the starter car to override the vehicle.
+							starterVehicle = car.gameObject;
+						}
+						else if (car.name.ToLower().Contains(starterVehicleName.ToLower()))
+						{
+							// Find the selected starter car object.
+							starterVehicle = car.gameObject;
+						}
+					}
+
+					if (starterVehicle == null) return;
+
+					GameObject finalStarterVehicle = null;
+
+					if (isBike || isLargeVehicle)
+					{
+						// Store the position and rotation to keep the bikes at the original spawn position.
+						Vector3 position = starterVehicle.transform.position;
+						Quaternion rotation = starterVehicle.transform.rotation;
+
+						if (isLargeVehicle)
+						{
+							position = starterVehicle.transform.position + (Vector3.left * 15f) + (Vector3.up * 5f);
+							rotation = starterVehicle.transform.rotation * Quaternion.AngleAxis(-90, Vector3.up);
+						}
+
+						Color color = starterVehicle.GetComponent<partconditionscript>().color;
+						if (startVehicleColor.HasValue)
+							color = startVehicleColor.Value;
+
+						bool random = startVehicleCondition == -1 ? true : false;
+
+						// Destroying the actual starter car doesn't want to cooperate
+						// so drop it out the map instead.
+						UnityEngine.Object.Destroy(starterVehicle.gameObject);
+						starterVehicle.transform.position += Vector3.down * 15f;
+
+						Vehicle vehicle = vehicles.Where(v => v.vehicle.name.ToLower().Contains(starterVehicleName.ToLower())).FirstOrDefault();
+						if (vehicle != null)
+						{
+							finalStarterVehicle = SpawnUtilities.Spawn(vehicle.vehicle, color, random, startVehicleCondition, -1, position, rotation);
+						}
+					}
+					else
+					{
+						finalStarterVehicle = starterVehicle;
+
+						// Set starter vehicle colour.
+						if (startVehicleColor.HasValue)
+						{
+							partconditionscript partconditionscript = finalStarterVehicle.GetComponent<partconditionscript>();
+							GameUtilities.Paint(startVehicleColor.Value, partconditionscript);
+						}
+
+						// Set starter vehicle condition.
+						if (startVehicleCondition != -1)
+						{
+							partconditionscript partconditionscript = finalStarterVehicle.GetComponent<partconditionscript>();
+							List<partconditionscript> children = GameUtilities.FindPartChildren(partconditionscript);
+
+							foreach (partconditionscript child in children)
+							{
+								child.state = startVehicleCondition;
+								child.Refresh();
+							}
+						}
+					}
+
+					// Set starter vehicle plate.
+					if (startVehiclePlate != string.Empty)
+					{
+						rendszamscript[] plateScripts = finalStarterVehicle.GetComponentsInChildren<rendszamscript>();
+						foreach (rendszamscript plateScript in plateScripts)
+						{
+							if (plateScript == null)
+								continue;
+
+							plateScript.Same(startVehiclePlate);
+						}
+					}
+
+					appliedStartVehicleChanges = true;
+				}
+				catch (Exception ex)
+				{
+					Logger.Log($"Error occurred during starter vehicle configuration - {ex}");
+					appliedStartVehicleChanges = true;
+				}
+			}
+		}
+
+		/// <summary>
+		/// Separate update function for the main menu.
+		/// </summary>
+		private void MainMenuUpdate()
+		{
+			// Use the first run of Update() to get any variables we need
+			// as OnMenuLoad() is called before anything is started.
+			if (!mainMenuLoaded)
+			{
+				resolutionX = mainmenuscript.mainmenu.Settings.S.IResolutionX;
+				resolutionY = mainmenuscript.mainmenu.Settings.S.IResolutionY;
+
+				// Default language to English until we can pull it from mainscript.
+				Translator.SetLanguage("English");
+
+				// Set label styling.
+				labelStyle.alignment = TextAnchor.UpperLeft;
+				labelStyle.normal.textColor = Color.white;
+
+				// Set header styling.
+				legacyHeaderStyle.alignment = TextAnchor.MiddleCenter;
+				legacyHeaderStyle.fontSize = 16;
+				legacyHeaderStyle.normal.textColor = Color.white;
+
+				// Load any configs needed for the main menu UI.
+				try
+				{
+					scrollWidth = config.GetScrollWidth(scrollWidth);
+					accessibilityMode = config.GetAccessibilityMode(accessibilityMode);
+				}
+				catch (Exception ex)
+				{
+					Logger.Log($"Config load error - {ex}", Logger.LogLevel.Error);
+				}
+
+				mainMenuLoaded = true;
+			}
+
+			if (stateChanged)
+			{
+				string[] toggles = new string[] { "ButtonLoad", "ButtonSettings", "ButtonExit", "ButtonDiscord", "ButtonNews" };
+				foreach (string toggle in toggles)
+				{
+					mainmenuscript.mainmenu.Canvas.Find($"GameObject/MainStuff/{toggle}").gameObject.SetActive(!show);
+				}
+
+				stateChanged = false;
 			}
 		}
 
@@ -1431,6 +1626,193 @@ namespace MultiTool.Modules
 			else
 			{
 				tab.RenderConfigPane(configDimensions);
+			}
+		}
+
+		/// <summary>
+		/// Render game main menu UI.
+		/// </summary>
+		private void GameMainMenuUI()
+		{
+			float width = resolutionX / 3;
+			float height = resolutionY - 200f;
+			float x = resolutionX - resolutionX / 3;
+			float y = 100f;
+
+			if (!show) { 
+				if (GUI.Button(new Rect(resolutionX - 200f, resolutionY / 3 - 10f, 200f, 60f), "New game settings"))
+				{
+					show = true;
+					stateChanged = true;
+				}
+			}
+
+			if (!show)
+				return;
+
+			GUI.Box(new Rect(x, y, width, height), "<color=#f87ffa><size=18><b>New game settings</b></size></color>");
+			if (GUI.Button(new Rect(resolutionX - 40f, y, 40f, 40f), "<size=30><color=#F00>X</color></size>"))
+			{
+				show = false;
+				stateChanged = true;
+			}
+
+			x += 20f;
+			y += 60f;
+
+			float contentHeight = 0;
+			
+			switch (mainMenuStage)
+			{
+				case "vehicle":
+					int optionCount = (int)Enum.GetValues(typeof(itemdatabase.CarType)).Cast<itemdatabase.CarType>().Max();
+					contentHeight = optionCount * 25f;
+
+					currentMainMenuPosition = GUI.BeginScrollView(new Rect(x, y, width - 40f, height - 120f), currentMainMenuPosition, new Rect(x, y, width - 40f, contentHeight), new GUIStyle(), GUI.skin.verticalScrollbar);
+
+					foreach (var car in Enum.GetValues(typeof(itemdatabase.CarType)))
+					{
+						string name = Translator.T(car.ToString(), "menuVehicles");
+
+						if (GUI.Button(new Rect(x, y, width - 40f, 20f), GetAccessibleString(name, mainmenuscript.mainmenu.DFMS.startcar == (itemdatabase.CarType)car)))
+						{
+							mainmenuscript.mainmenu.DFMS.startcar = (itemdatabase.CarType)car;
+						}
+
+						y += 25f;
+					}
+
+					GUI.EndScrollView();
+					break;
+				case "basics":
+					contentHeight = 70f;
+
+					currentMainMenuPosition = GUI.BeginScrollView(new Rect(x, y, width - 40f, height - 120f), currentMainMenuPosition, new Rect(x, y, width - 40f, contentHeight), new GUIStyle(), GUI.skin.verticalScrollbar);
+
+					// Condition.
+					GUI.Label(new Rect(x, y, width - 40f, 20f), $"Condition:", labelStyle);
+					y += 20f;
+					int maxCondition = (int)Enum.GetValues(typeof(Item.Condition)).Cast<Item.Condition>().Max();
+					float rawCondition = GUI.HorizontalSlider(new Rect(x, y, width - 40f, 20f), startVehicleCondition, -1, maxCondition);
+					startVehicleCondition = Mathf.RoundToInt(rawCondition);
+					y += 20f;
+					string conditionName = ((Item.Condition)startVehicleCondition).ToString();
+					GUI.Label(new Rect(x, y, width - 40f, 20f), conditionName, labelStyle);
+
+					y += 30f;
+
+					GUI.Label(new Rect(x, y, width - 40f, 20f), "Plate (blank for random):", labelStyle);
+					y += 20f;
+					startVehiclePlate = GUI.TextField(new Rect(x, y, width - 40f, 20f), startVehiclePlate, 7, labelStyle);
+
+					y += 30f;
+
+					GUI.EndScrollView();
+
+					break;
+				case "color":
+					if (GUI.Button(new Rect(x, y, 200f, 20f), $"Use {(startVehicleColor.HasValue ? "custom" : "random")} colour"))
+					{
+						if (startVehicleColor.HasValue)
+							startVehicleColor = null;
+						else
+							startVehicleColor = Color.white;
+					}
+
+					y += 30f;
+
+					if (startVehicleColor.HasValue)
+					{
+						contentHeight = 210f;
+
+						currentMainMenuPosition = GUI.BeginScrollView(new Rect(x, y, width - 40f, height - 120f), currentMainMenuPosition, new Rect(x, y, width - 40f, contentHeight), new GUIStyle(), GUI.skin.verticalScrollbar);
+
+						Color vehicleColor = startVehicleColor.Value;
+
+						// Vehicle colour sliders.
+						// Red.
+						GUI.Label(new Rect(x, y, width - 40f, 20f), "<color=#F00>Red:</color>", labelStyle);
+						y += 20f;
+						float red = GUI.HorizontalSlider(new Rect(x, y, width - 40f, 20f), vehicleColor.r * 255, 0, 255);
+						red = Mathf.Round(red);
+						y += 20f;
+						bool redParse = float.TryParse(GUI.TextField(new Rect(x, y, width - 40f, 20f), red.ToString(), labelStyle), out red);
+						if (!redParse)
+							Logger.Log($"{redParse} is not a number", Logger.LogLevel.Error);
+						red = Mathf.Clamp(red, 0f, 255f);
+						vehicleColor.r = red / 255f;
+
+						// Green.
+						y += 30f;
+						GUI.Label(new Rect(x, y, width - 40f, 20f), "<color=#0F0>Green:</color>", labelStyle);
+						y += 20f;
+						float green = GUI.HorizontalSlider(new Rect(x, y, width - 40f, 20f), vehicleColor.g * 255, 0, 255);
+						green = Mathf.Round(green);
+						y += 20f;
+						bool greenParse = float.TryParse(GUI.TextField(new Rect(x, y, width - 40f, 20f), green.ToString(), labelStyle), out green);
+						if (!greenParse)
+							Logger.Log($"{greenParse} is not a number", Logger.LogLevel.Error);
+						green = Mathf.Clamp(green, 0f, 255f);
+						vehicleColor.g = green / 255f;
+
+						// Blue.
+						y += 30f;
+						GUI.Label(new Rect(x, y, width - 40f, 20f), "<color=#00F>Blue:</color>", labelStyle);
+						y += 20f;
+						float blue = GUI.HorizontalSlider(new Rect(x, y, width - 40f, 20f), vehicleColor.b * 255, 0, 255);
+						blue = Mathf.Round(blue);
+						y += 20f;
+						bool blueParse = float.TryParse(GUI.TextField(new Rect(x, y, width - 40f, 20f), blue.ToString(), labelStyle), out blue);
+						if (!blueParse)
+							Logger.Log($"{blueParse} is not a number", Logger.LogLevel.Error);
+						blue = Mathf.Clamp(blue, 0f, 255f);
+						vehicleColor.b = blue / 255f;
+
+						startVehicleColor = vehicleColor;
+
+						y += 30f;
+
+						// Colour preview.
+						GUIStyle defaultStyle = GUI.skin.button;
+						GUIStyle previewStyle = new GUIStyle(defaultStyle);
+						Texture2D previewTexture = new Texture2D(1, 1);
+						Color[] pixels = new Color[] { startVehicleColor.Value };
+						previewTexture.SetPixels(pixels);
+						previewTexture.Apply();
+						previewStyle.normal.background = previewTexture;
+						previewStyle.active.background = previewTexture;
+						previewStyle.hover.background = previewTexture;
+						previewStyle.margin = new RectOffset(0, 0, 0, 0);
+						GUI.skin.button = previewStyle;
+						GUI.Button(new Rect(x, y, width - 40f, 20f), "");
+						GUI.skin.button = defaultStyle;
+
+						GUI.EndScrollView();
+					}
+
+					break;
+			}
+
+			// Back button.
+			if (mainMenuStage != mainMenuStages.First())
+			{
+				string previousStage = mainMenuStages[Array.FindIndex(mainMenuStages, s => s == mainMenuStage) - 1];
+				if (GUI.Button(new Rect(x, resolutionY - 140f, 200f, 20f), $"To {previousStage}"))
+				{
+					mainMenuStage = previousStage;
+					currentMainMenuPosition = Vector2.zero;
+				}
+			}
+
+			// Next button.
+			if (mainMenuStage != mainMenuStages.Last())
+			{
+				string nextStage = mainMenuStages[Array.FindIndex(mainMenuStages, s => s == mainMenuStage) + 1];
+				if (GUI.Button(new Rect(resolutionX - 220f, resolutionY - 140f, 200f, 20f), $"To {nextStage}"))
+				{
+					mainMenuStage = nextStage;
+					currentMainMenuPosition = Vector2.zero;
+				}
 			}
 		}
 

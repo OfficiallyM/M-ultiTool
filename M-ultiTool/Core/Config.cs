@@ -30,6 +30,7 @@ namespace MultiTool.Core
 	{
 		[DataMember] public List<ConfigVehicle> vehicles { get; set; }
 		[DataMember] public List<ConfigPOI> POIs { get; set; }
+		[DataMember] public List<ConfigVehicle> menuVehicles { get; set; }
 	}
 
 	internal class Settings

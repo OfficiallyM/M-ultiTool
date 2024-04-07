@@ -282,11 +282,15 @@ namespace MultiTool.Utilities
 		/// <summary>
 		/// Based off mainscript Spawn method
 		/// </summary>
-		internal static void Spawn(GameObject gameObject, Color color, bool fullRandom, int condition, int variant)
+		internal static GameObject Spawn(GameObject gameObject, Color color, bool fullRandom, int condition, int variant, Vector3? position = null, Quaternion? rotation = null)
 		{
+			if (position == null)
+				position = mainscript.M.player.lookPoint + Vector3.up * 0.75f;
+			if (rotation == null)
+				rotation = Quaternion.FromToRotation(Vector3.forward, -mainscript.M.player.transform.right);
 			try
 			{
-				GameObject spawned = UnityEngine.Object.Instantiate(gameObject, mainscript.M.player.lookPoint + Vector3.up * 0.75f, Quaternion.FromToRotation(Vector3.forward, -mainscript.M.player.transform.right));
+				GameObject spawned = UnityEngine.Object.Instantiate(gameObject, position.Value, rotation.Value);
 				partconditionscript component1 = spawned.GetComponent<partconditionscript>();
 				if (component1 == null && spawned.GetComponent<childunparent>() != null)
 					component1 = spawned.GetComponent<childunparent>().g.GetComponent<partconditionscript>();
@@ -314,11 +318,15 @@ namespace MultiTool.Utilities
 					}
 				}
 				mainscript.M.PostSpawn(spawned);
+
+				return spawned;
 			}
 			catch (Exception ex)
 			{
 				Logger.Log($"Failed to spawn {gameObject.name} - {ex}", Logger.LogLevel.Error);
 			}
+
+			return null;
 		}
 	}
 }

@@ -312,5 +312,99 @@
 			"objectName": "ViztoronyUfo",
 			"name": "Water tower 3"
 		}
+	],
+	"menuVehicles": [
+		{
+			"objectName": "random",
+			"name": "Default"
+		},
+		{
+			"objectName": "car01",
+			"name": "Škoda 100"
+		},
+		{
+			"objectName": "car02",
+			"name": "Lada 2101"
+		},
+		{
+			"objectName": "car02k",
+			"name": "Lada 2102"
+		},
+		{
+			"objectName": "car03",
+			"name": "Trabant 601"
+		},
+		{
+			"objectName": "car03k",
+			"name": "Trabant Wagon"
+		},
+		{
+			"objectName": "bus01",
+			"name": "Ikarus 280"
+		},
+		{
+			"objectName": "car04",
+			"name": "Dacia 1300"
+		},
+		{
+			"objectName": "bike01",
+			"name": "Ebatta"
+		},
+		{
+			"objectName": "car05",
+			"name": "Lada 2105"
+		},
+		{
+			"objectName": "bus02",
+			"name": "IFA W50"
+		},
+		{
+			"objectName": "bus03",
+			"name": "Ikarus 260"
+		},
+		{
+			"objectName": "car06",
+			"name": "VW Golf"
+		},
+		{
+			"objectName": "car06p",
+			"name": "VW Caddy"
+		},
+		{
+			"objectName": "car07",
+			"name": "Plymouth Fury"
+		},
+		{
+			"objectName": "car08",
+			"name": "Beetle"
+		},
+		{
+			"objectName": "car08c",
+			"name": "Beetle Cabrio"
+		},
+		{
+			"objectName": "bike03",
+			"name": "Jawa/Pannonia"
+		},
+		{
+			"objectName": "car10",
+			"name": "Wartburg"
+		},
+		{
+			"objectName": "car10k",
+			"name": "Wartburg Estate"
+		},
+		{
+			"objectName": "car09",
+			"name": "Barkas"
+		},
+		{
+			"objectName": "car09P",
+			"name": "Barkas Pickup"
+		},
+		{
+			"objectName": "car09T",
+			"name": "Barkas Transporter"
+		}
 	]
 }

@@ -83,12 +83,13 @@ namespace MultiTool.Utilities
 		/// <param name="root">The root vehicle partconditionscript</param>
 		public static void Paint(Color c, partconditionscript root)
 		{
-			root.Paint(c);
-			List<partconditionscript> children = new List<partconditionscript>();
-			FindPartChildren(root, ref children);
-			foreach (partconditionscript child in children)
+			List<partconditionscript> parts = new List<partconditionscript>();
+			FindPartChildren(root, ref parts);
+			foreach (partconditionscript part in parts)
 			{
-				Paint(c, child);
+				if (!part.IsPaintable()) continue;
+
+				part.Refresh(part.state, c);
 			}
 		}
 
@@ -100,12 +101,14 @@ namespace MultiTool.Utilities
 		/// <param name="root">Root vehicle partconditionscript</param>
 		public static void SetConditionAndPaint(int condition, Color color, partconditionscript root)
 		{
-			root.Refresh(condition, color);
-			List<partconditionscript> children = new List<partconditionscript>();
-			FindPartChildren(root, ref children);
-			foreach (partconditionscript child in children)
+			List<partconditionscript> parts = new List<partconditionscript>();
+			FindPartChildren(root, ref parts);
+			foreach (partconditionscript part in parts)
 			{
-				SetConditionAndPaint(condition, color, child);
+				if (!part.IsPaintable())
+					part.Refresh(condition);
+				else
+					part.Refresh(condition, color);
 			}
 		}
 
@@ -131,16 +134,19 @@ namespace MultiTool.Utilities
 		/// <returns>List of all child parts</returns>
 		public static List<partconditionscript> FindPartChildren(partconditionscript root)
 		{
-			return root.GetComponentsInChildren<partconditionscript>().ToList();
+			List<partconditionscript> parts = root.GetComponentsInChildren<partconditionscript>().ToList();
+			return parts;
 		}
 
 		/// <summary>
-		/// Find all child parts recursively from tosaveitemscript.
+		/// Find all child parts recursively with tosaveitemscript.
 		/// </summary>
 		/// <param name="root">Root part</param>
 		/// <param name="children">Child partconditionscript passed by reference</param>
 		public static void FindPartChildren(partconditionscript root, ref List<partconditionscript> children)
 		{
+			if (!children.Contains(root)) children.Add(root);
+
 			tosaveitemscript tosave = root.GetComponent<tosaveitemscript>();
 			if (tosave == null) return;
 
@@ -152,6 +158,16 @@ namespace MultiTool.Utilities
 				children.Add(slot.part.condition);
 				FindPartChildren(slot.part.condition, ref children);
 			}
+		}
+
+		/// <summary>
+		/// Check if part is paintable.
+		/// </summary>
+		/// <param name="part">Part to check</param>
+		/// <returns>True if part is paintable, otherwise false</returns>
+		public static bool IsPaintable(this partconditionscript part)
+		{
+			return part.forceColor || !part.disableColor;
 		}
 
 		/// <summary>
