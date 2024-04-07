@@ -358,13 +358,14 @@ namespace MultiTool.Modules
 				AddTab(new Tabs.DeveloperTab());
 
 				// Prepare items list.
+				items.Clear();
 				ThumbnailGenerator.PrepareCache();
 				foreach (GameObject item in itemdatabase.d.items)
 				{
 					try
 					{
 						// Remove vehicles and trailers from items array.
-						if (!GameUtilities.IsVehicleOrTrailer(item) && item.name != "ErrorPrefab")
+						if (item && !GameUtilities.IsVehicleOrTrailer(item) && item.name != null && item.name != "ErrorPrefab")
 						{
 							items.Add(new Item() { item = item, thumbnail = ThumbnailGenerator.GetThumbnail(item), category = GameUtilities.GetCategory(item, categories) });
 						}
