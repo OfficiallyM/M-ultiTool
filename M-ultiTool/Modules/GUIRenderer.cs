@@ -408,11 +408,6 @@ namespace MultiTool.Modules
 					piss.Add((mainscript.fluidenum)i, 0);
 				}
 
-				// Set default palette to all white.
-				palette.Clear();
-				palette = Enumerable.Repeat(Color.white, 60).ToList();
-				paletteCache.Clear();
-
 				// Load any configs not loaded on the main menu.
 				try
 				{
@@ -420,7 +415,6 @@ namespace MultiTool.Modules
 					settingsScrollWidth = scrollWidth;
 					noclipGodmodeDisable = config.GetNoclipGodmodeDisable(noclipGodmodeDisable);
 					noclipFastMoveFactor = config.GetNoclipFastMoveFactor(noclipFastMoveFactor);
-					palette = config.GetPalette(palette);
 
 					// Get default player data values.
 					if (defaultPlayerData == null)
@@ -971,11 +965,17 @@ namespace MultiTool.Modules
 				legacyHeaderStyle.fontSize = 16;
 				legacyHeaderStyle.normal.textColor = Color.white;
 
+				// Set default palette to all white.
+				palette.Clear();
+				palette = Enumerable.Repeat(Color.white, 60).ToList();
+				paletteCache.Clear();
+
 				// Load any configs needed for the main menu UI.
 				try
 				{
 					scrollWidth = config.GetScrollWidth(scrollWidth);
 					accessibilityMode = config.GetAccessibilityMode(accessibilityMode);
+					palette = config.GetPalette(palette);
 				}
 				catch (Exception ex)
 				{
@@ -1728,6 +1728,7 @@ namespace MultiTool.Modules
 					if (startVehicleColor.HasValue)
 					{
 						contentHeight = 210f;
+						contentHeight += GetPaletteHeight(width - 40f) + 10f;
 
 						currentMainMenuPosition = GUI.BeginScrollView(new Rect(x, y, width - 40f, height - 120f), currentMainMenuPosition, new Rect(x, y, width - 40f, contentHeight), new GUIStyle(), GUI.skin.verticalScrollbar);
 
@@ -1790,6 +1791,11 @@ namespace MultiTool.Modules
 						GUI.skin.button = previewStyle;
 						GUI.Button(new Rect(x, y, width - 40f, 20f), "");
 						GUI.skin.button = defaultStyle;
+
+						y += 30f;
+
+						startVehicleColor = RenderColourPalette(x, y, width - 40f, startVehicleColor.Value);
+						y += GetPaletteHeight(width - 40f) + 10f;
 
 						GUI.EndScrollView();
 					}
