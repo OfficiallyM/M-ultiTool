@@ -21,81 +21,29 @@ namespace MultiTool.Modules
 		}
 
 		/// <summary>
-		/// Prepare cache for thumbnail generation.
+		/// Format name to cache format.
 		/// </summary>
-		public static void PrepareCache()
+		/// <param name="name">Name to format</param>
+		/// <returns>Formatted name</returns>
+		private static string FormatName(string name)
 		{
-			List<string> tempItems = new List<string>();
+			return name.ToUpper().Replace("/", "or");
+		}
 
-			// Remove unnecessary items and duplicates from item list.
-			foreach (GameObject item in itemdatabase.d.items)
+		/// <summary>
+		/// Trigger a full cache rebuild.
+		/// </summary>
+		internal static void RebuildCache()
+		{
+			DirectoryInfo cacheDirectory = new DirectoryInfo(cacheDir);
+			foreach (FileInfo file in cacheDirectory.GetFiles())
 			{
-				if (item.name != "ErrorPrefab")
-				{
-					if (GameUtilities.IsVehicleOrTrailer(item))
-					{
-						// Get vehicle variants.
-						randomTypeSelector randoms = item.GetComponent<randomTypeSelector>();
-						if (randoms != null && randoms.tipusok.Length > 0)
-						{
-							int variants = randoms.tipusok.Length;
-
-							for (int i = 0; i < variants; i++)
-							{
-								if (!tempItems.Contains($"{item.name.ToUpper()}-{i + 1}"))
-									tempItems.Add($"{item.name.ToUpper()}-{i + 1}");
-							}
-							continue;
-						}
-					}
-					if (!tempItems.Contains(item.name.ToUpper()))
-						tempItems.Add(item.name.ToUpper());
-				}
+				file.Delete();
 			}
 
-			foreach (GameObject POI in itemdatabase.d.buildings)
-			{
-				if (POI.name != "ErrorPrefab" && POI.name != "Falu01")
-				{
-					if (!tempItems.Contains(POI.name.ToUpper()))
-					{
-						tempItems.Add(POI.name.ToUpper());
-					}
-				}
-			}
+			DatabaseUtilities.RebuildCaches();
 
-			foreach (ObjClass objClass in mainscript.M.terrainGenerationSettings.objGeneration.objTypes)
-			{
-				if (!tempItems.Contains(objClass.prefab.name.ToUpper()))
-				{
-					tempItems.Add(objClass.prefab.name.ToUpper());
-				}
-			}
-
-			foreach (ObjClass objClass in mainscript.M.terrainGenerationSettings.desertTowerGeneration.objTypes)
-			{
-				if (!tempItems.Contains(objClass.prefab.name.ToUpper()))
-				{
-					tempItems.Add(objClass.prefab.name.ToUpper());
-				}
-			}
-
-			int itemCount = tempItems.Count;
-			DirectoryInfo cache = new DirectoryInfo(cacheDir);
-			int cacheCount = cache.GetFiles().Length;
-
-			// Item count differs, remove all cached thumbnails.
-			if (itemCount != cacheCount)
-			{
-				regenerateCache = true;
-				Logger.Log("Item count has changed, regenerating cached thumbnails", Logger.LogLevel.Info);
-				Logger.Log($"Item count: {itemCount} - Cache count: {cacheCount}", Logger.LogLevel.Info);
-
-				foreach (FileInfo file in cache.GetFiles())
-				{
-					file.Delete();
-				}
-			}
+			Logger.Log($"Successfully rebuilt thumbnail cache ({cacheDirectory.GetFiles().Length} thumbnails cached)");
 		}
 
 		/// <summary>
@@ -106,7 +54,7 @@ namespace MultiTool.Modules
 		/// <returns>Texture2D thumbnail of the item</returns>
 		public static Texture2D GetThumbnail(GameObject item, int? variant = null, bool POI = false)
 		{
-			string fileName = item.name.ToUpper().Replace("/", "or");
+			string fileName = FormatName(item.name);
 			if (variant != null)
 			{
 				fileName += $"-{variant.Value - 1}";
@@ -152,10 +100,9 @@ namespace MultiTool.Modules
 			}
 
 			// Render all thumbnails in pristine and in white.
-			if (gameObject2.GetComponent<partconditionscript>() != null)
-			{
-				gameObject2.GetComponent<partconditionscript>().StartPaint(0, new Color(1f, 1f, 1f));
-			}
+			partconditionscript condition = gameObject2.GetComponent<partconditionscript>();
+			if (condition != null)
+				GameUtilities.SetConditionAndPaint(0, Color.white, condition);
 
 			gameObject2.transform.SetParent(gameObject.transform, false);
 			gameObject2.transform.localPosition = Vector3.zero;

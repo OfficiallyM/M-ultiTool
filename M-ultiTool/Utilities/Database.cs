@@ -12,7 +12,24 @@ namespace MultiTool.Utilities
 {
 	internal static class DatabaseUtilities
 	{
+		private static Dictionary<string, List<Type>> categories = new Dictionary<string, List<Type>>()
+		{
+			{ "Vehicles", new List<Type>() { typeof(carscript) } },
+			{ "Tanks", new List<Type>() { typeof(tankscript) } },
+			{ "Vehicle parts", new List<Type>() { typeof(partscript) } },
+			{ "Guns", new List<Type>() { typeof(weaponscript) } },
+			{ "Melee weapons", new List<Type>() { typeof(meleeweaponscript) } },
+			{ "Cleaning", new List<Type>() { typeof(drotkefescript), typeof(spricniscript) } },
+			{ "Refillables", new List<Type>() { typeof(ammoscript) } },
+			{ "Food", new List<Type>() { typeof(ediblescript) } },
+			{ "Wearables", new List<Type>() { typeof(wearable) } },
+			{ "Lights", new List<Type>() { typeof(flashlightscript) } },
+			{ "Usables", new List<Type>() { typeof(pickupable) } },
+			{ "Other", new List<Type>() { typeof(MonoBehaviour) } },
+		};
+
 		private static List<Vehicle> vehiclesCache = new List<Vehicle>();
+		private static List<Item> itemsCache = new List<Item>();
 		private static List<POI> POIsCache = new List<POI>();
 
 		/// <summary>
@@ -73,6 +90,35 @@ namespace MultiTool.Utilities
 		}
 
 		/// <summary>
+		/// Load items from database.
+		/// </summary>
+		/// <returns>List of items</returns>
+		internal static List<Item> LoadItems()
+		{
+			// Return items from cache if not empty.
+			if (itemsCache.Count > 0)
+				return itemsCache;
+
+			foreach (GameObject item in itemdatabase.d.items)
+			{
+				try
+				{
+					// Remove vehicles and trailers from items array.
+					if (item && !GameUtilities.IsVehicleOrTrailer(item) && item.name != null && item.name != "ErrorPrefab")
+					{
+						itemsCache.Add(new Item() { item = item, thumbnail = ThumbnailGenerator.GetThumbnail(item), category = GameUtilities.GetCategory(item, categories) });
+					}
+				}
+				catch (Exception ex)
+				{
+					Logger.Log($"Failed to load item {item.name} - {ex}", Logger.LogLevel.Error);
+				}
+			}
+
+			return itemsCache;
+		}
+
+		/// <summary>
 		/// Load POIs from database.
 		/// </summary>
 		/// <returns>List of POIs</returns>
@@ -129,6 +175,27 @@ namespace MultiTool.Utilities
 			}
 
 			return POIsCache;
+		}
+
+		/// <summary>
+		/// Clear database caches.
+		/// </summary>
+		internal static void ClearCaches()
+		{
+			vehiclesCache.Clear();
+			itemsCache.Clear();
+			POIsCache.Clear();
+		}
+
+		/// <summary>
+		/// Rebuild database caches.
+		/// </summary>
+		internal static void RebuildCaches()
+		{
+			ClearCaches();
+			LoadVehicles();
+			LoadItems();
+			LoadPOIs();
 		}
 	}
 }

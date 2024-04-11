@@ -140,6 +140,11 @@ namespace MultiTool.Tabs
 				else
 					settings.mode = "scale";
 			}
+
+			miscY += buttonHeight + 10f;
+
+			if (GUI.Button(new Rect(miscX, miscY, buttonWidth * 2, buttonHeight), "Rebuild thumbnail cache (this will lag)"))
+				ThumbnailGenerator.RebuildCache();
 		}
 	}
 }

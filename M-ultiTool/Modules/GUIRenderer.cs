@@ -120,21 +120,6 @@ namespace MultiTool.Modules
 		// Item menu variables.
 		private Vector2 itemsScrollPosition;
 		internal static List<Item> items = new List<Item>();
-		private Dictionary<string, List<Type>> categories = new Dictionary<string, List<Type>>()
-		{
-			{ "Vehicles", new List<Type>() { typeof(carscript) } },
-			{ "Tanks", new List<Type>() { typeof(tankscript) } },
-			{ "Vehicle parts", new List<Type>() { typeof(partscript) } },
-			{ "Guns", new List<Type>() { typeof(weaponscript) } },
-			{ "Melee weapons", new List<Type>() { typeof(meleeweaponscript) } },
-			{ "Cleaning", new List<Type>() { typeof(drotkefescript), typeof(spricniscript) } },
-			{ "Refillables", new List<Type>() { typeof(ammoscript) } },
-			{ "Food", new List<Type>() { typeof(ediblescript) } },
-			{ "Wearables", new List<Type>() { typeof(wearable) } },
-			{ "Lights", new List<Type>() { typeof(flashlightscript) } },
-			{ "Usables", new List<Type>() { typeof(pickupable) } },
-			{ "Other", new List<Type>() { typeof(MonoBehaviour) } },
-		};
 
 		// POI variables.
 		internal static List<POI> POIs = new List<POI>();
@@ -357,27 +342,9 @@ namespace MultiTool.Modules
 				AddTab(new Tabs.MiscellaneousTab());
 				AddTab(new Tabs.DeveloperTab());
 
-				// Prepare items list.
-				items.Clear();
-				ThumbnailGenerator.PrepareCache();
-				foreach (GameObject item in itemdatabase.d.items)
-				{
-					try
-					{
-						// Remove vehicles and trailers from items array.
-						if (item && !GameUtilities.IsVehicleOrTrailer(item) && item.name != null && item.name != "ErrorPrefab")
-						{
-							items.Add(new Item() { item = item, thumbnail = ThumbnailGenerator.GetThumbnail(item), category = GameUtilities.GetCategory(item, categories) });
-						}
-					}
-					catch (Exception ex)
-					{
-						Logger.Log($"Failed to load item {item.name} - {ex}", Logger.LogLevel.Error);
-					}
-				}
-
 				// Load data from database.
 				vehicles = DatabaseUtilities.LoadVehicles();
+				items = DatabaseUtilities.LoadItems();
 				POIs = DatabaseUtilities.LoadPOIs();
 
 				// Load save data.

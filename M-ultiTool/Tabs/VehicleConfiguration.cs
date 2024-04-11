@@ -148,10 +148,9 @@ namespace MultiTool.Tabs
 			currVehicleX += sliderWidth + 10f;
 			if (GUI.Button(new Rect(currVehicleX, currVehicleY, buttonWidth, buttonHeight), "Apply"))
 			{
-				List<partconditionscript> children = GameUtilities.FindPartChildren(partconditionscript);
+				List<partconditionscript> children = new List<partconditionscript>();
+				GameUtilities.FindPartChildren(partconditionscript, ref children);
 
-				partconditionscript.state = GUIRenderer.conditionInt;
-				partconditionscript.Refresh();
 				foreach (partconditionscript child in children)
 				{
 					child.state = GUIRenderer.conditionInt;
