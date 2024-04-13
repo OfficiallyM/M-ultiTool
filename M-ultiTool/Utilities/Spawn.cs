@@ -24,7 +24,7 @@ namespace MultiTool.Utilities
 			try
 			{
 				int selectedCondition = item.conditionInt;
-				if (selectedCondition == -1)
+				if (selectedCondition == -1 && item.item.GetComponent<partconditionscript>() != null)
 				{
 					// Randomise item condition.
 					int maxCondition = (int)Enum.GetValues(typeof(Item.Condition)).Cast<Item.Condition>().Max();
@@ -106,13 +106,11 @@ namespace MultiTool.Utilities
 		internal static void Spawn(Vehicle vehicle)
 		{
 			int selectedCondition = vehicle.conditionInt;
-			bool fullRandom = false;
 			if (selectedCondition == -1)
 			{
 				// Randomise vehicle condition.
 				int maxCondition = (int)Enum.GetValues(typeof(Item.Condition)).Cast<Item.Condition>().Max();
 				selectedCondition = UnityEngine.Random.Range(0, maxCondition);
-				fullRandom = true;
 			}
 
 			// Set vehicle license plate text.
@@ -139,7 +137,7 @@ namespace MultiTool.Utilities
 			if (fuelTank == null)
 			{
 				// Vehicle doesn't have a fuel tank, just spawn the vehicle and return.
-				Spawn(vehicle.vehicle, vehicle.color, fullRandom, selectedCondition, vehicle.variant);
+				Spawn(vehicle.vehicle, vehicle.color, selectedCondition, vehicle.variant);
 				return;
 			}
 
@@ -147,7 +145,7 @@ namespace MultiTool.Utilities
 			if (!new Settings().spawnWithFuel)
 			{
 				fuelTank.F.fluids.Clear();
-				Spawn(vehicle.vehicle, vehicle.color, fullRandom, selectedCondition, vehicle.variant);
+				Spawn(vehicle.vehicle, vehicle.color, selectedCondition, vehicle.variant);
 				return;
 			}
 
@@ -156,7 +154,7 @@ namespace MultiTool.Utilities
 			{
 				if (vehicle.fuelTypeInts[0] == -1 && vehicle.fuelValues[0] == -1f)
 				{
-					Spawn(vehicle.vehicle, vehicle.color, fullRandom, selectedCondition, vehicle.variant);
+					Spawn(vehicle.vehicle, vehicle.color, selectedCondition, vehicle.variant);
 					return;
 				}
 			}
@@ -187,7 +185,7 @@ namespace MultiTool.Utilities
 					fuelTank.F.ChangeOne(vehicle.fuelValues[i], (mainscript.fluidenum)vehicle.fuelTypeInts[i]);
 				}
 			}
-			Spawn(vehicle.vehicle, vehicle.color, fullRandom, selectedCondition, vehicle.variant);
+			Spawn(vehicle.vehicle, vehicle.color, selectedCondition, vehicle.variant);
 		}
 
 		/// <summary>
@@ -282,7 +280,7 @@ namespace MultiTool.Utilities
 		/// <summary>
 		/// Based off mainscript Spawn method
 		/// </summary>
-		internal static GameObject Spawn(GameObject gameObject, Color color, bool fullRandom, int condition, int variant, Vector3? position = null, Quaternion? rotation = null)
+		internal static GameObject Spawn(GameObject gameObject, Color color, int condition, int variant, Vector3? position = null, Quaternion? rotation = null)
 		{
 			if (position == null)
 				position = mainscript.M.player.lookPoint + Vector3.up * 0.75f;
@@ -307,7 +305,7 @@ namespace MultiTool.Utilities
 						}
 					}
 
-					if (fullRandom)
+					if (condition == -1)
 					{
 						GameUtilities.RandomiseCondition(component1);
 						GameUtilities.Paint(color, component1);

@@ -847,8 +847,6 @@ namespace MultiTool.Modules
 						if (startVehicleColor.HasValue)
 							color = startVehicleColor.Value;
 
-						bool random = startVehicleCondition == -1;
-
 						// Destroying the actual starter car doesn't want to cooperate
 						// so drop it out the map instead.
 						UnityEngine.Object.Destroy(starterVehicle.gameObject);
@@ -857,7 +855,7 @@ namespace MultiTool.Modules
 						Vehicle vehicle = vehicles.Where(v => v.vehicle.name.ToLower().Contains(starterVehicleName.ToLower())).FirstOrDefault();
 						if (vehicle != null)
 						{
-							finalStarterVehicle = SpawnUtilities.Spawn(vehicle.vehicle, color, random, startVehicleCondition, -1, position, rotation);
+							finalStarterVehicle = SpawnUtilities.Spawn(vehicle.vehicle, color, startVehicleCondition, -1, position, rotation);
 						}
 					}
 					else
