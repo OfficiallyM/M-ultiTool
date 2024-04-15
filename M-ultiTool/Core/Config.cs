@@ -118,6 +118,12 @@ namespace MultiTool.Core
 			get { return s_objectDebugShowCore; }
 			set { s_objectDebugShowCore = value; }
 		}
+		public static bool s_objectDebugShowChildren = true;
+		public bool objectDebugShowChildren
+		{
+			get { return s_objectDebugShowChildren; }
+			set { s_objectDebugShowChildren = value; }
+		}
 	}
 
 	[DataContract]

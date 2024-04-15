@@ -76,6 +76,14 @@ namespace MultiTool.Tabs
 				{
 					settings.objectDebugShowCore = !settings.objectDebugShowCore;
 				}
+
+				y += buttonHeight + 10f;
+
+				// Toggle showing child components.
+				if (GUI.Button(new Rect(x, y, buttonWidth, buttonHeight), GUIRenderer.GetAccessibleString("Show child components", settings.objectDebugShowChildren)))
+				{
+					settings.objectDebugShowChildren = !settings.objectDebugShowChildren;
+				}
 			}
 
 			y += buttonHeight + 10f;

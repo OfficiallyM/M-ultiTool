@@ -2016,7 +2016,12 @@ namespace MultiTool.Modules
 					GUI.Label(new Rect(x, y, contentWidth, 60f), "<color=#fff><size=18>Components</size>\nAssembly - Class</color>");
                     y += 65f;
 
-					foreach (Component component in debugObject.GetComponents(typeof(Component)))
+					Component[] components = debugObject.GetComponents(typeof(Component));
+					if (settings.objectDebugShowChildren)
+						components = debugObject.GetComponentsInChildren(typeof(Component));
+					components = components.Distinct().ToArray();
+
+					foreach (Component component in components)
 					{
 						Type type = component.GetType();
 						string assembly = type.Assembly.GetName().Name;
@@ -2029,7 +2034,7 @@ namespace MultiTool.Modules
 						if (!settings.objectDebugShowUnity && assembly.Contains("UnityEngine"))
 							continue;
 
-						GUI.Label(new Rect(x, y, contentWidth, 20f), $"{assembly} - {type.Name}");
+						GUI.Label(new Rect(x, y, contentWidth, 20f), $"{assembly} - {type.Name} {(settings.objectDebugShowChildren && component.transform.parent != null ? "(Child of" + component.transform.parent.name + ")" : "")}");
 						y += 22f;
 					}
                 }
