@@ -63,7 +63,7 @@ namespace MultiTool.Tabs
 					if (GUIRenderer.ufo != null)
 						UnityEngine.Object.Destroy(GUIRenderer.ufo);
 
-					GUIRenderer.ufo = UnityEngine.Object.Instantiate(GUIRenderer.temp.FEDOSPAWN.prefab, mainscript.M.player.lookPoint + Vector3.up * 0.75f, Quaternion.FromToRotation(Vector3.forward, -mainscript.M.player.transform.right));
+					GUIRenderer.ufo = UnityEngine.Object.Instantiate(GUIRenderer.temp.FEDOSPAWN.prefab, mainscript.M.player.transform.position + (mainscript.M.player.transform.forward * 5f) + (Vector3.up * 2f), Quaternion.FromToRotation(Vector3.forward, -mainscript.M.player.transform.right));
 					fedoscript ufoScript = GUIRenderer.ufo.GetComponent<fedoscript>();
 					ufoScript.ai = false;
 					ufoScript.followRoad = false;
