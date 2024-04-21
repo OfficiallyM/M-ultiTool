@@ -1181,7 +1181,10 @@ namespace MultiTool.Modules
 					"dela",
 					"DummyModder",
 					"Cerulean",
-					"Cassidy"
+					"Cassidy",
+					"Runden",
+					"Ghaleas",
+					"SgtJoe",
 				};
 
 				float totalCreditsHeight = (credits.Count + other.Count) * 20f;
