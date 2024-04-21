@@ -88,6 +88,20 @@ namespace MultiTool.Tabs
 
 			y += buttonHeight + 10f;
 
+			// Toggle showing colliders.
+			if (GUI.Button(new Rect(x, y, buttonWidth, buttonHeight), GUIRenderer.GetAccessibleString("Show colliders", settings.showColliders)))
+			{
+				settings.showColliders = !settings.showColliders;
+			}
+
+			y += buttonHeight + 10f;
+
+			// Toggle showing collider help.
+			if (GUI.Button(new Rect(x, y, buttonWidth, buttonHeight), GUIRenderer.GetAccessibleString("Show collider help", settings.showColliderHelp)))
+			{
+				settings.showColliderHelp = !settings.showColliderHelp;
+			}
+
 			GUI.EndScrollView();
 		}
 	}

@@ -11,6 +11,7 @@ using MultiTool.Extensions;
 using Settings = MultiTool.Core.Settings;
 using MultiTool.Utilities;
 using System.Reflection;
+using UnityEngine.Rendering;
 
 namespace MultiTool.Modules
 {
@@ -812,6 +813,72 @@ namespace MultiTool.Modules
 				catch (Exception ex)
 				{
 					Logger.Log($"Error during slotControl - {ex}");
+				}
+			}
+
+			// Logic for showing colliders.
+			if (settings.showColliders)
+			{
+				RaycastHit hitInfo;
+				if (Input.GetKeyDown(binds.GetKeyByAction((int)Keybinds.Inputs.select).key) && Physics.Raycast(mainscript.M.player.Cam.transform.position, mainscript.M.player.Cam.transform.forward, out hitInfo, float.PositiveInfinity, (int)mainscript.M.player.useLayer))
+				{
+					Mesh mesh = itemdatabase.d.gerror.GetComponentInChildren<MeshFilter>().mesh;
+					Material source;
+					try
+					{
+						source = new Material(Shader.Find("Standard"));
+						source.SetOverrideTag("RenderType", "Transparent");
+						source.SetFloat("_SrcBlend", (float)BlendMode.One);
+						source.SetFloat("_DstBlend", (float)BlendMode.OneMinusSrcAlpha);
+						source.SetFloat("_ZWrite", 0.0f);
+						source.DisableKeyword("_ALPHATEST_ON");
+						source.DisableKeyword("_ALPHABLEND_ON");
+						source.EnableKeyword("_ALPHAPREMULTIPLY_ON");
+					}
+					catch
+					{
+						source = new Material(mainscript.M.conditionmaterials[0].New);
+					}
+					foreach (Collider componentsInChild in hitInfo.collider.transform.root.GetComponentsInChildren<Collider>())
+					{
+						string str = "TEMPORARY DISPLAY CUBE " + componentsInChild.GetInstanceID();
+						if (componentsInChild.transform.Find(str) != null)
+						{
+							UnityEngine.Object.DestroyImmediate(componentsInChild.transform.Find(str).gameObject);
+						}
+						else
+						{
+							GameObject gameObject = new GameObject(str);
+							gameObject.transform.SetParent(componentsInChild.transform, false);
+							if (componentsInChild.GetType() == typeof(BoxCollider))
+							{
+								gameObject.transform.localPosition = ((BoxCollider)componentsInChild).center;
+								gameObject.transform.localScale = ((BoxCollider)componentsInChild).size;
+								gameObject.transform.localRotation = Quaternion.identity;
+								gameObject.AddComponent<MeshFilter>().mesh = mesh;
+							}
+							else if (componentsInChild.GetType() == typeof(MeshCollider))
+							{
+								gameObject.transform.localEulerAngles = gameObject.transform.localPosition = Vector3.zero;
+								gameObject.transform.localScale = new Vector3(1f, 1f, 1f);
+								gameObject.AddComponent<MeshFilter>().mesh = ((MeshCollider)componentsInChild).sharedMesh;
+							}
+							try
+							{
+								source = new Material(source);
+								Color color = new Color(1f, 0.0f, 0.0f, 0.8f);
+								if (componentsInChild.isTrigger)
+									color = new Color(0.0f, 1f, 0.0f, 0.8f);
+								if (componentsInChild.gameObject.GetComponent<interiorscript>() != null)
+									color = new Color(0f, 0f, 1f, 0.8f);
+								source.SetColor("_Color", color);
+							}
+							catch
+							{
+							}
+							gameObject.AddComponent<MeshRenderer>().material = source;
+						}
+					}
 				}
 			}
 
@@ -2058,6 +2125,28 @@ namespace MultiTool.Modules
 					}
                 }
             }
+			
+			if (settings.showColliders && settings.showColliderHelp)
+			{
+				width = resolutionX / 6;
+				height = 160f;
+				x = 0;
+				y = resolutionY / 2 - height;
+
+				GUI.Box(new Rect(x, y, width, height), "Show colliders");
+
+				y += 30f;
+				x += 10f;
+				GUI.Label(new Rect(x, y, contentWidth, 20f), $"Look at an object");
+				y += 25f;
+				GUI.Label(new Rect(x, y, contentWidth, 20f), $"Press '{binds.GetPrettyName((int)Keybinds.Inputs.select)}' to toggle colliders");
+				y += 25f;
+				GUI.Label(new Rect(x, y, contentWidth, 20f), "Red: Standard collider");
+				y += 25f;
+				GUI.Label(new Rect(x, y, contentWidth, 20f), "Green: Trigger");
+				y += 25f;
+				GUI.Label(new Rect(x, y, contentWidth, 20f), "Blue: Interior zone");
+			}
 		}
 
 		/// <summary>

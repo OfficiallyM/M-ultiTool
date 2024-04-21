@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using UnityEngine;
+using UnityEngine.Rendering;
 using Logger = MultiTool.Modules.Logger;
 
 namespace MultiTool.Utilities
@@ -22,12 +23,13 @@ namespace MultiTool.Utilities
 			// Create material based off Standard shader.
 			Material source;
 			source = new Material(Shader.Find("Standard"));
-			source.SetColor("_Color", colliderColor);
-			source.SetFloat("_Mode", 3f);
-			source.SetInt("_SrcBlend", 5);
-			source.SetInt("_DstBlend", 10);
-			source.SetInt("_ZWrite", 0);
-			source.renderQueue = 3000;
+			source.SetOverrideTag("RenderType", "Transparent");
+			source.SetFloat("_SrcBlend", (float)BlendMode.One);
+			source.SetFloat("_DstBlend", (float)BlendMode.OneMinusSrcAlpha);
+			source.SetFloat("_ZWrite", 0.0f);
+			source.DisableKeyword("_ALPHATEST_ON");
+			source.DisableKeyword("_ALPHABLEND_ON");
+			source.EnableKeyword("_ALPHAPREMULTIPLY_ON");
 
 			foreach (Collider collider in obj.GetComponentsInChildren<Collider>())
 			{

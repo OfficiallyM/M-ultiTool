@@ -118,11 +118,26 @@ namespace MultiTool.Core
 			get { return s_objectDebugShowCore; }
 			set { s_objectDebugShowCore = value; }
 		}
+
 		public static bool s_objectDebugShowChildren = true;
 		public bool objectDebugShowChildren
 		{
 			get { return s_objectDebugShowChildren; }
 			set { s_objectDebugShowChildren = value; }
+		}
+
+		public static bool s_showColliders = false;
+		public bool showColliders
+		{
+			get { return s_showColliders; }
+			set { s_showColliders = value; }
+		}
+
+		public static bool s_showColliderHelp = false;
+		public bool showColliderHelp
+		{
+			get { return s_showColliderHelp; }
+			set { s_showColliderHelp = value; }
 		}
 	}
 
