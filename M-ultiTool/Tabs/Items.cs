@@ -59,6 +59,15 @@ namespace MultiTool.Tabs
 			{
 				Item currentItem = searchItems[i];
 				GameObject item = searchItems[i].item;
+
+				if (item == null || item.name == null)
+				{
+					GUI.Button(new Rect(itemX, itemY, itemWidth, itemHeight), String.Empty);
+					GUI.Button(new Rect(itemX, itemY, itemWidth, thumbnailHeight), string.Empty);
+					GUI.Button(new Rect(itemX, itemY + thumbnailHeight, itemWidth, textHeight), "Broken");
+					continue;
+				}
+
 				itemX += itemWidth + 10f;
 				if (i % maxRowItems == 0)
 				{
