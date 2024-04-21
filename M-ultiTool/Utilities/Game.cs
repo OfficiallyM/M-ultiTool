@@ -1,4 +1,5 @@
 ﻿using MultiTool.Core;
+using MultiTool.Modules;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -39,7 +40,7 @@ namespace MultiTool.Utilities
 		/// <param name="gameObject">The item to get the category for</param>
 		/// <param name="categories">The categories to sort into</param>
 		/// <returns>The category index</returns>
-		public static int GetCategory(GameObject gameObject, Dictionary<string, List<Type>> categories)
+		public static int GetCategory(GameObject gameObject)
 		{
 			// Get all components, add types to list.
 			var components = gameObject.GetComponents<MonoBehaviour>();
@@ -51,14 +52,25 @@ namespace MultiTool.Utilities
 			}
 
 			// Convert keys to list to get the index later.
-			List<string> names = categories.Keys.ToList();
+			List<string> names = GUIRenderer.categories.Keys.ToList();
+
+			int databaseLength = Enum.GetNames(typeof(itemdatabase.i)).Length;
 
 			// Categories will be located in order.
-			foreach (KeyValuePair<string, List<Type>> category in categories)
+			foreach (KeyValuePair<string, List<Type>> category in GUIRenderer.categories)
 			{
 				foreach (Type type in category.Value)
 				{
-					if (types.ContainsKey(type))
+					// Use tosaveitemscript as a throwaway category for mod items as they
+					// can't be found in the usual way.
+					if (type == typeof(tosaveitemscript))
+					{
+						// Check if object index is outside the bounds of the regular itemdatabase.
+						int index = Array.FindIndex(itemdatabase.d.items, i => i == gameObject);
+						if (index >= databaseLength)
+							return names.IndexOf("Mod items");
+					}
+					else if (types.ContainsKey(type))
 					{
 						MonoBehaviour component = types[type];
 						if (type == typeof(pickupable))

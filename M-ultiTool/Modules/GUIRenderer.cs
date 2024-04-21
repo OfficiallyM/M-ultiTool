@@ -120,6 +120,22 @@ namespace MultiTool.Modules
 		// Item menu variables.
 		private Vector2 itemsScrollPosition;
 		internal static List<Item> items = new List<Item>();
+		internal static Dictionary<string, List<Type>> categories = new Dictionary<string, List<Type>>()
+		{
+			{ "Vehicles", new List<Type>() { typeof(carscript) } },
+			{ "Tanks", new List<Type>() { typeof(tankscript) } },
+			{ "Vehicle parts", new List<Type>() { typeof(partscript) } },
+			{ "Guns", new List<Type>() { typeof(weaponscript) } },
+			{ "Melee weapons", new List<Type>() { typeof(meleeweaponscript) } },
+			{ "Cleaning", new List<Type>() { typeof(drotkefescript), typeof(spricniscript) } },
+			{ "Refillables", new List<Type>() { typeof(ammoscript) } },
+			{ "Food", new List<Type>() { typeof(ediblescript) } },
+			{ "Wearables", new List<Type>() { typeof(wearable) } },
+			{ "Lights", new List<Type>() { typeof(flashlightscript) } },
+			{ "Usables", new List<Type>() { typeof(pickupable) } },
+			{ "Mod items", new List<Type>() { typeof(tosaveitemscript) } },
+			{ "Other", new List<Type>() { typeof(MonoBehaviour) } },
+		};
 
 		// POI variables.
 		internal static List<POI> POIs = new List<POI>();

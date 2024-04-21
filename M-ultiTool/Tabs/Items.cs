@@ -15,21 +15,6 @@ namespace MultiTool.Tabs
 
 		private Vector2 itemScrollPosition;
 
-		private Dictionary<string, List<Type>> categories = new Dictionary<string, List<Type>>()
-		{
-			{ "Vehicles", new List<Type>() { typeof(carscript) } },
-			{ "Tanks", new List<Type>() { typeof(tankscript) } },
-			{ "Vehicle parts", new List<Type>() { typeof(partscript) } },
-			{ "Guns", new List<Type>() { typeof(weaponscript) } },
-			{ "Melee weapons", new List<Type>() { typeof(meleeweaponscript) } },
-			{ "Cleaning", new List<Type>() { typeof(drotkefescript), typeof(spricniscript) } },
-			{ "Refillables", new List<Type>() { typeof(ammoscript) } },
-			{ "Food", new List<Type>() { typeof(ediblescript) } },
-			{ "Wearables", new List<Type>() { typeof(wearable) } },
-			{ "Lights", new List<Type>() { typeof(flashlightscript) } },
-			{ "Usables", new List<Type>() { typeof(pickupable) } },
-			{ "Other", new List<Type>() { typeof(MonoBehaviour) } },
-		};
 		private bool filterShow = false;
 		private List<int> filters = new List<int>();
 
@@ -112,10 +97,10 @@ namespace MultiTool.Tabs
 			if (filterShow)
 			{
 				filterY += searchHeight;
-				GUI.Box(new Rect(filterX, filterY, filterWidth, (searchHeight + 2f) * categories.Count), String.Empty);
-				for (int i = 0; i < categories.Count; i++)
+				GUI.Box(new Rect(filterX, filterY, filterWidth, (searchHeight + 2f) * GUIRenderer.categories.Count), String.Empty);
+				for (int i = 0; i < GUIRenderer.categories.Count; i++)
 				{
-					string name = categories.ElementAt(i).Key;
+					string name = GUIRenderer.categories.ElementAt(i).Key;
 					if (GUI.Button(new Rect(filterX, filterY, filterWidth, searchHeight), filters.Contains(i) ? $"<color=#0F0>{name}</color>" : name))
 					{
 						if (filters.Contains(i))
