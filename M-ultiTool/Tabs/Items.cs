@@ -44,7 +44,7 @@ namespace MultiTool.Tabs
 			// Filter item list by search term.
 			List<Item> searchItems = GUIRenderer.items;
 			if (GUIRenderer.search != String.Empty)
-				searchItems = GUIRenderer.items.Where(v => v.item.name.ToLower().Contains(GUIRenderer.search.ToLower())).ToList();
+				searchItems = GUIRenderer.items.Where(v => v.item != null && v.item.name != null && v.item.name.ToLower().Contains(GUIRenderer.search.ToLower())).ToList();
 
 			if (filters.Count > 0)
 				searchItems = searchItems.Where(v => filters.Contains(v.category)).ToList();
@@ -60,6 +60,13 @@ namespace MultiTool.Tabs
 				Item currentItem = searchItems[i];
 				GameObject item = searchItems[i].item;
 
+				itemX += itemWidth + 10f;
+				if (i % maxRowItems == 0)
+				{
+					itemX = initialRowX;
+					itemY += itemHeight + 10f;
+				}
+
 				if (item == null || item.name == null)
 				{
 					GUI.Button(new Rect(itemX, itemY, itemWidth, itemHeight), String.Empty);
@@ -68,14 +75,8 @@ namespace MultiTool.Tabs
 					continue;
 				}
 
-				itemX += itemWidth + 10f;
-				if (i % maxRowItems == 0)
-				{
-					itemX = initialRowX;
-					itemY += itemHeight + 10f;
-				}
 				if (GUI.Button(new Rect(itemX, itemY, itemWidth, itemHeight), String.Empty) ||
-				GUI.Button(new Rect(itemX, itemY, itemWidth, thumbnailHeight), currentItem.thumbnail) ||
+					GUI.Button(new Rect(itemX, itemY, itemWidth, thumbnailHeight), currentItem.thumbnail) ||
 					GUI.Button(new Rect(itemX, itemY + thumbnailHeight, itemWidth, textHeight), item.name))
 				{
 					SpawnUtilities.Spawn(new Item()
