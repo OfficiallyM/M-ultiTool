@@ -412,7 +412,7 @@ namespace MultiTool.Modules
 							pushForce = mainscript.M.pushForce,
 							carryWeight = player.maxWeight,
 							pickupForce = player.maxPickupForce,
-							mass = player.mass.Mass(),
+							mass = player != null && player.mass != null ? player.mass.Mass() : 0,
 							infiniteAmmo = false,
 						};
 					}

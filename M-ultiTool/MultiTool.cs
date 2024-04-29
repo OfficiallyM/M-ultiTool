@@ -313,26 +313,28 @@ namespace MultiTool
 			{
 				PlayerData playerData = GUIRenderer.playerData;
 				fpscontroller player = mainscript.M.player;
-
-				player.FdefMaxSpeed = playerData.walkSpeed;
-				player.FrunM = playerData.runSpeed;
-				player.FjumpForce = playerData.jumpForce;
-				mainscript.M.pushForce = playerData.pushForce;
-				player.maxWeight = playerData.carryWeight;
-				player.maxPickupForce = playerData.pickupForce;
-				if (player.mass.Mass() != playerData.mass)
-					player.mass.SetMass(playerData.mass);
-
-				if (player.inHandP != null && player.inHandP.weapon != null)
+				if (player != null)
 				{
-					tosaveitemscript save = player.inHandP.weapon.GetComponent<tosaveitemscript>();
-					if (save.idInSave != GUIRenderer.lastWeaponId)
+					player.FdefMaxSpeed = playerData.walkSpeed;
+					player.FrunM = playerData.runSpeed;
+					player.FjumpForce = playerData.jumpForce;
+					mainscript.M.pushForce = playerData.pushForce;
+					player.maxWeight = playerData.carryWeight;
+					player.maxPickupForce = playerData.pickupForce;
+					if (player.mass != null && player.mass.Mass() != playerData.mass)
+						player.mass.SetMass(playerData.mass);
+
+					if (player.inHandP != null && player.inHandP.weapon != null)
 					{
-						GUIRenderer.lastWeaponId = save.idInSave;
-						GUIRenderer.defaultFireSpeed = player.inHandP.weapon.minShootTime;
+						tosaveitemscript save = player.inHandP.weapon.GetComponent<tosaveitemscript>();
+						if (save.idInSave != GUIRenderer.lastWeaponId)
+						{
+							GUIRenderer.lastWeaponId = save.idInSave;
+							GUIRenderer.defaultFireSpeed = player.inHandP.weapon.minShootTime;
+						}
+						player.inHandP.weapon.infinite = playerData.infiniteAmmo;
+						player.inHandP.weapon.minShootTime = playerData.fireSpeed;
 					}
-					player.inHandP.weapon.infinite = playerData.infiniteAmmo;
-					player.inHandP.weapon.minShootTime = playerData.fireSpeed;
 				}
 			}
 		}
