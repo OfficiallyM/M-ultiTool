@@ -77,16 +77,16 @@
 		{
 			"objectName": "Car06Full",
 			"variant": 1,
-			"name": "Golf - Gas"
+			"name": "VW Golf - Gas"
 		},
 		{
 			"objectName": "Car06Full",
 			"variant": 2,
-			"name": "Golf - Diesel"
+			"name": "VW Golf - Diesel"
 		},
 		{
 			"objectName": "Car06PFull",
-			"name": "Golf Caddy"
+			"name": "VW Caddy"
 		},
 		{
 			"objectName": "Car07 Full",
@@ -101,22 +101,22 @@
 		{
 			"objectName": "Car08 Full",
 			"variant": 1,
-			"name": "Beetle (Variant 1)"
+			"name": "VW Beetle (Black engine bay)"
 		},
 		{
 			"objectName": "Car08 Full",
 			"variant": 2,
-			"name": "Beetle (Variant 2)"
+			"name": "VW Beetle (Body engine bay)"
 		},
 		{
 			"objectName": "Car08c Full",
 			"variant": 1,
-			"name": "Beetle Cabrio (Variant 1)"
+			"name": "VW Beetle Cabrio (Black engine bay)"
 		},
 		{
 			"objectName": "Car08c Full",
 			"variant": 2,
-			"name": "Beetle Cabrio (Variant 2)"
+			"name": "VW Beetle Cabrio (Body engine bay)"
 		},
 		{
 			"objectName": "Bike03Full",
@@ -149,42 +149,42 @@
 		{
 			"objectName": "Car09full",
 			"variant": 1,
-			"name": "Barkas (Variant 1)"
+			"name": "Barkas (1 side window)"
 		},
 		{
 			"objectName": "Car09full",
 			"variant": 2,
-			"name": "Barkas (Variant 2)"
+			"name": "Barkas (0 side windows)"
 		},
 		{
 			"objectName": "Car09full",
 			"variant": 3,
-			"name": "Barkas (Variant 3)"
+			"name": "Barkas (2 side windows)"
 		},
 		{
 			"objectName": "Car09full_slide",
 			"variant": 1,
-			"name": "Barkas slide (Variant 1)"
+			"name": "Barkas slide (1 side window)"
 		},
 		{
 			"objectName": "Car09full_slide",
 			"variant": 2,
-			"name": "Barkas slide (Variant 2)"
+			"name": "Barkas slide (0 side windows)"
 		},
 		{
 			"objectName": "Car09full_slide",
 			"variant": 3,
-			"name": "Barkas slide (Variant 3)"
+			"name": "Barkas slide (2 side windows)"
 		},
 		{
 			"objectName": "Car09Pfull",
 			"variant": 1,
-			"name": "Barkas pickup (Variant 1)"
+			"name": "Barkas pickup"
 		},
 		{
 			"objectName": "Car09Tfull",
 			"variant": 1,
-			"name": "Barkas transporter (Variant 1)"
+			"name": "Barkas transporter"
 		}
 	],
 	"POIs": [
