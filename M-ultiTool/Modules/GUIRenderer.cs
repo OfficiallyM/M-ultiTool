@@ -414,6 +414,7 @@ namespace MultiTool.Modules
 							pickupForce = player.maxPickupForce,
 							mass = player != null && player.mass != null ? player.mass.Mass() : 0,
 							infiniteAmmo = false,
+							fireSpeed = -1,
 						};
 					}
 					playerData = config.GetPlayerData(defaultPlayerData);

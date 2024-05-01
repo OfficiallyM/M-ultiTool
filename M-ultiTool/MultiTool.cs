@@ -331,6 +331,9 @@ namespace MultiTool
 						{
 							GUIRenderer.lastWeaponId = save.idInSave;
 							GUIRenderer.defaultFireSpeed = player.inHandP.weapon.minShootTime;
+
+							if (playerData.fireSpeed == -1)
+								playerData.fireSpeed = GUIRenderer.defaultFireSpeed.GetValueOrDefault();
 						}
 						player.inHandP.weapon.infinite = playerData.infiniteAmmo;
 						player.inHandP.weapon.minShootTime = playerData.fireSpeed;
