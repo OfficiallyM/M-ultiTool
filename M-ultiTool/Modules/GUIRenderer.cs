@@ -248,6 +248,33 @@ namespace MultiTool.Modules
 			GUI.skin.horizontalScrollbar.fixedHeight = scrollWidth;
 			GUI.skin.horizontalScrollbarThumb.fixedHeight = scrollWidth;
 
+			// Find screen resolution.
+			resolutionX = Screen.width;
+			resolutionY = Screen.height;
+			int resX = mainscript.M != null ? mainscript.M.SettingObj.S.IResolutionX : mainmenuscript.mainmenu.Settings.S.IResolutionX;
+			int resY = mainscript.M != null ? mainscript.M.SettingObj.S.IResolutionY : mainmenuscript.mainmenu.Settings.S.IResolutionY;
+			if (resX != resolutionX)
+			{
+				resolutionX = resX;
+				resolutionY = resY;
+
+				// Resolution has changed, recalculate menu sizes.
+				legacyMainMenuWidth = resolutionX / 7f;
+				legacyMainMenuHeight = resolutionY / 1.2f;
+				legacyMainMenuX = resolutionX / 2.5f - legacyMainMenuWidth;
+				legacyMainMenuY = 75f;
+
+				mainMenuWidth = resolutionX - 80f;
+				mainMenuHeight = resolutionY - 80f;
+				mainMenuX = 40f;
+				mainMenuY = 40f;
+
+				legacyVehicleMenuX = legacyMainMenuX + legacyMainMenuWidth + 15f;
+				legacyVehicleMenuY = legacyMainMenuY;
+				legacyVehicleMenuWidth = resolutionX / 2f;
+				legacyVehicleMenuHeight = resolutionY / 4.25f;
+			}
+
 			// In game.
 			if (mainscript.M != null)
 			{
