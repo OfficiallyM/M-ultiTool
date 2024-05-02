@@ -242,9 +242,11 @@ namespace MultiTool.Modules
 			if (!enabled)
 				return;
 
-			// Override scrollbar width;
+			// Override scrollbar width and height.
 			GUI.skin.verticalScrollbar.fixedWidth = scrollWidth;
 			GUI.skin.verticalScrollbarThumb.fixedWidth = scrollWidth;
+			GUI.skin.horizontalScrollbar.fixedHeight = scrollWidth;
+			GUI.skin.horizontalScrollbarThumb.fixedHeight = scrollWidth;
 
 			// In game.
 			if (mainscript.M != null)
@@ -1297,7 +1299,7 @@ namespace MultiTool.Modules
 				float tabButtonWidth = 150f;
 				float tabWidth = (tabButtonWidth + 30f) * tabs.Count;
 				float tabX = x + 20f;
-				tabScrollPosition = GUI.BeginScrollView(new Rect(tabX, y + 50f, tabWidth, tabHeight), tabScrollPosition, new Rect(tabX, y + 50f, tabWidth, tabHeight));
+				tabScrollPosition = GUI.BeginScrollView(new Rect(tabX, y + 50f, mainMenuWidth - 40f, tabHeight + 10f), tabScrollPosition, new Rect(tabX, y + 50f, tabWidth, tabHeight), GUI.skin.horizontalScrollbar, new GUIStyle());
 				for (int tabIndex = 0; tabIndex < tabs.Count; tabIndex++)
 				{
 					// Don't render disabled tabs.
