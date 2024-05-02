@@ -113,7 +113,8 @@ namespace MultiTool.Utilities
 				selectedCondition = UnityEngine.Random.Range(0, maxCondition);
 			}
 
-			// Set vehicle license plate text.
+			// Set vehicle license plate text on the prefab as GetComponentsInChildren()
+			// doesn't find the plate of the spawned vehicle.
 			if (vehicle.plate != String.Empty)
 			{
 				rendszamscript[] plateScripts = vehicle.vehicle.GetComponentsInChildren<rendszamscript>();
@@ -126,38 +127,44 @@ namespace MultiTool.Utilities
 				}
 			}
 
-			tankscript fuelTank = vehicle.vehicle.GetComponent<tankscript>();
+			GameObject spawnedVehicle = Spawn(vehicle.vehicle, vehicle.color, selectedCondition, vehicle.variant);
+
+			// Error occurred during vehicle spawn, return early.
+			if (spawnedVehicle == null) return;
+
+			// Reset prefab plate so it doesn't persist between spawns when unset.
+			if (vehicle.plate != String.Empty)
+			{
+				rendszamscript[] plateScripts = vehicle.vehicle.GetComponentsInChildren<rendszamscript>();
+				foreach (rendszamscript plateScript in plateScripts)
+				{
+					if (plateScript == null)
+						continue;
+
+					plateScript.same = false;
+				}
+			}
+
+			tankscript fuelTank = spawnedVehicle.GetComponent<tankscript>();
 
 			// Find fuel tank objects.
 			if (fuelTank == null)
 			{
-				fuelTank = vehicle.vehicle.GetComponentInChildren<tankscript>();
+				fuelTank = spawnedVehicle.GetComponentInChildren<tankscript>();
 			}
 
-			if (fuelTank == null)
-			{
-				// Vehicle doesn't have a fuel tank, just spawn the vehicle and return.
-				Spawn(vehicle.vehicle, vehicle.color, selectedCondition, vehicle.variant);
-				return;
-			}
+			// Vehicle doesn't have a fuel tank, return early.
+			if (fuelTank == null) return;
 
 			// Support for spawning without any fuel.
 			if (!new Settings().spawnWithFuel)
 			{
 				fuelTank.F.fluids.Clear();
-				Spawn(vehicle.vehicle, vehicle.color, selectedCondition, vehicle.variant);
 				return;
 			}
 
-			// Fuel type and value are default, just spawn the vehicle.
-			if (vehicle.fuelMixes == 1)
-			{
-				if (vehicle.fuelTypeInts[0] == -1 && vehicle.fuelValues[0] == -1f)
-				{
-					Spawn(vehicle.vehicle, vehicle.color, selectedCondition, vehicle.variant);
-					return;
-				}
-			}
+			// Fuel type and value are default, return early.
+			if (vehicle.fuelMixes == 1 && vehicle.fuelTypeInts[0] == -1 && vehicle.fuelValues[0] == -1f) return;
 
 			// Store the current fuel types and amounts to return either to default.
 			List<mainscript.fluidenum> currentFuelTypes = new List<mainscript.fluidenum>();
@@ -185,7 +192,6 @@ namespace MultiTool.Utilities
 					fuelTank.F.ChangeOne(vehicle.fuelValues[i], (mainscript.fluidenum)vehicle.fuelTypeInts[i]);
 				}
 			}
-			Spawn(vehicle.vehicle, vehicle.color, selectedCondition, vehicle.variant);
 		}
 
 		/// <summary>
