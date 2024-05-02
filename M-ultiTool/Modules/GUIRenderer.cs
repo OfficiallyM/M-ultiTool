@@ -1257,7 +1257,7 @@ namespace MultiTool.Modules
 					"Tumpy_Noodles",
 					"SubG",
 					"_Starixx",
-					"the Sabii",
+					"Sabi",
 					"Jessica",
 					"Doubt",
 					"dela",
@@ -1266,7 +1266,8 @@ namespace MultiTool.Modules
 					"Cassidy",
 					"Runden",
 					"Ghaleas",
-					"SgtJoe",
+					"PPSz",
+					"Egerdion",
 				};
 
 				float totalCreditsHeight = (credits.Count + other.Count) * 20f;
