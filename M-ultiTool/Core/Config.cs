@@ -163,6 +163,7 @@ namespace MultiTool.Core
 		[DataMember] public float scrollWidth { get; set; }
 		[DataMember] public bool? noclipGodmodeDisable { get; set; }
 		[DataMember] public string accessibilityMode { get; set; }
+		[DataMember] public bool? accessibilityModeAffectsColor { get; set; }
 		[DataMember] public float noclipFastMoveFactor { get; set; }
 		[DataMember] public List<Color> palette { get; set; }
 		[DataMember] public PlayerData playerData { get; set; }

@@ -12,6 +12,7 @@ using Settings = MultiTool.Core.Settings;
 using MultiTool.Utilities;
 using System.Reflection;
 using UnityEngine.Rendering;
+using static itemdatabase;
 
 namespace MultiTool.Modules
 {
@@ -189,6 +190,7 @@ namespace MultiTool.Modules
 		};
 		private bool accessibilityShow = false;
 		private static string accessibilityMode = "none";
+		private static bool accessibilityModeAffectsColors = true;
 		internal static float noclipFastMoveFactor = 10f;
 
 		// HUD variables.
@@ -1067,6 +1069,7 @@ namespace MultiTool.Modules
 				{
 					scrollWidth = config.GetScrollWidth(scrollWidth);
 					accessibilityMode = config.GetAccessibilityMode(accessibilityMode);
+					accessibilityModeAffectsColors = config.GetAccessibilityModeAffectsColor(accessibilityModeAffectsColors);
 					palette = config.GetPalette(palette);
 				}
 				catch (Exception ex)
@@ -1256,6 +1259,15 @@ namespace MultiTool.Modules
 
 						settingsY += configHeight + 2f;
 					}
+				}
+
+				settingsY += configHeight + 10f;
+				GUI.Label(new Rect(settingsX, settingsY, settingsWidth, configHeight), "Accessibility mode affects color slider labels:", labelStyle);
+				settingsY += configHeight;
+				if (GUI.Button(new Rect(settingsX, settingsY, buttonWidth, configHeight), GetAccessibleString("On", "Off", accessibilityModeAffectsColors)))
+				{
+					accessibilityModeAffectsColors = !accessibilityModeAffectsColors;
+					config.UpdateAccessibilityModeAffectsColor(accessibilityModeAffectsColors);
 				}
 			}
 			else if (creditsShow)
@@ -1520,7 +1532,7 @@ namespace MultiTool.Modules
 
 						// Vehicle colour sliders.
 						// Red.
-						GUI.Label(new Rect(configX, configY, configWidth, configHeight), "<color=#F00>Red:</color>", labelStyle);
+						GUI.Label(new Rect(configX, configY, configWidth, configHeight), GetAccessibleColorString("Red:", new Color(255, 0, 0)), labelStyle);
 						configY += configHeight;
 						red = GUI.HorizontalSlider(new Rect(configX, configY, configWidth, configHeight), color.r * 255, 0, 255);
 						red = Mathf.Round(red);
@@ -1534,7 +1546,7 @@ namespace MultiTool.Modules
 
 						// Green.
 						configY += configHeight + 10f;
-						GUI.Label(new Rect(configX, configY, configWidth, configHeight), "<color=#0F0>Green:</color>", labelStyle);
+						GUI.Label(new Rect(configX, configY, configWidth, configHeight), GetAccessibleColorString("Green:", new Color(0, 255, 0)), labelStyle);
 						configY += configHeight;
 						green = GUI.HorizontalSlider(new Rect(configX, configY, configWidth, configHeight), color.g * 255, 0, 255);
 						green = Mathf.Round(green);
@@ -1548,7 +1560,7 @@ namespace MultiTool.Modules
 
 						// Blue.
 						configY += configHeight + 10f;
-						GUI.Label(new Rect(configX, configY, configWidth, configHeight), "<color=#00F>Blue:</color>", labelStyle);
+						GUI.Label(new Rect(configX, configY, configWidth, configHeight), GetAccessibleColorString("Blue:", new Color(0, 0, 255)), labelStyle);
 						configY += configHeight;
 						blue = GUI.HorizontalSlider(new Rect(configX, configY, configWidth, configHeight), color.b * 255, 0, 255);
 						blue = Mathf.Round(blue);
@@ -1603,7 +1615,7 @@ namespace MultiTool.Modules
 
 						configScrollPosition = GUI.BeginScrollView(new Rect(configX, configY, configWidth, configDimensions.height - 40f), configScrollPosition, new Rect(configX, configY, configWidth, shapeConfigScrollHeight), new GUIStyle(), new GUIStyle());
 						// Red.
-						GUI.Label(new Rect(configX, configY, configWidth, configHeight), "<color=#F00>Red:</color>", labelStyle);
+						GUI.Label(new Rect(configX, configY, configWidth, configHeight), GetAccessibleColorString("Red:", new Color(255, 0, 0)), labelStyle);
 						configY += configHeight;
 						red = GUI.HorizontalSlider(new Rect(configX, configY, configWidth, configHeight), color.r * 255, 0, 255);
 						red = Mathf.Round(red);
@@ -1616,7 +1628,7 @@ namespace MultiTool.Modules
 
 						// Green.
 						configY += configHeight + 10f;
-						GUI.Label(new Rect(configX, configY, configWidth, configHeight), "<color=#0F0>Green:</color>", labelStyle);
+						GUI.Label(new Rect(configX, configY, configWidth, configHeight), GetAccessibleColorString("Green:", new Color(0, 255, 0)), labelStyle);
 						configY += configHeight;
 						green = GUI.HorizontalSlider(new Rect(configX, configY, configWidth, configHeight), color.g * 255, 0, 255);
 						green = Mathf.Round(green);
@@ -1629,7 +1641,7 @@ namespace MultiTool.Modules
 
 						// Blue.
 						configY += configHeight + 10f;
-						GUI.Label(new Rect(configX, configY, configWidth, configHeight), "<color=#00F>Blue:</color>", labelStyle);
+						GUI.Label(new Rect(configX, configY, configWidth, configHeight), GetAccessibleColorString("Blue:", new Color(0, 0, 255)), labelStyle);
 						configY += configHeight;
 						blue = GUI.HorizontalSlider(new Rect(configX, configY, configWidth, configHeight), color.b * 255, 0, 255);
 						blue = Mathf.Round(blue);
@@ -1832,7 +1844,7 @@ namespace MultiTool.Modules
 
 						// Vehicle colour sliders.
 						// Red.
-						GUI.Label(new Rect(x, y, width - 40f, 20f), "<color=#F00>Red:</color>", labelStyle);
+						GUI.Label(new Rect(x, y, width - 40f, 20f), GetAccessibleColorString("Red:", new Color(255, 0, 0)), labelStyle);
 						y += 20f;
 						float red = GUI.HorizontalSlider(new Rect(x, y, width - 40f, 20f), vehicleColor.r * 255, 0, 255);
 						red = Mathf.Round(red);
@@ -1845,7 +1857,7 @@ namespace MultiTool.Modules
 
 						// Green.
 						y += 30f;
-						GUI.Label(new Rect(x, y, width - 40f, 20f), "<color=#0F0>Green:</color>", labelStyle);
+						GUI.Label(new Rect(x, y, width - 40f, 20f), GetAccessibleColorString("Green:", new Color(0, 255, 0)), labelStyle);
 						y += 20f;
 						float green = GUI.HorizontalSlider(new Rect(x, y, width - 40f, 20f), vehicleColor.g * 255, 0, 255);
 						green = Mathf.Round(green);
@@ -1858,7 +1870,7 @@ namespace MultiTool.Modules
 
 						// Blue.
 						y += 30f;
-						GUI.Label(new Rect(x, y, width - 40f, 20f), "<color=#00F>Blue:</color>", labelStyle);
+						GUI.Label(new Rect(x, y, width - 40f, 20f), GetAccessibleColorString("Blue:", new Color(0, 0, 255)), labelStyle);
 						y += 20f;
 						float blue = GUI.HorizontalSlider(new Rect(x, y, width - 40f, 20f), vehicleColor.b * 255, 0, 255);
 						blue = Mathf.Round(blue);
@@ -2329,6 +2341,27 @@ namespace MultiTool.Modules
 		}
 
 		/// <summary>
+		/// Get accessible version of a colour label string.
+		/// </summary>
+		/// <param name="str">The string to translate</param>
+		/// <param name="color">The associated color</param>
+		/// <returns>Accessibility mode translated string</returns>
+		public static string GetAccessibleColorString(string str, Color color)
+		{
+			if (accessibilityModeAffectsColors)
+			{
+				switch (accessibilityMode)
+				{
+					case "contrast":
+					case "colourless":
+						return str;
+				}
+			}
+
+			return $"<color=#{ColorUtility.ToHtmlStringRGB(color)}>{str}</color>";
+		}
+
+		/// <summary>
 		/// Set selected color.
 		/// </summary>
 		/// <param name="_color">Color to select</param>
@@ -2592,7 +2625,7 @@ namespace MultiTool.Modules
 			// Vehicle colour sliders.
 			// Red.
 			sliderY += 20f;
-			GUI.Label(new Rect(x + 10f, sliderY - 2.5f, textWidth, sliderHeight), "<color=#F00>Red:</color>", labelStyle);
+			GUI.Label(new Rect(x + 10f, sliderY - 2.5f, textWidth, sliderHeight), GetAccessibleColorString("Red:", new Color(255, 0, 0)), labelStyle);
 			float red = GUI.HorizontalSlider(new Rect(sliderX, sliderY, sliderWidth, sliderHeight), color.r * 255, 0, 255);
 			red = Mathf.Round(red);
 			bool redParse = float.TryParse(GUI.TextField(new Rect(textX, sliderY - 2.5f, textWidth, sliderHeight), red.ToString(), labelStyle), out red);
@@ -2604,7 +2637,7 @@ namespace MultiTool.Modules
 
 			// Green.
 			sliderY += 20f;
-			GUI.Label(new Rect(x + 10f, sliderY - 2.5f, textWidth, sliderHeight), "<color=#0F0>Green:</color>", labelStyle);
+			GUI.Label(new Rect(x + 10f, sliderY - 2.5f, textWidth, sliderHeight), GetAccessibleColorString("Green:", new Color(0, 255, 0)), labelStyle);
 			float green = GUI.HorizontalSlider(new Rect(sliderX, sliderY, sliderWidth, sliderHeight), color.g * 255, 0, 255);
 			green = Mathf.Round(green);
 			bool greenParse = float.TryParse(GUI.TextField(new Rect(textX, sliderY - 2.5f, textWidth, sliderHeight), green.ToString(), labelStyle), out green);
@@ -2616,7 +2649,7 @@ namespace MultiTool.Modules
 
 			// Blue.
 			sliderY += 20f;
-			GUI.Label(new Rect(x + 10f, sliderY - 2.5f, textWidth, sliderHeight), "<color=#00F>Blue:</color>", labelStyle);
+			GUI.Label(new Rect(x + 10f, sliderY - 2.5f, textWidth, sliderHeight), GetAccessibleColorString("Blue:", new Color(0, 0, 255)), labelStyle);
 			float blue = GUI.HorizontalSlider(new Rect(sliderX, sliderY, sliderWidth, sliderHeight), color.b * 255, 0, 255);
 			blue = Mathf.Round(blue);
 			bool blueParse = float.TryParse(GUI.TextField(new Rect(textX, sliderY - 2.5f, textWidth, sliderHeight), blue.ToString(), labelStyle), out blue);

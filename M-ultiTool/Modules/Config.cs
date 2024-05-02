@@ -49,7 +49,6 @@ namespace MultiTool.Modules
 		public void SetConfigPath(string path)
 		{
 			configPath = path;
-
 			loadFromConfigFile();
 		}
 
@@ -60,7 +59,6 @@ namespace MultiTool.Modules
 		public void UpdateKeybinds(List<Keybinds.Key> binds)
 		{
 			config.keybinds = binds;
-
 			Commit();
 		}
 
@@ -71,7 +69,6 @@ namespace MultiTool.Modules
 		public void UpdateLegacyMode(bool enabled)
 		{
 			config.legacyUI = enabled;
-
 			Commit();	
 		}
 
@@ -82,7 +79,6 @@ namespace MultiTool.Modules
 		public void UpdateScrollWidth(float width)
 		{
 			config.scrollWidth = width;
-
 			Commit();
 		}
 
@@ -93,7 +89,6 @@ namespace MultiTool.Modules
 		public void UpdateNoclipGodmodeDisable(bool enabled)
 		{
 			config.noclipGodmodeDisable = enabled;
-
 			Commit();
 		}
 
@@ -104,7 +99,16 @@ namespace MultiTool.Modules
 		public void UpdateAccessibilityMode(string mode)
 		{
 			config.accessibilityMode = mode;
+			Commit();
+		}
 
+		/// <summary>
+		/// Update accessibilityModeAffectsColor in config
+		/// </summary>
+		/// <param name="accessibilityModeAffectsColor">Whether accessibility mode affects color labels</param>
+		public void UpdateAccessibilityModeAffectsColor(bool accessibilityModeAffectsColor)
+		{
+			config.accessibilityModeAffectsColor = accessibilityModeAffectsColor;
 			Commit();
 		}
 
@@ -115,7 +119,6 @@ namespace MultiTool.Modules
 		public void UpdateNoclipFastMoveFactor(float factor)
 		{
 			config.noclipFastMoveFactor = factor;
-
 			Commit();
 		}
 
@@ -126,7 +129,6 @@ namespace MultiTool.Modules
 		public void UpdatePalette(List<Color> palette)
 		{
 			config.palette = palette;
-
 			Commit();
 		}
 
@@ -137,7 +139,6 @@ namespace MultiTool.Modules
 		public void UpdatePlayerData(PlayerData playerData)
 		{
 			config.playerData = playerData;
-
 			Commit();
 		}
 
@@ -229,6 +230,23 @@ namespace MultiTool.Modules
 			}
 
 			return config.accessibilityMode;
+		}
+
+		/// <summary>
+		/// Get accessibility mode affects color labels value from config
+		/// </summary>
+		/// <returns>Boolean legacy mode value</returns>
+		public bool GetAccessibilityModeAffectsColor(bool defaultAccessibilityModeAffectsColor)
+		{
+			loadFromConfigFile();
+
+			// Populate from default if not set in config.
+			if (config.accessibilityModeAffectsColor == null)
+			{
+				UpdateAccessibilityModeAffectsColor(defaultAccessibilityModeAffectsColor);
+			}
+
+			return config.accessibilityModeAffectsColor.GetValueOrDefault();
 		}
 
 		/// <summary>

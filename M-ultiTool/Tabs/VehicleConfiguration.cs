@@ -168,7 +168,7 @@ namespace MultiTool.Tabs
 			GUI.Label(new Rect(currVehicleX, currVehicleY, headerWidth, headerHeight), "Color", GUIRenderer.headerStyle);
 			currVehicleY += headerHeight;
 			// Red.
-			GUI.Label(new Rect(currVehicleX, currVehicleY, buttonWidth, buttonHeight), "<color=#F00>Red:</color>", GUIRenderer.labelStyle);
+			GUI.Label(new Rect(currVehicleX, currVehicleY, buttonWidth, buttonHeight), GUIRenderer.GetAccessibleColorString("Red:", new Color(255, 0, 0)), GUIRenderer.labelStyle);
 			currVehicleY += buttonHeight;
 			float red = GUI.HorizontalSlider(new Rect(currVehicleX, currVehicleY, sliderWidth, buttonHeight), GUIRenderer.color.r * 255, 0, 255);
 			red = Mathf.Round(red);
@@ -181,7 +181,7 @@ namespace MultiTool.Tabs
 
 			// Green.
 			currVehicleY += buttonHeight + 10f;
-			GUI.Label(new Rect(currVehicleX, currVehicleY, buttonWidth, buttonHeight), "<color=#0F0>Green:</color>", GUIRenderer.labelStyle);
+			GUI.Label(new Rect(currVehicleX, currVehicleY, buttonWidth, buttonHeight), GUIRenderer.GetAccessibleColorString("Green:", new Color(0, 255, 0)), GUIRenderer.labelStyle);
 			currVehicleY += buttonHeight;
 			float green = GUI.HorizontalSlider(new Rect(currVehicleX, currVehicleY, sliderWidth, buttonHeight), GUIRenderer.color.g * 255, 0, 255);
 			green = Mathf.Round(green);
@@ -194,7 +194,7 @@ namespace MultiTool.Tabs
 
 			// Blue.
 			currVehicleY += buttonHeight + 10f;
-			GUI.Label(new Rect(currVehicleX, currVehicleY, buttonWidth, buttonHeight), "<color=#00F>Blue:</color>", GUIRenderer.labelStyle);
+			GUI.Label(new Rect(currVehicleX, currVehicleY, buttonWidth, buttonHeight), GUIRenderer.GetAccessibleColorString("Blue:", new Color(0, 0, 255)), GUIRenderer.labelStyle);
 			currVehicleY += buttonHeight;
 			float blue = GUI.HorizontalSlider(new Rect(currVehicleX, currVehicleY, sliderWidth, buttonHeight), GUIRenderer.color.b * 255, 0, 255);
 			blue = Mathf.Round(blue);
@@ -548,7 +548,7 @@ namespace MultiTool.Tabs
 
 			// Window colour sliders.
 			// Red.
-			GUI.Label(new Rect(currVehicleX, currVehicleY, buttonWidth, buttonHeight), "<color=#F00>Red:</color>", GUIRenderer.labelStyle);
+			GUI.Label(new Rect(currVehicleX, currVehicleY, buttonWidth, buttonHeight), GUIRenderer.GetAccessibleColorString("Red:", new Color(255, 0, 0)), GUIRenderer.labelStyle);
 			currVehicleY += buttonHeight;
 			float windowRed = GUI.HorizontalSlider(new Rect(currVehicleX, currVehicleY, sliderWidth, buttonHeight), GUIRenderer.windowColor.r * 255, 0, 255);
 			windowRed = Mathf.Round(windowRed);
@@ -561,7 +561,7 @@ namespace MultiTool.Tabs
 
 			// Green.
 			currVehicleY += buttonHeight + 10f;
-			GUI.Label(new Rect(currVehicleX, currVehicleY, buttonWidth, buttonHeight), "<color=#0F0>Green:</color>", GUIRenderer.labelStyle);
+			GUI.Label(new Rect(currVehicleX, currVehicleY, buttonWidth, buttonHeight), GUIRenderer.GetAccessibleColorString("Green:", new Color(0, 255, 0)), GUIRenderer.labelStyle);
 			currVehicleY += buttonHeight;
 			float windowGreen = GUI.HorizontalSlider(new Rect(currVehicleX, currVehicleY, sliderWidth, buttonHeight), GUIRenderer.windowColor.g * 255, 0, 255);
 			windowGreen = Mathf.Round(windowGreen);
@@ -574,7 +574,7 @@ namespace MultiTool.Tabs
 
 			// Blue.
 			currVehicleY += buttonHeight + 10f;
-			GUI.Label(new Rect(currVehicleX, currVehicleY, buttonWidth, buttonHeight), "<color=#00F>Blue:</color>", GUIRenderer.labelStyle);
+			GUI.Label(new Rect(currVehicleX, currVehicleY, buttonWidth, buttonHeight), GUIRenderer.GetAccessibleColorString("Blue:", new Color(0, 0, 255)), GUIRenderer.labelStyle);
 			currVehicleY += buttonHeight;
 			float windowBlue = GUI.HorizontalSlider(new Rect(currVehicleX, currVehicleY, sliderWidth, buttonHeight), GUIRenderer.windowColor.b * 255, 0, 255);
 			windowBlue = Mathf.Round(windowBlue);
@@ -675,7 +675,7 @@ namespace MultiTool.Tabs
 
 					// Sunroof colour sliders.
 					// Red.
-					GUI.Label(new Rect(currVehicleX, currVehicleY, buttonWidth, buttonHeight), "<color=#F00>Red:</color>", GUIRenderer.labelStyle);
+					GUI.Label(new Rect(currVehicleX, currVehicleY, buttonWidth, buttonHeight), GUIRenderer.GetAccessibleColorString("Red:", new Color(255, 0, 0)), GUIRenderer.labelStyle);
 					currVehicleY += buttonHeight;
 					float sunroofRed = GUI.HorizontalSlider(new Rect(currVehicleX, currVehicleY, sliderWidth, buttonHeight), GUIRenderer.sunRoofColor.r * 255, 0, 255);
 					sunroofRed = Mathf.Round(sunroofRed);
@@ -688,7 +688,7 @@ namespace MultiTool.Tabs
 
 					// Green.
 					currVehicleY += buttonHeight + 10f;
-					GUI.Label(new Rect(currVehicleX, currVehicleY, buttonWidth, buttonHeight), "<color=#0F0>Green:</color>", GUIRenderer.labelStyle);
+					GUI.Label(new Rect(currVehicleX, currVehicleY, buttonWidth, buttonHeight), GUIRenderer.GetAccessibleColorString("Green:", new Color(0, 255, 0)), GUIRenderer.labelStyle);
 					currVehicleY += buttonHeight;
 					float sunroofGreen = GUI.HorizontalSlider(new Rect(currVehicleX, currVehicleY, sliderWidth, buttonHeight), GUIRenderer.sunRoofColor.g * 255, 0, 255);
 					sunroofGreen = Mathf.Round(sunroofGreen);
@@ -701,7 +701,7 @@ namespace MultiTool.Tabs
 
 					// Blue.
 					currVehicleY += buttonHeight + 10f;
-					GUI.Label(new Rect(currVehicleX, currVehicleY, buttonWidth, buttonHeight), "<color=#00F>Blue:</color>", GUIRenderer.labelStyle);
+					GUI.Label(new Rect(currVehicleX, currVehicleY, buttonWidth, buttonHeight), GUIRenderer.GetAccessibleColorString("Blue:", new Color(0, 0, 255)), GUIRenderer.labelStyle);
 					currVehicleY += buttonHeight;
 					float sunroofBlue = GUI.HorizontalSlider(new Rect(currVehicleX, currVehicleY, sliderWidth, buttonHeight), GUIRenderer.sunRoofColor.b * 255, 0, 255);
 					sunroofBlue = Mathf.Round(sunroofBlue);
@@ -903,7 +903,7 @@ namespace MultiTool.Tabs
 				if (colorSelectorOpen)
 				{
 					// Red.
-					GUI.Label(new Rect(currVehicleX, currVehicleY, buttonWidth, buttonHeight), "<color=#F00>Red:</color>", GUIRenderer.labelStyle);
+					GUI.Label(new Rect(currVehicleX, currVehicleY, buttonWidth, buttonHeight), GUIRenderer.GetAccessibleColorString("Red:", new Color(255, 0, 0)), GUIRenderer.labelStyle);
 					currVehicleY += buttonHeight;
 					float seatRed = GUI.HorizontalSlider(new Rect(currVehicleX, currVehicleY, sliderWidth, buttonHeight), GUIRenderer.seatColor.r * 255, 0, 255);
 					seatRed = Mathf.Round(seatRed);
@@ -916,7 +916,7 @@ namespace MultiTool.Tabs
 
 					// Green.
 					currVehicleY += buttonHeight + 10f;
-					GUI.Label(new Rect(currVehicleX, currVehicleY, buttonWidth, buttonHeight), "<color=#0F0>Green:</color>", GUIRenderer.labelStyle);
+					GUI.Label(new Rect(currVehicleX, currVehicleY, buttonWidth, buttonHeight), GUIRenderer.GetAccessibleColorString("Green:", new Color(0, 255, 0)), GUIRenderer.labelStyle);
 					currVehicleY += buttonHeight;
 					float seatGreen = GUI.HorizontalSlider(new Rect(currVehicleX, currVehicleY, sliderWidth, buttonHeight), GUIRenderer.seatColor.g * 255, 0, 255);
 					seatGreen = Mathf.Round(seatGreen);
@@ -929,7 +929,7 @@ namespace MultiTool.Tabs
 
 					// Blue.
 					currVehicleY += buttonHeight + 10f;
-					GUI.Label(new Rect(currVehicleX, currVehicleY, buttonWidth, buttonHeight), "<color=#00F>Blue:</color>", GUIRenderer.labelStyle);
+					GUI.Label(new Rect(currVehicleX, currVehicleY, buttonWidth, buttonHeight), GUIRenderer.GetAccessibleColorString("Blue:", new Color(0, 0, 255)), GUIRenderer.labelStyle);
 					currVehicleY += buttonHeight;
 					float seatBlue = GUI.HorizontalSlider(new Rect(currVehicleX, currVehicleY, sliderWidth, buttonHeight), GUIRenderer.seatColor.b * 255, 0, 255);
 					seatBlue = Mathf.Round(seatBlue);
