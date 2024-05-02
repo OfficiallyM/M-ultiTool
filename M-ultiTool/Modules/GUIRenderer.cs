@@ -902,7 +902,10 @@ namespace MultiTool.Modules
 				{
 					// Don't apply any new game changes when loading a save.
 					if (mainscript.M.menu.DFMS.load)
+					{
 						appliedStartVehicleChanges = true;
+						return;
+					}
 
 					GameObject starterVehicle = null;
 					string starterVehicleName = mainscript.M.StartCar.ToString();
