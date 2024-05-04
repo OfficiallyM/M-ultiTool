@@ -1463,8 +1463,9 @@ namespace MultiTool.Modules
 					case 0:
 					case 1:
 						// Fuel mixes needs multiplying by two as it has two fields per mix.
-						int configItems = 7 + (fuelMixes * 2);
+						int configItems = 8 + (fuelMixes * 2);
 						float configScrollHeight = configItems * ((configHeight * 3) + 10f);
+						configScrollHeight += GUIRenderer.GetPaletteHeight(configWidth) + 10f;
 						configScrollPosition = GUI.BeginScrollView(new Rect(configX, configY, configWidth, configDimensions.height - 40f), configScrollPosition, new Rect(configX, configY, configWidth, configScrollHeight), new GUIStyle(), new GUIStyle());
 
 						// Condition.
@@ -1583,9 +1584,6 @@ namespace MultiTool.Modules
 
 						configY += configHeight + 10f;
 
-						color = GUIRenderer.RenderColourPalette(configX, configY, configWidth, color);
-						configY += GUIRenderer.GetPaletteHeight(configWidth) + 10f;
-
 						// Colour preview.
 						pixels = new Color[] { color };
 						previewTexture.SetPixels(pixels);
@@ -1597,6 +1595,11 @@ namespace MultiTool.Modules
 						GUI.skin.button = previewStyle;
 						GUI.Button(new Rect(configX, configY, configWidth, configHeight), "");
 						GUI.skin.button = defaultStyle;
+
+						configY += configHeight + 10f;
+
+						color = GUIRenderer.RenderColourPalette(configX, configY, configWidth, color);
+						configY += GUIRenderer.GetPaletteHeight(configWidth) + 10f;
 
 						// License plate only renders for vehicle tab.
 						if (tab.Id == 0)
@@ -1612,6 +1615,7 @@ namespace MultiTool.Modules
 					case 3:
 						int shapeConfigItems = 8;
 						float shapeConfigScrollHeight = shapeConfigItems * ((configHeight * 3) + 10f);
+						shapeConfigScrollHeight += GUIRenderer.GetPaletteHeight(configWidth) + 10f;
 
 						configScrollPosition = GUI.BeginScrollView(new Rect(configX, configY, configWidth, configDimensions.height - 40f), configScrollPosition, new Rect(configX, configY, configWidth, shapeConfigScrollHeight), new GUIStyle(), new GUIStyle());
 						// Red.
