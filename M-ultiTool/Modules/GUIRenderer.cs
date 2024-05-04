@@ -1697,6 +1697,7 @@ namespace MultiTool.Modules
 							allScale = (float)Math.Round(allScale, 2);
 							configY += configHeight;
 							allScale = (float)Math.Round(double.Parse(GUI.TextField(new Rect(configX, configY, configWidth, configHeight), allScale.ToString(), labelStyle)), 2);
+							allScale = Mathf.Clamp(allScale, 0.1f, 100f);
 							scale = new Vector3(allScale, allScale, allScale);
 						}
 						else
@@ -1709,6 +1710,7 @@ namespace MultiTool.Modules
 							x = (float)Math.Round(x, 2);
 							configY += configHeight;
 							x = (float)Math.Round(double.Parse(GUI.TextField(new Rect(configX, configY, configWidth, configHeight), x.ToString(), labelStyle)), 2);
+							x = Mathf.Clamp(x, 0.1f, 100f);
 							scale.x = x;
 
 							// Y.
@@ -1719,6 +1721,7 @@ namespace MultiTool.Modules
 							y = (float)Math.Round(y, 2);
 							configY += configHeight;
 							y = (float)Math.Round(double.Parse(GUI.TextField(new Rect(configX, configY, configWidth, configHeight), y.ToString(), labelStyle)), 2);
+							y = Mathf.Clamp(y, 0.1f, 100f);
 							scale.y = y;
 
 							// Z.
@@ -1729,6 +1732,7 @@ namespace MultiTool.Modules
 							z = (float)Math.Round(z, 2);
 							configY += configHeight;
 							z = (float)Math.Round(double.Parse(GUI.TextField(new Rect(configX, configY, configWidth, configHeight), z.ToString(), labelStyle)), 2);
+							z = Mathf.Clamp(z, 0.1f, 100f);
 							scale.z = z;
 						}
 
