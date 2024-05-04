@@ -896,7 +896,20 @@ namespace MultiTool.Modules
 								gameObject.transform.localPosition = collider.center;
 								// I've got no idea if this is correct, sources for collider sizes are non existent.
 								gameObject.transform.localScale = new Vector3(collider.radius * 2, collider.height / 2, collider.radius * 2);
-								gameObject.transform.localRotation = Quaternion.identity;
+								// There's fuck all logic here, it was entirely trial and error.
+								Vector3 axis = Vector3.up;
+								float angle = 0;
+								switch (collider.direction)
+								{
+									case 1:
+										axis = Vector3.forward;
+										break;
+									case 2:
+										axis = Vector3.right;
+										angle = 90;
+										break;
+								}
+								gameObject.transform.localRotation = Quaternion.AngleAxis(angle, axis);
 								// Get the mesh based on the capsule primitive mesh.
 								gameObject.AddComponent<MeshFilter>().mesh = GameObject.CreatePrimitive(PrimitiveType.Capsule).GetComponent<MeshFilter>().mesh;
 							}
