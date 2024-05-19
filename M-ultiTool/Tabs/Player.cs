@@ -11,7 +11,6 @@ using MultiTool.Modules;
 using Logger = MultiTool.Modules.Logger;
 using Settings = MultiTool.Core.Settings;
 using TLDLoader;
-using static mainscript;
 
 namespace MultiTool.Tabs
 {
@@ -238,26 +237,33 @@ namespace MultiTool.Tabs
 			// Fire speed.
 			if (mainscript.M.player.inHandP != null && mainscript.M.player.inHandP.weapon != null)
 			{
-				GUI.Label(new Rect(x, y, headerWidth, buttonHeight), $"Fire speed: {GUIRenderer.playerData.fireSpeed} (Default: {GUIRenderer.defaultFireSpeed})", GUIRenderer.labelStyle);
-				y += buttonHeight;
-				float fireSpeed = GUI.HorizontalSlider(new Rect(x, y, sliderWidth, buttonHeight), GUIRenderer.playerData.fireSpeed, 0.001f, 0.5f);
-				x += sliderWidth + 10f;
-				if (GUI.Button(new Rect(x, y, buttonWidth, buttonHeight), "Reset") && GUIRenderer.defaultFireSpeed != null)
+				tosaveitemscript save = mainscript.M.player.inHandP.weapon.GetComponent<tosaveitemscript>();
+				WeaponData weaponData = GUIRenderer.playerData.weaponData.Where(d => d.id == save.idInSave).FirstOrDefault();
+
+				if (weaponData != null)
 				{
-					GUIRenderer.playerData.fireSpeed = GUIRenderer.defaultFireSpeed.GetValueOrDefault();
-					update = true;
-				}
-				else
-				{
-					fireSpeed = (float)Math.Round(fireSpeed, 3);
-					if (fireSpeed != GUIRenderer.playerData.fireSpeed)
+					GUI.Label(new Rect(x, y, headerWidth, buttonHeight), $"Fire rate: {weaponData.fireRate} (Default: {weaponData.defaultFireRate})", GUIRenderer.labelStyle);
+					y += buttonHeight;
+					float fireRate = GUI.HorizontalSlider(new Rect(x, y, sliderWidth, buttonHeight), weaponData.fireRate, 0.001f, 0.5f);
+					x += sliderWidth + 10f;
+					if (GUI.Button(new Rect(x, y, buttonWidth, buttonHeight), "Reset"))
 					{
-						GUIRenderer.playerData.fireSpeed = fireSpeed;
+						weaponData.fireRate = weaponData.defaultFireRate;
 						update = true;
 					}
+					else
+					{
+						fireRate = (float)Math.Round(fireRate, 3);
+						if (fireRate != weaponData.fireRate)
+						{
+							weaponData.fireRate = fireRate;
+							update = true;
+						}
+					}
+
+					x = startingX;
+					y += buttonHeight + 10f;
 				}
-				x = startingX;
-				y += buttonHeight + 10f;
 			}
 
 			// Mass.
@@ -325,7 +331,7 @@ namespace MultiTool.Tabs
 			{
 				tankscript tank = mainscript.M.player.piss.Tank;
 
-				tempPiss = new Dictionary<fluidenum, int>();
+				tempPiss = new Dictionary<mainscript.fluidenum, int>();
 				foreach (KeyValuePair<mainscript.fluidenum, int> fluid in GUIRenderer.piss)
 				{
 					tempPiss[fluid.Key] = 0;
@@ -333,7 +339,7 @@ namespace MultiTool.Tabs
 
 				GUIRenderer.piss = tempPiss;
 
-				foreach (fluid fluid in tank.F.fluids)
+				foreach (mainscript.fluid fluid in tank.F.fluids)
 				{
 					int percentage = (int)(fluid.amount / tank.F.maxC * 100);
 					GUIRenderer.piss[fluid.type] = percentage;

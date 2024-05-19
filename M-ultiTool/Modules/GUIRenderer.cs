@@ -150,8 +150,6 @@ namespace MultiTool.Modules
 		// Player variables.
 		internal static PlayerData playerData;
 		internal static PlayerData defaultPlayerData;
-		internal static int lastWeaponId;
-		internal static float? defaultFireSpeed;
 		internal static Dictionary<mainscript.fluidenum, int> piss = new Dictionary<mainscript.fluidenum, int>();
 
 		// Vehicle configuration variables.
@@ -242,7 +240,11 @@ namespace MultiTool.Modules
 		{
 			// Return early if M-ultiTool is disabled.
 			if (!enabled)
+			{
+				if (mainscript.M != null && mainscript.M.menu.Menu.activeSelf)
+					GUI.Button(new Rect(0, 0, 20, 20), string.Empty);
 				return;
+			}
 
 			// Override scrollbar width and height.
 			GUI.skin.verticalScrollbar.fixedWidth = scrollWidth;
@@ -445,7 +447,7 @@ namespace MultiTool.Modules
 							pickupForce = player.maxPickupForce,
 							mass = player != null && player.mass != null ? player.mass.Mass() : 0,
 							infiniteAmmo = false,
-							fireSpeed = -1,
+							weaponData = new List<WeaponData>(),
 						};
 					}
 					playerData = config.GetPlayerData(defaultPlayerData);

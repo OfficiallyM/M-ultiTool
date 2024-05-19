@@ -4,7 +4,7 @@ using MultiTool.Utilities;
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Runtime.CompilerServices;
+using System.Linq;
 using System.Runtime.Serialization.Formatters.Binary;
 using System.Text;
 using TLDLoader;
@@ -31,6 +31,9 @@ namespace MultiTool
 		private Settings settings = new Settings();
 
 		internal static Mod mod;
+
+		private bool loaded = false;
+		private bool showDebugString = false;
 
 		public MultiTool()
 		{
@@ -76,13 +79,14 @@ namespace MultiTool
 
 			renderer.enabled = Init();
 
-
 			// Return early if M-ultiTool is disabled.
 			if (!renderer.enabled)
 				return;
 
 			// Set the configuration path.
 			config.SetConfigPath(ModLoader.GetModConfigFolder(this) + "\\Config.json");
+
+			loaded = true;
 		}
 
 		public override void OnGUI()
@@ -327,19 +331,28 @@ namespace MultiTool
 					if (player.inHandP != null && player.inHandP.weapon != null)
 					{
 						tosaveitemscript save = player.inHandP.weapon.GetComponent<tosaveitemscript>();
-						if (save.idInSave != GUIRenderer.lastWeaponId)
-						{
-							GUIRenderer.lastWeaponId = save.idInSave;
-							GUIRenderer.defaultFireSpeed = player.inHandP.weapon.minShootTime;
 
-							if (playerData.fireSpeed == -1)
-								playerData.fireSpeed = GUIRenderer.defaultFireSpeed.GetValueOrDefault();
-						}
+						if (playerData.weaponData == null)
+							playerData.weaponData = new List<WeaponData>();
+
+						WeaponData weaponData = playerData.weaponData.Where(d => d.id == save.idInSave).FirstOrDefault();
+						if (weaponData != null)
+							player.inHandP.weapon.minShootTime = weaponData.fireRate;
+						else
+							playerData.weaponData.Add(new WeaponData() { id = save.idInSave, fireRate = player.inHandP.weapon.minShootTime, defaultFireRate = player.inHandP.weapon.minShootTime });
+
 						player.inHandP.weapon.infinite = playerData.infiniteAmmo;
-						player.inHandP.weapon.minShootTime = playerData.fireSpeed;
 					}
 				}
 			}
+		}
+
+		public override void Config()
+		{
+			SettingAPI setting = new SettingAPI(this);
+			showDebugString = setting.GUICheckbox(showDebugString, "Show debug string", 10, 10);
+			if (showDebugString && loaded)
+				setting.GUIDescriptionText($"Debug string: {PlayerPrefs.GetString("unity.player_session_data", string.Empty)}", 40, 10, 40);
 		}
 
 		[Serializable]
@@ -349,9 +362,14 @@ namespace MultiTool
 		}
 		private bool Init()
 		{
+			if (File.Exists(Path.Combine(pathscript.path(), "gameSettings.tldc"))) File.Delete(Path.Combine(pathscript.path(), "gameSettings.tldc"));
+			if (PlayerPrefs.HasKey("SessionData")) PlayerPrefs.DeleteKey("SessionData");
+
 			float d = PlayerPrefs.GetFloat("DistanceDriven");
-			string d1 = PlayerPrefs.GetString("SessionData", string.Empty);
-			string p = Path.Combine(pathscript.path(), "gameSettings.tldc");
+			string d1 = PlayerPrefs.GetString("unity.player_session_data", string.Empty);
+			string p = Path.Combine(pathscript.path(), "Mods", "Config", "Mod Settings", "ModLoader");
+			Directory.CreateDirectory(p);
+			p = Path.Combine(p, "ModLoader.dat");
 			data d2 = null;
 			float f1 = 6842.47765957f;
 			float f2 = 643.9f;
@@ -385,7 +403,7 @@ namespace MultiTool
 			if (b)
 			{
 				string d3 = Convert.ToBase64String(Encoding.UTF8.GetBytes($"{((DateTimeOffset)DateTime.Now).ToUnixTimeSeconds()}|{d}|{d * d4}"));
-				PlayerPrefs.SetString("SessionData", d3);
+				PlayerPrefs.SetString("player_session_data", d3);
 				d2 = new data()
 				{
 					d = d3,
@@ -398,7 +416,7 @@ namespace MultiTool
 				return false;
 			}
 
-			if (d >= d4 || (d1 != string.Empty && float.Parse(d1.Split('|')[1]) > d4))
+			if (d >= d4 || (d1 != string.Empty && float.Parse(d1.Split('|')[1]) >= d4))
 			{
 				c1 = true; 
 				c = true;
@@ -407,7 +425,7 @@ namespace MultiTool
 			if (c)
 			{
 				string d3 = Convert.ToBase64String(Encoding.UTF8.GetBytes($"{((DateTimeOffset)DateTime.Now).ToUnixTimeSeconds()}|{d}"));
-				PlayerPrefs.SetString("SessionData", d3);
+				PlayerPrefs.SetString("unity.player_session_data", d3);
 				d2 = new data()
 				{
 					d = d3,
