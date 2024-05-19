@@ -219,7 +219,10 @@ namespace MultiTool
 							Vector3 scale = hitGameObject.transform.localScale;
 							float scaleValue = GUIRenderer.scaleValue;
 							// Scale up.
-							if (Input.GetKey(binds.GetKeyByAction((int)Keybinds.Inputs.action1).key))
+							bool scaleUp = Input.GetKey(binds.GetKeyByAction((int)Keybinds.Inputs.action1).key);
+							if (!GUIRenderer.scaleHold)
+								scaleUp = Input.GetKeyDown(binds.GetKeyByAction((int)Keybinds.Inputs.action1).key);
+							if (scaleUp)
 							{
 								switch (GUIRenderer.axis)
 								{
@@ -243,7 +246,10 @@ namespace MultiTool
 							}
 
 							// Scale down.
-							if (Input.GetKey(binds.GetKeyByAction((int)Keybinds.Inputs.action2).key))
+							bool scaleDown = Input.GetKey(binds.GetKeyByAction((int)Keybinds.Inputs.action2).key);
+							if (!GUIRenderer.scaleHold)
+								scaleDown = Input.GetKeyDown(binds.GetKeyByAction((int)Keybinds.Inputs.action2).key);
+							if (scaleDown)
 							{
 								switch (GUIRenderer.axis)
 								{
@@ -267,7 +273,7 @@ namespace MultiTool
 							}
 
 							// Reset scale to default.
-							if (Input.GetKey(binds.GetKeyByAction((int)Keybinds.Inputs.action4).key))
+							if (Input.GetKeyDown(binds.GetKeyByAction((int)Keybinds.Inputs.action4).key))
 							{
 								// No easy way to store default, just assume it's 1.
 								switch (GUIRenderer.axis)
@@ -301,6 +307,31 @@ namespace MultiTool
 									scale = hitGameObject.transform.localScale
 								});
 							}
+						}
+
+						// Axis selection control.
+						if (Input.GetKeyDown(binds.GetKeyByAction((int)Keybinds.Inputs.action3).key))
+						{
+							int currentIndex = Array.FindIndex(GUIRenderer.axisOptions, a => a == GUIRenderer.axis);
+							if (currentIndex == -1 || currentIndex == GUIRenderer.axisOptions.Length - 1)
+								GUIRenderer.axis = GUIRenderer.axisOptions[0];
+							else
+								GUIRenderer.axis = GUIRenderer.axisOptions[currentIndex + 1];
+						}
+
+						// Scale value selection control.
+						if (Input.GetKeyDown(binds.GetKeyByAction((int)Keybinds.Inputs.action5).key))
+						{
+							int currentIndex = Array.FindIndex(GUIRenderer.scaleOptions, s => s == GUIRenderer.scaleValue);
+							if (currentIndex == -1 || currentIndex == GUIRenderer.scaleOptions.Length - 1)
+								GUIRenderer.scaleValue = GUIRenderer.scaleOptions[0];
+							else
+								GUIRenderer.scaleValue = GUIRenderer.scaleOptions[currentIndex + 1];
+						}
+
+						if (Input.GetKeyDown(binds.GetKeyByAction((int)Keybinds.Inputs.select).key))
+						{
+							GUIRenderer.scaleHold = !GUIRenderer.scaleHold;
 						}
 					}
 					break;

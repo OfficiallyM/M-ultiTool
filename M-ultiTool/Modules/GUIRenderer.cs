@@ -1,10 +1,7 @@
 ﻿using MultiTool.Core;
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using TLDLoader;
 using UnityEngine;
 using MultiTool.Extensions;
@@ -12,7 +9,6 @@ using Settings = MultiTool.Core.Settings;
 using MultiTool.Utilities;
 using System.Reflection;
 using UnityEngine.Rendering;
-using static itemdatabase;
 
 namespace MultiTool.Modules
 {
@@ -194,9 +190,10 @@ namespace MultiTool.Modules
 		// HUD variables.
 		private GameObject debugObject = null;
 		internal static string axis = "all";
-		private string[] axisOptions = new string[] { "all", "x", "y", "z" };
+		internal static string[] axisOptions = new string[] { "all", "x", "y", "z" };
 		internal static float scaleValue = 0.1f;
-		private float[] scaleOptions = new float[] { 10f, 1f, 0.1f, 0.01f, 0.001f };
+		internal static float[] scaleOptions = new float[] { 10f, 1f, 0.1f, 0.01f, 0.001f };
+		internal static bool scaleHold = true;
 
 		// Colour palettes.
 		internal static List<Color> palette = new List<Color>();
@@ -537,26 +534,6 @@ namespace MultiTool.Modules
 				}
 			}
 
-			// Object resizer axis selection control.
-			if (Input.GetKeyDown(binds.GetKeyByAction((int)Keybinds.Inputs.action3).key))
-			{
-				int currentIndex = Array.FindIndex(axisOptions, a => a == axis);
-				if (currentIndex == -1 || currentIndex == axisOptions.Length - 1)
-					axis = axisOptions[0];
-				else
-					axis = axisOptions[currentIndex + 1];
-			}
-
-			// Object resizer scale value selection control.
-			if (Input.GetKeyDown(binds.GetKeyByAction((int)Keybinds.Inputs.action5).key))
-			{
-				int currentIndex = Array.FindIndex(scaleOptions, s => s == scaleValue);
-				if (currentIndex == -1 || currentIndex == scaleOptions.Length - 1)
-					scaleValue = scaleOptions[0];
-				else
-					scaleValue = scaleOptions[currentIndex + 1];
-			}
-
 			if (settings.mode == "slotControl")
 			{
 				try
@@ -572,7 +549,7 @@ namespace MultiTool.Modules
 						foreach (partslotscript slot in partSlots)
 						{
 							GameObject obj = slot.gameObject;
-						
+
 							// Required as some slots don't have the actual part as a
 							// child of the slot. These parts instead use a collider
 							// which will either contain Col or Collider, so look for
@@ -2000,23 +1977,25 @@ namespace MultiTool.Modules
 						if (hitGameObject.GetComponent<terrainscript>() == null)
 						{
 							width = 400f;
-							height = 100f;
+							height = 120f;
 							x = 0;
 							y = resolutionY / 2 - (height + 20f) / 2;
 
 							GUI.Box(new Rect(x, y, width, height + 20f), String.Empty);
-							int rows = 5;
+							int rows = 6;
 							GUI.Button(new Rect(x, y, width / 2, height / rows), "Scale up");
 							GUI.Button(new Rect(x, y + height / rows, width / 2, height / rows), "Scale down");
 							GUI.Button(new Rect(x, y + height / rows * 2, width / 2, height / rows), $"Axis: {axis}");
 							GUI.Button(new Rect(x, y + height / rows * 3, width / 2, height / rows), $"Scale amount: {scaleValue}");
-							GUI.Button(new Rect(x, y + height / rows * 4, width / 2, height / rows), "Reset");
+							GUI.Button(new Rect(x, y + height / rows * 4, width / 2, height / rows), $"Toggle hold to scale ({(scaleHold ? "Hold" : "Click")})");
+							GUI.Button(new Rect(x, y + height / rows * 5, width / 2, height / rows), "Reset");
 
 							GUI.Button(new Rect(x + width / 2, y, width / 2, height / rows), binds.GetPrettyName((int)Keybinds.Inputs.action1));
 							GUI.Button(new Rect(x + width / 2, y + height / rows, width / 2, height / rows), binds.GetPrettyName((int)Keybinds.Inputs.action2));
 							GUI.Button(new Rect(x + width / 2, y + height / rows * 2, width / 2, height / rows), binds.GetPrettyName((int)Keybinds.Inputs.action3));
 							GUI.Button(new Rect(x + width / 2, y + height / rows * 3, width / 2, height / rows), binds.GetPrettyName((int)Keybinds.Inputs.action5));
-							GUI.Button(new Rect(x + width / 2, y + height / rows * 4, width / 2, height / rows), binds.GetPrettyName((int)Keybinds.Inputs.action4));
+							GUI.Button(new Rect(x + width / 2, y + height / rows * 4, width / 2, height / rows), binds.GetPrettyName((int)Keybinds.Inputs.select));
+							GUI.Button(new Rect(x + width / 2, y + height / rows * 5, width / 2, height / rows), binds.GetPrettyName((int)Keybinds.Inputs.action4));
 
 							Vector3 scale = hitGameObject.transform.localScale;
 							string scaleDisplay = scale.ToString();
