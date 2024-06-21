@@ -44,7 +44,7 @@ namespace MultiTool.Modules
 		public static void Log(string msg, LogLevel logLevel = LogLevel.Info)
 		{
 			if (logFile != string.Empty)
-				File.AppendAllText(logFile, $"[{logLevel}] {msg}\r\n");
+				File.AppendAllText(logFile, $"{DateTime.Now.ToString("s")} [{logLevel}] {msg}\r\n");
 		}
 	}
 }

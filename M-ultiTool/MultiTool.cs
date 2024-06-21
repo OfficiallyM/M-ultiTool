@@ -5,8 +5,6 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Runtime.Serialization.Formatters.Binary;
-using System.Text;
 using TLDLoader;
 using UnityEngine;
 using Logger = MultiTool.Modules.Logger;
@@ -77,7 +75,9 @@ namespace MultiTool
 				}
 			}
 
-			renderer.enabled = Init();
+			loaded = true;
+
+			renderer.enabled = CoreUtilities.HasPassedValidation();
 
 			// Return early if M-ultiTool is disabled.
 			if (!renderer.enabled)
@@ -85,8 +85,6 @@ namespace MultiTool
 
 			// Set the configuration path.
 			config.SetConfigPath(ModLoader.GetModConfigFolder(this) + "\\Config.json");
-
-			loaded = true;
 		}
 
 		public override void OnGUI()
@@ -383,94 +381,7 @@ namespace MultiTool
 			SettingAPI setting = new SettingAPI(this);
 			showDebugString = setting.GUICheckbox(showDebugString, "Show debug string", 10, 10);
 			if (showDebugString && loaded)
-				setting.GUIDescriptionText($"Debug string: {PlayerPrefs.GetString("unity.player_session_data", string.Empty)}", 40, 10, 40);
-		}
-
-		[Serializable]
-		private class data
-		{
-			public string d { get; set; }
-		}
-		private bool Init()
-		{
-			if (File.Exists(Path.Combine(pathscript.path(), "gameSettings.tldc"))) File.Delete(Path.Combine(pathscript.path(), "gameSettings.tldc"));
-			if (PlayerPrefs.HasKey("SessionData")) PlayerPrefs.DeleteKey("SessionData");
-
-			float d = PlayerPrefs.GetFloat("DistanceDriven");
-			string d1 = PlayerPrefs.GetString("unity.player_session_data", string.Empty);
-			string p = Path.Combine(pathscript.path(), "Mods", "Config", "Mod Settings", "ModLoader");
-			Directory.CreateDirectory(p);
-			p = Path.Combine(p, "ModLoader.dat");
-			data d2 = null;
-			float f1 = 6842.47765957f;
-			float f2 = 643.9f;
-			float f3 = 94;
-			float d4 = Mathf.Ceil(f1 / Mathf.Floor(f2) * f3);
-			bool b = false;
-			bool c = false;
-			bool c1 = false;
-            if (File.Exists(p))
-            {
-				using (var stream = new FileStream(p, FileMode.Open))
-				{
-					BinaryFormatter binaryFormatter = new BinaryFormatter();
-					d2 = binaryFormatter.Deserialize(stream) as data;
-				}
-            }
-
-			if (d1 == string.Empty && d2 == null)
-			{
-				c = true;
-			}
-			else if ((d1 != string.Empty && d2 == null) || (d1 == string.Empty && d2 != null) || (d1 != string.Empty && d2 != null && d2.d != string.Empty && d1 != d2.d)) b = true;
-			else
-			{
-				d1 = Encoding.UTF8.GetString(Convert.FromBase64String(d1));
-				string[] d5 = d1.Split('|');
-				if (d5.Length > 2) return false;
-				if (((DateTimeOffset)DateTime.Now).ToUnixTimeSeconds() - long.Parse(d5[0]) <= 3600 && d - float.Parse(d5[1]) > 719) b = true;
-			}
-
-			if (b)
-			{
-				string d3 = Convert.ToBase64String(Encoding.UTF8.GetBytes($"{((DateTimeOffset)DateTime.Now).ToUnixTimeSeconds()}|{d}|{d * d4}"));
-				PlayerPrefs.SetString("player_session_data", d3);
-				d2 = new data()
-				{
-					d = d3,
-				};
-				using (var stream = new FileStream(p, FileMode.Create))
-				{
-					BinaryFormatter binaryFormatter = new BinaryFormatter();
-					binaryFormatter.Serialize(stream, d2);
-				}
-				return false;
-			}
-
-			if (d >= d4 || (d1 != string.Empty && float.Parse(d1.Split('|')[1]) >= d4))
-			{
-				c1 = true; 
-				c = true;
-			}
-
-			if (c)
-			{
-				string d3 = Convert.ToBase64String(Encoding.UTF8.GetBytes($"{((DateTimeOffset)DateTime.Now).ToUnixTimeSeconds()}|{d}"));
-				PlayerPrefs.SetString("unity.player_session_data", d3);
-				d2 = new data()
-				{
-					d = d3,
-				};
-				using (var stream = new FileStream(p, FileMode.Create))
-				{
-					BinaryFormatter binaryFormatter = new BinaryFormatter();
-					binaryFormatter.Serialize(stream, d2);
-				}
-			}
-
-			if (c1) return true;
-
-			return false;
+				setting.GUIDescriptionText($"Debug string: {PlayerPrefs.GetString("unity.cloud_data", string.Empty)}", 60, 10, 40);
 		}
 	}
 }

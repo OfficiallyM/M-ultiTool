@@ -95,8 +95,7 @@ namespace MultiTool.Utilities
 		/// <param name="root">The root vehicle partconditionscript</param>
 		public static void Paint(Color c, partconditionscript root)
 		{
-			List<partconditionscript> parts = new List<partconditionscript>();
-			FindPartChildren(root, ref parts);
+			List<partconditionscript> parts = FindPartChildren(root);
 			foreach (partconditionscript part in parts)
 			{
 				if (!part.IsPaintable()) continue;
@@ -113,8 +112,7 @@ namespace MultiTool.Utilities
 		/// <param name="root">Root vehicle partconditionscript</param>
 		public static void SetConditionAndPaint(int condition, Color color, partconditionscript root)
 		{
-			List<partconditionscript> parts = new List<partconditionscript>();
-			FindPartChildren(root, ref parts);
+			List<partconditionscript> parts = FindPartChildren(root);
 			foreach (partconditionscript part in parts)
 			{
 				if (!part.IsPaintable())
@@ -147,7 +145,13 @@ namespace MultiTool.Utilities
 		public static List<partconditionscript> FindPartChildren(partconditionscript root)
 		{
 			List<partconditionscript> parts = root.GetComponentsInChildren<partconditionscript>().ToList();
-			return parts;
+			List<partconditionscript> returnParts = new List<partconditionscript>();
+			foreach (partconditionscript part in parts)
+			{
+				if (!part.DontUseWorn)
+					returnParts.Add(part);
+			}
+			return returnParts;
 		}
 
 		/// <summary>

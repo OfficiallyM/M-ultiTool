@@ -236,7 +236,7 @@ namespace MultiTool.Modules
 		internal void OnGUI()
 		{
 			// Return early if M-ultiTool is disabled.
-			if (!enabled)
+			if (!enabled || !settings.hasInit)
 			{
 				if (mainscript.M != null && mainscript.M.menu.Menu.activeSelf)
 					GUI.Button(new Rect(0, 0, 20, 20), string.Empty);
@@ -348,6 +348,8 @@ namespace MultiTool.Modules
 
 		internal void OnLoad()
 		{
+			if (!settings.hasInit) return;
+
 			try
 			{
 				// Ensure UI loads hidden.
@@ -1301,6 +1303,7 @@ namespace MultiTool.Modules
 					"Ghaleas",
 					"PPSz",
 					"Egerdion",
+					"Platinum",
 				};
 
 				float totalCreditsHeight = (credits.Count + other.Count) * 20f;
