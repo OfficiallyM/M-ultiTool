@@ -146,14 +146,14 @@ namespace MultiTool.Tabs
 			float rawCondition = GUI.HorizontalSlider(new Rect(currVehicleX, currVehicleY, sliderWidth, buttonHeight), GUIRenderer.conditionInt, 0, maxCondition);
 			GUIRenderer.conditionInt = Mathf.RoundToInt(rawCondition);
 			currVehicleX += sliderWidth + 10f;
+
+			GUIRenderer.applyConditionToAttached = GUI.Toggle(new Rect(currVehicleX, currVehicleY, buttonWidth, buttonHeight), GUIRenderer.applyConditionToAttached, "Apply to attached");
+
+			currVehicleX += buttonWidth * 0.8f;
+
 			if (GUI.Button(new Rect(currVehicleX, currVehicleY, buttonWidth, buttonHeight), "Apply"))
 			{
-				List<partconditionscript> children = GameUtilities.FindPartChildren(partconditionscript);
-
-				foreach (partconditionscript child in children)
-				{
-					child.Refresh(GUIRenderer.conditionInt);
-				}
+				GameUtilities.SetCondition(GUIRenderer.conditionInt, GUIRenderer.applyConditionToAttached, partconditionscript);
 			}
 			currVehicleX = startingCurrVehicleX;
 			currVehicleY += buttonHeight;

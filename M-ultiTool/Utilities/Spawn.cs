@@ -19,7 +19,7 @@ namespace MultiTool.Utilities
 		/// Wrapper around the default spawn function to handle condition and fuel for items.
 		/// </summary>
 		/// <param name="item">The object to spawn</param>
-		internal static void Spawn(Item item)
+		internal static GameObject Spawn(Item item, Vector3? position = null, Quaternion? rotation = null)
 		{
 			try
 			{
@@ -43,16 +43,14 @@ namespace MultiTool.Utilities
 				if (fuelTank == null)
 				{
 					// Item doesn't have a fuel tank, just spawn the item and return.
-					mainscript.M.Spawn(item.item, item.color, selectedCondition, -1);
-					return;
+					return Spawn(item.item, item.color, selectedCondition, -1, position, rotation);
 				}
 
 				// Support for spawning without any fuel.
 				if (!new Settings().spawnWithFuel)
 				{
 					fuelTank.F.fluids.Clear();
-					mainscript.M.Spawn(item.item, item.color, selectedCondition, -1);
-					return;
+					return Spawn(item.item, item.color, selectedCondition, -1, position, rotation);
 				}
 
 				// Fuel type and value are default, just spawn the item.
@@ -60,8 +58,7 @@ namespace MultiTool.Utilities
 				{
 					if (item.fuelTypeInts[0] == -1 && item.fuelValues[0] == -1f)
 					{
-						mainscript.M.Spawn(item.item, item.color, selectedCondition, -1);
-						return;
+						return Spawn(item.item, item.color, selectedCondition, -1, position, rotation);
 					}
 				}
 
@@ -91,12 +88,14 @@ namespace MultiTool.Utilities
 						fuelTank.F.ChangeOne(item.fuelValues[i], (mainscript.fluidenum)item.fuelTypeInts[i]);
 					}
 				}
-				mainscript.M.Spawn(item.item, item.color, selectedCondition, -1);
+				return Spawn(item.item, item.color, selectedCondition, -1, position, rotation);
 			}
 			catch (Exception ex)
 			{
 				Logger.Log($"Item spawning error - {ex}", Logger.LogLevel.Error);
 			}
+
+			return null;
 		}
 
 		/// <summary>

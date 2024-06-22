@@ -109,6 +109,7 @@ namespace MultiTool.Modules
 		internal static List<Vehicle> vehicles = new List<Vehicle>();
 		internal static Color color = new Color(255f / 255f, 255f / 255f, 255f / 255f);
 		internal static int conditionInt = 0;
+		internal static bool applyConditionToAttached = false;
 		internal static int fuelMixes = 1;
 		internal static List<float> fuelValues = new List<float> { -1f };
 		internal static List<int> fuelTypeInts = new List<int> { -1 };
@@ -167,6 +168,9 @@ namespace MultiTool.Modules
 		private float[] moveOptions = new float[] { 10f, 1f, 0.1f, 0.01f, 0.001f };
 		private float moveValue = 0.1f;
 		private static List<GameObject> slots = new List<GameObject>();
+
+		// Object regenerator variables.
+		internal static tosaveitemscript selectedObject;
 
 		// Settings.
 		private List<QuickSpawn> quickSpawns = new List<QuickSpawn>();
@@ -2123,6 +2127,21 @@ namespace MultiTool.Modules
 							GUI.Button(new Rect(x + width / rotateControls * 3, y - 60f, width / rotateControls, 30f), $"Clockwise ({binds.GetPrettyName((int)Keybinds.Inputs.noclipDown)})");
 							break;
 					}
+					break;
+				case "objectRegenerator":
+					width = 400f;
+					height = 40f;
+					x = resolutionX / 2 - 100f;
+					y = resolutionY * 0.90f;
+					GUI.Box(new Rect(x, y, width, height), String.Empty);
+					GUI.Button(new Rect(x, y, width / 2, height / 2), "Select object");
+					GUI.Button(new Rect(x + width / 2, y, width / 2, height / 2), "Regenerate object");
+
+					GUI.Button(new Rect(x, y + height / 2, width / 2, height / 2), binds.GetPrettyName((int)Keybinds.Inputs.action1));
+					GUI.Button(new Rect(x + width / 2, y + height / 2, width / 2, height / 2), binds.GetPrettyName((int)Keybinds.Inputs.action4));
+
+					if (selectedObject != null)
+						GUI.Button(new Rect(resolutionX / 2 - 100f, 10f, 300f, 30f), $"Selected object: {selectedObject.name} (ID: {selectedObject.idInSave})");
 					break;
 			}
 

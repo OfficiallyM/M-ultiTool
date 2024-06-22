@@ -333,6 +333,52 @@ namespace MultiTool
 						}
 					}
 					break;
+				case "objectRegenerator":
+					// Select object.
+					if (Input.GetKeyDown(binds.GetKeyByAction((int)Keybinds.Inputs.action1).key))
+					{
+						Physics.Raycast(mainscript.M.player.Cam.transform.position, mainscript.M.player.Cam.transform.forward, out var raycastHit, float.PositiveInfinity, mainscript.M.player.useLayer);
+						if (raycastHit.transform != null)
+						{
+							GameObject hitGameObject = raycastHit.transform.gameObject;
+
+							// Return early if object doesn't have a tosaveitemscript.
+							tosaveitemscript save = hitGameObject.GetComponent<tosaveitemscript>();
+							if (save == null)
+								return;
+
+							GUIRenderer.selectedObject = save;
+						}
+					}
+
+					// Regenerate object.
+					if (Input.GetKeyDown(binds.GetKeyByAction((int)Keybinds.Inputs.action4).key))
+					{
+						if (GUIRenderer.selectedObject != null)
+						{
+							tosaveitemscript save = GUIRenderer.selectedObject;
+							GameObject gameObject = save.gameObject;
+							Item prefab = GUIRenderer.items.Where(i => i.item.name == gameObject.name.Replace("(Clone)", "")).FirstOrDefault();
+							if (prefab == null)
+								return;
+
+							Vector3 position = gameObject.transform.position;
+							Quaternion rotation = gameObject.transform.rotation;
+
+							// Destroy the old object.
+							save.removeFromMemory = true;
+							foreach (tosaveitemscript component in gameObject.GetComponentsInChildren<tosaveitemscript>())
+							{
+								component.removeFromMemory = true;
+							}
+							UnityEngine.Object.Destroy(gameObject);
+
+							// Recreate it.
+							GameObject spawned = SpawnUtilities.Spawn(prefab, position, rotation);
+							GUIRenderer.selectedObject = spawned.GetComponent<tosaveitemscript>();
+						}
+					}
+					break;
 			}
 
 			// Fake the player being on a ladder to remove the gravity during noclip.

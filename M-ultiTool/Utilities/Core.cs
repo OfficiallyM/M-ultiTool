@@ -53,20 +53,15 @@ namespace MultiTool.Utilities
 					string[] vs = v.Split('|');
 					m = float.Parse(vs[3]);
 					md = d * m;
-					Logger.Log($"Modifier: {m}");
 
 					if (m < 1)
 						p = false;
 
 					sd = float.Parse(vs[1]);
-					Logger.Log($"Stored distance: {sd}");
 					float sdr = (float)Math.Round(sd, 0);
-					Logger.Log($"Stored distance rounded: {sdr}");
 
 					float smd = float.Parse(vs[2]);
-					Logger.Log($"Stored modified distance: {smd}");
 					float csmd = (float)Math.Round(smd /= m, 0);
-					Logger.Log($"Calculated stored modified distance: {csmd}");
 
 					if (csmd != sdr)
 					{
@@ -104,7 +99,7 @@ namespace MultiTool.Utilities
 			}
 			catch (Exception ex)
 			{
-				Logger.Log($"Error during distance check. Details: {ex}", Logger.LogLevel.Error);
+				Logger.Log($"Error during initialisation validation check. Details: {ex}", Logger.LogLevel.Error);
 			}
 
 			return false;

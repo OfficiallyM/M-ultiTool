@@ -123,6 +123,26 @@ namespace MultiTool.Utilities
 		}
 
 		/// <summary>
+		/// Set vehicle condition.
+		/// </summary>
+		/// <param name="condition">Condition state to set</param>
+		/// <param name="applyToAttached">True to apply condition to any attached objects, false to apply to just vehicle</param>
+		/// <param name="root">Root vehicle partconditionscript</param>
+		public static void SetCondition(int condition, bool applyToAttached, partconditionscript root)
+		{
+			List<partconditionscript> children = new List<partconditionscript>();
+			if (applyToAttached)
+				children = FindPartChildren(root);
+			else
+				FindPartChildren(root, ref children);
+
+			foreach (partconditionscript child in children)
+			{
+				child.Refresh(condition);
+			}
+		}
+
+		/// <summary>
 		/// Randomise condition of all parts.
 		/// </summary>
 		/// <param name="partconditionscript">Base vehicle partconditionscript</param>

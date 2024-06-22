@@ -143,6 +143,19 @@ namespace MultiTool.Tabs
 
 			miscY += buttonHeight + 10f;
 
+			if (GUI.Button(new Rect(miscX, miscY, buttonWidth, buttonHeight), GUIRenderer.GetAccessibleString("Toggle object regenerator", settings.mode == "objectRegenerator")))
+			{
+				if (settings.mode == "objectRegenerator")
+				{
+					settings.mode = null;
+					GUIRenderer.selectedObject = null;
+				}
+				else
+					settings.mode = "objectRegenerator";
+			}
+
+			miscY += buttonHeight + 10f;
+
 			if (GUI.Button(new Rect(miscX, miscY, buttonWidth * 2, buttonHeight), "Rebuild thumbnail cache (this will lag)"))
 				ThumbnailGenerator.RebuildCache();
 		}
