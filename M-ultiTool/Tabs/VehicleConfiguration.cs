@@ -235,11 +235,7 @@ namespace MultiTool.Tabs
 
 			if (GUI.Button(new Rect(currVehicleX, currVehicleY, buttonWidth, buttonHeight), "Apply"))
 			{
-				partconditionscript[] partconditionscripts = car.GetComponentsInChildren<partconditionscript>();
-				foreach (partconditionscript part in partconditionscripts)
-				{
-					part.Paint(GUIRenderer.color);
-				}
+				GameUtilities.Paint(GUIRenderer.color, partconditionscript);
 			}
 
 			currVehicleX = startingCurrVehicleX;

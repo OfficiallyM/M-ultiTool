@@ -105,24 +105,6 @@ namespace MultiTool.Utilities
 		}
 
 		/// <summary>
-		/// Set condition and paint of root vehicle and all child parts
-		/// </summary>
-		/// <param name="condition">Condition state to set</param>
-		/// <param name="color">Color to set</param>
-		/// <param name="root">Root vehicle partconditionscript</param>
-		public static void SetConditionAndPaint(int condition, Color color, partconditionscript root)
-		{
-			List<partconditionscript> parts = FindPartChildren(root);
-			foreach (partconditionscript part in parts)
-			{
-				if (!part.IsPaintable())
-					part.Refresh(condition);
-				else
-					part.Refresh(condition, color);
-			}
-		}
-
-		/// <summary>
 		/// Set vehicle condition.
 		/// </summary>
 		/// <param name="condition">Condition state to set</param>
@@ -139,6 +121,24 @@ namespace MultiTool.Utilities
 			foreach (partconditionscript child in children)
 			{
 				child.Refresh(condition);
+			}
+		}
+
+		/// <summary>
+		/// Set condition and paint of root vehicle and all child parts
+		/// </summary>
+		/// <param name="condition">Condition state to set</param>
+		/// <param name="color">Color to set</param>
+		/// <param name="root">Root vehicle partconditionscript</param>
+		public static void SetConditionAndPaint(int condition, Color color, partconditionscript root)
+		{
+			List<partconditionscript> parts = FindPartChildren(root);
+			foreach (partconditionscript part in parts)
+			{
+				if (!part.IsPaintable())
+					part.Refresh(condition);
+				else
+					part.Refresh(condition, color);
 			}
 		}
 
@@ -162,15 +162,25 @@ namespace MultiTool.Utilities
 		/// </summary>
 		/// <param name="root">Root part</param>
 		/// <returns>List of all child parts</returns>
-		public static List<partconditionscript> FindPartChildren(partconditionscript root)
+		public static List<partconditionscript> FindPartChildren(partconditionscript root, bool requireToSave = true)
 		{
 			List<partconditionscript> parts = root.GetComponentsInChildren<partconditionscript>().ToList();
 			List<partconditionscript> returnParts = new List<partconditionscript>();
 			foreach (partconditionscript part in parts)
 			{
-				if (!part.DontUseWorn)
-					returnParts.Add(part);
+				if (part.DontUseWorn)
+					continue;
+
+				if (requireToSave && part.tosave == null)
+					continue;
+
+				returnParts.Add(part);
 			}
+
+			// Couldn't find any parts, attempt to find using part children.
+			if (returnParts.Count == 0)
+				FindPartChildren(root, ref returnParts);
+
 			return returnParts;
 		}
 
