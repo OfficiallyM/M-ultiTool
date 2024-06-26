@@ -2131,7 +2131,7 @@ namespace MultiTool.Modules
 				case "objectRegenerator":
 					width = 400f;
 					height = 40f;
-					x = resolutionX / 2 - 100f;
+					x = resolutionX / 2 - 200f;
 					y = resolutionY * 0.90f;
 					GUI.Box(new Rect(x, y, width, height), String.Empty);
 					GUI.Button(new Rect(x, y, width / 2, height / 2), "Select object");
@@ -2141,7 +2141,7 @@ namespace MultiTool.Modules
 					GUI.Button(new Rect(x + width / 2, y + height / 2, width / 2, height / 2), binds.GetPrettyName((int)Keybinds.Inputs.action4));
 
 					if (selectedObject != null)
-						GUI.Button(new Rect(resolutionX / 2 - 100f, 10f, 300f, 30f), $"Selected object: {selectedObject.name} (ID: {selectedObject.idInSave})");
+						GUI.Button(new Rect(resolutionX / 2 - 250f, 10f, 500f, 30f), $"Selected object: {selectedObject.name} (ID: {selectedObject.idInSave})");
 					break;
 			}
 
