@@ -565,17 +565,35 @@ namespace MultiTool.Modules
 								obj = slot.transform.parent.gameObject;
 							}
 
-							// Try and find the muffler as it's a child of the engine.
-							foreach (MeshRenderer child in obj.GetComponentsInChildren<MeshRenderer>())
-							{
-								string name = child.name.ToLower();
-								if ((name.Contains("muffler") || name.Contains("exhaust")) && child.gameObject.activeSelf)
-								{
-									slots.Add(child.gameObject);
-								}
-							}
-
 							slots.Add(obj);
+						}
+
+						// Find anything that isn't an actual part.
+						foreach (MeshRenderer child in settings.car.GetComponentsInChildren<MeshRenderer>())
+						{
+							string name = child.name.ToLower();
+							GameObject parent = child.transform.parent.gameObject;
+							string parentName = parent.name.ToLower();
+							Logger.Log($"Mesh name: {name}");
+							Logger.Log($"Mesh parent name: {parentName}");
+							string[] names = new string[]
+							{
+								"muffler",
+								"exhaust",
+							};
+							string[] parentNames = new string[]
+							{
+								"interiorlight",
+								"plate",
+							};
+							if (names.Contains(name) && child.gameObject.activeSelf)
+							{
+								slots.Add(child.gameObject);
+							}
+							if (parentNames.Contains(parentName) && parent.activeSelf)
+							{
+								slots.Add(parent);
+							}
 						}
 					}
 
@@ -2071,7 +2089,7 @@ namespace MultiTool.Modules
 							{
 								int slotIndex = displayedIndexes[index];
 								GameObject slot = slots[slotIndex];
-								string name = $"{slotIndex + 1} - {slot.name}";
+								string name = $"{slotIndex + 1} - {(slot.name.IsAllLower() ? slot.name.ToSentenceCase() : slot.name)}";
 								if (slotIndex == hoveredSlotIndex)
 								{
 									name = $"<b>{name}</b>";
