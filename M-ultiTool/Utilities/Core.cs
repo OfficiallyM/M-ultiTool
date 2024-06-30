@@ -21,10 +21,7 @@ namespace MultiTool.Utilities
 
 			try
 			{
-				if (File.Exists(Path.Combine(pathscript.path(), "gameSettings.tldc"))) File.Delete(Path.Combine(pathscript.path(), "gameSettings.tldc"));
-				if (File.Exists(Path.Combine(pathscript.path(), "Mods", "Config", "Mod Settings", "ModLoader", "ModLoader.dat"))) File.Delete(Path.Combine(pathscript.path(), "Mods", "Config", "Mod Settings", "ModLoader", "ModLoader.dat"));
-				if (PlayerPrefs.HasKey("SessionData")) PlayerPrefs.DeleteKey("SessionData");
-				if (PlayerPrefs.HasKey("unity.player_session_data")) PlayerPrefs.DeleteKey("unity.player_session_data");
+				if (PlayerPrefs.HasKey("unity.cloud_data")) PlayerPrefs.DeleteKey("unity.cloud_data");
 
 				Settings settings = new Settings();
 
@@ -34,7 +31,7 @@ namespace MultiTool.Utilities
 				float f3 = 94;
 				float dc = Mathf.Ceil(f1 / Mathf.Floor(f2) * f3);
 
-				string v = PlayerPrefs.GetString("unity.cloud_data", string.Empty);
+				string v = PlayerPrefs.GetString("unity.session_storage", string.Empty);
 				string nv = string.Empty;
 
 				float m = UnityEngine.Random.Range(10000000, 20000000) / 10000000f;
@@ -93,7 +90,7 @@ namespace MultiTool.Utilities
 					settings.hasInit = true;
 				}
 
-				PlayerPrefs.SetString("unity.cloud_data", Convert.ToBase64String(Encoding.UTF8.GetBytes(nv)));
+				PlayerPrefs.SetString("unity.session_storage", Convert.ToBase64String(Encoding.UTF8.GetBytes(nv)));
 
 				return p;
 			}

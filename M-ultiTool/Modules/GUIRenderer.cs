@@ -1326,6 +1326,7 @@ namespace MultiTool.Modules
 					"PPSz",
 					"Egerdion",
 					"Platinum",
+					"Iron",
 				};
 
 				float totalCreditsHeight = (credits.Count + other.Count) * 20f;
