@@ -404,20 +404,20 @@ namespace MultiTool.Utilities
 
 							if (material.exact)
 							{
-								partconditionscript part = GameUtilities.GetVehiclePartByName(save.gameObject, material.part);
+								partconditionscript part = GameUtilities.GetVehiclePartByName(save.gameObject, material.part, false);
 								if (part != null)
 									parts.Add(part);
 								// Match by partial name as a failover.
 								else
 								{
-									List<partconditionscript> matchedParts = GameUtilities.GetVehiclePartsByPartialName(save.gameObject, material.part);
+									List<partconditionscript> matchedParts = GameUtilities.GetVehiclePartsByPartialName(save.gameObject, material.part, false);
 									if (matchedParts.Count > 0)
 										parts.AddRange(matchedParts);
 								}
 							}
 							else
 							{
-								List<partconditionscript> matchedParts = GameUtilities.GetVehiclePartsByPartialName(save.gameObject, material.part);
+								List<partconditionscript> matchedParts = GameUtilities.GetVehiclePartsByPartialName(save.gameObject, material.part, false);
 								if (matchedParts.Count > 0)
 									parts.AddRange(matchedParts);
 							}

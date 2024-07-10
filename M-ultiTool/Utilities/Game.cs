@@ -221,14 +221,14 @@ namespace MultiTool.Utilities
 		/// </summary>
 		/// <param name="vehicle">Vehicle to get parts for</param>
 		/// <returns>Current list of child parts</returns>
-		public static List<partconditionscript> GetVehicleParts(GameObject vehicle)
+		public static List<partconditionscript> GetVehicleParts(GameObject vehicle, bool requireToSave = true)
 		{
 			List<partconditionscript> parts = new List<partconditionscript>();
 			partconditionscript vehicleCondition = vehicle.GetComponent<partconditionscript>();
 			if (vehicleCondition == null)
 				return parts;
 
-			return FindPartChildren(vehicleCondition);
+			return FindPartChildren(vehicleCondition, requireToSave);
 		}
 
 		/// <summary>
@@ -237,9 +237,9 @@ namespace MultiTool.Utilities
 		/// <param name="vehicle">Vehicle to get part from</param>
 		/// <param name="name">Name of part to find</param>
 		/// <returns>Part if name exists, otherwise null</returns>
-		public static partconditionscript GetVehiclePartByName(GameObject vehicle, string name)
+		public static partconditionscript GetVehiclePartByName(GameObject vehicle, string name, bool requireToSave = true)
 		{
-			List<partconditionscript> parts = GetVehicleParts(vehicle);
+			List<partconditionscript> parts = GetVehicleParts(vehicle, requireToSave);
 			return parts.Where(part => part.name.ToLower() == name.ToLower()).FirstOrDefault();
 		}
 
@@ -249,9 +249,9 @@ namespace MultiTool.Utilities
 		/// <param name="vehicle">Vehicle to get part from</param>
 		/// <param name="name">Partial name of parts to find</param>
 		/// <returns>List of parts if name matches any, otherwise empty list</returns>
-		public static List<partconditionscript> GetVehiclePartsByPartialName(GameObject vehicle, string name)
+		public static List<partconditionscript> GetVehiclePartsByPartialName(GameObject vehicle, string name, bool requireToSave = true)
 		{
-			List<partconditionscript> parts = GetVehicleParts(vehicle);
+			List<partconditionscript> parts = GetVehicleParts(vehicle, requireToSave);
 			return parts.Where(part => part.name.ToLower().Contains(name.ToLower())).ToList();
 		}
 

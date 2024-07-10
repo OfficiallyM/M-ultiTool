@@ -795,24 +795,24 @@ namespace MultiTool.Tabs
 			if (nextUpdateTime <= 0)
 			{
 				materialParts.Clear();
-				partconditionscript mainSeat = GameUtilities.GetVehiclePartByName(carObject, "PartConColorLeather");
+				partconditionscript mainSeat = GameUtilities.GetVehiclePartByName(carObject, "PartConColorLeather", false);
 				if (mainSeat != null)
 					materialParts.Add(PartGroup.Create("PartConColorLeather", mainSeat));
-				List<partconditionscript> removableSeats = GameUtilities.GetVehiclePartsByPartialName(carObject, "seat");
+				List<partconditionscript> removableSeats = GameUtilities.GetVehiclePartsByPartialName(carObject, "seat", false);
 				if (removableSeats.Count > 0)
 					foreach (partconditionscript seat in removableSeats)
 						materialParts.Add(PartGroup.Create("seat", seat));
-				List<partconditionscript> sunVisors = GameUtilities.GetVehiclePartsByPartialName(carObject, "Napellenzo");
+				List<partconditionscript> sunVisors = GameUtilities.GetVehiclePartsByPartialName(carObject, "Napellenzo", false);
 				if (sunVisors.Count > 0)
 					foreach (partconditionscript visor in sunVisors)
 						materialParts.Add(PartGroup.Create(visor.name.Replace("(Clone)", string.Empty), visor));
-				List<partconditionscript> headliner = GameUtilities.GetVehiclePartsByPartialName(carObject, "PartConKarpit");
-				List<partconditionscript> headliner2 = GameUtilities.GetVehiclePartsByPartialName(carObject, "PartConCar03Karpit");
+				List<partconditionscript> headliner = GameUtilities.GetVehiclePartsByPartialName(carObject, "PartConKarpit", false);
+				List<partconditionscript> headliner2 = GameUtilities.GetVehiclePartsByPartialName(carObject, "PartConCar03Karpit", false);
 				if (headliner2.Count > 0)
 					headliner.AddRange(headliner2);
 				if (headliner.Count > 0)
 					materialParts.Add(PartGroup.Create("Karpit", headliner));
-				List<partconditionscript> furyStripe = GameUtilities.GetVehiclePartsByPartialName(carObject, "PartConCsik");
+				List<partconditionscript> furyStripe = GameUtilities.GetVehiclePartsByPartialName(carObject, "PartConCsik", false);
 				if (furyStripe.Count > 0)
 					materialParts.Add(PartGroup.Create("PartConCsik", furyStripe));
 
