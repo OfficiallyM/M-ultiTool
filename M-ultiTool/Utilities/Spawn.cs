@@ -294,14 +294,14 @@ namespace MultiTool.Utilities
 			try
 			{
 				GameObject spawned = UnityEngine.Object.Instantiate(gameObject, position.Value, rotation.Value);
-				partconditionscript component1 = spawned.GetComponent<partconditionscript>();
-				if (component1 == null && spawned.GetComponent<childunparent>() != null)
-					component1 = spawned.GetComponent<childunparent>().g.GetComponent<partconditionscript>();
-				if (component1 != null)
+				partconditionscript conditionscript = spawned.GetComponent<partconditionscript>();
+                if (conditionscript == null && spawned.GetComponent<childunparent>() != null)
+                    conditionscript = spawned.GetComponent<childunparent>().g.GetComponent<partconditionscript>();
+                if (conditionscript != null)
 				{
 					if (variant != -1)
 					{
-						randomTypeSelector component2 = component1.GetComponent<randomTypeSelector>();
+						randomTypeSelector component2 = conditionscript.GetComponent<randomTypeSelector>();
 						if (component2 != null)
 						{
 							component2.forceStart = false;
@@ -311,14 +311,10 @@ namespace MultiTool.Utilities
 					}
 
 					if (condition == -1)
-					{
-						GameUtilities.RandomiseCondition(component1);
-						GameUtilities.Paint(color, component1);
-					}
+						GameUtilities.RandomiseCondition(conditionscript);
 					else
-					{
-						GameUtilities.SetConditionAndPaint(condition, color, component1);
-					}
+                        GameUtilities.SetCondition(condition, false, conditionscript);
+					GameUtilities.Paint(color, conditionscript, true);
 				}
 				mainscript.M.PostSpawn(spawned);
 

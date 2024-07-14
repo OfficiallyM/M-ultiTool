@@ -93,9 +93,12 @@ namespace MultiTool.Utilities
 		/// </summary>
 		/// <param name="c">The colour to paint</param>
 		/// <param name="root">The root vehicle partconditionscript</param>
-		public static void Paint(Color c, partconditionscript root)
+		public static void Paint(Color c, partconditionscript root, bool useSlotChildren = false)
 		{
 			List<partconditionscript> parts = FindPartChildren(root);
+            if (useSlotChildren)
+                FindPartChildren(root, ref parts);
+
 			foreach (partconditionscript part in parts)
 			{
 				if (!part.IsPaintable()) continue;
