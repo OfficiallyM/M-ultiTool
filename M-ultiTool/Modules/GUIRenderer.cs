@@ -2012,8 +2012,8 @@ namespace MultiTool.Modules
                         GUI.Button(new Rect(x, y + height / rows * 4, width / 2, height / rows), $"Toggle hold to scale ({(scaleHold ? "Hold" : "Click")})");
                         GUI.Button(new Rect(x, y + height / rows * 5, width / 2, height / rows), "Reset");
 
-                        GUI.Button(new Rect(x + width / 2, y, width / 2, height / rows), binds.GetPrettyName((int)Keybinds.Inputs.action1));
-                        GUI.Button(new Rect(x + width / 2, y + height / rows, width / 2, height / rows), binds.GetPrettyName((int)Keybinds.Inputs.action2));
+                        GUI.Button(new Rect(x + width / 2, y, width / 2, height / rows), binds.GetPrettyName((int)Keybinds.Inputs.up));
+                        GUI.Button(new Rect(x + width / 2, y + height / rows, width / 2, height / rows), binds.GetPrettyName((int)Keybinds.Inputs.down));
                         GUI.Button(new Rect(x + width / 2, y + height / rows * 2, width / 2, height / rows), binds.GetPrettyName((int)Keybinds.Inputs.action3));
                         GUI.Button(new Rect(x + width / 2, y + height / rows * 3, width / 2, height / rows), binds.GetPrettyName((int)Keybinds.Inputs.action5));
                         GUI.Button(new Rect(x + width / 2, y + height / rows * 4, width / 2, height / rows), binds.GetPrettyName((int)Keybinds.Inputs.select));

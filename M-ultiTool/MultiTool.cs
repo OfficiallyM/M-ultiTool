@@ -1,4 +1,5 @@
-﻿using MultiTool.Core;
+﻿using MultiTool.Components;
+using MultiTool.Core;
 using MultiTool.Modules;
 using MultiTool.Utilities;
 using System;
@@ -19,10 +20,11 @@ namespace MultiTool
 		public override string Name => Meta.Name;
 		public override string Author => Meta.Author;
 		public override string Version => Meta.Version;
+        public override bool LoadInDB => true;
 		public override bool LoadInMenu => true;
 
-		// Initialise modules.
-		private readonly GUIRenderer renderer;
+        // Initialise modules.
+        private readonly GUIRenderer renderer;
 		private readonly Config config;
 		private readonly Keybinds binds;
 
@@ -92,7 +94,14 @@ namespace MultiTool
 			renderer.OnGUI();
 		}
 
-		public override void OnLoad()
+        public override void dbLoad()
+        {
+            GameObject controller = new GameObject("M-ultiToolController");
+            controller.transform.SetParent(mainscript.M.transform);
+            controller.AddComponent<Controller>();
+        }
+
+        public override void OnLoad()
 		{
 			// Return early if M-ultiTool is disabled.
 			if (!renderer.enabled)
@@ -238,9 +247,9 @@ namespace MultiTool
 							Vector3 scale = GUIRenderer.selectedObject.transform.localScale;
 							float scaleValue = GUIRenderer.scaleValue;
 							// Scale up.
-							bool scaleUp = Input.GetKey(binds.GetKeyByAction((int)Keybinds.Inputs.action1).key);
+							bool scaleUp = Input.GetKey(binds.GetKeyByAction((int)Keybinds.Inputs.up).key);
 							if (!GUIRenderer.scaleHold)
-								scaleUp = Input.GetKeyDown(binds.GetKeyByAction((int)Keybinds.Inputs.action1).key);
+								scaleUp = Input.GetKeyDown(binds.GetKeyByAction((int)Keybinds.Inputs.up).key);
 							if (scaleUp)
 							{
 								switch (GUIRenderer.axis)
@@ -265,9 +274,9 @@ namespace MultiTool
 							}
 
 							// Scale down.
-							bool scaleDown = Input.GetKey(binds.GetKeyByAction((int)Keybinds.Inputs.action2).key);
+							bool scaleDown = Input.GetKey(binds.GetKeyByAction((int)Keybinds.Inputs.down).key);
 							if (!GUIRenderer.scaleHold)
-								scaleDown = Input.GetKeyDown(binds.GetKeyByAction((int)Keybinds.Inputs.action2).key);
+								scaleDown = Input.GetKeyDown(binds.GetKeyByAction((int)Keybinds.Inputs.down).key);
 							if (scaleDown)
 							{
 								switch (GUIRenderer.axis)
@@ -484,6 +493,11 @@ namespace MultiTool
 				}
 			}
 		}
+
+        internal static void LateUpdate()
+        {
+            // This was here for something that didn't work, but it's worth keeping for the future.
+        }
 
 		public override void Config()
 		{
