@@ -9,6 +9,7 @@ using Settings = MultiTool.Core.Settings;
 using MultiTool.Utilities;
 using System.Reflection;
 using UnityEngine.Rendering;
+using System.Text.RegularExpressions;
 
 namespace MultiTool.Modules
 {
@@ -571,29 +572,38 @@ namespace MultiTool.Modules
 						// Find anything that isn't an actual part.
 						foreach (MeshRenderer child in settings.car.GetComponentsInChildren<MeshRenderer>())
 						{
-							string name = child.name.ToLower();
+							string name = PrettifySlotName(child.name).ToLower();
 							GameObject parent = child.transform.parent.gameObject;
-							string parentName = parent.name.ToLower();
-							Logger.Log($"Mesh name: {name}");
-							Logger.Log($"Mesh parent name: {parentName}");
-							string[] names = new string[]
-							{
-								"muffler",
-								"exhaust",
-							};
+                            string parentName = PrettifySlotName(parent.name).ToLower();
+                            Logger.Log($"Name: {name}");
+                            Logger.Log($"parentName: {parentName}");
+                            string[] mufflers = new string[]
+                            {
+                                "muffler",
+                                "exhaust",
+                            };
+
 							string[] parentNames = new string[]
 							{
 								"interiorlight",
 								"plate",
-							};
-							if (names.Contains(name) && child.gameObject.activeSelf)
-							{
-								slots.Add(child.gameObject);
-							}
-							if (parentNames.Contains(parentName) && parent.activeSelf)
-							{
-								slots.Add(parent);
-							}
+                            };
+
+                            foreach (string muffler in mufflers)
+                            {
+                                if ((name.Contains(muffler) || parentName.Contains(muffler)) && child.gameObject.activeSelf)
+                                {
+                                    slots.Add(child.gameObject);
+                                }
+                            }
+
+                            foreach (string parentSlotName in parentNames)
+                            {
+							    if (parentName.Contains(parentSlotName) && parent.activeSelf)
+							    {
+								    slots.Add(parent);
+							    }
+                            }
 						}
 					}
 
@@ -1327,6 +1337,7 @@ namespace MultiTool.Modules
 					"Egerdion",
 					"Platinum",
 					"Iron",
+                    "sinNeer",
 				};
 
 				float totalCreditsHeight = (credits.Count + other.Count) * 20f;
@@ -2085,8 +2096,9 @@ namespace MultiTool.Modules
 							{
 								int slotIndex = displayedIndexes[index];
 								GameObject slot = slots[slotIndex];
-								string name = $"{slotIndex + 1} - {(slot.name.IsAllLower() ? slot.name.ToSentenceCase() : slot.name)}";
-								if (slotIndex == hoveredSlotIndex)
+								string name = $"{slotIndex + 1} - {PrettifySlotName(slot.name)}";
+
+                                if (slotIndex == hoveredSlotIndex)
 								{
 									name = $"<b>{name}</b>";
 								}
@@ -2097,7 +2109,7 @@ namespace MultiTool.Modules
 							GUI.Button(new Rect(resolutionX - width / displayedIndexes.Count, y - 30f, width / displayedIndexes.Count, 30f), $"({binds.GetPrettyName((int)Keybinds.Inputs.right)}) >");
 							break;
 						case "move":
-							GUI.Button(new Rect(resolutionX / 2 - 100f, 10f, 300f, 30f), $"Moving: {selectedSlot.name}");
+							GUI.Button(new Rect(resolutionX / 2 - 100f, 10f, 300f, 30f), $"Moving: {PrettifySlotName(selectedSlot.name)}");
 
 							int moveControls = 4;
 							GUI.Button(new Rect(x, y, width / moveControls, 30f), $"Back to slot select ({binds.GetPrettyName((int)Keybinds.Inputs.select)})");
@@ -2119,7 +2131,7 @@ namespace MultiTool.Modules
 							GUI.Button(new Rect(x + width / moveControls * 3, y - 60f, width / moveControls, 30f), $"Down ({binds.GetPrettyName((int)Keybinds.Inputs.noclipDown)})");
 							break;
 						case "rotate":
-							GUI.Button(new Rect(resolutionX / 2 - 100f, 10f, 300f, 30f), $"Rotating: {selectedSlot.name}");
+							GUI.Button(new Rect(resolutionX / 2 - 100f, 10f, 300f, 30f), $"Rotating: {PrettifySlotName(selectedSlot.name)}");
 
 							int rotateControls = 4;
 							GUI.Button(new Rect(x, y, width / rotateControls, 30f), $"Back to slot select ({binds.GetPrettyName((int)Keybinds.Inputs.select)})");
@@ -2243,6 +2255,19 @@ namespace MultiTool.Modules
 				GUI.Label(new Rect(x, y, contentWidth, 20f), "Blue: Interior zone");
 			}
 		}
+
+        /// <summary>
+        /// Make the vehicle slot name look prettier.
+        /// </summary>
+        /// <param name="name">Slot name</param>
+        /// <returns>Prettified slot name</returns>
+        private string PrettifySlotName(string name)
+        {
+            name = name.Replace("(Clone)", "");
+            name = Regex.Replace(name, "\\((.*?)\\)", "");
+            name = name.Trim();
+            return name.IsAllLower() ? name.ToSentenceCase() : name;
+        }
 
 		/// <summary>
 		/// Render colour palette.
