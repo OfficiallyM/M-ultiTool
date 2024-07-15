@@ -202,19 +202,40 @@ namespace MultiTool
 				case "scale":
 					if (!renderer.show)
 					{
-						Physics.Raycast(mainscript.M.player.Cam.transform.position, mainscript.M.player.Cam.transform.forward, out var raycastHit, float.PositiveInfinity, mainscript.M.player.useLayer);
-						if (raycastHit.transform != null)
-						{
-							GameObject hitGameObject = raycastHit.transform.gameObject;
+                        // Select object.
+                        if (Input.GetKeyDown(binds.GetKeyByAction((int)Keybinds.Inputs.action6).key))
+                        {
+                            Physics.Raycast(mainscript.M.player.Cam.transform.position, mainscript.M.player.Cam.transform.forward, out var raycastHit, float.PositiveInfinity, mainscript.M.player.useLayer);
+                            if (raycastHit.collider != null && raycastHit.collider.gameObject != null)
+                            {
+                                GameObject hitGameObject = raycastHit.collider.transform.gameObject;
 
+                                // Recurse upwards to find a tosaveitemscript.
+                                tosaveitemscript save = hitGameObject.GetComponentInParent<tosaveitemscript>();
+
+                                // Can't find the tosaveitemscript, return early.
+                                if (save == null)
+                                {
+                                    GUIRenderer.selectedObject = null;
+                                    return;
+                                }
+
+                                GUIRenderer.selectedObject = save;
+                                return;
+                            }
+                            GUIRenderer.selectedObject = null;
+                        }
+
+						if (GUIRenderer.selectedObject != null)
+						{
 							// Return early if looking at terrain.
-							if (hitGameObject.GetComponent<terrainscript>() != null)
+							if (GUIRenderer.selectedObject.GetComponent<terrainscript>() != null)
 								return;
 
-							tosaveitemscript save = hitGameObject.GetComponent<tosaveitemscript>();
+							tosaveitemscript save = GUIRenderer.selectedObject.GetComponent<tosaveitemscript>();
 							bool update = false;
 
-							Vector3 scale = hitGameObject.transform.localScale;
+							Vector3 scale = GUIRenderer.selectedObject.transform.localScale;
 							float scaleValue = GUIRenderer.scaleValue;
 							// Scale up.
 							bool scaleUp = Input.GetKey(binds.GetKeyByAction((int)Keybinds.Inputs.action1).key);
@@ -225,19 +246,19 @@ namespace MultiTool
 								switch (GUIRenderer.axis)
 								{
 									case "all":
-										hitGameObject.transform.localScale = new Vector3(scale.x + scaleValue, scale.y + scaleValue, scale.z + scaleValue);
+                                        GUIRenderer.selectedObject.transform.localScale = new Vector3(scale.x + scaleValue, scale.y + scaleValue, scale.z + scaleValue);
 										break;
 									case "x":
 										scale.x += scaleValue;
-										hitGameObject.transform.localScale = scale;
+                                        GUIRenderer.selectedObject.transform.localScale = scale;
 										break;
 									case "y":
 										scale.y += scaleValue;
-										hitGameObject.transform.localScale = scale;
+                                        GUIRenderer.selectedObject.transform.localScale = scale;
 										break;
 									case "z":
 										scale.z += scaleValue;
-										hitGameObject.transform.localScale = scale;
+                                        GUIRenderer.selectedObject.transform.localScale = scale;
 										break;
 								}
 								update = true;
@@ -252,19 +273,19 @@ namespace MultiTool
 								switch (GUIRenderer.axis)
 								{
 									case "all":
-										hitGameObject.transform.localScale = new Vector3(scale.x - scaleValue, scale.y - scaleValue, scale.z - scaleValue);
+                                        GUIRenderer.selectedObject.transform.localScale = new Vector3(scale.x - scaleValue, scale.y - scaleValue, scale.z - scaleValue);
 										break;
 									case "x":
 										scale.x -= scaleValue;
-										hitGameObject.transform.localScale = scale;
+                                        GUIRenderer.selectedObject.transform.localScale = scale;
 										break;
 									case "y":
 										scale.y -= scaleValue;
-										hitGameObject.transform.localScale = scale;
+                                        GUIRenderer.selectedObject.transform.localScale = scale;
 										break;
 									case "z":
 										scale.z -= scaleValue;
-										hitGameObject.transform.localScale = scale;
+                                        GUIRenderer.selectedObject.transform.localScale = scale;
 										break;
 								}
 								update = true;
@@ -277,19 +298,19 @@ namespace MultiTool
 								switch (GUIRenderer.axis)
 								{
 									case "all":
-										hitGameObject.transform.localScale = new Vector3(1, 1, 1);
+                                        GUIRenderer.selectedObject.transform.localScale = new Vector3(1, 1, 1);
 										break;
 									case "x":
 										scale.x = 1;
-										hitGameObject.transform.localScale = scale;
+                                        GUIRenderer.selectedObject.transform.localScale = scale;
 										break;
 									case "y":
 										scale.y = 1;
-										hitGameObject.transform.localScale = scale;
+                                        GUIRenderer.selectedObject.transform.localScale = scale;
 										break;
 									case "z":
 										scale.z = 1;
-										hitGameObject.transform.localScale = scale;
+                                        GUIRenderer.selectedObject.transform.localScale = scale;
 										break;
 								}
 								update = true;
@@ -302,7 +323,7 @@ namespace MultiTool
 								SaveUtilities.UpdateScale(new ScaleData()
 								{
 									ID = save.idInSave,
-									scale = hitGameObject.transform.localScale
+									scale = GUIRenderer.selectedObject.transform.localScale
 								});
 							}
 						}
@@ -349,8 +370,10 @@ namespace MultiTool
 							if (save == null) return;
 
 							GUIRenderer.selectedObject = save;
+                            return;
 						}
-					}
+                        GUIRenderer.selectedObject = null;
+                    }
 
 					// Regenerate object.
 					if (Input.GetKeyDown(binds.GetKeyByAction((int)Keybinds.Inputs.action4).key))

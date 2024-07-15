@@ -37,6 +37,7 @@ namespace MultiTool.Modules
 			left,
 			right,
 			select,
+            action6,
 		}
 
 		public List<Key> keys = new List<Key>();
@@ -153,7 +154,12 @@ namespace MultiTool.Modules
 				keys[14].key = KeyCode.Return;
 				keys[14].defaultKey = KeyCode.Return;
 				keys[14].name = "Select";
-			}
+
+                // Action 6.
+                keys[15].key = KeyCode.V;
+                keys[15].defaultKey = KeyCode.V;
+                keys[15].name = "Action 6";
+            }
 			catch (Exception ex)
 			{
 				Logger.Log($"Keybind load error: {ex}", Logger.LogLevel.Error);
@@ -214,7 +220,7 @@ namespace MultiTool.Modules
 		/// <param name="actions">Int array of actions to display rebinds for</param>
 		/// <param name="x">The X position to display the menu</param>
 		/// <param name="y">The Y position to display the menu</param>
-		public void RenderRebindMenu(string title, int[] actions, float x, float y, float? widthOverride = null, float? heightOverride = null)
+		public void RenderRebindMenu(string title, int[] actions, float x, float y, float? widthOverride = null, float? heightOverride = null, bool preventScroll = false)
 		{
 			if (actions.Length == 0)
 				return;
@@ -224,21 +230,29 @@ namespace MultiTool.Modules
 			float actionY = y + 25f;
 			float labelWidth = 295f;
 			float buttonWidth = 80f;
-			float height = 30f + (actions.Length * (actionHeight + 5f));
+			float scrollHeight = actions.Length * ((actionHeight * 1.5f) + 5f);
+
+            float height;
+
+            if (scrollHeight > Screen.height * 0.9f)
+				height = Screen.height * 0.9f;
+            else 
+			    height = scrollHeight + 20f;
 
 			if (widthOverride != null)
 				width = widthOverride.Value;
 
-			if (heightOverride != null)
-				height = heightOverride.Value;
+            if (heightOverride != null)
+                height = heightOverride.Value;
 
-			float scrollHeight = height - 35f;
-			if (height > Screen.height * 0.9f)
-				height = Screen.height * 0.9f;
+            if (preventScroll)
+                scrollHeight = 0;
 
-			GUI.Box(new Rect(x, y, width, height), $"<size=16><b>{title}</b></size>");
+            // TODO: Esc keybind list has a scroll bar.
 
-			Vector2 scrollPosition = GUI.BeginScrollView(new Rect(x + 10f, y + 25f, width - 20f, height - 35f), scrollPositions.ContainsKey(title) ? scrollPositions[title] : new Vector2(0, 0), new Rect(x + 10f, y + 25f, width - 20f, scrollHeight), new GUIStyle(), new GUIStyle());
+            GUI.Box(new Rect(x, y, width, height), $"<size=16><b>{title}</b></size>");
+
+			Vector2 scrollPosition = GUI.BeginScrollView(new Rect(x + 10f, y + 25f, width - 10f, height - 20f), scrollPositions.ContainsKey(title) ? scrollPositions[title] : new Vector2(0, 0), new Rect(x + 10f, y + 25f, width, scrollHeight), new GUIStyle(), GUI.skin.verticalScrollbar);
 			if (!scrollPositions.ContainsKey(title))
 				scrollPositions.Add(title, scrollPosition);
 			else
@@ -249,7 +263,7 @@ namespace MultiTool.Modules
 				int action = actions[i];
 				Key key = GetKeyByAction(action);
 
-				GUI.Label(new Rect(x + 10f, actionY, labelWidth, actionHeight / 2), $"{key.name} - Current ({key.key}) - Default ({key.defaultKey})", labelStyle);
+				GUI.Label(new Rect(x + 10f, actionY, labelWidth, actionHeight / 2), $"{key.name} - Current ({key.key}) - Default ({keys[action].defaultKey})", labelStyle);
 				actionY += actionHeight / 2;
 
 				float buttonX = x + 10f;
@@ -272,7 +286,8 @@ namespace MultiTool.Modules
 				}
 
 				actionY += actionHeight + 5f;
-			}
+
+            }
 
 			GUI.EndScrollView();
 

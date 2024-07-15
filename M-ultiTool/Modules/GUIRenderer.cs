@@ -169,7 +169,7 @@ namespace MultiTool.Modules
 		private float moveValue = 0.1f;
 		private static List<GameObject> slots = new List<GameObject>();
 
-		// Object regenerator variables.
+		// Object selection.
 		internal static tosaveitemscript selectedObject;
 
 		// Settings.
@@ -1118,7 +1118,7 @@ namespace MultiTool.Modules
 				legacyUI = true;
 				config.UpdateLegacyMode(legacyUI);
 			}
-			binds.RenderRebindMenu("M-ultiTool menu key", new int[] { (int)Keybinds.Inputs.menu }, resolutionX - 350f, 50f);
+			binds.RenderRebindMenu("M-ultiTool menu key", new int[] { (int)Keybinds.Inputs.menu }, resolutionX - 350f, 50f, null, null, true);
 		}
 
 		/// <summary>
@@ -1995,51 +1995,46 @@ namespace MultiTool.Modules
 					GUI.skin.button = defaultStyle;
 					break;
 				case "scale":
-					Physics.Raycast(mainscript.M.player.Cam.transform.position, mainscript.M.player.Cam.transform.forward, out var raycastHit, float.PositiveInfinity, mainscript.M.player.useLayer);
-					if (raycastHit.transform != null)
-					{
-						GameObject hitGameObject = raycastHit.transform.gameObject;
+                    GUI.Button(new Rect(resolutionX / 2 - 250f, 10f, 500f, 30f), $"Selected object: {(selectedObject != null ? selectedObject.name: "None")} ({binds.GetPrettyName((int)Keybinds.Inputs.action6)} to {(selectedObject != null ? "deselect" : "select")})");
+                    if (selectedObject != null)
+                    {
+                        width = 400f;
+                        height = 120f;
+                        x = 0;
+                        y = resolutionY / 2 - (height + 20f) / 2;
 
-						if (hitGameObject.GetComponent<terrainscript>() == null)
-						{
-							width = 400f;
-							height = 120f;
-							x = 0;
-							y = resolutionY / 2 - (height + 20f) / 2;
+                        GUI.Box(new Rect(x, y, width, height + 20f), String.Empty);
+                        int rows = 6;
+                        GUI.Button(new Rect(x, y, width / 2, height / rows), "Scale up");
+                        GUI.Button(new Rect(x, y + height / rows, width / 2, height / rows), "Scale down");
+                        GUI.Button(new Rect(x, y + height / rows * 2, width / 2, height / rows), $"Axis: {axis}");
+                        GUI.Button(new Rect(x, y + height / rows * 3, width / 2, height / rows), $"Scale amount: {scaleValue}");
+                        GUI.Button(new Rect(x, y + height / rows * 4, width / 2, height / rows), $"Toggle hold to scale ({(scaleHold ? "Hold" : "Click")})");
+                        GUI.Button(new Rect(x, y + height / rows * 5, width / 2, height / rows), "Reset");
 
-							GUI.Box(new Rect(x, y, width, height + 20f), String.Empty);
-							int rows = 6;
-							GUI.Button(new Rect(x, y, width / 2, height / rows), "Scale up");
-							GUI.Button(new Rect(x, y + height / rows, width / 2, height / rows), "Scale down");
-							GUI.Button(new Rect(x, y + height / rows * 2, width / 2, height / rows), $"Axis: {axis}");
-							GUI.Button(new Rect(x, y + height / rows * 3, width / 2, height / rows), $"Scale amount: {scaleValue}");
-							GUI.Button(new Rect(x, y + height / rows * 4, width / 2, height / rows), $"Toggle hold to scale ({(scaleHold ? "Hold" : "Click")})");
-							GUI.Button(new Rect(x, y + height / rows * 5, width / 2, height / rows), "Reset");
+                        GUI.Button(new Rect(x + width / 2, y, width / 2, height / rows), binds.GetPrettyName((int)Keybinds.Inputs.action1));
+                        GUI.Button(new Rect(x + width / 2, y + height / rows, width / 2, height / rows), binds.GetPrettyName((int)Keybinds.Inputs.action2));
+                        GUI.Button(new Rect(x + width / 2, y + height / rows * 2, width / 2, height / rows), binds.GetPrettyName((int)Keybinds.Inputs.action3));
+                        GUI.Button(new Rect(x + width / 2, y + height / rows * 3, width / 2, height / rows), binds.GetPrettyName((int)Keybinds.Inputs.action5));
+                        GUI.Button(new Rect(x + width / 2, y + height / rows * 4, width / 2, height / rows), binds.GetPrettyName((int)Keybinds.Inputs.select));
+                        GUI.Button(new Rect(x + width / 2, y + height / rows * 5, width / 2, height / rows), binds.GetPrettyName((int)Keybinds.Inputs.action4));
 
-							GUI.Button(new Rect(x + width / 2, y, width / 2, height / rows), binds.GetPrettyName((int)Keybinds.Inputs.action1));
-							GUI.Button(new Rect(x + width / 2, y + height / rows, width / 2, height / rows), binds.GetPrettyName((int)Keybinds.Inputs.action2));
-							GUI.Button(new Rect(x + width / 2, y + height / rows * 2, width / 2, height / rows), binds.GetPrettyName((int)Keybinds.Inputs.action3));
-							GUI.Button(new Rect(x + width / 2, y + height / rows * 3, width / 2, height / rows), binds.GetPrettyName((int)Keybinds.Inputs.action5));
-							GUI.Button(new Rect(x + width / 2, y + height / rows * 4, width / 2, height / rows), binds.GetPrettyName((int)Keybinds.Inputs.select));
-							GUI.Button(new Rect(x + width / 2, y + height / rows * 5, width / 2, height / rows), binds.GetPrettyName((int)Keybinds.Inputs.action4));
-
-							Vector3 scale = hitGameObject.transform.localScale;
-							string scaleDisplay = scale.ToString();
-							switch (axis)
-							{
-								case "x":
-									scaleDisplay = scale.x.ToString();
-									break;
-								case "y":
-									scaleDisplay = scale.y.ToString();
-									break;
-								case "z":
-									scaleDisplay = scale.z.ToString();
-									break;
-							}
-							GUI.Button(new Rect(x, y + height, width, 20f), $"Scale: {scaleDisplay}");
-						}
-					}
+                        Vector3 scale = selectedObject.transform.localScale;
+                        string scaleDisplay = scale.ToString();
+                        switch (axis)
+                        {
+                            case "x":
+                                scaleDisplay = scale.x.ToString();
+                                break;
+                            case "y":
+                                scaleDisplay = scale.y.ToString();
+                                break;
+                            case "z":
+                                scaleDisplay = scale.z.ToString();
+                                break;
+                        }
+                        GUI.Button(new Rect(x, y + height, width, 20f), $"Scale: {scaleDisplay}");
+                    }
 					break;
 				case "slotControl":
 					width = resolutionX;
