@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using UnityEngine;
 
 namespace MultiTool.Core
 {
@@ -10,23 +11,39 @@ namespace MultiTool.Core
 	{
 		internal string name;
 		internal List<partconditionscript> parts;
+        internal List<MeshRenderer> meshes;
 
-		internal static PartGroup Create(string name, List<partconditionscript> parts)
+		internal static PartGroup Create(string _name, List<partconditionscript> _parts)
 		{
 			return new PartGroup()
 			{
-				name = name,
-				parts = parts
+				name = _name,
+				parts = _parts,
 			};
 		}
 
-		internal static PartGroup Create(string name, partconditionscript part)
+		internal static PartGroup Create(string _name, partconditionscript _part)
 		{
-			return new PartGroup()
-			{
-				name = name,
-				parts = new List<partconditionscript>() { part }
-			};
+            return Create(_name, new List<partconditionscript>() { _part });
 		}
-	}
+
+        internal static PartGroup Create(string _name, List<MeshRenderer> _meshes)
+        {
+            return new PartGroup()
+            {
+                name = _name,
+                meshes = _meshes,
+            };
+        }
+
+        internal static PartGroup Create(string _name, MeshRenderer _mesh)
+        {
+            return Create(_name, new List<MeshRenderer>() { _mesh });
+        }
+
+        internal bool IsConditionless()
+        {
+            return meshes != null && meshes.Count > 0 && (parts == null || parts.Count == 0);
+        }
+    }
 }

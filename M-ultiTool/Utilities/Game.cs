@@ -258,12 +258,37 @@ namespace MultiTool.Utilities
 			return parts.Where(part => part.name.ToLower().Contains(name.ToLower())).ToList();
 		}
 
-		/// <summary>
-		/// Set material of a part.
-		/// </summary>
-		/// <param name="part">Part to set material for</param>
-		/// <param name="type">Material type to set</param>
-		public static void SetPartMaterial(partconditionscript part, string type, Color? color = null)
+        /// <summary>
+        /// Find specific conditionless part by name.
+        /// </summary>
+        /// <param name="vehicle">Vehicle to get part from</param>
+        /// <param name="name">Name of part to find</param>
+        /// <returns>Part mesh if exists, otherwise null</returns>
+        public static MeshRenderer GetConditionlessVehiclePartByName(GameObject vehicle, string name)
+        {
+            MeshRenderer[] meshes = vehicle.GetComponentsInChildren<MeshRenderer>();
+            return meshes.Where(m => m.name.ToLower() == name.ToLower()).FirstOrDefault();
+        }
+
+        /// <summary>
+        /// Find conditionless parts by name.
+        /// </summary>
+        /// <param name="vehicle">Vehicle to get part from</param>
+        /// <param name="name">Name of part to find</param>
+        /// <returns>List of meshes if name matches anty, otherwise empty list</returns>
+        public static List<MeshRenderer> GetConditionlessVehiclePartsByName(GameObject vehicle, string name)
+        {
+            MeshRenderer[] meshes = vehicle.GetComponentsInChildren<MeshRenderer>();
+            return meshes.Where(m => m.name.ToLower().Contains(name.ToLower())).ToList();
+        }
+
+        /// <summary>
+        /// Set material of a part.
+        /// </summary>
+        /// <param name="part">Part to set material for</param>
+        /// <param name="type">Material type to set</param>
+        /// <param name="color">Optional material colour</param>
+        public static void SetPartMaterial(partconditionscript part, string type, Color? color = null)
 		{
 			// Remove all existing materials.
 			part.mNew = null;
@@ -298,6 +323,25 @@ namespace MultiTool.Utilities
 			part.loaded = true;
 			part.FStart();
 		}
+
+        /// <summary>
+        /// Set the material of a part without condition support.
+        /// </summary>
+        /// <param name="mesh">Mesh to set material on</param>
+        /// <param name="type">Material type</param>
+        /// <param name="color">Optional material colour</param>
+        public static void SetConditionlessPartMaterial(MeshRenderer mesh, string type, Color? color = null)
+        {
+            mainscript.conditionmaterial material = mainscript.M.conditionmaterials.Where(m => m.tipus == type).FirstOrDefault();
+            if (material == null) return;
+            // Default to new condition material for now.
+            // TODO: Make this user customisable?
+            mesh.material = material.New;
+            if (color != null)
+            {
+                mesh.material.color = color.Value;
+            }
+        }
 
 		/// <summary>
 		/// Get global position of an object.

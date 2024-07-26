@@ -6,7 +6,6 @@ using System.IO;
 using System.Linq;
 using System.Runtime.Serialization.Json;
 using System.Text;
-using System.Threading.Tasks;
 using UnityEngine;
 using Logger = MultiTool.Modules.Logger;
 
@@ -400,32 +399,66 @@ namespace MultiTool.Utilities
 						// Check ID matches.
 						if (save.idInSave == material.ID)
 						{
-							List<partconditionscript> parts = new List<partconditionscript>();
+                            if (material.isConditionless.HasValue && material.isConditionless.Value)
+                            {
+                                // Conditionless part.
+                                List<MeshRenderer> meshes = new List<MeshRenderer>();
 
-							if (material.exact)
-							{
-								partconditionscript part = GameUtilities.GetVehiclePartByName(save.gameObject, material.part, false);
-								if (part != null)
-									parts.Add(part);
-								// Match by partial name as a failover.
-								else
-								{
-									List<partconditionscript> matchedParts = GameUtilities.GetVehiclePartsByPartialName(save.gameObject, material.part, false);
-									if (matchedParts.Count > 0)
-										parts.AddRange(matchedParts);
-								}
-							}
-							else
-							{
-								List<partconditionscript> matchedParts = GameUtilities.GetVehiclePartsByPartialName(save.gameObject, material.part, false);
-								if (matchedParts.Count > 0)
-									parts.AddRange(matchedParts);
-							}
+                                if (material.exact)
+                                {
+                                    MeshRenderer mesh = GameUtilities.GetConditionlessVehiclePartByName(save.gameObject, material.part);
+                                    if (mesh != null)
+                                        meshes.Add(mesh);
+                                    // Match by partial name as a failover.
+                                    else
+                                    {
+                                        List<MeshRenderer> matchedMeshes = GameUtilities.GetConditionlessVehiclePartsByName(save.gameObject, material.part);
+                                        if (matchedMeshes.Count > 0)
+                                            meshes.AddRange(matchedMeshes);
+                                    }
+                                }
+                                else
+                                {
+                                    List<MeshRenderer> matchedMeshes = GameUtilities.GetConditionlessVehiclePartsByName(save.gameObject, material.part);
+                                    if (matchedMeshes.Count > 0)
+                                        meshes.AddRange(matchedMeshes);
+                                }
 
-							foreach (partconditionscript part in parts)
-							{
-								GameUtilities.SetPartMaterial(part, material.type, material.color);
-							}
+                                foreach (MeshRenderer mesh in meshes)
+                                {
+                                    GameUtilities.SetConditionlessPartMaterial(mesh, material.type, material.color);
+                                }
+                            }
+                            else
+                            {
+                                // Standard part.
+							    List<partconditionscript> parts = new List<partconditionscript>();
+
+							    if (material.exact)
+							    {
+								    partconditionscript part = GameUtilities.GetVehiclePartByName(save.gameObject, material.part, false);
+								    if (part != null)
+									    parts.Add(part);
+								    // Match by partial name as a failover.
+								    else
+								    {
+									    List<partconditionscript> matchedParts = GameUtilities.GetVehiclePartsByPartialName(save.gameObject, material.part, false);
+									    if (matchedParts.Count > 0)
+										    parts.AddRange(matchedParts);
+								    }
+							    }
+							    else
+							    {
+								    List<partconditionscript> matchedParts = GameUtilities.GetVehiclePartsByPartialName(save.gameObject, material.part, false);
+								    if (matchedParts.Count > 0)
+									    parts.AddRange(matchedParts);
+							    }
+
+							    foreach (partconditionscript part in parts)
+							    {
+								    GameUtilities.SetPartMaterial(part, material.type, material.color);
+							    }
+                            }
 						}
 					}
 				}

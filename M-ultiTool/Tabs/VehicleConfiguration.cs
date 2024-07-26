@@ -4,15 +4,11 @@ using MultiTool.Utilities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using static mainscript;
-using static settingsscript;
 using UnityEngine;
 using MultiTool.Modules;
 using Logger = MultiTool.Modules.Logger;
-using System.Configuration;
 using System.Threading;
+using static mainscript;
 
 namespace MultiTool.Tabs
 {
@@ -28,6 +24,10 @@ namespace MultiTool.Tabs
 		{
 			{ "coloredleather", "Seat Leather" },
 			{ "leather", "Sun visor leather" },
+            { "chleathercar08c", "Leather" },
+            { "fociw", "Leather 2" },
+            { "focib", "Leather 3" },
+            { "cleather", "Leather 4" },
 			{ "huzat01", "Fabric 1" },
 			{ "huzat02", "Fabric 2" },
 			{ "huzat03", "Fabric 3" },
@@ -35,15 +35,28 @@ namespace MultiTool.Tabs
 			{ "karpit", "Cardboard" },
 			{ "wood", "Wood" },
 			{ "firearmwood", "Wood 2" },
+            { "busfa", "Wood 3" },
 			{ "metals", "Metal" },
 			{ "metals2", "Metal 2" },
+            { "buslepcso", "Metal 3" },
+            { "buspadlo", "Metal 4" },
 			{ "darkmetal", "Dark metal" },
 			{ "regilampaszin", "Lamp metal" },
 			{ "gumi", "Tire rubber" },
+            { "fehergumi", "Tire rubber 2" },
 			{ "nyulsz01", "Rabbit fur" },
 			{ "szivacs2", "Sponge" },
 			{ "tarbanckarpit", "Bakelite" },
-		};
+            { "csodapaint", "Metal painted" },
+            { "car08paint", "Metal painted 2" },
+            { "tarbancpaint", "Duroplast painted" },
+            { "busfem", "Plastic 1" },
+            { "busteto", "Plastic 2" },
+            { "metalrevolver", "Revolver" },
+            { "radiator", "Radiator" },
+            { "car07csik", "Fury stripe white" },
+            { "car07csik2", "Fury stripe gold" },
+        };
 		private bool partSelectorOpen = false;
 		private bool materialSelectorOpen = false;
 		private PartGroup selectedPart = null;
@@ -770,6 +783,9 @@ namespace MultiTool.Tabs
 				currVehicleY = dimensions.y + 10f;
 			}
 
+            // Increase button with for column 2 for slot mover.
+            buttonWidth *= 1.75f;
+
 			// Toggle slot mover.
 			if (GUI.Button(new Rect(currVehicleX, currVehicleY, buttonWidth, buttonHeight), GUIRenderer.GetAccessibleString("Toggle slot mover", settings.mode == "slotControl")))
 			{
@@ -795,29 +811,20 @@ namespace MultiTool.Tabs
 			if (nextUpdateTime <= 0)
 			{
 				materialParts.Clear();
-				partconditionscript mainSeat = GameUtilities.GetVehiclePartByName(carObject, "PartConColorLeather", false);
-				if (mainSeat != null)
-					materialParts.Add(PartGroup.Create("PartConColorLeather", mainSeat));
-				List<partconditionscript> removableSeats = GameUtilities.GetVehiclePartsByPartialName(carObject, "seat", false);
-				if (removableSeats.Count > 0)
-					foreach (partconditionscript seat in removableSeats)
-						materialParts.Add(PartGroup.Create("seat", seat));
-				List<partconditionscript> sunVisors = GameUtilities.GetVehiclePartsByPartialName(carObject, "Napellenzo", false);
-				if (sunVisors.Count > 0)
-					foreach (partconditionscript visor in sunVisors)
-						materialParts.Add(PartGroup.Create(visor.name.Replace("(Clone)", string.Empty), visor));
-				List<partconditionscript> headliner = GameUtilities.GetVehiclePartsByPartialName(carObject, "PartConKarpit", false);
-				List<partconditionscript> headliner2 = GameUtilities.GetVehiclePartsByPartialName(carObject, "PartConCar03Karpit", false);
-				if (headliner2.Count > 0)
-					headliner.AddRange(headliner2);
-				if (headliner.Count > 0)
-					materialParts.Add(PartGroup.Create("Karpit", headliner));
-				List<partconditionscript> furyStripe = GameUtilities.GetVehiclePartsByPartialName(carObject, "PartConCsik", false);
-				if (furyStripe.Count > 0)
-					materialParts.Add(PartGroup.Create("PartConCsik", furyStripe));
 
-				// Remove any duplicates.
-				materialParts = materialParts.Distinct().ToList();
+                // Add all parts with a condition.
+                foreach (partconditionscript part in carObject.GetComponentsInChildren<partconditionscript>())
+                {
+                    materialParts.Add(PartGroup.Create(part.name, part));
+                }
+
+                // Add any extra conditionless parts.
+                MeshRenderer floor = GameUtilities.GetConditionlessVehiclePartByName(carObject, "Interior");
+                if (floor != null)
+                    materialParts.Add(PartGroup.Create("Interior", floor));
+                MeshRenderer floor2 = GameUtilities.GetConditionlessVehiclePartByName(carObject, "Floor");
+                if (floor2 != null)
+                    materialParts.Add(PartGroup.Create("Floor", floor2));
 
 				refreshedCache = true;
 			}
@@ -829,30 +836,39 @@ namespace MultiTool.Tabs
 			if (GUI.Button(new Rect(currVehicleX, currVehicleY, buttonWidth, buttonHeight), partSelectString))
 				partSelectorOpen = !partSelectorOpen;
 
-			currVehicleY += buttonHeight + 10f;
 
-			if (partSelectorOpen)
-			{
-				if (GUI.Button(new Rect(currVehicleX, currVehicleY, buttonWidth, buttonHeight), "None"))
-				{
-					selectedPart = null;
-					partSelectorOpen = false;
-				}
-				currVehicleY += buttonHeight + 2f;
-				foreach (PartGroup group in materialParts)
-				{
-					if (GUI.Button(new Rect(currVehicleX, currVehicleY, buttonWidth, buttonHeight), GetPrettyPartName(group.name)))
-					{
-						selectedPart = group;
-						partSelectorOpen = false;
-					}
+            if (partSelectorOpen)
+            {
+                currVehicleY += buttonHeight;
+                if (GUI.Button(new Rect(currVehicleX, currVehicleY, buttonWidth, buttonHeight), "None"))
+                {
+                    selectedPart = null;
+                    partSelectorOpen = false;
+                }
+                currVehicleY += buttonHeight;
+                foreach (PartGroup group in materialParts)
+                {
+                    string parent = group.parts?[0]?.transform.parent?.name;
+                    // Hide parent if name matches part name.
+                    if (parent != null && GetPrettyPartName(parent) == GetPrettyPartName(group.name))
+                        parent = null;
+                    if (parent != null)
+                        parent = $"(Parent: {GetPrettyPartName(parent)})";
+                    if (GUI.Button(new Rect(currVehicleX, currVehicleY, buttonWidth, buttonHeight), $"{GetPrettyPartName(group.name)} {(parent != null ? parent : "")}"))
+                    {
+                        selectedPart = group;
+                        partSelectorOpen = false;
+                    }
 
-					currVehicleY += buttonHeight + 2f;
-				}
-				currVehicleY += buttonHeight + 10f;
-			}
+                    currVehicleY += buttonHeight + 2f;
+                }
 
-			if (selectedPart != null)
+                currVehicleY += buttonHeight + 10f;
+            }
+            else
+                currVehicleY += buttonHeight + 10f;
+
+            if (selectedPart != null)
 			{
 				// Material selector.
 				string materialSelectString = "Select material";
@@ -861,16 +877,16 @@ namespace MultiTool.Tabs
 				if (GUI.Button(new Rect(currVehicleX, currVehicleY, buttonWidth, buttonHeight), materialSelectString))
 					materialSelectorOpen = !materialSelectorOpen;
 
-				currVehicleY += buttonHeight + 10f;
 
 				if (materialSelectorOpen)
 				{
+				    currVehicleY += buttonHeight;
 					if (GUI.Button(new Rect(currVehicleX, currVehicleY, buttonWidth, buttonHeight), "None"))
 					{
 						selectedMaterial = null;
 						materialSelectorOpen = false;
 					}
-					currVehicleY += buttonHeight + 2f;
+					currVehicleY += buttonHeight;
 					foreach (KeyValuePair<string, string> material in materials)
 					{
 						if (GUI.Button(new Rect(currVehicleX, currVehicleY, buttonWidth, buttonHeight), material.Value))
@@ -883,8 +899,10 @@ namespace MultiTool.Tabs
 					}
 					currVehicleY += buttonHeight + 10f;
 				}
+                else
+                    currVehicleY += buttonHeight + 10f;
 
-				Color? seatColor = null;
+                Color? seatColor = null;
 
 				// Colour selector.
 				if (selectedMaterial != null)
@@ -970,23 +988,46 @@ namespace MultiTool.Tabs
 
 				if (selectedMaterial != null && GUI.Button(new Rect(currVehicleX, currVehicleY, buttonWidth, buttonHeight), "Apply"))
 				{
-					foreach (partconditionscript part in selectedPart.parts)
-					{
-						Thread thread = new Thread(() =>
-						{
-							GameUtilities.SetPartMaterial(part, selectedMaterial, seatColor);
-							SaveUtilities.UpdateMaterials(new MaterialData()
-							{
-								ID = save.idInSave,
-								part = selectedPart.name,
-								exact = IsExact(selectedPart.name),
-								type = selectedMaterial,
-								color = seatColor
-							});
-						});
-						thread.Start();
-					}
-				}
+                    if (selectedPart.IsConditionless())
+                    {
+                        foreach (MeshRenderer mesh in selectedPart.meshes)
+                        {
+                            Thread thread = new Thread(() =>
+                            {
+                                GameUtilities.SetConditionlessPartMaterial(mesh, selectedMaterial, seatColor);
+                                SaveUtilities.UpdateMaterials(new MaterialData()
+                                {
+                                    ID = save.idInSave,
+                                    part = selectedPart.name,
+                                    isConditionless = true,
+                                    exact = IsExact(selectedPart.name),
+                                    type = selectedMaterial,
+                                    color = seatColor
+                                });
+                            });
+                            thread.Start();
+                        }
+                    }
+                    else
+                    {
+					    foreach (partconditionscript part in selectedPart.parts)
+					    {
+						    Thread thread = new Thread(() =>
+						    {
+							    GameUtilities.SetPartMaterial(part, selectedMaterial, seatColor);
+							    SaveUtilities.UpdateMaterials(new MaterialData()
+							    {
+								    ID = save.idInSave,
+								    part = selectedPart.name,
+								    exact = IsExact(selectedPart.name),
+								    type = selectedMaterial,
+								    color = seatColor
+							    });
+						    });
+						    thread.Start();
+					    }
+                    }
+                }
 			}
 
 			currVehicleY += buttonHeight + 10f;
@@ -1068,14 +1109,50 @@ namespace MultiTool.Tabs
 					return "Left sun visor";
 				case "NapellenzoRight":
 					return "Right sun visor";
-				case "Karpit":
+                case "GloveStore":
+                    return "Glove box";
+                case "Karpit":
 					return "Headliner";
 				case "PartConCsik":
 					return "Fury stripe";
-			}
+                case "PartConMetal":
+                    return "Metal";
+                case "PartConMetals":
+                    return "Metals";
+                case "PartConMetals2":
+                    return "Metals 2";
+                case "PartConLeather":
+                    return "Leather";
+                case "PartConDarkMetal":
+                    return "Dark metals";
+                case "PartConConv":
+                    return "Soft top roof";
+                case "PartConCar03Karpit":
+                    return "Beetle shelf";
+                case "Interior":
+                case "Floor":
+                    return "Carpet";
+            }
 
-			if (part.ToLower().Contains("seat"))
+            string partLower = part.ToLower();
+
+			if (partLower.Contains("seat"))
 				return "Removable seat";
+
+            if (partLower.Contains("felni"))
+                return "Wheel";
+
+            if (partLower.Contains("gumi"))
+                return "Tire";
+
+            if (partLower.Contains("disztarcsa"))
+                return "Hubcap";
+
+            if (partLower.Contains("coolant"))
+                return "Radiator";
+
+            if (partLower.Contains("kesztyutarto"))
+                return "Glove box";
 
 			return part;
 		}
