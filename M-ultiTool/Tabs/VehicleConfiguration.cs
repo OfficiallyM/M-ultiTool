@@ -1046,7 +1046,7 @@ namespace MultiTool.Tabs
 			// Random selector.
 			string randomSelectString = "Select randomised part";
 			if (selectedRandom != null)
-				randomSelectString = $"Selected: {GetPrettyRandomName(selectedRandom.name)}";
+				randomSelectString = $"Selected: {PrettifyName(selectedRandom.name)}";
 			if (GUI.Button(new Rect(currVehicleX, currVehicleY, buttonWidth, buttonHeight), randomSelectString))
 				randomSelectorOpen = !randomSelectorOpen;
 
@@ -1062,7 +1062,7 @@ namespace MultiTool.Tabs
 				currVehicleY += buttonHeight + 2f;
 				foreach (randomTypeSelector random in randomParts)
 				{
-					if (GUI.Button(new Rect(currVehicleX, currVehicleY, buttonWidth, buttonHeight), GetPrettyRandomName(random.name)))
+					if (GUI.Button(new Rect(currVehicleX, currVehicleY, buttonWidth, buttonHeight), PrettifyName(random.name)))
 					{
 						selectedRandom = random;
 						randomSelectorOpen = false;
@@ -1099,9 +1099,9 @@ namespace MultiTool.Tabs
 		/// <returns>Prettified part name</returns>
 		private string GetPrettyPartName(string part)
 		{
-			part = part.Replace("(Clone)", string.Empty);
+            part = PrettifyName(part);
 
-			switch (part)
+            switch (part)
 			{
 				case "PartConColorLeather":
 					return "Main seats";
@@ -1175,14 +1175,13 @@ namespace MultiTool.Tabs
 		}
 
 		/// <summary>
-		/// Make random selector part more user friendly.
+		/// Make part name more user friendly.
 		/// </summary>
-		/// <param name="random">Randomised part to prettify</param>
-		/// <returns>Prettified random part name</returns>
-		private string GetPrettyRandomName(string random)
+		/// <param name="random">Part name to prettify</param>
+		/// <returns>Prettified part name</returns>
+		private string PrettifyName(string name)
 		{
-			random = random.Replace("(Clone)", string.Empty);
-			return random;
+            return name.Replace("(Clone)", string.Empty);
 		}
 	}
 }
