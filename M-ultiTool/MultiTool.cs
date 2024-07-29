@@ -112,13 +112,8 @@ namespace MultiTool
 
 			Translator.SetLanguage(mainscript.M.menu.language.languageNames[mainscript.M.menu.language.selectedLanguage]);
 
-			// Load the GUI renderer.
-			renderer.OnLoad();
-
-            foreach (var material in mainscript.M.conditionmaterials)
-            {
-                Logger.Log($"Tipus: {material.tipus}\nNew: {(material.New != null ? material.New.name : "-")}\nUsed: {(material.Used != null ? material.Used.name : "-")}\nMiddle: {(material.Middle != null ? material.Middle.name : "-")}\nOld: {(material.Old != null ? material.Old.name : "-")}\nRusty: {(material.Rusty != null ? material.Rusty.name : "-")}\n");
-            }
+            // Load the GUI renderer.
+            renderer.OnLoad();
 		}
 
 		public override void Update()

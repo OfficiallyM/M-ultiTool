@@ -17,6 +17,8 @@ namespace MultiTool.Tabs
 		public override string Name => "Vehicle Configuration";
 
 		private Vector2 currentVehiclePosition;
+        private float lastHeight = 500f;
+        private int lastCarId = 0;
 
 		private Settings settings = new Settings();
 
@@ -67,9 +69,14 @@ namespace MultiTool.Tabs
 		private bool randomSelectorOpen = false;
 		private randomTypeSelector selectedRandom = null;
 
+        // Light changer.
+        private bool lightSelectorOpen = false;
+        private List<LightData> selectedLights = new List<LightData>();
+
 		// Caching.
 		private List<PartGroup> materialParts = new List<PartGroup>();
 		private List<randomTypeSelector> randomParts = new List<randomTypeSelector>();
+        private List<LightData> lights = new List<LightData>();
 		private float nextUpdateTime = 0;
 		private float updateFrequency = 2;
 
@@ -110,6 +117,14 @@ namespace MultiTool.Tabs
 			Transform sunRoofSlot = carObject.transform.FindRecursive("SunRoofSlot");
 			tosaveitemscript save = carObject.GetComponent<tosaveitemscript>();
 
+            // Reset any selections when changing car.
+            if (save.idInSave != lastCarId)
+            {
+                selectedPart = null;
+                selectedRandom = null;
+                selectedLights.Clear();
+            }
+
 			int buttonCount = 2;
 			int sliderCount = 8;
 			int fluidSlidersCount = 0;
@@ -142,7 +157,7 @@ namespace MultiTool.Tabs
 			fluidsHeight += fluidSlidersCount * ((buttonHeight + 10f) * Enum.GetValues(typeof(mainscript.fluidenum)).Cast<mainscript.fluidenum>().Count()) + (fluidSlidersCount * headerHeight) + (buttonHeight + 10f) + 10f;
 			float currVehicleHeight = buttonsHeight + slidersHeight + fluidsHeight;
 
-			currentVehiclePosition = GUI.BeginScrollView(new Rect(currVehicleX, currVehicleY, dimensions.width - 20f, dimensions.height - 20f), currentVehiclePosition, new Rect(currVehicleX, currVehicleY, dimensions.width - 20f, currVehicleHeight - 20f), new GUIStyle(), GUI.skin.verticalScrollbar);
+			currentVehiclePosition = GUI.BeginScrollView(new Rect(currVehicleX, currVehicleY, dimensions.width - 20f, dimensions.height - 20f), currentVehiclePosition, new Rect(currVehicleX, currVehicleY, dimensions.width - 20f, lastHeight - 20f), new GUIStyle(), GUI.skin.verticalScrollbar);
 
 			// Vehicle god mode.
 			if (GUI.Button(new Rect(currVehicleX, currVehicleY, buttonWidth, buttonHeight), GUIRenderer.GetAccessibleString("Vehicle god mode", car.crashMultiplier <= 0.0)))
@@ -776,6 +791,9 @@ namespace MultiTool.Tabs
 					GUI.Label(new Rect(currVehicleX, currVehicleY, buttonWidth, buttonHeight), "No sunroof mounted.", GUIRenderer.labelStyle);
 			}
 
+            if (lastHeight < currVehicleY)
+                lastHeight = currVehicleY;
+
 			// Column two.
 			if (columns > 1)
 			{
@@ -902,7 +920,7 @@ namespace MultiTool.Tabs
                 else
                     currVehicleY += buttonHeight + 10f;
 
-                Color? seatColor = null;
+                Color? materialColor = null;
 
 				// Colour selector.
 				if (selectedMaterial != null)
@@ -917,46 +935,46 @@ namespace MultiTool.Tabs
 					// Red.
 					GUI.Label(new Rect(currVehicleX, currVehicleY, buttonWidth, buttonHeight), GUIRenderer.GetAccessibleColorString("Red:", new Color(255, 0, 0)), GUIRenderer.labelStyle);
 					currVehicleY += buttonHeight;
-					float seatRed = GUI.HorizontalSlider(new Rect(currVehicleX, currVehicleY, sliderWidth, buttonHeight), GUIRenderer.seatColor.r * 255, 0, 255);
+					float seatRed = GUI.HorizontalSlider(new Rect(currVehicleX, currVehicleY, sliderWidth, buttonHeight), GUIRenderer.materialColor.r * 255, 0, 255);
 					seatRed = Mathf.Round(seatRed);
 					currVehicleY += buttonHeight;
 					bool seatRedParse = float.TryParse(GUI.TextField(new Rect(currVehicleX, currVehicleY, buttonWidth, buttonHeight), seatRed.ToString(), GUIRenderer.labelStyle), out seatRed);
 					if (!seatRedParse)
 						Logger.Log($"{seatRedParse} is not a number", Logger.LogLevel.Error);
 					seatRed = Mathf.Clamp(seatRed, 0f, 255f);
-					GUIRenderer.seatColor.r = seatRed / 255f;
+					GUIRenderer.materialColor.r = seatRed / 255f;
 
 					// Green.
 					currVehicleY += buttonHeight + 10f;
 					GUI.Label(new Rect(currVehicleX, currVehicleY, buttonWidth, buttonHeight), GUIRenderer.GetAccessibleColorString("Green:", new Color(0, 255, 0)), GUIRenderer.labelStyle);
 					currVehicleY += buttonHeight;
-					float seatGreen = GUI.HorizontalSlider(new Rect(currVehicleX, currVehicleY, sliderWidth, buttonHeight), GUIRenderer.seatColor.g * 255, 0, 255);
+					float seatGreen = GUI.HorizontalSlider(new Rect(currVehicleX, currVehicleY, sliderWidth, buttonHeight), GUIRenderer.materialColor.g * 255, 0, 255);
 					seatGreen = Mathf.Round(seatGreen);
 					currVehicleY += buttonHeight;
 					bool seatGreenParse = float.TryParse(GUI.TextField(new Rect(currVehicleX, currVehicleY, buttonWidth, buttonHeight), seatGreen.ToString(), GUIRenderer.labelStyle), out seatGreen);
 					if (!seatGreenParse)
 						Logger.Log($"{seatGreenParse} is not a number", Logger.LogLevel.Error);
 					seatGreen = Mathf.Clamp(seatGreen, 0f, 255f);
-					GUIRenderer.seatColor.g = seatGreen / 255f;
+					GUIRenderer.materialColor.g = seatGreen / 255f;
 
 					// Blue.
 					currVehicleY += buttonHeight + 10f;
 					GUI.Label(new Rect(currVehicleX, currVehicleY, buttonWidth, buttonHeight), GUIRenderer.GetAccessibleColorString("Blue:", new Color(0, 0, 255)), GUIRenderer.labelStyle);
 					currVehicleY += buttonHeight;
-					float seatBlue = GUI.HorizontalSlider(new Rect(currVehicleX, currVehicleY, sliderWidth, buttonHeight), GUIRenderer.seatColor.b * 255, 0, 255);
+					float seatBlue = GUI.HorizontalSlider(new Rect(currVehicleX, currVehicleY, sliderWidth, buttonHeight), GUIRenderer.materialColor.b * 255, 0, 255);
 					seatBlue = Mathf.Round(seatBlue);
 					currVehicleY += buttonHeight;
 					bool seatBlueParse = float.TryParse(GUI.TextField(new Rect(currVehicleX, currVehicleY, buttonWidth, buttonHeight), seatBlue.ToString(), GUIRenderer.labelStyle), out seatBlue);
 					if (!seatBlueParse)
 						Logger.Log($"{seatBlueParse.ToString()} is not a number", Logger.LogLevel.Error);
 					seatBlue = Mathf.Clamp(seatBlue, 0f, 255f);
-					GUIRenderer.seatColor.b = seatBlue / 255f;
+					GUIRenderer.materialColor.b = seatBlue / 255f;
 
 					currVehicleY += buttonHeight + 10f;
 
 					// Colour preview.
 					// Override alpha for colour preview.
-					Color seatPreview = GUIRenderer.seatColor;
+					Color seatPreview = GUIRenderer.materialColor;
 					seatPreview.a = 1;
 					pixels = new Color[] { seatPreview };
 					previewTexture.SetPixels(pixels);
@@ -973,17 +991,17 @@ namespace MultiTool.Tabs
 
 					if (GUI.Button(new Rect(currVehicleX, currVehicleY, buttonWidth, buttonHeight), "Randomise colour"))
 					{
-						GUIRenderer.seatColor.r = UnityEngine.Random.Range(0f, 255f) / 255f;
-						GUIRenderer.seatColor.g = UnityEngine.Random.Range(0f, 255f) / 255f;
-						GUIRenderer.seatColor.b = UnityEngine.Random.Range(0f, 255f) / 255f;
+						GUIRenderer.materialColor.r = UnityEngine.Random.Range(0f, 255f) / 255f;
+						GUIRenderer.materialColor.g = UnityEngine.Random.Range(0f, 255f) / 255f;
+						GUIRenderer.materialColor.b = UnityEngine.Random.Range(0f, 255f) / 255f;
 					}
 
 					currVehicleY += buttonHeight + 10f;
 
-					GUIRenderer.seatColor = GUIRenderer.RenderColourPalette(currVehicleX, currVehicleY, sliderWidth + 20f, GUIRenderer.seatColor);
+					GUIRenderer.materialColor = GUIRenderer.RenderColourPalette(currVehicleX, currVehicleY, sliderWidth + 20f, GUIRenderer.materialColor);
 					currVehicleY += GUIRenderer.GetPaletteHeight(sliderWidth + 20f) + 10f;
 
-					seatColor = GUIRenderer.seatColor;
+					materialColor = GUIRenderer.materialColor;
 				}
 
 				if (selectedMaterial != null && GUI.Button(new Rect(currVehicleX, currVehicleY, buttonWidth, buttonHeight), "Apply"))
@@ -994,7 +1012,7 @@ namespace MultiTool.Tabs
                         {
                             Thread thread = new Thread(() =>
                             {
-                                GameUtilities.SetConditionlessPartMaterial(mesh, selectedMaterial, seatColor);
+                                GameUtilities.SetConditionlessPartMaterial(mesh, selectedMaterial, materialColor);
                                 SaveUtilities.UpdateMaterials(new MaterialData()
                                 {
                                     ID = save.idInSave,
@@ -1002,7 +1020,7 @@ namespace MultiTool.Tabs
                                     isConditionless = true,
                                     exact = IsExact(selectedPart.name),
                                     type = selectedMaterial,
-                                    color = seatColor
+                                    color = materialColor
                                 });
                             });
                             thread.Start();
@@ -1014,14 +1032,14 @@ namespace MultiTool.Tabs
 					    {
 						    Thread thread = new Thread(() =>
 						    {
-							    GameUtilities.SetPartMaterial(part, selectedMaterial, seatColor);
+							    GameUtilities.SetPartMaterial(part, selectedMaterial, materialColor);
 							    SaveUtilities.UpdateMaterials(new MaterialData()
 							    {
 								    ID = save.idInSave,
 								    part = selectedPart.name,
 								    exact = IsExact(selectedPart.name),
 								    type = selectedMaterial,
-								    color = seatColor
+								    color = materialColor
 							    });
 						    });
 						    thread.Start();
@@ -1085,10 +1103,171 @@ namespace MultiTool.Tabs
 				}
 			}
 
-			GUI.EndScrollView();
+            currVehicleY += buttonHeight + 10f;
+            GUI.Label(new Rect(currVehicleX, currVehicleY, headerWidth, headerHeight), "Light changer", GUIRenderer.headerStyle);
+            currVehicleY += headerHeight;
 
-			// Cache has been refreshed, set the next cache refresh time.
-			if (refreshedCache)
+            // Light changer.
+            if (nextUpdateTime <= 0)
+            {
+                lights.Clear();
+                headlightscript[] headlights = carObject.GetComponentsInChildren<headlightscript>();
+                if (headlights.Length > 0)
+                {
+                    for (int i = 0; i < headlights.Length; i++)
+                    {
+                        headlightscript headlight = headlights[i];
+                        string name = $"{i + 1} - Headlight";
+                        bool isInterior = false;
+                        if (headlight.name.ToLower().Contains("interior") || headlight.transform.parent.name.ToLower().Contains("interior"))
+                        {
+                            name = $"{i + 1} - Interior light";
+                            isInterior = true;
+                        }
+                        lights.Add(LightData.Create(name, headlight, isInterior));
+                    }
+                }
+
+                refreshedCache = true;
+            }
+
+            currVehicleY += buttonHeight + 10f;
+            GUI.Label(new Rect(currVehicleX, currVehicleY, headerWidth, headerHeight), "Choose lights to alter", GUIRenderer.subHeaderStyle);
+            currVehicleY += headerHeight;
+
+            if (GUI.Button(new Rect(currVehicleX, currVehicleY, buttonWidth, buttonHeight), "Select"))
+                lightSelectorOpen = !lightSelectorOpen;
+
+            currVehicleY += buttonHeight;
+
+            if (lightSelectorOpen)
+            {
+                foreach (LightData light in lights)
+                {
+                    // Remove selected lights from selectable.
+                    if (selectedLights.Where(l => l.name == light.name).FirstOrDefault() != null) continue;
+
+                    if (GUI.Button(new Rect(currVehicleX, currVehicleY, buttonWidth, buttonHeight), PrettifyName(light.name)))
+                        selectedLights.Add(light);
+                    currVehicleY += buttonHeight + 2f;
+                }
+                currVehicleY += buttonHeight + 10f;
+            }
+
+            currVehicleY += buttonHeight + 10f;
+            GUI.Label(new Rect(currVehicleX, currVehicleY, headerWidth, headerHeight), "Selected lights", GUIRenderer.subHeaderStyle);
+            currVehicleY += headerHeight;
+
+            if (selectedLights.Count == 0)
+            {
+                GUI.Button(new Rect(currVehicleX, currVehicleY, buttonWidth, buttonHeight), "Nothing selected");
+            }
+            else
+            {
+                foreach (LightData light in selectedLights)
+                {
+                    if (GUI.Button(new Rect(currVehicleX, currVehicleY, buttonWidth, buttonHeight), PrettifyName(light.name)))
+                    {
+                        selectedLights.Remove(light);
+                        break;
+                    }
+                    currVehicleY += buttonHeight + 2f;
+                }
+            }
+            currVehicleY += buttonHeight + 10f;
+
+            // Red.
+            GUI.Label(new Rect(currVehicleX, currVehicleY, buttonWidth, buttonHeight), GUIRenderer.GetAccessibleColorString("Red:", new Color(255, 0, 0)), GUIRenderer.labelStyle);
+            currVehicleY += buttonHeight;
+            float lightRed = GUI.HorizontalSlider(new Rect(currVehicleX, currVehicleY, sliderWidth, buttonHeight), GUIRenderer.lightColor.r * 255, 0, 255);
+            lightRed = Mathf.Round(lightRed);
+            currVehicleY += buttonHeight;
+            bool lightRedParse = float.TryParse(GUI.TextField(new Rect(currVehicleX, currVehicleY, buttonWidth, buttonHeight), lightRed.ToString(), GUIRenderer.labelStyle), out lightRed);
+            if (!lightRedParse)
+                Logger.Log($"{lightRedParse} is not a number", Logger.LogLevel.Error);
+            lightRed = Mathf.Clamp(lightRed, 0f, 255f);
+            GUIRenderer.lightColor.r = lightRed / 255f;
+
+            // Green.
+            currVehicleY += buttonHeight + 10f;
+            GUI.Label(new Rect(currVehicleX, currVehicleY, buttonWidth, buttonHeight), GUIRenderer.GetAccessibleColorString("Green:", new Color(0, 255, 0)), GUIRenderer.labelStyle);
+            currVehicleY += buttonHeight;
+            float lightGreen = GUI.HorizontalSlider(new Rect(currVehicleX, currVehicleY, sliderWidth, buttonHeight), GUIRenderer.lightColor.g * 255, 0, 255);
+            lightGreen = Mathf.Round(lightGreen);
+            currVehicleY += buttonHeight;
+            bool lightGreenParse = float.TryParse(GUI.TextField(new Rect(currVehicleX, currVehicleY, buttonWidth, buttonHeight), lightGreen.ToString(), GUIRenderer.labelStyle), out lightGreen);
+            if (!lightGreenParse)
+                Logger.Log($"{lightGreenParse} is not a number", Logger.LogLevel.Error);
+            lightGreen = Mathf.Clamp(lightGreen, 0f, 255f);
+            GUIRenderer.lightColor.g = lightGreen / 255f;
+
+            // Blue.
+            currVehicleY += buttonHeight + 10f;
+            GUI.Label(new Rect(currVehicleX, currVehicleY, buttonWidth, buttonHeight), GUIRenderer.GetAccessibleColorString("Blue:", new Color(0, 0, 255)), GUIRenderer.labelStyle);
+            currVehicleY += buttonHeight;
+            float lightBlue = GUI.HorizontalSlider(new Rect(currVehicleX, currVehicleY, sliderWidth, buttonHeight), GUIRenderer.lightColor.b * 255, 0, 255);
+            lightBlue = Mathf.Round(lightBlue);
+            currVehicleY += buttonHeight;
+            bool lightBlueParse = float.TryParse(GUI.TextField(new Rect(currVehicleX, currVehicleY, buttonWidth, buttonHeight), lightBlue.ToString(), GUIRenderer.labelStyle), out lightBlue);
+            if (!lightBlueParse)
+                Logger.Log($"{lightBlueParse.ToString()} is not a number", Logger.LogLevel.Error);
+            lightBlue = Mathf.Clamp(lightBlue, 0f, 255f);
+            GUIRenderer.lightColor.b = lightBlue / 255f;
+
+            currVehicleY += buttonHeight + 10f;
+
+            // Colour preview.
+            // Override alpha for colour preview.
+            Color lightPreview = GUIRenderer.lightColor;
+            lightPreview.a = 1;
+            pixels = new Color[] { lightPreview };
+            previewTexture.SetPixels(pixels);
+            previewTexture.Apply();
+            previewStyle.normal.background = previewTexture;
+            previewStyle.active.background = previewTexture;
+            previewStyle.hover.background = previewTexture;
+            previewStyle.margin = new RectOffset(0, 0, 0, 0);
+            GUI.skin.button = previewStyle;
+            GUI.Button(new Rect(currVehicleX, currVehicleY, sliderWidth, buttonHeight), "");
+            GUI.skin.button = defaultStyle;
+
+            currVehicleY += buttonHeight + 10f;
+
+            if (GUI.Button(new Rect(currVehicleX, currVehicleY, buttonWidth, buttonHeight), "Randomise colour"))
+            {
+                GUIRenderer.lightColor.r = UnityEngine.Random.Range(0f, 255f) / 255f;
+                GUIRenderer.lightColor.g = UnityEngine.Random.Range(0f, 255f) / 255f;
+                GUIRenderer.lightColor.b = UnityEngine.Random.Range(0f, 255f) / 255f;
+            }
+
+            currVehicleY += buttonHeight + 10f;
+
+            GUIRenderer.lightColor = GUIRenderer.RenderColourPalette(currVehicleX, currVehicleY, sliderWidth + 20f, GUIRenderer.lightColor);
+            currVehicleY += GUIRenderer.GetPaletteHeight(sliderWidth + 20f) + 10f;
+
+            if (GUI.Button(new Rect(currVehicleX, currVehicleY, buttonWidth, buttonHeight), "Apply to selected"))
+            {
+                foreach (LightData light in selectedLights)
+                {
+                    if (light.headlights != null && light.headlights.Count > 0)
+                    {
+                        foreach (headlightscript headlight in light.headlights)
+                        {
+                            GameUtilities.SetHeadlightColor(headlight, GUIRenderer.lightColor, light.isInteriorLight);
+                        }
+                    }
+                }
+            }
+
+            if (lastHeight < currVehicleY)
+                lastHeight = currVehicleY;
+
+            GUI.EndScrollView();
+
+            lastCarId = save.idInSave;
+
+            // Cache has been refreshed, set the next cache refresh time.
+            if (refreshedCache)
 				nextUpdateTime = updateFrequency;
 		}
 

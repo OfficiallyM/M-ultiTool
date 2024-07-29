@@ -1,4 +1,5 @@
 ﻿using MultiTool.Core;
+using MultiTool.Extensions;
 using MultiTool.Modules;
 using System;
 using System.Collections.Generic;
@@ -340,6 +341,74 @@ namespace MultiTool.Utilities
             if (color != null)
             {
                 mesh.material.color = color.Value;
+            }
+        }
+
+        /// <summary>
+        /// Set headlight color.
+        /// </summary>
+        /// <param name="headlight">Headlight to set color of</param>
+        /// <param name="color">Color to set</param>
+        /// <param name="isInteriorLight">True if light is an interior light, false if it's a standard headlight</param>
+        public static void SetHeadlightColor(headlightscript headlight, Color color, bool isInteriorLight = false)
+        {
+            Color offColor = color.ChangeBrightness(-0.1f);
+            Color brightColor = color.ChangeBrightness(0.1f);
+
+            headlight.MOFF = new Material(headlight.MOFF)
+            {
+                color = offColor
+            };
+            Logger.Log($"States: {headlight.states.Count}");
+            for (int stateIndex = 0; stateIndex < headlight.states.Count; stateIndex++)
+            {
+                Logger.Log($"stateIndex: {stateIndex}");
+                headlightscript.lightState state = headlight.states[stateIndex];
+                if (isInteriorLight)
+                {
+                    SetHeadlightStateColor(state, GUIRenderer.lightColor);
+                }
+                else
+                {
+                    switch (stateIndex)
+                    {
+                        case 0:
+                            SetHeadlightStateColor(state, offColor);
+                            break;
+                        case 2:
+                            SetHeadlightStateColor(state, brightColor);
+                            break;
+                        default:
+                            SetHeadlightStateColor(state, GUIRenderer.lightColor);
+                            break;
+                    }
+                }
+            }
+            headlight.RefreshLights();
+        }
+
+        /// <summary>
+        /// Set headlight state color.
+        /// </summary>
+        /// <param name="state">Headlight state to update</param>
+        /// <param name="color">Color to set</param>
+        public static void SetHeadlightStateColor(headlightscript.lightState state, Color color)
+        {
+            if (state.L != null)
+                state.L.color = color;
+
+            if (state.M != null)
+            {
+                state.M = new Material(state.M)
+                {
+                    color = color
+                };
+                state.M.SetColor("_EmissionColor", color);
+            }
+
+            foreach (Light l in state.Ls)
+            {
+                l.color = color;
             }
         }
 

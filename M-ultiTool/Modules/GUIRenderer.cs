@@ -71,7 +71,17 @@ namespace MultiTool.Modules
 				textColor = Color.white,
 			}
 		};
-		private GUIStyle legacyHeaderStyle = new GUIStyle();
+        internal static GUIStyle subHeaderStyle = new GUIStyle()
+        {
+            fontSize = 18,
+            alignment = TextAnchor.UpperLeft,
+            wordWrap = true,
+            normal = new GUIStyleState()
+            {
+                textColor = Color.white,
+            }
+        };
+        private GUIStyle legacyHeaderStyle = new GUIStyle();
 		private float scrollWidth = 10f;
 		internal static GUIStyle messageStyle = new GUIStyle()
 		{
@@ -156,7 +166,8 @@ namespace MultiTool.Modules
 		internal static Dictionary<mainscript.fluidenum, int> fuels = new Dictionary<mainscript.fluidenum, int>();
 		internal static Color sunRoofColor = new Color(255f / 255f, 255f / 255f, 255f / 255f, 0.5f);
 		internal static Color windowColor = new Color(255f / 255f, 255f / 255f, 255f / 255f, 0.5f);
-		internal static Color seatColor = new Color(0f, 0f, 0f);
+		internal static Color materialColor = new Color(0f, 0f, 0f);
+        internal static Color lightColor = new Color(1f, 1f, 1f);
 
 		// Slot mover variables.
 		internal static GameObject selectedSlot;

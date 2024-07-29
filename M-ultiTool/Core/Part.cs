@@ -46,4 +46,26 @@ namespace MultiTool.Core
             return meshes != null && meshes.Count > 0 && (parts == null || parts.Count == 0);
         }
     }
+
+    internal class LightData
+    {
+        internal string name;
+        internal List<headlightscript> headlights;
+        internal bool isInteriorLight;
+
+        internal static LightData Create(string _name, List<headlightscript> _headlights = null, bool _isInteriorLight = false)
+        {
+            return new LightData()
+            {
+                name = _name,
+                headlights = _headlights,
+                isInteriorLight = _isInteriorLight
+            };
+        }
+
+        internal static LightData Create(string _name, headlightscript _headlight, bool _isInteriorLight = false)
+        {
+            return Create(_name, new List<headlightscript>() { _headlight }, _isInteriorLight);
+        }
+    }
 }
