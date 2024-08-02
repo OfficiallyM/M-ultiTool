@@ -359,14 +359,12 @@ namespace MultiTool.Utilities
             {
                 color = offColor
             };
-            Logger.Log($"States: {headlight.states.Count}");
             for (int stateIndex = 0; stateIndex < headlight.states.Count; stateIndex++)
             {
-                Logger.Log($"stateIndex: {stateIndex}");
                 headlightscript.lightState state = headlight.states[stateIndex];
                 if (isInteriorLight)
                 {
-                    SetHeadlightStateColor(state, GUIRenderer.lightColor);
+                    SetHeadlightStateColor(state, color);
                 }
                 else
                 {
@@ -379,7 +377,7 @@ namespace MultiTool.Utilities
                             SetHeadlightStateColor(state, brightColor);
                             break;
                         default:
-                            SetHeadlightStateColor(state, GUIRenderer.lightColor);
+                            SetHeadlightStateColor(state, color);
                             break;
                     }
                 }

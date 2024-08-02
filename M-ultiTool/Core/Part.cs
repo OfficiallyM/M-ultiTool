@@ -47,15 +47,15 @@ namespace MultiTool.Core
         }
     }
 
-    internal class LightData
+    internal class LightGroup
     {
         internal string name;
         internal List<headlightscript> headlights;
         internal bool isInteriorLight;
 
-        internal static LightData Create(string _name, List<headlightscript> _headlights = null, bool _isInteriorLight = false)
+        internal static LightGroup Create(string _name, List<headlightscript> _headlights = null, bool _isInteriorLight = false)
         {
-            return new LightData()
+            return new LightGroup()
             {
                 name = _name,
                 headlights = _headlights,
@@ -63,7 +63,7 @@ namespace MultiTool.Core
             };
         }
 
-        internal static LightData Create(string _name, headlightscript _headlight, bool _isInteriorLight = false)
+        internal static LightGroup Create(string _name, headlightscript _headlight, bool _isInteriorLight = false)
         {
             return Create(_name, new List<headlightscript>() { _headlight }, _isInteriorLight);
         }

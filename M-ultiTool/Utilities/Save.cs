@@ -275,6 +275,34 @@ namespace MultiTool.Utilities
 			SerializeSaveData(data);
 		}
 
+        /// <summary>
+        /// Update light data in save.
+        /// </summary>
+        /// <param name="light">Light data</param>
+        internal static void UpdateLight(LightData light)
+        {
+            Save data = UnserializeSaveData();
+
+            try
+            {
+                if (data.lights == null)
+                    data.lights = new List<LightData>();
+
+                LightData existing = data.lights.Where(l => l.ID == light.ID && l.name == light.name).FirstOrDefault();
+                if (existing != null)
+                    existing.color = light.color;
+                else
+                    data.lights.Add(light);
+            }
+            catch (Exception ex)
+            {
+                Logger.Log($"Light update error - {ex}", Logger.LogLevel.Error);
+            }
+
+            SerializeSaveData(data);
+        }
+
+
 		/// <summary>
 		/// Load POIs from save.
 		/// </summary>
@@ -308,237 +336,288 @@ namespace MultiTool.Utilities
 			return spawnedPOIs;
 		}
 
-		/// <summary>
-		/// Load glass saved data.
-		/// </summary>
-		internal static void LoadGlass()
-		{
-			// Load glass data.
-			try
-			{
-				Save data = UnserializeSaveData();
-				if (data.glass != null)
-				{
-					foreach (GlassData glass in data.glass)
-					{
-						// Find all saveable objects.
-						List<tosaveitemscript> saves = UnityEngine.Object.FindObjectsOfType<tosaveitemscript>().ToList();
-						foreach (tosaveitemscript save in saves)
-						{
-							// Check ID matches.
-							if (save.idInSave == glass.ID)
-							{
-								switch (glass.type)
-								{
-									case "windows":
-										// Set window colour.
-										List<MeshRenderer> renderers = save.gameObject.GetComponentsInChildren<MeshRenderer>().ToList();
-										foreach (MeshRenderer meshRenderer in renderers)
-										{
-											string materialName = meshRenderer.material.name.Replace(" (Instance)", "");
-											switch (materialName)
-											{
-												// Outer glass.
-												case "Glass":
-													// Use selected colour.
-													meshRenderer.material.color = glass.color;
-													break;
+        /// <summary>
+        /// Load all save data.
+        /// </summary>
+        internal static void LoadSaveData()
+        {
+            Save data = UnserializeSaveData();
 
-												// Inner glass.
-												case "GlassNoReflection":
-													// Use a more transparent version of the selected colour
-													// for the inner glass to ensure it's still see-through.
-													Color innerColor = glass.color;
-													if (innerColor.a > 0.2f)
-														innerColor.a = 0.2f;
-													meshRenderer.material.color = innerColor;
-													break;
-											}
-										}
-										break;
-									case "sunroof":
-										// Set sunroof colour.
-										GameObject car = save.gameObject;
-										Transform sunRoofSlot = car.transform.FindRecursive("SunRoofSlot");
-										Transform outerGlass = sunRoofSlot.FindRecursive("sunroof outer glass", exact: false);
-										if (outerGlass != null)
-										{
-											MeshRenderer meshRenderer = outerGlass.GetComponent<MeshRenderer>();
-											meshRenderer.material.color = glass.color;
-										}
-										break;
-								}
-							}
-						}
-					}
-				}
-			}
-			catch (Exception ex)
+            // Find all saveable objects.
+            List<tosaveitemscript> saves = UnityEngine.Object.FindObjectsOfType<tosaveitemscript>().ToList();
+            foreach (tosaveitemscript save in saves)
+            {
+                LoadGlass(save, data);
+                LoadMaterials(save, data);
+                LoadScale(save, data);
+                LoadSlots(save, data);
+                LoadLights(save, data);
+            }
+        }
+
+        /// <summary>
+        /// Load glass saved data.
+        /// </summary>
+        /// <param name="save">Savable object to check</param>
+        /// <param name="data">Save data</param>
+        private static void LoadGlass(tosaveitemscript save, Save data)
+		{
+            // Return early if no glass data is set.
+            if (data.glass == null) return;
+
+			foreach (GlassData glass in data.glass)
 			{
-				Logger.Log($"Glass load error - {ex}", Logger.LogLevel.Error);
+			    try
+			    {
+				    // Check ID matches.
+				    if (save.idInSave == glass.ID)
+				    {
+					    switch (glass.type)
+					    {
+						    case "windows":
+							    // Set window colour.
+							    List<MeshRenderer> renderers = save.gameObject.GetComponentsInChildren<MeshRenderer>().ToList();
+							    foreach (MeshRenderer meshRenderer in renderers)
+							    {
+								    string materialName = meshRenderer.material.name.Replace(" (Instance)", "");
+								    switch (materialName)
+								    {
+									    // Outer glass.
+									    case "Glass":
+										    // Use selected colour.
+										    meshRenderer.material.color = glass.color;
+										    break;
+
+									    // Inner glass.
+									    case "GlassNoReflection":
+										    // Use a more transparent version of the selected colour
+										    // for the inner glass to ensure it's still see-through.
+										    Color innerColor = glass.color;
+										    if (innerColor.a > 0.2f)
+											    innerColor.a = 0.2f;
+										    meshRenderer.material.color = innerColor;
+										    break;
+								    }
+							    }
+							    break;
+						    case "sunroof":
+							    // Set sunroof colour.
+							    GameObject car = save.gameObject;
+							    Transform sunRoofSlot = car.transform.FindRecursive("SunRoofSlot");
+							    Transform outerGlass = sunRoofSlot.FindRecursive("sunroof outer glass", exact: false);
+							    if (outerGlass != null)
+							    {
+								    MeshRenderer meshRenderer = outerGlass.GetComponent<MeshRenderer>();
+								    meshRenderer.material.color = glass.color;
+							    }
+							    break;
+					    }
+				    }
+			    }
+			    catch (Exception ex)
+			    {
+				    Logger.Log($"Glass load error - {ex}", Logger.LogLevel.Error);
+			    }
 			}
 		}
 
-		/// <summary>
-		/// Load material save data.
-		/// </summary>
-		internal static void LoadMaterials()
+        /// <summary>
+        /// Load material save data.
+        /// </summary>
+        /// <param name="save">Savable object to check</param>
+        /// <param name="data">Save data</param>
+        private static void LoadMaterials(tosaveitemscript save, Save data)
 		{
-			try
-			{
-				Save data = UnserializeSaveData();
-				// Return early if no material data is set.
-				if (data.materials == null) return;
+            // Return early if no material data is set.
+			if (data.materials == null) return;
 
-				foreach (MaterialData material in data.materials)
-				{
-					// Find all saveable objects.
-					List<tosaveitemscript> saves = UnityEngine.Object.FindObjectsOfType<tosaveitemscript>().ToList();
-					foreach (tosaveitemscript save in saves)
-					{
-						// Check ID matches.
-						if (save.idInSave == material.ID)
-						{
-                            if (material.isConditionless.HasValue && material.isConditionless.Value)
+            foreach (MaterialData material in data.materials)
+            {
+			    try
+			    {
+                    // Check ID matches.
+                    if (save.idInSave == material.ID)
+                    {
+                        if (material.isConditionless.HasValue && material.isConditionless.Value)
+                        {
+                            // Conditionless part.
+                            List<MeshRenderer> meshes = new List<MeshRenderer>();
+
+                            if (material.exact)
                             {
-                                // Conditionless part.
-                                List<MeshRenderer> meshes = new List<MeshRenderer>();
-
-                                if (material.exact)
-                                {
-                                    MeshRenderer mesh = GameUtilities.GetConditionlessVehiclePartByName(save.gameObject, material.part);
-                                    if (mesh != null)
-                                        meshes.Add(mesh);
-                                    // Match by partial name as a failover.
-                                    else
-                                    {
-                                        List<MeshRenderer> matchedMeshes = GameUtilities.GetConditionlessVehiclePartsByName(save.gameObject, material.part);
-                                        if (matchedMeshes.Count > 0)
-                                            meshes.AddRange(matchedMeshes);
-                                    }
-                                }
+                                MeshRenderer mesh = GameUtilities.GetConditionlessVehiclePartByName(save.gameObject, material.part);
+                                if (mesh != null)
+                                    meshes.Add(mesh);
+                                // Match by partial name as a failover.
                                 else
                                 {
                                     List<MeshRenderer> matchedMeshes = GameUtilities.GetConditionlessVehiclePartsByName(save.gameObject, material.part);
                                     if (matchedMeshes.Count > 0)
                                         meshes.AddRange(matchedMeshes);
                                 }
+                            }
+                            else
+                            {
+                                List<MeshRenderer> matchedMeshes = GameUtilities.GetConditionlessVehiclePartsByName(save.gameObject, material.part);
+                                if (matchedMeshes.Count > 0)
+                                    meshes.AddRange(matchedMeshes);
+                            }
 
-                                foreach (MeshRenderer mesh in meshes)
+                            foreach (MeshRenderer mesh in meshes)
+                            {
+                                GameUtilities.SetConditionlessPartMaterial(mesh, material.type, material.color);
+                            }
+                        }
+                        else
+                        {
+                            // Standard part.
+                            List<partconditionscript> parts = new List<partconditionscript>();
+
+                            if (material.exact)
+                            {
+                                partconditionscript part = GameUtilities.GetVehiclePartByName(save.gameObject, material.part, false);
+                                if (part != null)
+                                    parts.Add(part);
+                                // Match by partial name as a failover.
+                                else
                                 {
-                                    GameUtilities.SetConditionlessPartMaterial(mesh, material.type, material.color);
+                                    List<partconditionscript> matchedParts = GameUtilities.GetVehiclePartsByPartialName(save.gameObject, material.part, false);
+                                    if (matchedParts.Count > 0)
+                                        parts.AddRange(matchedParts);
                                 }
                             }
                             else
                             {
-                                // Standard part.
-							    List<partconditionscript> parts = new List<partconditionscript>();
-
-							    if (material.exact)
-							    {
-								    partconditionscript part = GameUtilities.GetVehiclePartByName(save.gameObject, material.part, false);
-								    if (part != null)
-									    parts.Add(part);
-								    // Match by partial name as a failover.
-								    else
-								    {
-									    List<partconditionscript> matchedParts = GameUtilities.GetVehiclePartsByPartialName(save.gameObject, material.part, false);
-									    if (matchedParts.Count > 0)
-										    parts.AddRange(matchedParts);
-								    }
-							    }
-							    else
-							    {
-								    List<partconditionscript> matchedParts = GameUtilities.GetVehiclePartsByPartialName(save.gameObject, material.part, false);
-								    if (matchedParts.Count > 0)
-									    parts.AddRange(matchedParts);
-							    }
-
-							    foreach (partconditionscript part in parts)
-							    {
-								    GameUtilities.SetPartMaterial(part, material.type, material.color);
-							    }
+                                List<partconditionscript> matchedParts = GameUtilities.GetVehiclePartsByPartialName(save.gameObject, material.part, false);
+                                if (matchedParts.Count > 0)
+                                    parts.AddRange(matchedParts);
                             }
-						}
-					}
-				}
-			}
-			catch (Exception ex)
+
+                            foreach (partconditionscript part in parts)
+                            {
+                                GameUtilities.SetPartMaterial(part, material.type, material.color);
+                            }
+                        }
+                    }
+			    }
+			    catch (Exception ex)
+			    {
+				    Logger.Log($"Material data load error - {ex}", Logger.LogLevel.Error);
+			    }
+            }
+		}
+
+        /// <summary>
+        /// Load scale data.
+        /// </summary>
+        /// <param name="save">Savable object to check</param>
+        /// <param name="data">Save data</param>
+        private static void LoadScale(tosaveitemscript save, Save data)
+		{
+			// Return early if no scale data is set.
+			if (data.scale == null) return;
+
+			foreach (ScaleData scale in data.scale)
 			{
-				Logger.Log($"Material data load error - {ex}", Logger.LogLevel.Error);
+			    try
+			    {
+					// Check ID matches.
+					if (save.idInSave == scale.ID)
+					{
+						save.gameObject.transform.localScale = scale.scale;
+					}
+			    }
+			    catch (Exception ex)
+			    {
+				    Logger.Log($"Scale data load error - {ex}", Logger.LogLevel.Error);
+			    }
 			}
 		}
 
-		/// <summary>
-		/// Load scale data.
-		/// </summary>
-		internal static void LoadScale()
+        /// <summary>
+        /// Load slot data.
+        /// </summary>
+        /// <param name="save">Savable object to check</param>
+        /// <param name="data">Save data</param>
+        private static void LoadSlots(tosaveitemscript save, Save data)
 		{
-			try
-			{
-				Save data = UnserializeSaveData();
-				// Return early if no scale data is set.
-				if (data.scale == null) return;
+			// Return early if no slot data is set.
+			if (data.slots == null) return;
 
-				foreach (ScaleData scale in data.scale)
-				{
-					// Find all saveable objects.
-					List<tosaveitemscript> saves = UnityEngine.Object.FindObjectsOfType<tosaveitemscript>().ToList();
-					foreach (tosaveitemscript save in saves)
+			foreach (SlotData slot in data.slots)
+			{
+			    try
+			    {
+					// Check ID matches.
+					if (save.idInSave == slot.ID)
 					{
-						// Check ID matches.
-						if (save.idInSave == scale.ID)
+						// Find the child part.
+						foreach (Transform transform in save.GetComponentsInChildren<Transform>())
 						{
-							save.gameObject.transform.localScale = scale.scale;
-						}
-					}
-				}
-			}
-			catch (Exception ex)
-			{
-				Logger.Log($"Scale data load error - {ex}", Logger.LogLevel.Error);
-			}
-		}
-
-		/// <summary>
-		/// Load slot data.
-		/// </summary>
-		internal static void LoadSlots()
-		{
-			try
-			{
-				Save data = UnserializeSaveData();
-				// Return early if no slot data is set.
-				if (data.slots == null) return;
-
-				foreach (SlotData slot in data.slots)
-				{
-					// Find all saveable objects.
-					List<tosaveitemscript> saves = UnityEngine.Object.FindObjectsOfType<tosaveitemscript>().ToList();
-					foreach (tosaveitemscript save in saves)
-					{
-						// Check ID matches.
-						if (save.idInSave == slot.ID)
-						{
-							// Find the child part.
-							foreach (Transform transform in save.GetComponentsInChildren<Transform>())
+							// Apply position and rotation changes.
+							if (transform.name == slot.slot)
 							{
-								// Apply position and rotation changes.
-								if (transform.name == slot.slot)
-								{
-									transform.localPosition = slot.position;
-									transform.localRotation = slot.rotation;
-								}
+								transform.localPosition = slot.position;
+								transform.localRotation = slot.rotation;
 							}
 						}
-					}
+			        }   
 				}
-			}
-			catch (Exception ex)
-			{
-				Logger.Log($"Slot data load error - {ex}", Logger.LogLevel.Error);
+			    catch (Exception ex)
+			    {
+				    Logger.Log($"Slot data load error - {ex}", Logger.LogLevel.Error);
+			    }
 			}
 		}
+
+        /// <summary>
+        /// Load light data
+        /// </summary>
+        /// <param name="save">Savable object to check</param>
+        /// <param name="data">Save data</param>
+        private static void LoadLights(tosaveitemscript save, Save data)
+        {
+            // Return early if no light data is set.
+            if (data.lights == null) return;
+
+            foreach (LightData light in data.lights)
+            {
+                try
+                {
+                    if (save.idInSave == light.ID)
+                    {
+                        Logger.Log($"Starting load for {light.ID}");
+                        headlightscript headlight = null;
+                        bool isInteriorLight = false;
+                        if (light.name != null && light.name != string.Empty)
+                        {
+                            headlightscript[] lights = save.GetComponentsInChildren<headlightscript>();
+                            foreach (headlightscript childLight in lights)
+                            {
+                                if (childLight.name.ToLower().Contains(light.name.ToLower()))
+                                    headlight = childLight;
+                            }
+                            isInteriorLight = true;
+                        }
+                        else
+                        {
+                            headlight = save.GetComponent<headlightscript>();
+                        }
+
+                        // Unable to find headlight, skip.
+                        if (headlight == null) continue;
+
+                        Logger.Log($"Loading save data for headlight {headlight.name}\nColor: {light.color}\nisInteriorLight: {(isInteriorLight ? "Yes" : "No")}");
+
+                        GameUtilities.SetHeadlightColor(headlight, light.color, isInteriorLight);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Logger.Log($"Light data load error - {ex}", Logger.LogLevel.Error);
+                }
+            }
+        }
 
 		/// <summary>
 		/// Get slot data by ID and slot name.

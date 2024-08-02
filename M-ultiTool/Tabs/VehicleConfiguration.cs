@@ -71,12 +71,12 @@ namespace MultiTool.Tabs
 
         // Light changer.
         private bool lightSelectorOpen = false;
-        private List<LightData> selectedLights = new List<LightData>();
+        private List<LightGroup> selectedLights = new List<LightGroup>();
 
 		// Caching.
 		private List<PartGroup> materialParts = new List<PartGroup>();
 		private List<randomTypeSelector> randomParts = new List<randomTypeSelector>();
-        private List<LightData> lights = new List<LightData>();
+        private List<LightGroup> lights = new List<LightGroup>();
 		private float nextUpdateTime = 0;
 		private float updateFrequency = 2;
 
@@ -1124,7 +1124,7 @@ namespace MultiTool.Tabs
                             name = $"{i + 1} - Interior light";
                             isInterior = true;
                         }
-                        lights.Add(LightData.Create(name, headlight, isInterior));
+                        lights.Add(LightGroup.Create(name, headlight, isInterior));
                     }
                 }
 
@@ -1142,7 +1142,7 @@ namespace MultiTool.Tabs
 
             if (lightSelectorOpen)
             {
-                foreach (LightData light in lights)
+                foreach (LightGroup light in lights)
                 {
                     // Remove selected lights from selectable.
                     if (selectedLights.Where(l => l.name == light.name).FirstOrDefault() != null) continue;
@@ -1164,7 +1164,7 @@ namespace MultiTool.Tabs
             }
             else
             {
-                foreach (LightData light in selectedLights)
+                foreach (LightGroup light in selectedLights)
                 {
                     if (GUI.Button(new Rect(currVehicleX, currVehicleY, buttonWidth, buttonHeight), PrettifyName(light.name)))
                     {
@@ -1247,13 +1247,23 @@ namespace MultiTool.Tabs
 
             if (GUI.Button(new Rect(currVehicleX, currVehicleY, buttonWidth, buttonHeight), "Apply to selected"))
             {
-                foreach (LightData light in selectedLights)
+                foreach (LightGroup light in selectedLights)
                 {
                     if (light.headlights != null && light.headlights.Count > 0)
                     {
                         foreach (headlightscript headlight in light.headlights)
                         {
                             GameUtilities.SetHeadlightColor(headlight, GUIRenderer.lightColor, light.isInteriorLight);
+                            int? id = save.idInSave;
+                            if (!light.isInteriorLight)
+                                id = headlight.GetComponent<tosaveitemscript>()?.idInSave;
+
+                            string name = null;
+                            if (light.isInteriorLight)
+                                name = "interior";
+
+                            if (id.HasValue)
+                                SaveUtilities.UpdateLight(new LightData() { ID = id.Value, name = name, color = GUIRenderer.lightColor });
                         }
                     }
                 }

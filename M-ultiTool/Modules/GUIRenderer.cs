@@ -414,10 +414,7 @@ namespace MultiTool.Modules
 
 				// Load save data.
 				spawnedPOIs = SaveUtilities.LoadPOIs();
-				SaveUtilities.LoadGlass();
-				SaveUtilities.LoadMaterials();
-				SaveUtilities.LoadScale();
-				SaveUtilities.LoadSlots();
+				SaveUtilities.LoadSaveData();
 
 				// Clear any existing static values.
 				fuelValues.Clear();
@@ -1187,8 +1184,7 @@ namespace MultiTool.Modules
 			float width = mainMenuWidth;
 			float height = mainMenuHeight;
 
-			// TODO: Remove formerly message next update.
-			GUI.Box(new Rect(x, y, width, height), $"<color=#f87ffa><size=18><b>{Meta.Name} - Formerly SpawnerTLD</b></size>\n<size=16>v{Meta.Version} - made with ❤️ by {Meta.Author}</size></color>");
+			GUI.Box(new Rect(x, y, width, height), $"<color=#f87ffa><size=18><b>{Meta.Name}</b></size>\n<size=16>v{Meta.Version} - made with ❤️ by {Meta.Author}</size></color>");
 
 			// Settings button.
 			if (GUI.Button(new Rect(x + 5f, y + 5f, 150f, 25f), GetAccessibleString("Show settings", settingsShow)))

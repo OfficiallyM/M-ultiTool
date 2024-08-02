@@ -50,6 +50,14 @@ namespace MultiTool.Core
 		[DataMember] public Quaternion resetRotation { get; set; }
 	}
 
+    [DataContract]
+    internal class LightData
+    {
+        [DataMember] public int ID { get; set; }
+        [DataMember] public string name { get; set; }
+        [DataMember] public Color color { get; set; }
+    }
+
 	[DataContract]
 	internal class Save
 	{
@@ -58,5 +66,6 @@ namespace MultiTool.Core
 		[DataMember] public List<MaterialData> materials { get; set; }
 		[DataMember] public List<ScaleData> scale { get; set; }
 		[DataMember] public List<SlotData> slots { get; set; }
+        [DataMember] public List<LightData> lights { get; set; }
 	}
 }
