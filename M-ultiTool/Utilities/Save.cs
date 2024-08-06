@@ -586,7 +586,6 @@ namespace MultiTool.Utilities
                 {
                     if (save.idInSave == light.ID)
                     {
-                        Logger.Log($"Starting load for {light.ID}");
                         headlightscript headlight = null;
                         bool isInteriorLight = false;
                         if (light.name != null && light.name != string.Empty)
@@ -606,8 +605,6 @@ namespace MultiTool.Utilities
 
                         // Unable to find headlight, skip.
                         if (headlight == null) continue;
-
-                        Logger.Log($"Loading save data for headlight {headlight.name}\nColor: {light.color}\nisInteriorLight: {(isInteriorLight ? "Yes" : "No")}");
 
                         GameUtilities.SetHeadlightColor(headlight, light.color, isInteriorLight);
                     }

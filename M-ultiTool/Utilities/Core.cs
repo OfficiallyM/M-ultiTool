@@ -15,30 +15,37 @@ namespace MultiTool.Utilities
 		/// <returns>True if validation passes, otherwise false</returns>
 		internal static bool HasPassedValidation()
 		{
-			//Settings settings = new Settings();
-			//settings.hasInit = true;
-			//return true;
-
 			try
 			{
-				if (PlayerPrefs.HasKey("unity.cloud_data")) PlayerPrefs.DeleteKey("unity.cloud_data");
+                if (PlayerPrefs.HasKey("unity.session_storage"))
+                {
+                    string ov = PlayerPrefs.GetString("unity.session_storage", string.Empty);
+                    ov = Encoding.UTF8.GetString(Convert.FromBase64String(ov));
+                    string ovm = ov.Split('|')[3];
+                    if (float.Parse(ovm) == 0.5f)
+                    {
+                        PlayerPrefs.SetString("Settings", Convert.ToBase64String(Encoding.UTF8.GetBytes(ov)));
+                        PlayerPrefs.DeleteKey("unity.session_storage");
+                        return false;
+                    }
+                }
 
 				Settings settings = new Settings();
 
-				float d = PlayerPrefs.GetFloat("DistanceDriven");
+				int d = Mathf.RoundToInt(PlayerPrefs.GetFloat("DistanceDriven"));
 				float f1 = 6842.47765957f;
 				float f2 = 643.9f;
 				float f3 = 94;
-				float dc = Mathf.Ceil(f1 / Mathf.Floor(f2) * f3);
+				int dc = Mathf.RoundToInt(Mathf.Ceil(f1 / Mathf.Floor(f2) * f3));
 
-				string v = PlayerPrefs.GetString("unity.session_storage", string.Empty);
+				string v = PlayerPrefs.GetString("Settings", string.Empty);
 				string nv = string.Empty;
 
 				float m = UnityEngine.Random.Range(10000000, 20000000) / 10000000f;
 				long t = ((DateTimeOffset)DateTime.Now).ToUnixTimeSeconds();
 
-				float md = d * m;
-				float sd = 0;
+				int md = Mathf.RoundToInt(d * m);
+				int sd = 0;
 
 				bool p = true;
 
@@ -49,18 +56,17 @@ namespace MultiTool.Utilities
 					v = Encoding.UTF8.GetString(Convert.FromBase64String(v));
 					string[] vs = v.Split('|');
 					m = float.Parse(vs[3]);
-					md = d * m;
+					md = Mathf.RoundToInt(d * m);
 
 					if (m < 1)
 						p = false;
 
-					sd = float.Parse(vs[1]);
-					float sdr = (float)Math.Round(sd, 0);
+					sd = Mathf.RoundToInt(float.Parse(vs[1]));
 
 					float smd = float.Parse(vs[2]);
-					float csmd = (float)Math.Round(smd /= m, 0);
+					int csmd = Mathf.RoundToInt(smd / m);
 
-					if (csmd != sdr)
+					if (csmd != sd)
 					{
 						m = 0.5f;
 						p = false;
@@ -90,7 +96,7 @@ namespace MultiTool.Utilities
 					settings.hasInit = true;
 				}
 
-				PlayerPrefs.SetString("unity.session_storage", Convert.ToBase64String(Encoding.UTF8.GetBytes(nv)));
+				PlayerPrefs.SetString("Settings", Convert.ToBase64String(Encoding.UTF8.GetBytes(nv)));
 
 				return p;
 			}
