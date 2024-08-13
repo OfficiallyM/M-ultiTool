@@ -48,6 +48,14 @@
     </Content>
   </ItemGroup>
 
+  <ItemGroup>
+    <PackageReference Include="Costura.Fody" Version="5.7.0">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="ScottPlot" Version="4.1.74" />
+  </ItemGroup>
+
   <Target Name="PostBuild" AfterTargets="PostBuildEvent">
     <Exec Command="move /Y &quot;$(TargetPath)&quot; &quot;%userprofile%\Documents\TheLongDrive\Mods\$(TargetFileName)&quot;" />
     <Exec Command="copy /Y &quot;$(TargetDir)Configs&quot; &quot;%userprofile%\Documents\TheLongDrive\Mods\Config\Mod Settings\M-ultiTool\Translations&quot;" />

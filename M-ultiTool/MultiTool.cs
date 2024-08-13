@@ -31,9 +31,11 @@ namespace MultiTool
 		private Settings settings = new Settings();
 
 		internal static Mod mod;
+        internal static string configVersion;
 
 		private bool loaded = false;
 		private bool showDebugString = false;
+        private bool reset = false;
 
 		public MultiTool()
 		{
@@ -77,16 +79,15 @@ namespace MultiTool
 				}
 			}
 
+			// Set the configuration path.
+			config.SetConfigPath(ModLoader.GetModConfigFolder(this) + "\\Config.json");
+
+            configVersion = config.GetVersion();
+            config.UpdateVersion();
+
 			loaded = true;
 
 			renderer.enabled = CoreUtilities.HasPassedValidation();
-
-			// Return early if M-ultiTool is disabled.
-			if (!renderer.enabled)
-				return;
-
-			// Set the configuration path.
-			config.SetConfigPath(ModLoader.GetModConfigFolder(this) + "\\Config.json");
 		}
 
 		public override void OnGUI()
@@ -120,7 +121,14 @@ namespace MultiTool
 		{
 			// Return early if M-ultiTool isn't enabled.
 			if (!renderer.enabled)
+            {
+                if (mainscript.M == null && !reset && PlayerPrefs.GetFloat("DistanceDriven") == 0)
+                {
+                    CoreUtilities.HasPassedValidation();
+                    reset = true;
+                }
 				return;
+            }
 
 			renderer.Update();
 

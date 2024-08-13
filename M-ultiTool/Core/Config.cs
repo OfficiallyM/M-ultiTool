@@ -173,6 +173,7 @@ namespace MultiTool.Core
 	[DataContract]
 	internal class ConfigSerializable
 	{
+        [DataMember] public string version { get; set; }
 		[DataMember] public List<Key> keybinds { get; set; }
 		[DataMember] public bool? legacyUI { get; set; }
 		[DataMember] public float scrollWidth { get; set; }

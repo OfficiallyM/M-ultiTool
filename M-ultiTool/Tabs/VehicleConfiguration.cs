@@ -29,6 +29,15 @@ namespace MultiTool.Tabs
             "Material changer",
             "Randomised changer",
             "Light changer",
+            "Engine tuning",
+            "Transmission tuning",
+            "Vehicle tuning",
+        };
+        private readonly string[] newScrollTabs = new string[]
+        {
+            "Engine tuning",
+            "Transmission tuning",
+            "Vehicle tuning",
         };
 
 		private Settings settings = new Settings();
@@ -84,8 +93,14 @@ namespace MultiTool.Tabs
         private bool lightSelectorOpen = false;
         private List<LightGroup> selectedLights = new List<LightGroup>();
 
-		// Caching.
-		private List<PartGroup> materialParts = new List<PartGroup>();
+        // Engine tuner.
+        private EngineTuning engineTuning = null;
+        private bool isEngineTuningStatsOpen = false;
+        private EngineStats engineStats = null;
+        private bool hideLastTorquePoint = false;
+
+        // Caching.
+        private List<PartGroup> materialParts = new List<PartGroup>();
 		private List<randomTypeSelector> randomParts = new List<randomTypeSelector>();
         private List<LightGroup> lights = new List<LightGroup>();
 		private float nextUpdateTime = 0;
@@ -105,7 +120,7 @@ namespace MultiTool.Tabs
 
             float tabX = dimensions.x + 10f;
             float tabY = dimensions.y + 10f;
-            float tabWidth = (dimensions.width - 20f) * 0.1f;
+            float tabWidth = (dimensions.width - 20f) * 0.11f;
             float startingCurrVehicleX = dimensions.x + tabWidth + 20f;
 			float currVehicleX = startingCurrVehicleX;
 			float currVehicleY = dimensions.y + 10f;
@@ -133,6 +148,7 @@ namespace MultiTool.Tabs
 			tankscript fuel = car.Tank;
 			Transform sunRoofSlot = carObject.transform.FindRecursive("SunRoofSlot");
 			tosaveitemscript save = carObject.GetComponent<tosaveitemscript>();
+            int maxFluidIndex = (int)Enum.GetValues(typeof(fluidenum)).Cast<fluidenum>().Max();
 
             // Reset any selections when changing car.
             if (save.idInSave != lastCarId)
@@ -140,12 +156,13 @@ namespace MultiTool.Tabs
                 selectedPart = null;
                 selectedRandom = null;
                 selectedLights.Clear();
+                engineTuning = null;
             }
 
             GUI.Box(new Rect(tabX, tabY, tabWidth, dimensions.height - 20f), string.Empty);
             tabY += 10f;
 
-            currentTabPosition = GUI.BeginScrollView(new Rect(tabX, tabY, tabWidth, dimensions.height - 20f), currentTabPosition, new Rect(tabX, tabY, (dimensions.width - 20f) * 0.1f, (tabs.Length * 25f) + 10f));
+            currentTabPosition = GUI.BeginScrollView(new Rect(tabX, tabY, tabWidth, dimensions.height - 20f), currentTabPosition, new Rect(tabX, tabY, tabWidth, (tabs.Length * 25f) + 10f));
 
             foreach (string tabName in tabs)
             {
@@ -156,7 +173,9 @@ namespace MultiTool.Tabs
 
             GUI.EndScrollView();
 
-			currentVehiclePosition = GUI.BeginScrollView(new Rect(currVehicleX, currVehicleY, dimensions.width - (dimensions.width * 0.1f) - 20f, dimensions.height - 20f), currentVehiclePosition, new Rect(currVehicleX, currVehicleY, dimensions.width - 20f, lastHeight - 20f), new GUIStyle(), GUI.skin.verticalScrollbar);
+            // Don't create a scroll view for tabs built using GUILayout.
+            if (!newScrollTabs.Contains(tab))
+			    currentVehiclePosition = GUI.BeginScrollView(new Rect(currVehicleX, currVehicleY, dimensions.width - tabWidth - 20f, dimensions.height - 20f), currentVehiclePosition, new Rect(currVehicleX, currVehicleY, dimensions.width - tabWidth - 20f, lastHeight - 20f), new GUIStyle(), GUI.skin.verticalScrollbar);
 
             GUIStyle defaultStyle = GUI.skin.button;
             GUIStyle previewStyle = new GUIStyle(defaultStyle);
@@ -1271,10 +1290,430 @@ namespace MultiTool.Tabs
                         }
                     }
                     lastHeight = currVehicleY;
-                    break;     
+                    break;
+
+                case "Engine tuning":
+                    // Populate default tuning values if missing.
+                    if (engineTuning == null)
+                    {
+                        engineTuning = new EngineTuning()
+                        {
+                            rpmChangeModifier = engine.rpmChangeModifier,
+                            defaultRpmChangeModifier = engine.rpmChangeModifier,
+
+                            startChance = engine.startChance,
+                            defaultStartChance = engine.startChance,
+
+                            motorBrakeModifier = engine.motorBrakeModifier,
+                            defaultMotorBrakeModifier = engine.motorBrakeModifier,
+
+                            minOptimalTemp2 = engine.minOptimalTemp2,
+                            defaultMinOptimalTemp2 = engine.minOptimalTemp2,
+
+                            maxOptimalTemp2 = engine.maxOptimalTemp2,
+                            defaultMaxOptimalTemp2 = engine.maxOptimalTemp2,
+
+                            engineHeatGainMin = engine.engineHeatGainMin,
+                            defaultEngineHeatGainMin = engine.engineHeatGainMin,
+
+                            engineHeatGainMax = engine.engineHeatGainMax,
+                            defaultEngineHeatGainMax = engine.engineHeatGainMax,
+
+                            consumptionModifier = engine.consumptionM,
+                            defaultConsumptionModifier = engine.consumptionM,
+
+                            noOverheat = engine.noOverHeat,
+                            defaultNoOverheat = engine.noOverHeat,
+
+                            twoStroke = engine.twostroke,
+                            defaultTwoStroke = engine.twostroke,
+
+                            oilFluid = engine.Oilfluid,
+                            defaultOilFluid = engine.Oilfluid,
+
+                            oilTolerationMin = engine.oilTolerationMin,
+                            defaultOilTolerationMin = engine.oilTolerationMin,
+
+                            oilTolerationMax = engine.oilTolerationMax,
+                            defaultOilTolerationMax = engine.oilTolerationMax,
+
+                            oilConsumptionModifier = engine.OilConsumptionModifier,
+                            defaultOilConsumptionModifier = engine.OilConsumptionModifier,
+                            
+                            consumption = new List<fluid>(),
+                            defaultConsumption = new List<fluid>(),
+
+                            torqueCurve = new List<TorqueCurve>(),
+                            defaultTorqueCurve = new List<TorqueCurve>(),
+                        };
+
+                        // Populate fuel consumption fluids.
+                        foreach (fluid fluid in engine.FuelConsumption.fluids)
+                        {
+                            engineTuning.consumption.Add(new fluid() { type = fluid.type, amount = fluid.amount });
+                            engineTuning.defaultConsumption.Add(new fluid() { type = fluid.type, amount = fluid.amount });
+                        }
+
+                        // Populate torque curve.
+                        for (int torqueKey = 0; torqueKey < engine.torqueCurve.length; torqueKey++)
+                        {
+                            Keyframe torque = engine.torqueCurve.keys[torqueKey];
+                            engineTuning.torqueCurve.Add(new TorqueCurve(torque.value, torque.time));
+                            engineTuning.defaultTorqueCurve.Add(new TorqueCurve(torque.value, torque.time));
+                        }
+
+                        UpdateEngineTunerStats();
+                    }
+
+                    bool updateEngineStats = false;
+
+                    GUILayout.BeginArea(new Rect(currVehicleX, currVehicleY, dimensions.width - tabWidth - 30f, dimensions.height - 20f));
+                    currentVehiclePosition = GUILayout.BeginScrollView(currentVehiclePosition);
+
+                    GUILayout.Label("Basics", GUIRenderer.headerStyle);
+
+                    GUILayout.BeginVertical();
+                    GUILayout.Label($"RPM change modifier - {engineTuning.rpmChangeModifier.ToString("F2")}");
+                    engineTuning.rpmChangeModifier = GUILayout.HorizontalSlider(engineTuning.rpmChangeModifier, 0f, 10f);
+                    if (GUILayout.Button("Reset", GUILayout.MaxWidth(200)))
+                        engineTuning.rpmChangeModifier = engineTuning.defaultRpmChangeModifier;
+                    GUILayout.EndVertical();
+
+                    GUILayout.Space(10);
+
+                    GUILayout.BeginVertical();
+                    GUILayout.Label($"Start chance - {(engineTuning.startChance * 100).ToString("F0")}%");
+                    engineTuning.startChance = GUILayout.HorizontalSlider(engineTuning.startChance, 0f, 1f);
+                    if (GUILayout.Button("Reset", GUILayout.MaxWidth(200)))
+                        engineTuning.startChance = engineTuning.defaultStartChance;
+                    GUILayout.EndVertical();
+
+                    GUILayout.Space(10);
+
+                    GUILayout.BeginVertical();
+                    GUILayout.Label($"Engine brake modifier - {engineTuning.motorBrakeModifier.ToString("F2")}");
+                    engineTuning.motorBrakeModifier = GUILayout.HorizontalSlider(engineTuning.motorBrakeModifier, 0f, 10f);
+                    if (GUILayout.Button("Reset", GUILayout.MaxWidth(200)))
+                        engineTuning.motorBrakeModifier = engineTuning.defaultMotorBrakeModifier;
+                    GUILayout.EndVertical();
+
+                    GUILayout.Space(10);
+
+                    GUILayout.Label("Temperature", GUIRenderer.headerStyle);
+
+                    GUILayout.BeginVertical();
+                    GUILayout.Label($"Min optimal temp - {engineTuning.minOptimalTemp2.ToString("F2")}");
+                    engineTuning.minOptimalTemp2 = GUILayout.HorizontalSlider(engineTuning.minOptimalTemp2, 0f, 300f);
+                    if (GUILayout.Button("Reset", GUILayout.MaxWidth(200)))
+                        engineTuning.minOptimalTemp2 = engineTuning.defaultMinOptimalTemp2;
+                    GUILayout.EndVertical();
+
+                    GUILayout.Space(10);
+
+                    GUILayout.BeginVertical();
+                    GUILayout.Label($"Max optimal temp - {engineTuning.maxOptimalTemp2.ToString("F2")}");
+                    engineTuning.maxOptimalTemp2 = GUILayout.HorizontalSlider(engineTuning.maxOptimalTemp2, 0f, 300f);
+                    if (GUILayout.Button("Reset", GUILayout.MaxWidth(200)))
+                        engineTuning.maxOptimalTemp2 = engineTuning.defaultMaxOptimalTemp2;
+                    GUILayout.EndVertical();
+
+                    GUILayout.Space(10);
+
+                    GUILayout.BeginVertical();
+                    GUILayout.Label($"Engine heat gain min - {engineTuning.engineHeatGainMin.ToString("F2")}");
+                    engineTuning.engineHeatGainMin = GUILayout.HorizontalSlider(engineTuning.engineHeatGainMin, 0f, 300f);
+                    if (GUILayout.Button("Reset", GUILayout.MaxWidth(200)))
+                        engineTuning.engineHeatGainMin = engineTuning.defaultEngineHeatGainMin;
+                    GUILayout.EndVertical();
+
+                    GUILayout.Space(10);
+
+                    GUILayout.BeginVertical();
+                    GUILayout.Label($"Engine heat gain max - {engineTuning.engineHeatGainMax.ToString("F2")}");
+                    engineTuning.engineHeatGainMax = GUILayout.HorizontalSlider(engineTuning.engineHeatGainMax, 0f, 300f);
+                    if (GUILayout.Button("Reset", GUILayout.MaxWidth(200)))
+                        engineTuning.engineHeatGainMax = engineTuning.defaultEngineHeatGainMax;
+                    GUILayout.EndVertical();
+
+
+                    GUILayout.Space(10);
+
+                    GUILayout.BeginHorizontal();
+                    GUILayout.Label("No overheat");
+                    if (GUILayout.Button(GUIRenderer.GetAccessibleString("Yes", "No", engineTuning.noOverheat), GUILayout.MaxWidth(200)))
+                        engineTuning.noOverheat = !engineTuning.noOverheat;
+                    if (GUILayout.Button("Reset", GUILayout.MaxWidth(200)))
+                        engineTuning.noOverheat = engineTuning.defaultNoOverheat;
+                    GUILayout.FlexibleSpace();
+                    GUILayout.EndHorizontal();
+
+                    GUILayout.Space(10);
+
+                    GUILayout.Label("Oil", GUIRenderer.headerStyle);
+
+                    GUILayout.BeginHorizontal();
+                    GUILayout.Label("Is two-stroke?");
+                    if (GUILayout.Button(GUIRenderer.GetAccessibleString("Yes", "No", engineTuning.twoStroke), GUILayout.MaxWidth(200)))
+                        engineTuning.twoStroke = !engineTuning.twoStroke;
+                    if (GUILayout.Button("Reset", GUILayout.MaxWidth(200)))
+                        engineTuning.twoStroke = engineTuning.defaultTwoStroke;
+                    GUILayout.FlexibleSpace();
+                    GUILayout.EndHorizontal();
+
+                    GUILayout.Space(10);
+                    
+                    GUILayout.BeginVertical();
+                    GUILayout.Label($"Oil fluid - {engineTuning.oilFluid.ToString().ToSentenceCase()}");
+                    for (int oilFluidIndex = 0; oilFluidIndex <= maxFluidIndex; oilFluidIndex++)
+                    {
+                        fluidenum oilFluid = (fluidenum)oilFluidIndex;
+                        // Skip currently set fluid.
+                        if (oilFluid == engineTuning.oilFluid) continue;
+                        if (GUILayout.Button(oilFluid.ToString().ToSentenceCase(), GUILayout.MaxWidth(200)))
+                            engineTuning.oilFluid = oilFluid;
+                    }
+                    GUILayout.Space(5);
+                    if (GUILayout.Button("Reset", GUILayout.MaxWidth(200)))
+                        engineTuning.oilFluid = engineTuning.defaultOilFluid;
+                    GUILayout.EndVertical();
+
+                    if (engineTuning.twoStroke)
+                    {
+                        GUILayout.Space(10);
+
+                        GUILayout.BeginVertical();
+                        GUILayout.Label($"Oil toleration min - {(engineTuning.oilTolerationMin * 100).ToString("F2")}%");
+                        engineTuning.oilTolerationMin = GUILayout.HorizontalSlider(engineTuning.oilTolerationMin, 0f, 1f);
+                        if (GUILayout.Button("Reset", GUILayout.MaxWidth(200)))
+                            engineTuning.oilTolerationMin = engineTuning.defaultOilTolerationMin;
+                        GUILayout.EndVertical();
+
+                        GUILayout.Space(10);
+
+                        GUILayout.BeginVertical();
+                        GUILayout.Label($"Oil toleration max - {(engineTuning.oilTolerationMax * 100).ToString("F2")}%");
+                        engineTuning.oilTolerationMax = GUILayout.HorizontalSlider(engineTuning.oilTolerationMax, 0f, 1f);
+                        if (GUILayout.Button("Reset", GUILayout.MaxWidth(200)))
+                            engineTuning.oilTolerationMax = engineTuning.defaultOilTolerationMax;
+                        GUILayout.EndVertical();
+                    }
+
+                    GUILayout.Space(10);
+
+                    GUILayout.BeginVertical();
+                    GUILayout.Label($"Oil consumption modifier - {engineTuning.oilConsumptionModifier.ToString("F2")}");
+                    engineTuning.oilConsumptionModifier = GUILayout.HorizontalSlider(engineTuning.oilConsumptionModifier, 0f, 10f);
+                    if (GUILayout.Button("Reset", GUILayout.MaxWidth(200)))
+                        engineTuning.oilConsumptionModifier = engineTuning.defaultOilConsumptionModifier;
+                    GUILayout.EndVertical();
+
+                    GUILayout.Space(10);
+
+                    GUILayout.Label("Fuel", GUIRenderer.headerStyle);
+
+                    GUILayout.BeginVertical();
+                    GUILayout.Label($"Fuel consumption modifier - {engineTuning.consumptionModifier.ToString("F2")}");
+                    engineTuning.consumptionModifier = GUILayout.HorizontalSlider(engineTuning.consumptionModifier, 0f, 10f);
+                    if (GUILayout.Button("Reset", GUILayout.MaxWidth(200)))
+                        engineTuning.consumptionModifier = engineTuning.defaultConsumptionModifier;
+                    GUILayout.EndVertical();
+
+                    GUILayout.Space(10);
+
+                    GUILayout.BeginVertical();
+                    GUILayout.Label("Fuel consumption", GUIRenderer.headerStyle);
+                    foreach (fluid fluid in engineTuning.consumption)
+                    {
+                        for (int fuelFluidIndex = 0; fuelFluidIndex <= maxFluidIndex; fuelFluidIndex++)
+                        {
+                            // Skip fluids already selected.
+                            if (engineTuning.consumption.Where(f => (int)f.type == fuelFluidIndex && f.type != fluid.type).FirstOrDefault() != null)
+                                continue;
+
+                            fluidenum fuelFluid = (fluidenum)fuelFluidIndex;
+                            if (GUILayout.Button(GUIRenderer.GetAccessibleString(fuelFluid.ToString().ToSentenceCase(), fuelFluid == fluid.type), GUILayout.MaxWidth(200)))
+                                fluid.type = fuelFluid;
+                        }
+                        fluid.amount = GUILayout.HorizontalSlider(fluid.amount, 0f, 500f);
+                        GUILayout.Label(fluid.amount.ToString("F2"));
+                        GUILayout.Space(5);
+                        if (GUILayout.Button("Remove fluid", GUILayout.MaxWidth(200)))
+                        {
+                            engineTuning.consumption.Remove(fluid);
+                            break;
+                        }
+                        GUILayout.Space(10);
+                    }
+                    if (engineTuning.consumption.Count <= maxFluidIndex)
+                    {
+                        if (GUILayout.Button("Add another fluid", GUILayout.MaxWidth(200)))
+                        {
+                            // Find the next unused fluid index.
+                            List<int> existingIndexes = new List<int>();
+                            foreach (fluid existing in engineTuning.consumption)
+                            {
+                                existingIndexes.Add((int)existing.type);
+                            }
+                            existingIndexes.Sort();
+                            int index = existingIndexes.Last() + 1;
+                            engineTuning.consumption.Add(new fluid() { type = (fluidenum)index, amount = 0 });
+                        }
+                    }
+                    GUILayout.Space(5);
+                    if (GUILayout.Button("Reset", GUILayout.MaxWidth(200)))
+                        engineTuning.consumption = engineTuning.defaultConsumption;
+                    GUILayout.EndVertical();
+
+                    GUILayout.Space(10);
+
+                    GUILayout.BeginVertical();
+                    GUILayout.Label("Torque curve", GUIRenderer.headerStyle);
+                    foreach (TorqueCurve torque in engineTuning.torqueCurve)
+                    {
+                        float originalTorque = torque.torque;
+                        float originalRpm = torque.rpm;
+
+                        GUILayout.Label("Torque");
+                        torque.torque = GUILayout.HorizontalSlider(torque.torque, 0, 1000);
+                        GUILayout.Label(torque.torque.ToString("F2"));
+
+                        GUILayout.Label("RPM");
+                        torque.rpm = GUILayout.HorizontalSlider(torque.rpm, 0, 20000);
+                        GUILayout.Label(torque.rpm.ToString("F2"));
+
+                        GUILayout.Space(5);
+                        GUILayout.BeginHorizontal();
+                        if (GUILayout.Button("Remove", GUILayout.MaxWidth(200)))
+                        {
+                            engineTuning.torqueCurve.Remove(torque);
+                            break;
+                        }
+                        if (GUILayout.Button("Reset", GUILayout.MaxWidth(200)))
+                        {
+                            int key = engineTuning.torqueCurve.IndexOf(torque);
+                            TorqueCurve defaultTorque = engineTuning.defaultTorqueCurve[key];
+                            engineTuning.torqueCurve[key] = defaultTorque;
+                            updateEngineStats = true;
+                            break;
+                        }
+                        GUILayout.EndHorizontal();
+
+                        // Check for any changes and update engine stats.
+                        if (originalTorque != torque.torque || originalRpm != torque.rpm)
+                            updateEngineStats = true;
+
+                        GUILayout.Space(10);
+                    }
+                    GUILayout.BeginHorizontal();
+                    if (GUILayout.Button("Add new", GUILayout.MaxWidth(200)))
+                    {
+                        engineTuning.torqueCurve.Add(new TorqueCurve(0, 0));
+                        updateEngineStats = true;
+                    }
+                    GUILayout.Space(5);
+                    if (GUILayout.Button("Reorder by RPM", GUILayout.MaxWidth(200)))
+                    {
+                        engineTuning.torqueCurve = engineTuning.torqueCurve.OrderBy(t => t.rpm).ToList();
+                        updateEngineStats = true;
+                    }
+                    GUILayout.Space(5);
+                    if (GUILayout.Button("Reset torque curve", GUILayout.MaxWidth(200)))
+                    {
+                        engineTuning.torqueCurve = engineTuning.defaultTorqueCurve;
+                        updateEngineStats = true;
+                    }
+                    GUILayout.EndHorizontal();
+                    GUILayout.EndVertical();
+
+
+                    GUILayout.EndScrollView();
+
+                    GUILayout.Space(10);
+
+                    if (updateEngineStats)
+                        UpdateEngineTunerStats();
+
+                    GUILayout.BeginVertical("box");
+                    if (isEngineTuningStatsOpen)
+                    {
+                        GUILayout.BeginVertical();
+                        GUILayout.Label("Engine statistics", GUIRenderer.headerStyle);
+                        GUILayout.Label($"Max torque: {engineStats.maxTorque.ToString("F2")}Nm");
+                        GUILayout.Label($"Max RPM: {engineStats.maxRPM.ToString("F2")}");
+                        GUILayout.Label($"Max horsepower: {engineStats.maxHp.ToString("F2")}");
+                        if (GUILayout.Button(GUIRenderer.GetAccessibleString("Hide last graph point", hideLastTorquePoint), GUILayout.MaxWidth(200)))
+                        {
+                            hideLastTorquePoint = !hideLastTorquePoint;
+                            UpdateEngineTunerStats();
+                        }
+                        GUILayout.Label(engineStats.torqueGraph, GUILayout.MaxWidth(800));
+                        GUILayout.EndVertical();
+                        GUILayout.Space(10);
+                    }
+
+                    GUILayout.BeginHorizontal();
+                    // TODO:
+                    // Value saving.
+                    // Reset all button.
+                    if (GUILayout.Button("Apply", GUILayout.MaxWidth(200)))
+                    {
+                        engine.rpmChangeModifier = engineTuning.rpmChangeModifier;
+                        engine.startChance = engineTuning.startChance;
+                        engine.motorBrakeModifier = engineTuning.motorBrakeModifier;
+                        engine.minOptimalTemp2 = engineTuning.minOptimalTemp2;
+                        engine.maxOptimalTemp2 = engineTuning.maxOptimalTemp2;
+                        engine.engineHeatGainMin = engineTuning.engineHeatGainMin;
+                        engine.engineHeatGainMax = engineTuning.engineHeatGainMax;
+                        engine.consumptionM = engineTuning.consumptionModifier;
+                        engine.noOverHeat = engineTuning.noOverheat;
+                        engine.twostroke = engineTuning.twoStroke;
+                        engine.Oilfluid = engineTuning.oilFluid;
+                        engine.oilTolerationMin = engineTuning.oilTolerationMin;
+                        engine.oilTolerationMax = engineTuning.oilTolerationMax;
+                        engine.OilConsumptionModifier = engineTuning.oilConsumptionModifier;
+                        engine.FuelConsumption.fluids = engineTuning.consumption;
+
+                        // Remove existing torque curve.
+                        for (int torqueKey = 0; torqueKey < engine.torqueCurve.length; torqueKey++)
+                        {
+                            engine.torqueCurve.RemoveKey(torqueKey);
+                        }
+
+                        // Apply new torque curve, find new maxRpm and maxNm.
+                        engineTuning.torqueCurve = engineTuning.torqueCurve.OrderBy(t => t.rpm).ToList();
+                        engine.maxRpm = engineTuning.torqueCurve.Last().rpm;
+                        float maxNm = 0;
+                        foreach (TorqueCurve torqueCurve in engineTuning.torqueCurve)
+                        {
+                            if (torqueCurve.torque > maxNm)
+                                maxNm = torqueCurve.torque;
+                            engine.torqueCurve.AddKey(torqueCurve.torque, torqueCurve.rpm);
+                        }
+                        engine.maxNm = maxNm;
+                    }
+
+                    GUILayout.FlexibleSpace();
+                    if (GUILayout.Button(GUIRenderer.GetAccessibleString("Toggle stats", isEngineTuningStatsOpen), GUILayout.MaxWidth(200)))
+                        isEngineTuningStatsOpen = !isEngineTuningStatsOpen;
+                    GUILayout.EndHorizontal();
+                    GUILayout.EndVertical();
+
+                    GUILayout.EndArea();
+                    break;
+
+                case "Transmission tuning":
+                    break;
+
+                case "Vehicle tuning":
+                    break;
+
+                default:
+                    GUI.Label(new Rect(currVehicleX, currVehicleY, dimensions.width - tabWidth - 20f, dimensions.height - 20f), "Uh oh, we can't find that tab!", GUIRenderer.messageStyle);
+                    break;
             }
 
-            GUI.EndScrollView();
+            if (!newScrollTabs.Contains(tab))
+                GUI.EndScrollView();
 
             lastCarId = save.idInSave;
 
@@ -1374,5 +1813,55 @@ namespace MultiTool.Tabs
 		{
             return name.Replace("(Clone)", string.Empty);
 		}
+
+        /// <summary>
+        /// Trigger engine statistics update.
+        /// </summary>
+        private void UpdateEngineTunerStats()
+        {
+            float maxRPM = engineTuning.torqueCurve.Last().rpm;
+            float maxTorqueRPM = 0;
+            float maxTorque = 0;
+
+            List<double> graphX = new List<double>();
+            List<double> torqueGraphY = new List<double>();
+            List<double> hpGraphY = new List<double>();
+
+            foreach (TorqueCurve torque in engineTuning.torqueCurve)
+            {
+                if (torque.torque > maxTorque)
+                {
+                    maxTorque = torque.torque;
+                    maxTorqueRPM = torque.rpm;
+                }
+
+                if (hideLastTorquePoint && torque == engineTuning.torqueCurve.Last())
+                    break;
+
+                graphX.Add((double)new decimal(torque.rpm));
+                torqueGraphY.Add((double)new decimal(torque.torque));
+                hpGraphY.Add((double)new decimal(0.0001403f * torque.torque * torque.rpm));
+            }
+            float maxHp = 0.0001403f * maxTorque * maxTorqueRPM;
+
+            ScottPlot.Plot graph = new ScottPlot.Plot();
+            graph.AddScatter(graphX.ToArray(), torqueGraphY.ToArray(), label: "Torque (Nm)");
+            graph.AddScatter(graphX.ToArray(), hpGraphY.ToArray(), label: "Horsepower");
+
+            graph.XLabel("RPM");
+            graph.YLabel("Torque(Nm)/Horsepower");
+            graph.Legend(true, ScottPlot.Alignment.LowerCenter);
+
+            byte[] graphBytes = graph.GetImageBytes();
+            Texture2D graphTexture = new Texture2D(1, 1);
+            graphTexture.LoadImage(graphBytes);
+            engineStats = new EngineStats()
+            {
+                maxTorque = maxTorque,
+                maxRPM = maxRPM,
+                maxHp = maxHp,
+                torqueGraph = graphTexture,
+            };
+        }
 	}
 }

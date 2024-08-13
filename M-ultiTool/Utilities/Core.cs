@@ -30,9 +30,15 @@ namespace MultiTool.Utilities
                     }
                 }
 
+                if (MultiTool.configVersion == Meta.Version && !PlayerPrefs.HasKey("Settings")) return false;
+
 				Settings settings = new Settings();
 
-				int d = Mathf.RoundToInt(PlayerPrefs.GetFloat("DistanceDriven"));
+                float rd = PlayerPrefs.GetFloat("DistanceDriven");
+                if (float.IsNaN(rd))
+                    return false;
+
+                int d = Mathf.RoundToInt(rd);
 				float f1 = 6842.47765957f;
 				float f2 = 643.9f;
 				float f3 = 94;
@@ -50,6 +56,7 @@ namespace MultiTool.Utilities
 				bool p = true;
 
 				nv = $"{t}|{d}|{md}|{m}";
+                string dnv = nv;
 
 				if (v != string.Empty)
 				{
@@ -66,15 +73,14 @@ namespace MultiTool.Utilities
 					float smd = float.Parse(vs[2]);
 					int csmd = Mathf.RoundToInt(smd / m);
 
-					if (csmd != sd)
-					{
-						m = 0.5f;
-						p = false;
-					}
-
 					if (t - long.Parse(vs[0]) <= 3600 && d - float.Parse(vs[1]) > 719 && vs.Length < 5)
 					{
 						m = 0.6f;
+						p = false;
+					}
+					else if (csmd != sd)
+					{
+						m = 0.5f;
 						p = false;
 					}
 
@@ -95,6 +101,9 @@ namespace MultiTool.Utilities
 					nv += "|1";
 					settings.hasInit = true;
 				}
+
+                if (!p && d <= 1)
+                    nv = dnv;
 
 				PlayerPrefs.SetString("Settings", Convert.ToBase64String(Encoding.UTF8.GetBytes(nv)));
 

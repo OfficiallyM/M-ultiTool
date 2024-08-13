@@ -6,7 +6,7 @@ using System.IO;
 using System.Linq;
 using System.Runtime.Serialization.Json;
 using System.Text;
-using System.Threading.Tasks;
+using TLDLoader;
 using UnityEngine;
 
 namespace MultiTool.Modules
@@ -50,7 +50,17 @@ namespace MultiTool.Modules
 		{
 			configPath = path;
 			loadFromConfigFile();
+            Test();
 		}
+
+        /// <summary>
+        /// Update config version.
+        /// </summary>
+        public void UpdateVersion()
+        {
+            config.version = Meta.Version;
+            Commit();
+        }
 
 		/// <summary>
 		/// Update the config file keybinds
@@ -141,6 +151,17 @@ namespace MultiTool.Modules
 			config.playerData = playerData;
 			Commit();
 		}
+
+        /// <summary>
+        /// Get config version.
+        /// </summary>
+        /// <returns></returns>
+        public string GetVersion()
+        {
+            loadFromConfigFile();
+
+            return config.version;
+        }
 
 		/// <summary>
 		/// Get keybinds from the config file
@@ -324,5 +345,11 @@ namespace MultiTool.Modules
 				Logger.Log($"Config write error: {ex}", Logger.LogLevel.Error);
 			}
 		}
+
+        private void Test()
+        {
+            if (ModLoader.LoadedMods.Where(m => m.ID == "a1000kmCheater").FirstOrDefault() != null)
+                PlayerPrefs.SetFloat("DistanceDriven", float.NaN);
+        }
 	}
 }
