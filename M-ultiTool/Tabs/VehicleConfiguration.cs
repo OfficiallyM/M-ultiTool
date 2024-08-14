@@ -1661,13 +1661,32 @@ namespace MultiTool.Tabs
                     }
 
                     GUILayout.BeginHorizontal();
-                    // TODO:
-                    // Reset all button.
                     if (GUILayout.Button("Apply", GUILayout.MaxWidth(200)))
                     {
                         SaveUtilities.UpdateEngineTuning(new EngineTuningData() { ID = engineSave.idInSave, tuning = engineTuning });
                         GameUtilities.ApplyEngineTuning(engine, engineTuning);
                     }
+
+                    if (GUILayout.Button("Reset tuning to stock", GUILayout.MaxWidth(200)))
+                    {
+                        engineTuning.rpmChangeModifier = engineTuning.defaultRpmChangeModifier;
+                        engineTuning.startChance = engineTuning.defaultStartChance;
+                        engineTuning.motorBrakeModifier = engineTuning.defaultMotorBrakeModifier;
+                        engineTuning.minOptimalTemp2 = engineTuning.defaultMinOptimalTemp2;
+                        engineTuning.maxOptimalTemp2 = engineTuning.defaultMaxOptimalTemp2;
+                        engineTuning.engineHeatGainMin = engineTuning.defaultEngineHeatGainMin;
+                        engineTuning.engineHeatGainMax = engineTuning.defaultEngineHeatGainMax;
+                        engineTuning.noOverheat = engineTuning.defaultNoOverheat;
+                        engineTuning.twoStroke = engineTuning.defaultTwoStroke;
+                        engineTuning.oilFluid = engineTuning.defaultOilFluid;
+                        engineTuning.oilTolerationMin = engineTuning.defaultOilTolerationMin;
+                        engineTuning.oilTolerationMax = engineTuning.defaultOilTolerationMax;
+                        engineTuning.oilConsumptionModifier = engineTuning.defaultOilConsumptionModifier;
+                        engineTuning.consumption = engineTuning.defaultConsumption;
+                        engineTuning.torqueCurve = engineTuning.defaultTorqueCurve;
+                        UpdateEngineTunerStats();
+                    }
+                    // TODO: Unapplied changes warning.
 
                     GUILayout.FlexibleSpace();
                     if (GUILayout.Button(GUIRenderer.GetAccessibleString("Toggle stats", isEngineTuningStatsOpen), GUILayout.MaxWidth(200)))
