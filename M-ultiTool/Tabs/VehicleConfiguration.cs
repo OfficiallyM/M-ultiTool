@@ -148,6 +148,7 @@ namespace MultiTool.Tabs
 			tankscript fuel = car.Tank;
 			Transform sunRoofSlot = carObject.transform.FindRecursive("SunRoofSlot");
 			tosaveitemscript save = carObject.GetComponent<tosaveitemscript>();
+            tosaveitemscript engineSave = engine.GetComponent<tosaveitemscript>();
             int maxFluidIndex = (int)Enum.GetValues(typeof(fluidenum)).Cast<fluidenum>().Max();
 
             // Reset any selections when changing car.
@@ -1296,70 +1297,77 @@ namespace MultiTool.Tabs
                     // Populate default tuning values if missing.
                     if (engineTuning == null)
                     {
-                        engineTuning = new EngineTuning()
+                        // Attempt to load data from save.
+                        engineTuning = SaveUtilities.GetEngineTuning(engineSave.idInSave);
+
+                        // Save has no data for this engine, load defaults.
+                        if (engineTuning == null)
                         {
-                            rpmChangeModifier = engine.rpmChangeModifier,
-                            defaultRpmChangeModifier = engine.rpmChangeModifier,
+                            engineTuning = new EngineTuning()
+                            {
+                                rpmChangeModifier = engine.rpmChangeModifier,
+                                defaultRpmChangeModifier = engine.rpmChangeModifier,
 
-                            startChance = engine.startChance,
-                            defaultStartChance = engine.startChance,
+                                startChance = engine.startChance,
+                                defaultStartChance = engine.startChance,
 
-                            motorBrakeModifier = engine.motorBrakeModifier,
-                            defaultMotorBrakeModifier = engine.motorBrakeModifier,
+                                motorBrakeModifier = engine.motorBrakeModifier,
+                                defaultMotorBrakeModifier = engine.motorBrakeModifier,
 
-                            minOptimalTemp2 = engine.minOptimalTemp2,
-                            defaultMinOptimalTemp2 = engine.minOptimalTemp2,
+                                minOptimalTemp2 = engine.minOptimalTemp2,
+                                defaultMinOptimalTemp2 = engine.minOptimalTemp2,
 
-                            maxOptimalTemp2 = engine.maxOptimalTemp2,
-                            defaultMaxOptimalTemp2 = engine.maxOptimalTemp2,
+                                maxOptimalTemp2 = engine.maxOptimalTemp2,
+                                defaultMaxOptimalTemp2 = engine.maxOptimalTemp2,
 
-                            engineHeatGainMin = engine.engineHeatGainMin,
-                            defaultEngineHeatGainMin = engine.engineHeatGainMin,
+                                engineHeatGainMin = engine.engineHeatGainMin,
+                                defaultEngineHeatGainMin = engine.engineHeatGainMin,
 
-                            engineHeatGainMax = engine.engineHeatGainMax,
-                            defaultEngineHeatGainMax = engine.engineHeatGainMax,
+                                engineHeatGainMax = engine.engineHeatGainMax,
+                                defaultEngineHeatGainMax = engine.engineHeatGainMax,
 
-                            consumptionModifier = engine.consumptionM,
-                            defaultConsumptionModifier = engine.consumptionM,
+                                consumptionModifier = engine.consumptionM,
+                                defaultConsumptionModifier = engine.consumptionM,
 
-                            noOverheat = engine.noOverHeat,
-                            defaultNoOverheat = engine.noOverHeat,
+                                noOverheat = engine.noOverHeat,
+                                defaultNoOverheat = engine.noOverHeat,
 
-                            twoStroke = engine.twostroke,
-                            defaultTwoStroke = engine.twostroke,
+                                twoStroke = engine.twostroke,
+                                defaultTwoStroke = engine.twostroke,
 
-                            oilFluid = engine.Oilfluid,
-                            defaultOilFluid = engine.Oilfluid,
+                                oilFluid = engine.Oilfluid,
+                                defaultOilFluid = engine.Oilfluid,
 
-                            oilTolerationMin = engine.oilTolerationMin,
-                            defaultOilTolerationMin = engine.oilTolerationMin,
+                                oilTolerationMin = engine.oilTolerationMin,
+                                defaultOilTolerationMin = engine.oilTolerationMin,
 
-                            oilTolerationMax = engine.oilTolerationMax,
-                            defaultOilTolerationMax = engine.oilTolerationMax,
+                                oilTolerationMax = engine.oilTolerationMax,
+                                defaultOilTolerationMax = engine.oilTolerationMax,
 
-                            oilConsumptionModifier = engine.OilConsumptionModifier,
-                            defaultOilConsumptionModifier = engine.OilConsumptionModifier,
+                                oilConsumptionModifier = engine.OilConsumptionModifier,
+                                defaultOilConsumptionModifier = engine.OilConsumptionModifier,
                             
-                            consumption = new List<fluid>(),
-                            defaultConsumption = new List<fluid>(),
+                                consumption = new List<Fluid>(),
+                                defaultConsumption = new List<Fluid>(),
 
-                            torqueCurve = new List<TorqueCurve>(),
-                            defaultTorqueCurve = new List<TorqueCurve>(),
-                        };
+                                torqueCurve = new List<TorqueCurve>(),
+                                defaultTorqueCurve = new List<TorqueCurve>(),
+                            };
 
-                        // Populate fuel consumption fluids.
-                        foreach (fluid fluid in engine.FuelConsumption.fluids)
-                        {
-                            engineTuning.consumption.Add(new fluid() { type = fluid.type, amount = fluid.amount });
-                            engineTuning.defaultConsumption.Add(new fluid() { type = fluid.type, amount = fluid.amount });
-                        }
+                            // Populate fuel consumption fluids.
+                            foreach (fluid fluid in engine.FuelConsumption.fluids)
+                            {
+                                engineTuning.consumption.Add(new Fluid() { type = fluid.type, amount = fluid.amount });
+                                engineTuning.defaultConsumption.Add(new Fluid() { type = fluid.type, amount = fluid.amount });
+                            }
 
-                        // Populate torque curve.
-                        for (int torqueKey = 0; torqueKey < engine.torqueCurve.length; torqueKey++)
-                        {
-                            Keyframe torque = engine.torqueCurve.keys[torqueKey];
-                            engineTuning.torqueCurve.Add(new TorqueCurve(torque.value, torque.time));
-                            engineTuning.defaultTorqueCurve.Add(new TorqueCurve(torque.value, torque.time));
+                            // Populate torque curve.
+                            for (int torqueKey = 0; torqueKey < engine.torqueCurve.length; torqueKey++)
+                            {
+                                Keyframe torque = engine.torqueCurve.keys[torqueKey];
+                                engineTuning.torqueCurve.Add(new TorqueCurve(torque.value, torque.time));
+                                engineTuning.defaultTorqueCurve.Add(new TorqueCurve(torque.value, torque.time));
+                            }
                         }
 
                         UpdateEngineTunerStats();
@@ -1370,6 +1378,7 @@ namespace MultiTool.Tabs
                     GUILayout.BeginArea(new Rect(currVehicleX, currVehicleY, dimensions.width - tabWidth - 30f, dimensions.height - 20f));
                     currentVehiclePosition = GUILayout.BeginScrollView(currentVehiclePosition);
 
+                    // TODO: Convert everything to have a text field under the slider for manual entry.
                     GUILayout.Label("Basics", GUIRenderer.headerStyle);
 
                     GUILayout.BeginVertical();
@@ -1522,7 +1531,7 @@ namespace MultiTool.Tabs
 
                     GUILayout.BeginVertical();
                     GUILayout.Label("Fuel consumption", GUIRenderer.headerStyle);
-                    foreach (fluid fluid in engineTuning.consumption)
+                    foreach (Fluid fluid in engineTuning.consumption)
                     {
                         for (int fuelFluidIndex = 0; fuelFluidIndex <= maxFluidIndex; fuelFluidIndex++)
                         {
@@ -1550,13 +1559,13 @@ namespace MultiTool.Tabs
                         {
                             // Find the next unused fluid index.
                             List<int> existingIndexes = new List<int>();
-                            foreach (fluid existing in engineTuning.consumption)
+                            foreach (Fluid existing in engineTuning.consumption)
                             {
                                 existingIndexes.Add((int)existing.type);
                             }
                             existingIndexes.Sort();
                             int index = existingIndexes.Last() + 1;
-                            engineTuning.consumption.Add(new fluid() { type = (fluidenum)index, amount = 0 });
+                            engineTuning.consumption.Add(new Fluid() { type = (fluidenum)index, amount = 0 });
                         }
                     }
                     GUILayout.Space(5);
@@ -1653,43 +1662,11 @@ namespace MultiTool.Tabs
 
                     GUILayout.BeginHorizontal();
                     // TODO:
-                    // Value saving.
                     // Reset all button.
                     if (GUILayout.Button("Apply", GUILayout.MaxWidth(200)))
                     {
-                        engine.rpmChangeModifier = engineTuning.rpmChangeModifier;
-                        engine.startChance = engineTuning.startChance;
-                        engine.motorBrakeModifier = engineTuning.motorBrakeModifier;
-                        engine.minOptimalTemp2 = engineTuning.minOptimalTemp2;
-                        engine.maxOptimalTemp2 = engineTuning.maxOptimalTemp2;
-                        engine.engineHeatGainMin = engineTuning.engineHeatGainMin;
-                        engine.engineHeatGainMax = engineTuning.engineHeatGainMax;
-                        engine.consumptionM = engineTuning.consumptionModifier;
-                        engine.noOverHeat = engineTuning.noOverheat;
-                        engine.twostroke = engineTuning.twoStroke;
-                        engine.Oilfluid = engineTuning.oilFluid;
-                        engine.oilTolerationMin = engineTuning.oilTolerationMin;
-                        engine.oilTolerationMax = engineTuning.oilTolerationMax;
-                        engine.OilConsumptionModifier = engineTuning.oilConsumptionModifier;
-                        engine.FuelConsumption.fluids = engineTuning.consumption;
-
-                        // Remove existing torque curve.
-                        for (int torqueKey = 0; torqueKey < engine.torqueCurve.length; torqueKey++)
-                        {
-                            engine.torqueCurve.RemoveKey(torqueKey);
-                        }
-
-                        // Apply new torque curve, find new maxRpm and maxNm.
-                        engineTuning.torqueCurve = engineTuning.torqueCurve.OrderBy(t => t.rpm).ToList();
-                        engine.maxRpm = engineTuning.torqueCurve.Last().rpm;
-                        float maxNm = 0;
-                        foreach (TorqueCurve torqueCurve in engineTuning.torqueCurve)
-                        {
-                            if (torqueCurve.torque > maxNm)
-                                maxNm = torqueCurve.torque;
-                            engine.torqueCurve.AddKey(torqueCurve.torque, torqueCurve.rpm);
-                        }
-                        engine.maxNm = maxNm;
+                        SaveUtilities.UpdateEngineTuning(new EngineTuningData() { ID = engineSave.idInSave, tuning = engineTuning });
+                        GameUtilities.ApplyEngineTuning(engine, engineTuning);
                     }
 
                     GUILayout.FlexibleSpace();

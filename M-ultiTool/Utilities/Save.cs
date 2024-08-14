@@ -302,6 +302,32 @@ namespace MultiTool.Utilities
             SerializeSaveData(data);
         }
 
+        /// <summary>
+        /// Update engine tuning data in save.
+        /// </summary>
+        /// <param name="engineTuning">Engine tuning data</param>
+        internal static void UpdateEngineTuning(EngineTuningData engineTuning)
+        {
+            Save data = UnserializeSaveData();
+
+            try
+            {
+                if (data.engineTuning == null)
+                    data.engineTuning = new List<EngineTuningData>();
+
+                EngineTuningData existing = data.engineTuning.Where(e => e.ID == engineTuning.ID).FirstOrDefault();
+                if (existing != null)
+                    existing.tuning = engineTuning.tuning;
+                else
+                    data.engineTuning.Add(engineTuning);
+            }
+            catch (Exception ex)
+            {
+                Logger.Log($"Engine tuning update error - {ex}", Logger.LogLevel.Error);
+            }
+
+            SerializeSaveData(data);
+        }
 
 		/// <summary>
 		/// Load POIs from save.
@@ -352,6 +378,7 @@ namespace MultiTool.Utilities
                 LoadScale(save, data);
                 LoadSlots(save, data);
                 LoadLights(save, data);
+                LoadEngineTuning(save, data);
             }
         }
 
@@ -616,13 +643,39 @@ namespace MultiTool.Utilities
             }
         }
 
-		/// <summary>
-		/// Get slot data by ID and slot name.
-		/// </summary>
-		/// <param name="ID">Car save ID</param>
-		/// <param name="slot">Slot name</param>
-		/// <returns>SlotData if exists, otherwise null</returns>
-		internal static SlotData GetSlotData(int ID, string slot)
+        /// <summary>
+        /// Load engine tuning data
+        /// </summary>
+        /// <param name="save">Savable object to check</param>
+        /// <param name="data">Save data</param>
+        private static void LoadEngineTuning(tosaveitemscript save, Save data)
+        {
+            // Return early if no light data is set.
+            if (data.engineTuning == null) return;
+
+            foreach (EngineTuningData engineTuning in data.engineTuning)
+            {
+                try
+                {
+                    if (save.idInSave == engineTuning.ID)
+                    {
+                        GameUtilities.ApplyEngineTuning(save.GetComponent<enginescript>(), engineTuning.tuning);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Logger.Log($"Engine tuning data load error - {ex}", Logger.LogLevel.Error);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Get slot data by ID and slot name.
+        /// </summary>
+        /// <param name="ID">Car save ID</param>
+        /// <param name="slot">Slot name</param>
+        /// <returns>SlotData if exists, otherwise null</returns>
+        internal static SlotData GetSlotData(int ID, string slot)
 		{
 			Save data = UnserializeSaveData();
 
@@ -631,5 +684,17 @@ namespace MultiTool.Utilities
 
 			return data.slots.Where(s => s.ID == ID && s.slot == slot).FirstOrDefault();
 		}
+
+        /// <summary>
+        /// Get engine tuning by ID.
+        /// </summary>
+        /// <param name="ID">Engine save ID</param>
+        /// <returns>EngineTuning if exists, otherwise null</returns>
+        internal static EngineTuning GetEngineTuning(int ID)
+        {
+            Save data = UnserializeSaveData();
+
+            return data.engineTuning?.Where(e => e.ID == ID).FirstOrDefault()?.tuning;
+        }
 	}
 }

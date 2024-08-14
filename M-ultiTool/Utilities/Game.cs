@@ -410,6 +410,50 @@ namespace MultiTool.Utilities
             }
         }
 
+        /// <summary>
+        /// Apply engine tuning.
+        /// </summary>
+        /// <param name="engine">Engine to tune</param>
+        /// <param name="engineTuning">Tuning settings</param>
+        internal static void ApplyEngineTuning(enginescript engine, EngineTuning engineTuning)
+        {
+            engine.rpmChangeModifier = engineTuning.rpmChangeModifier;
+            engine.startChance = engineTuning.startChance;
+            engine.motorBrakeModifier = engineTuning.motorBrakeModifier;
+            engine.minOptimalTemp2 = engineTuning.minOptimalTemp2;
+            engine.maxOptimalTemp2 = engineTuning.maxOptimalTemp2;
+            engine.engineHeatGainMin = engineTuning.engineHeatGainMin;
+            engine.engineHeatGainMax = engineTuning.engineHeatGainMax;
+            engine.consumptionM = engineTuning.consumptionModifier;
+            engine.noOverHeat = engineTuning.noOverheat;
+            engine.twostroke = engineTuning.twoStroke;
+            engine.Oilfluid = engineTuning.oilFluid;
+            engine.oilTolerationMin = engineTuning.oilTolerationMin;
+            engine.oilTolerationMax = engineTuning.oilTolerationMax;
+            engine.OilConsumptionModifier = engineTuning.oilConsumptionModifier;
+            engine.FuelConsumption.fluids.Clear();
+
+            // Set fuel comsumption fluids.
+            foreach (Fluid fluid in engineTuning.consumption)
+                engine.FuelConsumption.fluids.Add(new mainscript.fluid() { type = fluid.type, amount = fluid.amount });
+
+            // Remove existing torque curve.
+            for (int torqueKey = 0; torqueKey < engine.torqueCurve.length; torqueKey++)
+                engine.torqueCurve.RemoveKey(torqueKey);
+
+            // Apply new torque curve, find new maxRpm and maxNm.
+            engineTuning.torqueCurve = engineTuning.torqueCurve.OrderBy(t => t.rpm).ToList();
+            engine.maxRpm = engineTuning.torqueCurve.Last().rpm;
+            float maxNm = 0;
+            foreach (TorqueCurve torqueCurve in engineTuning.torqueCurve)
+            {
+                if (torqueCurve.torque > maxNm)
+                    maxNm = torqueCurve.torque;
+                engine.torqueCurve.AddKey(torqueCurve.torque, torqueCurve.rpm);
+            }
+            engine.maxNm = maxNm;
+        }
+
 		/// <summary>
 		/// Get global position of an object.
 		/// </summary>

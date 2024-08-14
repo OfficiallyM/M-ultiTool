@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.Serialization;
 using System.Text;
 using System.Threading.Tasks;
 using UnityEngine;
@@ -69,16 +70,25 @@ namespace MultiTool.Core
         }
     }
 
+    [DataContract]
     internal class TorqueCurve
     {
-        internal float torque;
-        internal float rpm;
+        [DataMember] internal float torque;
+        [DataMember] internal float rpm;
 
         internal TorqueCurve(float _torque, float _rpm)
         {
             torque = _torque;
             rpm = _rpm;
         }
+    }
+
+    // This is required to serialize the data in the existing save system.
+    [DataContract]
+    internal class Fluid
+    {
+        [DataMember] public mainscript.fluidenum type;
+        [DataMember] public float amount;
     }
 
     internal class EngineStats
@@ -89,54 +99,55 @@ namespace MultiTool.Core
         internal Texture2D torqueGraph;
     }
 
+    [DataContract]
     internal class EngineTuning
     {
-        internal float rpmChangeModifier;
-        internal float defaultRpmChangeModifier;
+        [DataMember] internal float rpmChangeModifier;
+        [DataMember] internal float defaultRpmChangeModifier;
 
-        internal float startChance;
-        internal float defaultStartChance;
+        [DataMember] internal float startChance;
+        [DataMember] internal float defaultStartChance;
 
-        internal float motorBrakeModifier;
-        internal float defaultMotorBrakeModifier;
+        [DataMember] internal float motorBrakeModifier;
+        [DataMember] internal float defaultMotorBrakeModifier;
 
-        internal float minOptimalTemp2;
-        internal float defaultMinOptimalTemp2;
+        [DataMember] internal float minOptimalTemp2;
+        [DataMember] internal float defaultMinOptimalTemp2;
 
-        internal float maxOptimalTemp2;
-        internal float defaultMaxOptimalTemp2;
+        [DataMember] internal float maxOptimalTemp2;
+        [DataMember] internal float defaultMaxOptimalTemp2;
 
-        internal float engineHeatGainMin;
-        internal float defaultEngineHeatGainMin;
+        [DataMember] internal float engineHeatGainMin;
+        [DataMember] internal float defaultEngineHeatGainMin;
 
-        internal float engineHeatGainMax;
-        internal float defaultEngineHeatGainMax;
+        [DataMember] internal float engineHeatGainMax;
+        [DataMember] internal float defaultEngineHeatGainMax;
 
-        internal bool noOverheat;
-        internal bool defaultNoOverheat;
+        [DataMember] internal bool noOverheat;
+        [DataMember] internal bool defaultNoOverheat;
 
-        internal bool twoStroke;
-        internal bool defaultTwoStroke;
+        [DataMember] internal bool twoStroke;
+        [DataMember] internal bool defaultTwoStroke;
 
-        internal mainscript.fluidenum oilFluid;
-        internal mainscript.fluidenum defaultOilFluid;
+        [DataMember] internal mainscript.fluidenum oilFluid;
+        [DataMember] internal mainscript.fluidenum defaultOilFluid;
 
-        internal float oilTolerationMin;
-        internal float defaultOilTolerationMin;
+        [DataMember] internal float oilTolerationMin;
+        [DataMember] internal float defaultOilTolerationMin;
 
-        internal float oilTolerationMax;
-        internal float defaultOilTolerationMax;
+        [DataMember] internal float oilTolerationMax;
+        [DataMember] internal float defaultOilTolerationMax;
 
-        internal float oilConsumptionModifier;
-        internal float defaultOilConsumptionModifier;
+        [DataMember] internal float oilConsumptionModifier;
+        [DataMember] internal float defaultOilConsumptionModifier;
 
-        internal float consumptionModifier;
-        internal float defaultConsumptionModifier;
+        [DataMember] internal float consumptionModifier;
+        [DataMember] internal float defaultConsumptionModifier;
 
-        internal List<mainscript.fluid> consumption = new List<mainscript.fluid>();
-        internal List<mainscript.fluid> defaultConsumption = new List<mainscript.fluid>();
+        [DataMember] internal List<Fluid> consumption = new List<Fluid>();
+        [DataMember] internal List<Fluid> defaultConsumption = new List<Fluid>();
 
-        internal List<TorqueCurve> torqueCurve = new List<TorqueCurve>();
-        internal List<TorqueCurve> defaultTorqueCurve = new List<TorqueCurve>();
+        [DataMember] internal List<TorqueCurve> torqueCurve = new List<TorqueCurve>();
+        [DataMember] internal List<TorqueCurve> defaultTorqueCurve = new List<TorqueCurve>();
     }
 }

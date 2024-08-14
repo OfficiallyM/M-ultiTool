@@ -58,6 +58,13 @@ namespace MultiTool.Core
         [DataMember] public Color color { get; set; }
     }
 
+    [DataContract]
+    internal class EngineTuningData
+    {
+        [DataMember] public int ID { get; set; }
+        [DataMember] public EngineTuning tuning { get; set; }
+    }
+
 	[DataContract]
 	internal class Save
 	{
@@ -67,5 +74,6 @@ namespace MultiTool.Core
 		[DataMember] public List<ScaleData> scale { get; set; }
 		[DataMember] public List<SlotData> slots { get; set; }
         [DataMember] public List<LightData> lights { get; set; }
+        [DataMember] public List<EngineTuningData> engineTuning { get; set; }
 	}
 }
