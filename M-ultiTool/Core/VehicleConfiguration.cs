@@ -150,4 +150,39 @@ namespace MultiTool.Core
         [DataMember] internal List<TorqueCurve> torqueCurve = new List<TorqueCurve>();
         [DataMember] internal List<TorqueCurve> defaultTorqueCurve = new List<TorqueCurve>();
     }
+
+    [DataContract]
+    internal class Gear
+    {
+        [DataMember] internal int gear;
+        [DataMember] internal float ratio;
+        [DataMember] internal bool freeRun;
+
+        internal Gear(int _gear, float _ratio, bool _freeRun)
+        {
+            gear = _gear;
+            ratio = _ratio;
+            freeRun = _freeRun;
+        }
+    }
+
+    [DataContract]
+    internal class TransmissionTuning
+    {
+        [DataMember] internal List<Gear> gears = new List<Gear>();
+        [DataMember] internal List<Gear> defaultGears = new List<Gear>();
+    }
+
+    [DataContract]
+    internal class VehicleTuning
+    {
+        [DataMember] internal float steerAngle;
+        [DataMember] internal float defaultSteerAngle;
+
+        [DataMember] internal float brakePower;
+        [DataMember] internal float defaultBrakePower;
+
+        [DataMember] internal float differentialRatio;
+        [DataMember] internal float defaultDifferentialRatio;
+    }
 }

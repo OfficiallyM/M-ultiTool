@@ -65,7 +65,21 @@ namespace MultiTool.Core
         [DataMember] public EngineTuning tuning { get; set; }
     }
 
-	[DataContract]
+    [DataContract]
+    internal class TransmissionTuningData
+    {
+        [DataMember] public int ID { get; set; }
+        [DataMember] public TransmissionTuning tuning { get; set; }
+    }
+
+    [DataContract]
+    internal class VehicleTuningData
+    {
+        [DataMember] public int ID { get; set; }
+        [DataMember] public VehicleTuning tuning { get; set; }
+    }
+
+    [DataContract]
 	internal class Save
 	{
 		[DataMember] public List<POIData> pois { get; set; }
@@ -75,5 +89,7 @@ namespace MultiTool.Core
 		[DataMember] public List<SlotData> slots { get; set; }
         [DataMember] public List<LightData> lights { get; set; }
         [DataMember] public List<EngineTuningData> engineTuning { get; set; }
-	}
+        [DataMember] public List<TransmissionTuningData> transmissionTuning { get; set; }
+        [DataMember] public List<VehicleTuningData> vehicleTuning { get; set; }
+    }
 }

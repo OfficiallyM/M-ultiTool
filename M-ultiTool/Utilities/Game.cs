@@ -454,6 +454,40 @@ namespace MultiTool.Utilities
             engine.maxNm = maxNm;
         }
 
+        /// <summary>
+        /// Apply transmission tuning.
+        /// </summary>
+        /// <param name="car">Car to tune</param>
+        /// <param name="transmissionTuning">Tuning settings</param>
+        internal static void ApplyTransmissionTuning(carscript car, TransmissionTuning transmissionTuning)
+        {
+            // Apply gear ratios.
+            transmissionTuning.gears = transmissionTuning.gears.OrderBy(t => t.gear).ToList();
+            List<carscript.gearc> gears = new List<carscript.gearc>();
+            int gearIndex = 0;
+            foreach (Gear gear in transmissionTuning.gears)
+            {
+                carscript.gearc stockGear = car.gears.Last();
+                if (car.gears.Length > gearIndex)
+                    stockGear = car.gears[gearIndex];
+                gears.Add(new carscript.gearc() { ratio = gear.ratio, freeRun = gear.freeRun, Pos = stockGear.Pos, Path = stockGear.Path });
+                gearIndex++;
+            }
+            car.gears = gears.ToArray();
+        }
+
+        /// <summary>
+        /// Apply vehicle tuning.
+        /// </summary>
+        /// <param name="car">Car to tune</param>
+        /// <param name="vehicleTuning">Tuning settings</param>
+        internal static void ApplyVehicleTuning(carscript car, VehicleTuning vehicleTuning)
+        {
+            car.steerAngle = vehicleTuning.steerAngle;
+            car.brakePower = vehicleTuning.brakePower;
+            car.differentialRatio = vehicleTuning.differentialRatio;
+        }
+
 		/// <summary>
 		/// Get global position of an object.
 		/// </summary>

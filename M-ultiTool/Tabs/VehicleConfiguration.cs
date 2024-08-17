@@ -99,6 +99,12 @@ namespace MultiTool.Tabs
         private EngineStats engineStats = null;
         private bool hideLastTorquePoint = false;
 
+        // Transmission tuner.
+        private TransmissionTuning transmissionTuning = null;
+
+        // Vehicle tuner.
+        private VehicleTuning vehicleTuning = null;
+
         // Caching.
         private List<PartGroup> materialParts = new List<PartGroup>();
 		private List<randomTypeSelector> randomParts = new List<randomTypeSelector>();
@@ -158,6 +164,8 @@ namespace MultiTool.Tabs
                 selectedRandom = null;
                 selectedLights.Clear();
                 engineTuning = null;
+                transmissionTuning = null;
+                vehicleTuning = null;
             }
 
             GUI.Box(new Rect(tabX, tabY, tabWidth, dimensions.height - 20f), string.Empty);
@@ -1378,7 +1386,6 @@ namespace MultiTool.Tabs
                     GUILayout.BeginArea(new Rect(currVehicleX, currVehicleY, dimensions.width - tabWidth - 30f, dimensions.height - 20f));
                     currentVehiclePosition = GUILayout.BeginScrollView(currentVehiclePosition);
 
-                    // TODO: Convert everything to have a text field under the slider for manual entry.
                     GUILayout.Label("Basics", GUIRenderer.headerStyle);
 
                     GUILayout.BeginVertical();
@@ -1454,7 +1461,6 @@ namespace MultiTool.Tabs
                     if (GUILayout.Button("Reset", GUILayout.MaxWidth(200)))
                         engineTuning.engineHeatGainMax = engineTuning.defaultEngineHeatGainMax;
                     GUILayout.EndVertical();
-
 
                     GUILayout.Space(10);
 
@@ -1722,9 +1728,194 @@ namespace MultiTool.Tabs
                     break;
 
                 case "Transmission tuning":
+                    int gearIndex = 1;
+                    // Populate default tuning values if missing.
+                    if (transmissionTuning == null)
+                    {
+                        // Attempt to load data from save.
+                        transmissionTuning = SaveUtilities.GetTransmissionTuning(save.idInSave);
+
+                        // Save has no data for this transmission, load defaults.
+                        if (transmissionTuning == null)
+                        {
+                            transmissionTuning = new TransmissionTuning()
+                            {
+                                gears = new List<Gear>(),
+                            };
+
+                            // Populate gearing.
+                            gearIndex = 1;
+                            foreach (carscript.gearc gear in car.gears)
+                            {
+                                transmissionTuning.gears.Add(new Gear(gearIndex, gear.ratio, gear.freeRun) { });
+                                transmissionTuning.defaultGears.Add(new Gear(gearIndex, gear.ratio, gear.freeRun) { });
+                                gearIndex++;
+                            }
+                        }
+                    }
+
+                    GUILayout.BeginArea(new Rect(currVehicleX, currVehicleY, dimensions.width - tabWidth - 30f, dimensions.height - 20f));
+                    currentVehiclePosition = GUILayout.BeginScrollView(currentVehiclePosition);
+
+                    GUILayout.BeginVertical();
+                    GUILayout.Label("Gears and ratios", GUIRenderer.headerStyle);
+                    gearIndex = 1;
+                    foreach (Gear gear in transmissionTuning.gears)
+                    {
+                        GUILayout.BeginHorizontal();
+                        GUILayout.Label("Gear");
+                        int.TryParse(GUILayout.TextField(gear.gear.ToString(), GUILayout.MaxWidth(200)), out gear.gear);
+                        GUILayout.FlexibleSpace();
+                        GUILayout.EndHorizontal();
+                        GUILayout.Space(5);
+
+                        GUILayout.Label("Ratio");
+                        gear.ratio = GUILayout.HorizontalSlider(gear.ratio, -50, 50);
+                        float.TryParse(GUILayout.TextField(gear.ratio.ToString("F2"), GUILayout.MaxWidth(200)), out gear.ratio);
+
+                        GUILayout.Label("Free run");
+                        if (GUILayout.Button(GUIRenderer.GetAccessibleString("Yes", "No", gear.freeRun), GUILayout.MaxWidth(200)))
+                            gear.freeRun = !gear.freeRun;
+
+                        GUILayout.Space(5);
+                        GUILayout.BeginHorizontal();
+                        if (GUILayout.Button("Remove", GUILayout.MaxWidth(200)))
+                        {
+                            transmissionTuning.gears.Remove(gear);
+                            break;
+                        }
+                        if (GUILayout.Button("Reset", GUILayout.MaxWidth(200)))
+                        {
+                            if (transmissionTuning.gears.Count > gearIndex && transmissionTuning.defaultGears[gearIndex] != null)
+                            {
+                                Gear defaultGear = transmissionTuning.defaultGears[gearIndex];
+                                transmissionTuning.gears[gearIndex] = defaultGear;
+                                break;
+                            }
+                        }
+                        GUILayout.EndHorizontal();
+
+                        GUILayout.Space(20);
+                        gearIndex++;
+                    }
+                    GUILayout.Space(10);
+
+                    GUILayout.BeginHorizontal();
+                    if (GUILayout.Button("Add new", GUILayout.MaxWidth(200)))
+                        transmissionTuning.gears.Add(new Gear(transmissionTuning.gears.Count + 1, 1, false));
+                    GUILayout.Space(5);
+                    if (GUILayout.Button("Reorder by gear", GUILayout.MaxWidth(200)))
+                        transmissionTuning.gears = transmissionTuning.gears.OrderBy(t => t.gear).ToList();
+                    GUILayout.Space(5);
+                    if (GUILayout.Button("Reset gearing to stock", GUILayout.MaxWidth(200)))
+                        transmissionTuning.gears = transmissionTuning.defaultGears.Copy();
+                    GUILayout.EndHorizontal();
+                    GUILayout.EndVertical();
+
+                    GUILayout.EndScrollView();
+
+                    GUILayout.Space(10);
+
+                    GUILayout.BeginVertical("box");
+                    GUILayout.BeginHorizontal();
+                    if (GUILayout.Button("Apply", GUILayout.MaxWidth(200)))
+                    {
+                        SaveUtilities.UpdateTransmissionTuning(new TransmissionTuningData() { ID = save.idInSave, tuning = transmissionTuning });
+                        GameUtilities.ApplyTransmissionTuning(car, transmissionTuning);
+                    }
+
+                    if (GUILayout.Button("Reset tuning to stock", GUILayout.MaxWidth(200)))
+                    {
+                        transmissionTuning.gears = transmissionTuning.defaultGears.Copy();
+                    }
+
+                    GUILayout.EndHorizontal();
+                    GUILayout.EndVertical();
+                    GUILayout.EndArea();
                     break;
 
                 case "Vehicle tuning":
+                    // Populate default tuning values if missing.
+                    if (vehicleTuning == null)
+                    {
+                        // Attempt to load data from save.
+                        //vehicleTuning = SaveUtilities.GetVehicleTuning(save.idInSave);
+
+                        // Save has no data for this transmission, load defaults.
+                        if (vehicleTuning == null)
+                        {
+                            vehicleTuning = new VehicleTuning()
+                            {
+                                steerAngle = car.steerAngle,
+                                defaultSteerAngle = car.steerAngle,
+
+                                brakePower = car.brakePower,
+                                defaultBrakePower = car.brakePower,
+
+                                differentialRatio = car.differentialRatio,
+                                defaultDifferentialRatio = car.differentialRatio,
+                            };
+                        }
+                    }
+
+                    GUILayout.BeginArea(new Rect(currVehicleX, currVehicleY, dimensions.width - tabWidth - 30f, dimensions.height - 20f));
+                    currentVehiclePosition = GUILayout.BeginScrollView(currentVehiclePosition);
+
+                    GUILayout.Label("Steering", GUIRenderer.headerStyle);
+                    GUILayout.BeginVertical();
+                    GUILayout.Label("Steering angle");
+                    vehicleTuning.steerAngle = GUILayout.HorizontalSlider(vehicleTuning.steerAngle, 0f, 90f);
+                    float.TryParse(GUILayout.TextField(vehicleTuning.steerAngle.ToString("F2"), GUILayout.MaxWidth(200)), out vehicleTuning.steerAngle);
+                    if (GUILayout.Button("Reset", GUILayout.MaxWidth(200)))
+                        vehicleTuning.steerAngle = vehicleTuning.defaultSteerAngle;
+                    GUILayout.EndVertical();
+
+                    GUILayout.Space(10);
+
+                    GUILayout.Label("Braking", GUIRenderer.headerStyle);
+                    GUILayout.BeginVertical();
+                    GUILayout.Label("Brake power");
+                    vehicleTuning.brakePower = GUILayout.HorizontalSlider(vehicleTuning.brakePower, 0f, 10000f);
+                    float.TryParse(GUILayout.TextField(vehicleTuning.brakePower.ToString("F2"), GUILayout.MaxWidth(200)), out vehicleTuning.brakePower);
+                    if (GUILayout.Button("Reset", GUILayout.MaxWidth(200)))
+                        vehicleTuning.brakePower = vehicleTuning.defaultBrakePower;
+                    GUILayout.EndVertical();
+
+                    GUILayout.Space(10);
+
+                    GUILayout.Label("Differential", GUIRenderer.headerStyle);
+                    GUILayout.BeginVertical();
+                    GUILayout.Label("Differential ratio");
+                    GUILayout.Label("Smaller number: less acceleration, higher top speed (Taller gearing)");
+                    GUILayout.Label("Bigger number: more acceleration, lower top speed (Shorter gearing)");
+                    vehicleTuning.differentialRatio = GUILayout.HorizontalSlider(vehicleTuning.differentialRatio, 0f, 20f);
+                    float.TryParse(GUILayout.TextField(vehicleTuning.differentialRatio.ToString("F2"), GUILayout.MaxWidth(200)), out vehicleTuning.differentialRatio);
+                    if (GUILayout.Button("Reset", GUILayout.MaxWidth(200)))
+                        vehicleTuning.differentialRatio = vehicleTuning.defaultDifferentialRatio;
+                    GUILayout.EndVertical();
+
+                    GUILayout.EndScrollView();
+
+                    GUILayout.Space(10);
+
+                    GUILayout.BeginVertical("box");
+                    GUILayout.BeginHorizontal();
+                    if (GUILayout.Button("Apply", GUILayout.MaxWidth(200)))
+                    {
+                        SaveUtilities.UpdateVehicleTuning(new VehicleTuningData() { ID = save.idInSave, tuning = vehicleTuning });
+                        GameUtilities.ApplyVehicleTuning(car, vehicleTuning);
+                    }
+
+                    if (GUILayout.Button("Reset tuning to stock", GUILayout.MaxWidth(200)))
+                    {
+                        vehicleTuning.steerAngle = vehicleTuning.defaultSteerAngle;
+                        vehicleTuning.brakePower = vehicleTuning.defaultBrakePower;
+                        vehicleTuning.differentialRatio = vehicleTuning.defaultDifferentialRatio;
+                    }
+
+                    GUILayout.EndVertical();
+                    GUILayout.EndVertical();
+                    GUILayout.EndArea();
                     break;
 
                 default:

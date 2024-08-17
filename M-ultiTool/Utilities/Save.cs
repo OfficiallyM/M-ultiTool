@@ -329,11 +329,65 @@ namespace MultiTool.Utilities
             SerializeSaveData(data);
         }
 
-		/// <summary>
-		/// Load POIs from save.
-		/// </summary>
-		/// <returns>List of newly spawned POIs</returns>
-		internal static List<SpawnedPOI> LoadPOIs()
+        /// <summary>
+        /// Update transmission tuning data in save.
+        /// </summary>
+        /// <param name="engineTuning">Engine tuning data</param>
+        internal static void UpdateTransmissionTuning(TransmissionTuningData transmissionTuning)
+        {
+            Save data = UnserializeSaveData();
+
+            try
+            {
+                if (data.transmissionTuning == null)
+                    data.transmissionTuning = new List<TransmissionTuningData>();
+
+                TransmissionTuningData existing = data.transmissionTuning.Where(e => e.ID == transmissionTuning.ID).FirstOrDefault();
+                if (existing != null)
+                    existing.tuning = transmissionTuning.tuning;
+                else
+                    data.transmissionTuning.Add(transmissionTuning);
+            }
+            catch (Exception ex)
+            {
+                Logger.Log($"Transmission tuning update error - {ex}", Logger.LogLevel.Error);
+            }
+
+            SerializeSaveData(data);
+        }
+
+        /// <summary>
+        /// Update transmission tuning data in save.
+        /// </summary>
+        /// <param name="engineTuning">Engine tuning data</param>
+        internal static void UpdateVehicleTuning(VehicleTuningData vehicleTuning)
+        {
+            Save data = UnserializeSaveData();
+
+            try
+            {
+                if (data.vehicleTuning == null)
+                    data.vehicleTuning = new List<VehicleTuningData>();
+
+                VehicleTuningData existing = data.vehicleTuning.Where(e => e.ID == vehicleTuning.ID).FirstOrDefault();
+                if (existing != null)
+                    existing.tuning = vehicleTuning.tuning;
+                else
+                    data.vehicleTuning.Add(vehicleTuning);
+            }
+            catch (Exception ex)
+            {
+                Logger.Log($"Vehicle tuning update error - {ex}", Logger.LogLevel.Error);
+            }
+
+            SerializeSaveData(data);
+        }
+
+        /// <summary>
+        /// Load POIs from save.
+        /// </summary>
+        /// <returns>List of newly spawned POIs</returns>
+        internal static List<SpawnedPOI> LoadPOIs()
 		{
 			List<POI> POIs = DatabaseUtilities.LoadPOIs();
 			List<SpawnedPOI> spawnedPOIs = new List<SpawnedPOI>();
@@ -379,6 +433,8 @@ namespace MultiTool.Utilities
                 LoadSlots(save, data);
                 LoadLights(save, data);
                 LoadEngineTuning(save, data);
+                LoadTransmissionTuning(save, data);
+                LoadVehicleTuning(save, data);
             }
         }
 
@@ -650,7 +706,7 @@ namespace MultiTool.Utilities
         /// <param name="data">Save data</param>
         private static void LoadEngineTuning(tosaveitemscript save, Save data)
         {
-            // Return early if no light data is set.
+            // Return early if no engine tuning data is set.
             if (data.engineTuning == null) return;
 
             foreach (EngineTuningData engineTuning in data.engineTuning)
@@ -665,6 +721,54 @@ namespace MultiTool.Utilities
                 catch (Exception ex)
                 {
                     Logger.Log($"Engine tuning data load error - {ex}", Logger.LogLevel.Error);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Load engine tuning data
+        /// </summary>
+        /// <param name="save">Savable object to check</param>
+        /// <param name="data">Save data</param>
+        private static void LoadTransmissionTuning(tosaveitemscript save, Save data)
+        {
+            // Return early if no transmission tuning data is set.
+            if (data.transmissionTuning == null) return;
+
+            foreach (TransmissionTuningData transmissionTuning in data.transmissionTuning)
+            {
+                try
+                {
+                    if (save.idInSave == transmissionTuning.ID)
+                        GameUtilities.ApplyTransmissionTuning(save.GetComponent<carscript>(), transmissionTuning.tuning);
+                }
+                catch (Exception ex)
+                {
+                    Logger.Log($"Engine tuning data load error - {ex}", Logger.LogLevel.Error);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Load vehicle tuning data
+        /// </summary>
+        /// <param name="save">Savable object to check</param>
+        /// <param name="data">Save data</param>
+        private static void LoadVehicleTuning(tosaveitemscript save, Save data)
+        {
+            // Return early if no vehicle tuning data is set.
+            if (data.vehicleTuning == null) return;
+
+            foreach (VehicleTuningData vehicleTuning in data.vehicleTuning)
+            {
+                try
+                {
+                    if (save.idInSave == vehicleTuning.ID)
+                        GameUtilities.ApplyVehicleTuning(save.GetComponent<carscript>(), vehicleTuning.tuning);
+                }
+                catch (Exception ex)
+                {
+                    Logger.Log($"Vehicle tuning data load error - {ex}", Logger.LogLevel.Error);
                 }
             }
         }
@@ -696,5 +800,29 @@ namespace MultiTool.Utilities
 
             return data.engineTuning?.Where(e => e.ID == ID).FirstOrDefault()?.tuning;
         }
-	}
+
+        /// <summary>
+        /// Get transmission tuning by ID.
+        /// </summary>
+        /// <param name="ID">Vehicle save ID</param>
+        /// <returns>TransmissionTuning if exists, otherwise null</returns>
+        internal static TransmissionTuning GetTransmissionTuning(int ID)
+        {
+            Save data = UnserializeSaveData();
+
+            return data.transmissionTuning?.Where(e => e.ID == ID).FirstOrDefault()?.tuning;
+        }
+
+        /// <summary>
+        /// Get vehicle tuning by ID.
+        /// </summary>
+        /// <param name="ID">Vehicle save ID</param>
+        /// <returns>VehicleTuning if exists, otherwise null</returns>
+        internal static VehicleTuning GetVehicleTuning(int ID)
+        {
+            Save data = UnserializeSaveData();
+
+            return data.vehicleTuning?.Where(e => e.ID == ID).FirstOrDefault()?.tuning;
+        }
+    }
 }
