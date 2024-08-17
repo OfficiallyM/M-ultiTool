@@ -87,6 +87,9 @@ namespace MultiTool.Tabs
 						fuelValues = GUIRenderer.fuelValues,
 						fuelTypeInts = GUIRenderer.fuelTypeInts,
 						color = GUIRenderer.color,
+                        amtItem = currentItem.amtItem,
+                        amtModItem = currentItem.amtModItem,
+                        amtSpawn = currentItem.amtSpawn,
 					});
 				}
 			}

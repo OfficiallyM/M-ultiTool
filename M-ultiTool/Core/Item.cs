@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using UnityEngine;
@@ -17,6 +18,9 @@ namespace MultiTool.Core
 		public List<float> fuelValues = new List<float> { -1f };
 		public List<int> fuelTypeInts = new List<int> { -1 };
 		public Color color = new Color(255f / 255f, 255f / 255f, 255f / 255f);
+        public bool amtItem = false;
+        public object amtModItem = null;
+        public MethodInfo amtSpawn = null;
 
 		public enum Condition
 		{

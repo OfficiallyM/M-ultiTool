@@ -3,10 +3,11 @@ using MultiTool.Modules;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System.Reflection;
+using TLDLoader;
 using UnityEngine;
 using Logger = MultiTool.Modules.Logger;
+using System.Collections;
 
 namespace MultiTool.Utilities
 {
@@ -99,7 +100,36 @@ namespace MultiTool.Utilities
 				}
 			}
 
-			return itemsCache;
+            // Load AMT database.
+            Mod amt = ModLoader.LoadedMods.Where(m => m.ID == "AdvancedModdingToolkit").FirstOrDefault();
+            if (amt != null)
+            {
+                int category = GUIRenderer.categories.Keys.ToList().IndexOf("Mod items");
+                try
+                {
+                    Assembly amtAssembly = amt.GetType().Assembly;
+                    Type database = amtAssembly.GetType("Amt.Database");
+                    Type modItem = amtAssembly.GetType("Amt.ModItem");
+                    PropertyInfo instanceProp = database.GetProperty("Instance", BindingFlags.Static | BindingFlags.Public);
+                    object instance = instanceProp.GetValue(database, null);
+                    var items = instance.GetType().GetProperty("Items", BindingFlags.Instance | BindingFlags.Public).GetValue(instance, null) as IEnumerable;
+                    foreach (var item in items)
+                    {
+                        string key = item.GetType().GetProperty("Key").GetValue(item, null) as string;
+                        object value = item.GetType().GetProperty("Value").GetValue(item, null);
+                        MethodInfo spawn = value.GetType().GetMethod("Spawn", BindingFlags.Instance | BindingFlags.Public);
+                        GameObject gameObject = value.GetType().GetProperty("GameObject", BindingFlags.Instance | BindingFlags.Public).GetValue(value, null) as GameObject;
+
+                        itemsCache.Add(new Item() { item = gameObject, thumbnail = ThumbnailGenerator.GetThumbnail(gameObject), category = category, amtItem = true, amtModItem = value, amtSpawn = spawn });
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Logger.Log($"Error occurred loading AMT items. Details: {ex}", Logger.LogLevel.Error);
+                }
+            }
+
+            return itemsCache;
 		}
 
 		/// <summary>

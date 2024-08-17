@@ -23,6 +23,14 @@ namespace MultiTool.Utilities
 		{
 			try
 			{
+                // Support for spawning AMT items.
+                if (item.amtItem)
+                {
+                    Vector3 amtPos = mainscript.M.player.lookPoint + Vector3.up * 0.75f;
+                    Quaternion amtRot = Quaternion.FromToRotation(Vector3.forward, -mainscript.M.player.transform.right);
+                    return item.amtSpawn.Invoke(item.amtModItem, new object[] { amtPos, amtRot }) as GameObject;
+                }
+
 				int selectedCondition = item.conditionInt;
 				if (selectedCondition == -1 && item.item.GetComponent<partconditionscript>() != null)
 				{
