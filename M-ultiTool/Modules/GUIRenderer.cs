@@ -2788,14 +2788,14 @@ namespace MultiTool.Modules
 			float width = legacyMainMenuWidth;
 			float height = legacyMainMenuHeight;
 
-			GUI.Box(new Rect(x, y, width, height), $"<color=#ac78ad><size=16><b>{Meta.Name}</b></size>\n<size=14>v{Meta.Version} - made with ❤️ by {Meta.Author}</size></color>");
+			GUI.Box(new Rect(x, y, width, height), $"<color=#ac78ad><size=16><b>{Meta.Name}</b></size>\n<size=14>v{Meta.Version} - made with ❤️ by {Meta.Author}\n<color=#f98f04>WARNING\nLegacy UI will be removed in v3.2.0</color></size></color>");
 
 			float buttonHeight = 20f;
 			width -= 10f;
 			x += 5f;
 
 			// Delete mode.
-			float deleteY = y + 50f;
+			float deleteY = y + 80f;
 			if (GUI.Button(new Rect(x, deleteY, width, buttonHeight), (settings.deleteMode ? "<color=#0F0>Delete mode</color>" : "<color=#F00>Delete mode</color>") + " (Press del)"))
 			{
 				settings.deleteMode = !settings.deleteMode;
