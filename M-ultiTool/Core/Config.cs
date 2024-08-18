@@ -183,5 +183,8 @@ namespace MultiTool.Core
 		[DataMember] public float noclipFastMoveFactor { get; set; }
 		[DataMember] public List<Color> palette { get; set; }
 		[DataMember] public PlayerData playerData { get; set; }
-	}
+        [DataMember] public Color? basicColliderColor { get; set; }
+        [DataMember] public Color? triggerColliderColor { get; set; }
+        [DataMember] public Color? interiorColliderColor { get; set; }
+    }
 }

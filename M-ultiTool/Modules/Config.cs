@@ -153,6 +153,28 @@ namespace MultiTool.Modules
 		}
 
         /// <summary>
+        /// Get collider colour from config.
+        /// </summary>
+        /// <param name="color">New color</param>
+        /// <param name="colliderType">Collider type</param>
+        public void UpdateColliderColour(Color color, string colliderType)
+        {
+            switch (colliderType)
+            {
+                case "basic":
+                    config.basicColliderColor = color;
+                    break;
+                case "trigger":
+                    config.triggerColliderColor = color;
+                    break;
+                case "interior":
+                    config.interiorColliderColor = color;
+                    break;
+            }
+            Commit();
+        }
+
+        /// <summary>
         /// Get config version.
         /// </summary>
         /// <returns></returns>
@@ -316,6 +338,32 @@ namespace MultiTool.Modules
 
 			return config.playerData;
 		}
+
+        /// <summary>
+        /// Get collider colour from config.
+        /// </summary>
+        /// <param name="colliderType">Collider type</param>
+        /// <returns>Color for that collider type or white if it doesn't exist</returns>
+        public Color GetColliderColour(string colliderType)
+        {
+            loadFromConfigFile();
+
+            if (config.basicColliderColor == null) config.basicColliderColor = new Color(1f, 0.0f, 0.0f, 0.8f);
+            if (config.triggerColliderColor == null) config.triggerColliderColor = new Color(0.0f, 1f, 0.0f, 0.8f);
+            if (config.interiorColliderColor == null) config.interiorColliderColor = new Color(0f, 0f, 1f, 0.8f);
+
+            switch (colliderType)
+            {
+                case "basic":
+                    return config.basicColliderColor.Value;
+                case "trigger":
+                    return config.triggerColliderColor.Value;
+                case "interior":
+                    return config.interiorColliderColor.Value;
+            }
+
+            return Color.white;
+        }
 
 		/// <summary>
 		/// Write the config to the file
