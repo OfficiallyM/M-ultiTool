@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using UnityEngine;
@@ -28,7 +29,29 @@ namespace MultiTool.Utilities
                 {
                     Vector3 amtPos = mainscript.M.player.lookPoint + Vector3.up * 0.75f;
                     Quaternion amtRot = Quaternion.FromToRotation(Vector3.forward, -mainscript.M.player.transform.right);
-                    return item.amtSpawn.Invoke(item.amtModItem, new object[] { amtPos, amtRot }) as GameObject;
+                    bool? isCleanable = item.amtModItem.GetType().GetProperty("IsCleanable", BindingFlags.Instance | BindingFlags.Public).GetValue(item.amtModItem, null) as bool?;
+                    bool? isPaintable = item.amtModItem.GetType().GetProperty("IsPaintable", BindingFlags.Instance | BindingFlags.Public).GetValue(item.amtModItem, null) as bool?;
+
+                    object properties = null;
+                    if ((isCleanable.HasValue && isCleanable.Value) || (isPaintable.HasValue && isPaintable.Value))
+                    {
+                        properties = Activator.CreateInstance(item.amtModItem.GetType().Assembly.GetType("Amt.SaveItemProperties"));
+                        if (isCleanable.HasValue && isCleanable.Value && item.conditionInt != -1)
+                            properties.GetType().GetProperty("Condition", BindingFlags.Instance | BindingFlags.Public).SetValue(properties, item.conditionInt);
+
+                        if (isPaintable.HasValue && isPaintable.Value)
+                        {
+                            float[] color = new float[4]
+                            {
+                                item.color.r,
+                                item.color.g,
+                                item.color.b,
+                                item.color.a
+                            };
+                            properties.GetType().GetProperty("Color", BindingFlags.Instance | BindingFlags.Public).SetValue(properties, color);
+                        }
+                    }
+                    return item.amtSpawn.Invoke(item.amtModItem, new object[] { amtPos, amtRot, properties, null }) as GameObject;
                 }
 
 				int selectedCondition = item.conditionInt;

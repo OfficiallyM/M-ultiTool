@@ -117,7 +117,7 @@ namespace MultiTool.Utilities
                     {
                         string key = item.GetType().GetProperty("Key").GetValue(item, null) as string;
                         object value = item.GetType().GetProperty("Value").GetValue(item, null);
-                        MethodInfo spawn = value.GetType().GetMethod("Spawn", BindingFlags.Instance | BindingFlags.Public);
+                        MethodInfo spawn = value.GetType().GetMethod("Spawn", BindingFlags.Instance | BindingFlags.NonPublic);
                         GameObject gameObject = value.GetType().GetProperty("GameObject", BindingFlags.Instance | BindingFlags.Public).GetValue(value, null) as GameObject;
 
                         itemsCache.Add(new Item() { item = gameObject, thumbnail = ThumbnailGenerator.GetThumbnail(gameObject), category = category, amtItem = true, amtModItem = value, amtSpawn = spawn });
