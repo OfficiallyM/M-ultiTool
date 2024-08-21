@@ -41,7 +41,7 @@ namespace MultiTool.Tabs
 			// Filter vehicle list by search term.
 			List<Vehicle> searchVehicles = GUIRenderer.vehicles;
 			if (GUIRenderer.search != String.Empty)
-				searchVehicles = GUIRenderer.vehicles.Where(v => v.name.ToLower().Contains(GUIRenderer.search.ToLower()) || v.vehicle.name.ToLower().Contains(GUIRenderer.search.ToLower())).ToList();
+				searchVehicles = GUIRenderer.vehicles.Where(v => v.name.ToLower().Contains(GUIRenderer.search.ToLower()) || v.gameObject.name.ToLower().Contains(GUIRenderer.search.ToLower())).ToList();
 			scrollHeight = (itemHeight + 10f) * (columnCount + 1);
 			vehicleScrollPosition = GUI.BeginScrollView(new Rect(dimensions.x, dimensions.y + 10f + searchHeight, dimensions.width, dimensions.height - 10f - searchHeight), vehicleScrollPosition, new Rect(dimensions.x, dimensions.y, dimensions.width, scrollHeight - 10f - searchHeight), new GUIStyle(), GUI.skin.verticalScrollbar);
 			for (int i = 0; i < searchVehicles.Count(); i++)
@@ -60,14 +60,15 @@ namespace MultiTool.Tabs
 				{
 					SpawnUtilities.Spawn(new Vehicle()
 					{
-						vehicle = currentVehicle.vehicle,
+						gameObject = currentVehicle.gameObject,
 						variant = currentVehicle.variant,
 						conditionInt = GUIRenderer.conditionInt,
 						fuelMixes = GUIRenderer.fuelMixes,
 						fuelValues = GUIRenderer.fuelValues,
 						fuelTypeInts = GUIRenderer.fuelTypeInts,
 						color = GUIRenderer.color,
-						plate = GUIRenderer.plate
+						plate = GUIRenderer.plate,
+                        amt = currentVehicle.amt,
 					});
 				}
 			}

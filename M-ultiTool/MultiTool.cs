@@ -399,7 +399,7 @@ namespace MultiTool
 						{
 							tosaveitemscript save = GUIRenderer.selectedObject;
 							GameObject gameObject = save.gameObject;
-							Item prefab = GUIRenderer.items.Where(i => i.item.name == gameObject.name.Replace("(Clone)", "")).FirstOrDefault();
+							Item prefab = GUIRenderer.items.Where(i => i.gameObject.name == gameObject.name.Replace("(Clone)", "")).FirstOrDefault();
 							if (prefab == null)
 								return;
 

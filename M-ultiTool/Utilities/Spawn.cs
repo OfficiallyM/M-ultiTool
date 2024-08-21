@@ -21,105 +21,99 @@ namespace MultiTool.Utilities
 		/// </summary>
 		/// <param name="item">The object to spawn</param>
 		internal static GameObject Spawn(Item item, Vector3? position = null, Quaternion? rotation = null)
-		{
-			try
-			{
-                // Support for spawning AMT items.
-                if (item.amtItem)
+        {
+            try
+            {
+                bool amt = false;
+                // AMT support.
+                if (item.amt != null)
                 {
-                    Vector3 amtPos = mainscript.M.player.lookPoint + Vector3.up * 0.75f;
-                    Quaternion amtRot = Quaternion.FromToRotation(Vector3.forward, -mainscript.M.player.transform.right);
-                    bool? isCleanable = item.amtModItem.GetType().GetProperty("IsCleanable", BindingFlags.Instance | BindingFlags.Public).GetValue(item.amtModItem, null) as bool?;
-                    bool? isPaintable = item.amtModItem.GetType().GetProperty("IsPaintable", BindingFlags.Instance | BindingFlags.Public).GetValue(item.amtModItem, null) as bool?;
+                    amt = true;
+                    if (position == null)
+                        position = mainscript.M.player.lookPoint + Vector3.up * 0.75f;
+                    if (rotation == null)
+                        rotation = Quaternion.FromToRotation(Vector3.forward, -mainscript.M.player.transform.right);
 
-                    object properties = null;
-                    if ((isCleanable.HasValue && isCleanable.Value) || (isPaintable.HasValue && isPaintable.Value))
-                    {
-                        properties = Activator.CreateInstance(item.amtModItem.GetType().Assembly.GetType("Amt.SaveItemProperties"));
-                        if (isCleanable.HasValue && isCleanable.Value && item.conditionInt != -1)
-                            properties.GetType().GetProperty("Condition", BindingFlags.Instance | BindingFlags.Public).SetValue(properties, item.conditionInt);
-
-                        if (isPaintable.HasValue && isPaintable.Value)
-                        {
-                            float[] color = new float[4]
-                            {
-                                item.color.r,
-                                item.color.g,
-                                item.color.b,
-                                item.color.a
-                            };
-                            properties.GetType().GetProperty("Color", BindingFlags.Instance | BindingFlags.Public).SetValue(properties, color);
-                        }
-                    }
-                    return item.amtSpawn.Invoke(item.amtModItem, new object[] { amtPos, amtRot, properties, null }) as GameObject;
+                    item.gameObject = item.amt.spawnMethod.Invoke(item.amt.modItem, new object[] { position, rotation, item.conditionInt, item.color }) as GameObject;
                 }
 
-				int selectedCondition = item.conditionInt;
-				if (selectedCondition == -1 && item.item.GetComponent<partconditionscript>() != null)
-				{
-					// Randomise item condition.
-					int maxCondition = (int)Enum.GetValues(typeof(Item.Condition)).Cast<Item.Condition>().Max();
-					item.item.GetComponent<partconditionscript>().StartFullRandom(0, maxCondition);
-					selectedCondition = UnityEngine.Random.Range(0, maxCondition);
-				}
+                int selectedCondition = item.conditionInt;
+                if (selectedCondition == -1 && item.gameObject.GetComponent<partconditionscript>() != null)
+                {
+                    // Randomise item condition.
+                    int maxCondition = (int)Enum.GetValues(typeof(Item.Condition)).Cast<Item.Condition>().Max();
+                    item.gameObject.GetComponent<partconditionscript>().StartFullRandom(0, maxCondition);
+                    selectedCondition = UnityEngine.Random.Range(0, maxCondition);
+                }
 
-				tankscript fuelTank = item.item.GetComponent<tankscript>();
+                tankscript fuelTank = item.gameObject.GetComponent<tankscript>();
+                bool amtTank = false;
 
-				// Find fuel tank objects.
-				if (fuelTank == null)
-				{
-					fuelTank = item.item.GetComponentInChildren<tankscript>();
-				}
+                // AMT fluid support.
+                if (amt)
+                {
+                    Type propertiesType = item.amt.modItem.GetType().Assembly.GetType("Amt.Vehicles.VehicleProperties");
+                    var properties = item.gameObject.GetComponent(propertiesType);
+                    mainscript.fluidcontainer container = properties.GetType().GetField("fuelContainer", BindingFlags.Instance | BindingFlags.Public).GetValue(properties) as mainscript.fluidcontainer;
+                    if (container != null)
+                    {
+                        fuelTank = new tankscript
+                        {
+                            F = container,
+                        };
+                        amtTank = true;
+                    }
+                }
+                else if (fuelTank == null)
+                    // Find fuel tank objects.
+                    fuelTank = item.gameObject.GetComponentInChildren<tankscript>();
 
-				if (fuelTank == null)
-				{
-					// Item doesn't have a fuel tank, just spawn the item and return.
-					return Spawn(item.item, item.color, selectedCondition, -1, position, rotation);
-				}
+                if (fuelTank != null || amtTank)
+                {
+                    // Support for spawning without any fuel.
+                    if (!new Settings().spawnWithFuel)
+                    {
+                        fuelTank.F.fluids.Clear();
+                    }
 
-				// Support for spawning without any fuel.
-				if (!new Settings().spawnWithFuel)
-				{
-					fuelTank.F.fluids.Clear();
-					return Spawn(item.item, item.color, selectedCondition, -1, position, rotation);
-				}
+                    // Fuel type and value are default, just spawn the item.
+                    bool alterFluids = false;
+                    if (item.fuelMixes >= 1 && item.fuelTypeInts[0] != -1 && item.fuelValues[0] != -1f)
+                        alterFluids = true;
 
-				// Fuel type and value are default, just spawn the item.
-				if (item.fuelMixes == 1)
-				{
-					if (item.fuelTypeInts[0] == -1 && item.fuelValues[0] == -1f)
-					{
-						return Spawn(item.item, item.color, selectedCondition, -1, position, rotation);
-					}
-				}
+                    if (alterFluids)
+                    {
+                        // Store the current fuel types and amounts to return either to default.
+                        List<mainscript.fluidenum> currentFuelTypes = new List<mainscript.fluidenum>();
+				        List<float> currentFuelAmounts = new List<float>();
+				        foreach (mainscript.fluid fluid in fuelTank.F.fluids)
+				        {
+					        currentFuelTypes.Add(fluid.type);
+					        currentFuelAmounts.Add(fluid.amount);
+				        }
 
-				// Store the current fuel types and amounts to return either to default.
-				List<mainscript.fluidenum> currentFuelTypes = new List<mainscript.fluidenum>();
-				List<float> currentFuelAmounts = new List<float>();
-				foreach (mainscript.fluid fluid in fuelTank.F.fluids)
-				{
-					currentFuelTypes.Add(fluid.type);
-					currentFuelAmounts.Add(fluid.amount);
-				}
+                        fuelTank.F.fluids.Clear();
 
-				fuelTank.F.fluids.Clear();
+				        for (int i = 0; i < item.fuelMixes; i++)
+				        {
+                            float amount = currentFuelAmounts[i];
+                            mainscript.fluidenum type = currentFuelTypes[i];
 
-				for (int i = 0; i < item.fuelMixes; i++)
-				{
-					if (item.fuelTypeInts[i] == -1 && item.fuelValues[i] > -1)
-					{
-						fuelTank.F.ChangeOne(item.fuelValues[i], currentFuelTypes[i]);
-					}
-					else if (item.fuelTypeInts[i] > -1 && item.fuelValues[i] == -1)
-					{
-						fuelTank.F.ChangeOne(currentFuelAmounts[i], (mainscript.fluidenum)item.fuelTypeInts[i]);
-					}
-					else
-					{
-						fuelTank.F.ChangeOne(item.fuelValues[i], (mainscript.fluidenum)item.fuelTypeInts[i]);
-					}
-				}
-				return Spawn(item.item, item.color, selectedCondition, -1, position, rotation);
+                            if (item.fuelValues[i] > -1)
+                                amount = item.fuelValues[i];
+
+                            if (item.fuelTypeInts[i] > -1)
+                                type = (mainscript.fluidenum)item.fuelTypeInts[i];
+
+						    fuelTank.F.ChangeOne(amount, type);
+				        }
+                    }
+                }
+
+                if (amt)
+                    return item.gameObject;
+                else
+                    return Spawn(item.gameObject, item.color, selectedCondition, -1, position, rotation);
 			}
 			catch (Exception ex)
 			{
@@ -135,7 +129,7 @@ namespace MultiTool.Utilities
 		/// <param name="vehicle">The vehicle to spawn</param>
 		internal static void Spawn(Vehicle vehicle)
 		{
-			int selectedCondition = vehicle.conditionInt;
+            int selectedCondition = vehicle.conditionInt;
 			if (selectedCondition == -1)
 			{
 				// Randomise vehicle condition.
@@ -147,7 +141,7 @@ namespace MultiTool.Utilities
 			// doesn't find the plate of the spawned vehicle.
 			if (vehicle.plate != String.Empty)
 			{
-				rendszamscript[] plateScripts = vehicle.vehicle.GetComponentsInChildren<rendszamscript>();
+				rendszamscript[] plateScripts = vehicle.gameObject.GetComponentsInChildren<rendszamscript>();
 				foreach (rendszamscript plateScript in plateScripts)
 				{
 					if (plateScript == null)
@@ -157,7 +151,19 @@ namespace MultiTool.Utilities
 				}
 			}
 
-			GameObject spawnedVehicle = Spawn(vehicle.vehicle, vehicle.color, selectedCondition, vehicle.variant);
+            GameObject spawnedVehicle = null;
+            bool amt = false;
+            // AMT support.
+            if (vehicle.amt != null)
+            {
+                amt = true;
+                Vector3 position = mainscript.M.player.lookPoint + Vector3.up * 0.75f;
+                Quaternion rotation = Quaternion.FromToRotation(Vector3.forward, -mainscript.M.player.transform.right);
+
+                spawnedVehicle = vehicle.amt.spawnMethod.Invoke(vehicle.amt.modItem, new object[] { position, rotation, vehicle.conditionInt, vehicle.color }) as GameObject;
+            }
+            else
+			    spawnedVehicle = Spawn(vehicle.gameObject, vehicle.color, selectedCondition, vehicle.variant);
 
 			// Error occurred during vehicle spawn, return early.
 			if (spawnedVehicle == null) return;
@@ -165,7 +171,7 @@ namespace MultiTool.Utilities
 			// Reset prefab plate so it doesn't persist between spawns when unset.
 			if (vehicle.plate != String.Empty)
 			{
-				rendszamscript[] plateScripts = vehicle.vehicle.GetComponentsInChildren<rendszamscript>();
+				rendszamscript[] plateScripts = vehicle.gameObject.GetComponentsInChildren<rendszamscript>();
 				foreach (rendszamscript plateScript in plateScripts)
 				{
 					if (plateScript == null)
@@ -175,53 +181,68 @@ namespace MultiTool.Utilities
 				}
 			}
 
-			tankscript fuelTank = spawnedVehicle.GetComponent<tankscript>();
+            tankscript fuelTank = spawnedVehicle.GetComponent<tankscript>();
+            bool amtTank = false;
+            // AMT fluid support.
+            if (amt)
+            {
+                Type propertiesType = vehicle.amt.modItem.GetType().Assembly.GetType("Amt.Vehicles.VehicleProperties");
+                var properties = spawnedVehicle.GetComponent(propertiesType);
+                mainscript.fluidcontainer container = properties.GetType().GetField("fuelContainer", BindingFlags.Instance | BindingFlags.Public).GetValue(properties) as mainscript.fluidcontainer;
+                if (container != null)
+                {
+                    fuelTank = new tankscript
+                    {
+                        F = container,
+                    };
+                    amtTank = true;
+                }
+            }
+            else if (fuelTank == null)
+                // Find fuel tank objects.
+                fuelTank = spawnedVehicle.GetComponentInChildren<tankscript>();
 
-			// Find fuel tank objects.
-			if (fuelTank == null)
-			{
-				fuelTank = spawnedVehicle.GetComponentInChildren<tankscript>();
-			}
+            if (fuelTank != null || amtTank)
+            {
+                // Support for spawning without any fuel.
+                if (!new Settings().spawnWithFuel)
+                {
+                    fuelTank.F.fluids.Clear();
+                }
 
-			// Vehicle doesn't have a fuel tank, return early.
-			if (fuelTank == null) return;
+                // Fuel type and value are default, just spawn the item.
+                bool alterFluids = false;
+                if (vehicle.fuelMixes >= 1 && vehicle.fuelTypeInts[0] != -1 && vehicle.fuelValues[0] != -1f)
+                    alterFluids = true;
 
-			// Support for spawning without any fuel.
-			if (!new Settings().spawnWithFuel)
-			{
-				fuelTank.F.fluids.Clear();
-				return;
-			}
+                if (alterFluids)
+                {
+                    // Store the current fuel types and amounts to return either to default.
+                    List<mainscript.fluidenum> currentFuelTypes = new List<mainscript.fluidenum>();
+                    List<float> currentFuelAmounts = new List<float>();
+                    foreach (mainscript.fluid fluid in fuelTank.F.fluids)
+                    {
+                        currentFuelTypes.Add(fluid.type);
+                        currentFuelAmounts.Add(fluid.amount);
+                    }
 
-			// Fuel type and value are default, return early.
-			if (vehicle.fuelMixes == 1 && vehicle.fuelTypeInts[0] == -1 && vehicle.fuelValues[0] == -1f) return;
+                    fuelTank.F.fluids.Clear();
 
-			// Store the current fuel types and amounts to return either to default.
-			List<mainscript.fluidenum> currentFuelTypes = new List<mainscript.fluidenum>();
-			List<float> currentFuelAmounts = new List<float>();
-			foreach (mainscript.fluid fluid in fuelTank.F.fluids)
-			{
-				currentFuelTypes.Add(fluid.type);
-				currentFuelAmounts.Add(fluid.amount);
-			}
+                    for (int i = 0; i < vehicle.fuelMixes; i++)
+                    {
+                        float amount = currentFuelAmounts.Count > i ? currentFuelAmounts[i] : 0;
+                        mainscript.fluidenum type = currentFuelTypes.Count > i ? currentFuelTypes[i] : mainscript.fluidenum.gas;
 
-			fuelTank.F.fluids.Clear();
+                        if (vehicle.fuelValues[i] > -1)
+                            amount = vehicle.fuelValues[i];
 
-			for (int i = 0; i < vehicle.fuelMixes; i++)
-			{
-				if (vehicle.fuelTypeInts[i] == -1 && vehicle.fuelValues[i] > -1)
-				{
-					fuelTank.F.ChangeOne(vehicle.fuelValues[i], currentFuelTypes[i]);
-				}
-				else if (vehicle.fuelTypeInts[i] > -1 && vehicle.fuelValues[i] == -1)
-				{
-					fuelTank.F.ChangeOne(currentFuelAmounts[i], (mainscript.fluidenum)vehicle.fuelTypeInts[i]);
-				}
-				else
-				{
-					fuelTank.F.ChangeOne(vehicle.fuelValues[i], (mainscript.fluidenum)vehicle.fuelTypeInts[i]);
-				}
-			}
+                        if (vehicle.fuelTypeInts[i] > -1)
+                            type = (mainscript.fluidenum)vehicle.fuelTypeInts[i];
+
+                        fuelTank.F.ChangeOne(amount, type);
+                    }
+                }
+            }
 		}
 
 		/// <summary>
@@ -324,7 +345,8 @@ namespace MultiTool.Utilities
 				rotation = Quaternion.FromToRotation(Vector3.forward, -mainscript.M.player.transform.right);
 			try
 			{
-				GameObject spawned = UnityEngine.Object.Instantiate(gameObject, position.Value, rotation.Value);
+                GameObject spawned = UnityEngine.Object.Instantiate(gameObject, position.Value, rotation.Value);
+
 				partconditionscript conditionscript = spawned.GetComponent<partconditionscript>();
                 if (conditionscript == null && spawned.GetComponent<childunparent>() != null)
                     conditionscript = spawned.GetComponent<childunparent>().g.GetComponent<partconditionscript>();
@@ -347,6 +369,7 @@ namespace MultiTool.Utilities
                         GameUtilities.SetCondition(condition, false, conditionscript);
 					GameUtilities.Paint(color, conditionscript, true);
 				}
+
 				mainscript.M.PostSpawn(spawned);
 
 				return spawned;

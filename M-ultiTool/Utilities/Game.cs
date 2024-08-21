@@ -198,7 +198,7 @@ namespace MultiTool.Utilities
 			if (!children.Contains(root)) children.Add(root);
 
 			tosaveitemscript tosave = root.GetComponent<tosaveitemscript>();
-			if (tosave == null) return;
+			if (tosave == null || tosave.partslotscripts == null) return;
 
 			foreach (partslotscript slot in tosave.partslotscripts)
 			{

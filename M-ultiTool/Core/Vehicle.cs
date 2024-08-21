@@ -9,7 +9,7 @@ namespace MultiTool.Core
 {
 	internal class Vehicle
 	{
-		public GameObject vehicle;
+		public GameObject gameObject;
 		public string name;
 		public Texture2D thumbnail;
 		public int variant;
@@ -19,5 +19,6 @@ namespace MultiTool.Core
 		public List<int> fuelTypeInts = new List<int> { -1 };
 		public Color color = new Color(255f / 255f, 255f / 255f, 255f / 255f);
 		public string plate = String.Empty;
-	}
+        public AMTData amt = null;
+    }
 }

@@ -10,7 +10,7 @@ namespace MultiTool.Core
 {
 	internal class Item
 	{
-		public GameObject item;
+		public GameObject gameObject;
 		public Texture2D thumbnail;
 		public int category;
 		public int conditionInt = 0;
@@ -18,9 +18,7 @@ namespace MultiTool.Core
 		public List<float> fuelValues = new List<float> { -1f };
 		public List<int> fuelTypeInts = new List<int> { -1 };
 		public Color color = new Color(255f / 255f, 255f / 255f, 255f / 255f);
-        public bool amtItem = false;
-        public object amtModItem = null;
-        public MethodInfo amtSpawn = null;
+        public AMTData amt = null;
 
 		public enum Condition
 		{

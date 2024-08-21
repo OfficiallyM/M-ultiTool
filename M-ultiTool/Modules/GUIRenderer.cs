@@ -1017,10 +1017,10 @@ namespace MultiTool.Modules
 						UnityEngine.Object.Destroy(starterVehicle.gameObject);
 						starterVehicle.transform.position += Vector3.down * 15f;
 
-						Vehicle vehicle = vehicles.Where(v => v.vehicle.name.ToLower().Contains(starterVehicleName.ToLower())).FirstOrDefault();
+						Vehicle vehicle = vehicles.Where(v => v.gameObject.name.ToLower().Contains(starterVehicleName.ToLower())).FirstOrDefault();
 						if (vehicle != null)
 						{
-							finalStarterVehicle = SpawnUtilities.Spawn(vehicle.vehicle, color, startVehicleCondition, -1, position, rotation);
+							finalStarterVehicle = SpawnUtilities.Spawn(vehicle.gameObject, color, startVehicleCondition, -1, position, rotation);
 						}
 					}
 					else
@@ -2845,7 +2845,7 @@ namespace MultiTool.Modules
 				{
 					SpawnUtilities.Spawn(new Item()
 					{
-						item = spawn.gameObject,
+						gameObject = spawn.gameObject,
 						conditionInt = conditionInt,
 						fuelMixes = fuelMixes,
 						fuelValues = fuelValues,
@@ -2863,14 +2863,14 @@ namespace MultiTool.Modules
 			scrollPosition = GUI.BeginScrollView(new Rect(x, scrollY, width, height / 2), scrollPosition, new Rect(x, scrollY, width, scrollHeight), GUIStyle.none, GUIStyle.none);
 			foreach (Vehicle vehicle in vehicles)
 			{
-				GameObject gameObject = vehicle.vehicle;
+				GameObject gameObject = vehicle.gameObject;
 				string name = Translator.T(gameObject.name, "vehicle", vehicle.variant);
 
 				if (GUI.Button(new Rect(x, scrollY, width, buttonHeight), name))
 				{
 					SpawnUtilities.Spawn(new Vehicle()
 					{
-						vehicle = vehicle.vehicle,
+						gameObject = vehicle.gameObject,
 						variant = vehicle.variant,
 						conditionInt = conditionInt,
 						fuelMixes = fuelMixes,
@@ -3119,7 +3119,7 @@ namespace MultiTool.Modules
 			for (int i = 0; i < items.Count(); i++)
 			{
 				Item currentItem = items[i];
-				GameObject item = items[i].item;
+				GameObject item = items[i].gameObject;
 
 				itemX += itemWidth + 10f;
 

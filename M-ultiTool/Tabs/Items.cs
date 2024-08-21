@@ -44,7 +44,7 @@ namespace MultiTool.Tabs
 			// Filter item list by search term.
 			List<Item> searchItems = GUIRenderer.items;
 			if (GUIRenderer.search != String.Empty)
-				searchItems = GUIRenderer.items.Where(v => v.item != null && v.item.name != null && v.item.name.ToLower().Contains(GUIRenderer.search.ToLower())).ToList();
+				searchItems = GUIRenderer.items.Where(v => v.gameObject != null && v.gameObject.name != null && v.gameObject.name.ToLower().Contains(GUIRenderer.search.ToLower())).ToList();
 
 			if (filters.Count > 0)
 				searchItems = searchItems.Where(v => filters.Contains(v.category)).ToList();
@@ -58,7 +58,7 @@ namespace MultiTool.Tabs
 			for (int i = 0; i < searchItems.Count(); i++)
 			{
 				Item currentItem = searchItems[i];
-				GameObject item = searchItems[i].item;
+				GameObject item = searchItems[i].gameObject;
 
 				itemX += itemWidth + 10f;
 				if (i % maxRowItems == 0)
@@ -81,15 +81,13 @@ namespace MultiTool.Tabs
 				{
 					SpawnUtilities.Spawn(new Item()
 					{
-						item = item,
+						gameObject = item,
 						conditionInt = GUIRenderer.conditionInt,
 						fuelMixes = GUIRenderer.fuelMixes,
 						fuelValues = GUIRenderer.fuelValues,
 						fuelTypeInts = GUIRenderer.fuelTypeInts,
 						color = GUIRenderer.color,
-                        amtItem = currentItem.amtItem,
-                        amtModItem = currentItem.amtModItem,
-                        amtSpawn = currentItem.amtSpawn,
+                        amt = currentItem.amt,
 					});
 				}
 			}
