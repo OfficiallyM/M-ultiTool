@@ -78,7 +78,7 @@ namespace MultiTool.Utilities
 
                     // Fuel type and value are default, just spawn the item.
                     bool alterFluids = false;
-                    if (item.fuelMixes >= 1 && item.fuelTypeInts[0] != -1 && item.fuelValues[0] != -1f)
+                    if (item.fuelMixes >= 1 && (item.fuelTypeInts[0] != -1 || item.fuelValues[0] != -1f))
                         alterFluids = true;
 
                     if (alterFluids)
@@ -96,8 +96,8 @@ namespace MultiTool.Utilities
 
 				        for (int i = 0; i < item.fuelMixes; i++)
 				        {
-                            float amount = currentFuelAmounts[i];
-                            mainscript.fluidenum type = currentFuelTypes[i];
+                            float amount = currentFuelAmounts.Count > i ? currentFuelAmounts[i] : 0;
+                            mainscript.fluidenum type = currentFuelTypes.Count > i ? currentFuelTypes[i] : mainscript.fluidenum.gas;
 
                             if (item.fuelValues[i] > -1)
                                 amount = item.fuelValues[i];
@@ -212,7 +212,7 @@ namespace MultiTool.Utilities
 
                 // Fuel type and value are default, just spawn the item.
                 bool alterFluids = false;
-                if (vehicle.fuelMixes >= 1 && vehicle.fuelTypeInts[0] != -1 && vehicle.fuelValues[0] != -1f)
+                if (vehicle.fuelMixes >= 1 && (vehicle.fuelTypeInts[0] != -1 || vehicle.fuelValues[0] != -1f))
                     alterFluids = true;
 
                 if (alterFluids)

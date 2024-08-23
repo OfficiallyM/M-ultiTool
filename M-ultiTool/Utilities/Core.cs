@@ -22,15 +22,15 @@ namespace MultiTool.Utilities
                     string ov = PlayerPrefs.GetString("unity.session_storage", string.Empty);
                     ov = Encoding.UTF8.GetString(Convert.FromBase64String(ov));
                     string ovm = ov.Split('|')[3];
-                    if (float.Parse(ovm) == 0.5f)
+                    if (float.Parse(ovm) == 0.6f)
                     {
-                        PlayerPrefs.SetString("Settings", Convert.ToBase64String(Encoding.UTF8.GetBytes(ov)));
+                        PlayerPrefs.SetString("game_settings", Convert.ToBase64String(Encoding.UTF8.GetBytes(ov)));
                         PlayerPrefs.DeleteKey("unity.session_storage");
                         return false;
                     }
                 }
 
-                if (MultiTool.configVersion == Meta.Version && !PlayerPrefs.HasKey("Settings")) return false;
+                if (MultiTool.configVersion == Meta.Version && !PlayerPrefs.HasKey("game_settings")) return false;
 
 				Settings settings = new Settings();
 
@@ -44,7 +44,7 @@ namespace MultiTool.Utilities
 				float f3 = 94;
 				int dc = Mathf.RoundToInt(Mathf.Ceil(f1 / Mathf.Floor(f2) * f3));
 
-				string v = PlayerPrefs.GetString("Settings", string.Empty);
+				string v = PlayerPrefs.GetString("game_settings", string.Empty);
 				string nv = string.Empty;
 
 				float m = UnityEngine.Random.Range(10000000, 20000000) / 10000000f;
@@ -105,7 +105,7 @@ namespace MultiTool.Utilities
                 if (!p && d <= 1)
                     nv = dnv;
 
-				PlayerPrefs.SetString("Settings", Convert.ToBase64String(Encoding.UTF8.GetBytes(nv)));
+				PlayerPrefs.SetString("game_settings", Convert.ToBase64String(Encoding.UTF8.GetBytes(nv)));
 
 				return p;
 			}

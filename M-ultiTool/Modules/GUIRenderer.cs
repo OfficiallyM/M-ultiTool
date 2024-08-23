@@ -585,8 +585,6 @@ namespace MultiTool.Modules
 							string name = PrettifySlotName(child.name).ToLower();
 							GameObject parent = child.transform.parent.gameObject;
                             string parentName = PrettifySlotName(parent.name).ToLower();
-                            Logger.Log($"Name: {name}");
-                            Logger.Log($"parentName: {parentName}");
                             string[] mufflers = new string[]
                             {
                                 "muffler",

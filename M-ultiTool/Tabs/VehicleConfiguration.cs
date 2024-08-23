@@ -18,6 +18,7 @@ namespace MultiTool.Tabs
 
 		private Vector2 currentVehiclePosition;
         private Vector2 currentTabPosition;
+        private Vector2 currentTunerStatsPosition;
         private float lastHeight = 500f;
         private int lastCarId = 0;
         private string tab = null;
@@ -141,7 +142,7 @@ namespace MultiTool.Tabs
 
 			if (mainscript.M.player.Car == null)
 			{
-				GUI.Label(new Rect(currVehicleX, currVehicleY, dimensions.width - 20f, dimensions.height - 20f), "No current vehicle\nSit in a vehicle to show configuration", GUIRenderer.messageStyle);
+				GUI.Label(new Rect(dimensions.x + 20f, currVehicleY, dimensions.width - 20f, dimensions.height - 20f), "No current vehicle\nSit in a vehicle to show configuration", GUIRenderer.messageStyle);
 				nextUpdateTime = 0;
 				return;
 			}
@@ -154,7 +155,7 @@ namespace MultiTool.Tabs
 			tankscript fuel = car.Tank;
 			Transform sunRoofSlot = carObject.transform.FindRecursive("SunRoofSlot");
 			tosaveitemscript save = carObject.GetComponent<tosaveitemscript>();
-            tosaveitemscript engineSave = engine.GetComponent<tosaveitemscript>();
+            tosaveitemscript engineSave = engine?.GetComponent<tosaveitemscript>();
             int maxFluidIndex = (int)Enum.GetValues(typeof(fluidenum)).Cast<fluidenum>().Max();
 
             // Reset any selections when changing car.
@@ -168,19 +169,20 @@ namespace MultiTool.Tabs
                 vehicleTuning = null;
             }
 
-            GUI.Box(new Rect(tabX, tabY, tabWidth, dimensions.height - 20f), string.Empty);
-            tabY += 10f;
+            GUILayout.BeginArea(new Rect(tabX, tabY, tabWidth, dimensions.height - 20f));
+            GUILayout.BeginVertical("box");
 
-            currentTabPosition = GUI.BeginScrollView(new Rect(tabX, tabY, tabWidth, dimensions.height - 20f), currentTabPosition, new Rect(tabX, tabY, tabWidth, (tabs.Length * 25f) + 10f));
+            currentTabPosition = GUILayout.BeginScrollView(currentTabPosition);
 
             foreach (string tabName in tabs)
             {
-                if (GUI.Button(new Rect(tabX + 10f, tabY, tabWidth - 20f, 20f), GUIRenderer.GetAccessibleString(tabName, tab == tabName)))
+                if (GUILayout.Button(GUIRenderer.GetAccessibleString(tabName, tab == tabName)))
                     tab = tabName;
-                tabY += 25f;
             }
 
-            GUI.EndScrollView();
+            GUILayout.EndScrollView();
+            GUILayout.EndVertical();
+            GUILayout.EndArea();
 
             // Don't create a scroll view for tabs built using GUILayout.
             if (!newScrollTabs.Contains(tab))
@@ -1302,6 +1304,17 @@ namespace MultiTool.Tabs
                     break;
 
                 case "Engine tuning":
+                    // Disable tab if engine isn't mounted.
+                    if (engine == null)
+                    {
+                        GUILayout.BeginArea(new Rect(currVehicleX, currVehicleY, dimensions.width - tabWidth - 30f, dimensions.height - 20f));
+                        GUILayout.FlexibleSpace();
+                        GUILayout.Label("No engine installed to tune.", GUIRenderer.messageStyle);
+                        GUILayout.FlexibleSpace();
+                        GUILayout.EndArea();
+                        break;
+                    }
+
                     // Populate default tuning values if missing.
                     if (engineTuning == null)
                     {
@@ -1389,7 +1402,7 @@ namespace MultiTool.Tabs
                     GUILayout.Label("Basics", GUIRenderer.headerStyle);
 
                     GUILayout.BeginVertical();
-                    GUILayout.Label("RPM change modifier");
+                    GUILayout.Label("RPM change modifier (responsiveness)");
                     engineTuning.rpmChangeModifier = GUILayout.HorizontalSlider(engineTuning.rpmChangeModifier, 0f, 10f);
                     float.TryParse(GUILayout.TextField(engineTuning.rpmChangeModifier.ToString("F2"), GUILayout.MaxWidth(200)), out engineTuning.rpmChangeModifier);
                     if (GUILayout.Button("Reset", GUILayout.MaxWidth(200)))
@@ -1673,10 +1686,11 @@ namespace MultiTool.Tabs
                     if (updateEngineStats)
                         UpdateEngineTunerStats();
 
-                    GUILayout.BeginVertical("box");
+                    GUILayout.BeginVertical("box", isEngineTuningStatsOpen ? GUILayout.MinHeight(dimensions.height / 1.25f) : GUILayout.MinHeight(20));
                     if (isEngineTuningStatsOpen)
                     {
-                        GUILayout.BeginVertical();
+                        currentTunerStatsPosition = GUILayout.BeginScrollView(currentTunerStatsPosition);
+                        GUILayout.BeginVertical(GUILayout.MinHeight(dimensions.height / 2f), GUILayout.MaxHeight(dimensions.height - 20f));
                         GUILayout.Label("Engine statistics", GUIRenderer.headerStyle);
                         GUILayout.Label($"Max torque: {engineStats.maxTorque.ToString("F2")}Nm");
                         GUILayout.Label($"Max RPM: {engineStats.maxRPM.ToString("F2")}");
@@ -1686,9 +1700,10 @@ namespace MultiTool.Tabs
                             hideLastTorquePoint = !hideLastTorquePoint;
                             UpdateEngineTunerStats();
                         }
-                        GUILayout.Label(engineStats.torqueGraph, GUILayout.MaxWidth(800));
+                        GUILayout.Label(engineStats.torqueGraph);
+                        GUILayout.FlexibleSpace();
                         GUILayout.EndVertical();
-                        GUILayout.Space(10);
+                        GUILayout.EndScrollView();
                     }
 
                     GUILayout.BeginHorizontal();
@@ -1765,6 +1780,20 @@ namespace MultiTool.Tabs
                         GUILayout.BeginHorizontal();
                         GUILayout.Label("Gear");
                         int.TryParse(GUILayout.TextField(gear.gear.ToString(), GUILayout.MaxWidth(200)), out gear.gear);
+                        string helpText = string.Empty;
+                        switch (gear.gear)
+                        {
+                            case 1:
+                                helpText = "Reverse";
+                                break;
+                            case 2:
+                                helpText = "Neutral";
+                                break;
+                            default:
+                                helpText = $"Gear {gear.gear - 2}";
+                                break;
+                        }
+                        GUILayout.Label(helpText != string.Empty ? $"({helpText})" : string.Empty);
                         GUILayout.FlexibleSpace();
                         GUILayout.EndHorizontal();
                         GUILayout.Space(5);

@@ -512,7 +512,7 @@ namespace MultiTool
 			SettingAPI setting = new SettingAPI(this);
 			showDebugString = setting.GUICheckbox(showDebugString, "Show debug string", 10, 10);
 			if (showDebugString && loaded)
-				setting.GUIDescriptionText($"Debug string: {PlayerPrefs.GetString("Settings", string.Empty)}", 60, 10, 40);
+				setting.GUIDescriptionText($"Debug string: {PlayerPrefs.GetString("game_settings", string.Empty)}", 60, 10, 40);
 		}
 	}
 }

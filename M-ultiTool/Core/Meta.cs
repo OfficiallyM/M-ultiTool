@@ -11,6 +11,6 @@ namespace MultiTool.Core
 		public static string ID => "M-ultiTool";
 		public static string Name => "M-ultiTool";
 		public static string Author => "M-";
-		public static string Version => "3.1.0";
+		public static string Version => "3.1.1";
 	}
 }
