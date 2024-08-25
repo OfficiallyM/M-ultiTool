@@ -26,7 +26,10 @@ namespace MultiTool.Utilities
         /// <returns>True if loaded correctly, otherwise false</returns>
         private static bool AMTSetup()
         {
-            if (amtItems != null || hasAmtSetupRan) return true;
+            if (amtItems != null) return true;
+
+            if (hasAmtSetupRan) return amtItems != null;
+
             // Load AMT database.
             Mod amt = ModLoader.LoadedMods.Where(m => m.ID == "AdvancedModdingToolkit").FirstOrDefault();
             if (amt != null)
@@ -104,7 +107,7 @@ namespace MultiTool.Utilities
         /// <returns>List of items</returns>
         private static List<Item> LoadAMTItems()
         {
-            List<Item> amtItems = new List<Item>();
+            List<Item> items = new List<Item>();
             if (AMTSetup())
             {
                 int category = GUIRenderer.categories.Keys.ToList().IndexOf("Mod items");
@@ -128,7 +131,7 @@ namespace MultiTool.Utilities
                                 spawnMethod = spawn,
                             };
 
-                            amtItems.Add(new Item() { gameObject = gameObject, thumbnail = ThumbnailGenerator.GetThumbnail(gameObject), amt = data, category = category });
+                            items.Add(new Item() { gameObject = gameObject, thumbnail = ThumbnailGenerator.GetThumbnail(gameObject), amt = data, category = category });
                         }
                     }
                     catch (Exception ex)
@@ -138,7 +141,7 @@ namespace MultiTool.Utilities
                 }
             }
 
-            return amtItems;
+            return items;
         }
 
 		/// <summary>
