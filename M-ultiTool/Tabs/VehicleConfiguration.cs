@@ -1490,16 +1490,19 @@ namespace MultiTool.Tabs
 
                     GUILayout.Label("Oil", GUIRenderer.headerStyle);
 
-                    GUILayout.BeginHorizontal();
-                    GUILayout.Label("Is two-stroke?");
-                    if (GUILayout.Button(GUIRenderer.GetAccessibleString("Yes", "No", engineTuning.twoStroke), GUILayout.MaxWidth(200)))
-                        engineTuning.twoStroke = !engineTuning.twoStroke;
-                    if (GUILayout.Button("Reset", GUILayout.MaxWidth(200)))
-                        engineTuning.twoStroke = engineTuning.defaultTwoStroke;
-                    GUILayout.FlexibleSpace();
-                    GUILayout.EndHorizontal();
+                    if (!engineTuning.defaultTwoStroke)
+                    {
+                        GUILayout.BeginHorizontal();
+                        GUILayout.Label("Is two-stroke?");
+                        if (GUILayout.Button(GUIRenderer.GetAccessibleString("Yes", "No", engineTuning.twoStroke), GUILayout.MaxWidth(200)))
+                            engineTuning.twoStroke = !engineTuning.twoStroke;
+                        if (GUILayout.Button("Reset", GUILayout.MaxWidth(200)))
+                            engineTuning.twoStroke = engineTuning.defaultTwoStroke;
+                        GUILayout.FlexibleSpace();
+                        GUILayout.EndHorizontal();
 
-                    GUILayout.Space(10);
+                        GUILayout.Space(10);
+                    }
                     
                     GUILayout.BeginVertical();
                     GUILayout.Label($"Oil fluid - {engineTuning.oilFluid.ToString().ToSentenceCase()}");
@@ -1521,7 +1524,7 @@ namespace MultiTool.Tabs
                         GUILayout.Space(10);
 
                         GUILayout.BeginVertical();
-                        GUILayout.Label("Oil toleration min");
+                        GUILayout.Label("Two-stroke oil toleration min");
                         engineTuning.oilTolerationMin = GUILayout.HorizontalSlider(engineTuning.oilTolerationMin, 0f, 1f);
                         GUILayout.BeginHorizontal();
                         if (float.TryParse(GUILayout.TextField((engineTuning.oilTolerationMin * 100).ToString("F2"), GUILayout.MaxWidth(200)), out float oilTolerationMin))
@@ -1535,7 +1538,7 @@ namespace MultiTool.Tabs
                         GUILayout.Space(10);
 
                         GUILayout.BeginVertical();
-                        GUILayout.Label("Oil toleration max");
+                        GUILayout.Label("Two-stroke oil toleration max");
                         engineTuning.oilTolerationMax = GUILayout.HorizontalSlider(engineTuning.oilTolerationMax, 0f, 1f);
                         GUILayout.BeginHorizontal();
                         if (float.TryParse(GUILayout.TextField((engineTuning.oilTolerationMax * 100).ToString("F2"), GUILayout.MaxWidth(200)), out float oilTolerationMax))
