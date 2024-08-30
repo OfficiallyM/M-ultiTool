@@ -70,16 +70,18 @@ namespace MultiTool.Utilities
 
                 if (fuelTank != null || amtTank)
                 {
-                    // Support for spawning without any fuel.
-                    if (!new Settings().spawnWithFuel)
-                    {
-                        fuelTank.F.fluids.Clear();
-                    }
 
                     // Fuel type and value are default, just spawn the item.
                     bool alterFluids = false;
                     if (item.fuelMixes >= 1 && (item.fuelTypeInts[0] != -1 || item.fuelValues[0] != -1f))
                         alterFluids = true;
+
+                    // Support for spawning without any fuel.
+                    if (!new Settings().spawnWithFuel)
+                    {
+                        fuelTank.F.fluids.Clear();
+                        alterFluids = false;
+                    }
 
                     if (alterFluids)
                     {
@@ -204,16 +206,18 @@ namespace MultiTool.Utilities
 
             if (fuelTank != null || amtTank)
             {
-                // Support for spawning without any fuel.
-                if (!new Settings().spawnWithFuel)
-                {
-                    fuelTank.F.fluids.Clear();
-                }
 
                 // Fuel type and value are default, just spawn the item.
                 bool alterFluids = false;
                 if (vehicle.fuelMixes >= 1 && (vehicle.fuelTypeInts[0] != -1 || vehicle.fuelValues[0] != -1f))
                     alterFluids = true;
+
+                // Support for spawning without any fuel.
+                if (!new Settings().spawnWithFuel)
+                {
+                    fuelTank.F.fluids.Clear();
+                    alterFluids = false;
+                }
 
                 if (alterFluids)
                 {
