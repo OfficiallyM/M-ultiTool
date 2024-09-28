@@ -58,7 +58,7 @@ namespace MultiTool.Modules
         /// </summary>
         public void UpdateVersion()
         {
-            config.version = Meta.Version;
+            config.version = MultiTool.mod.Version;
             Commit();
         }
 

@@ -74,7 +74,7 @@ namespace MultiTool.Tabs
 						primitive.GetComponent<Renderer>().material.color = GUIRenderer.color;
 						primitive.transform.localScale = GUIRenderer.scale;
 
-						mainscript.M.Spawn(primitive, -1);
+						mainscript.s.Spawn(primitive, -1);
 					}
 				}
 			}

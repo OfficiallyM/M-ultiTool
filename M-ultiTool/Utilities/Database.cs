@@ -155,7 +155,7 @@ namespace MultiTool.Utilities
 				return vehiclesCache;
 
 			// Cache empty, populate it.
-			foreach (GameObject gameObject in itemdatabase.d.items)
+			foreach (GameObject gameObject in itemdatabase.s.items)
 			{
 				try
 				{
@@ -214,7 +214,7 @@ namespace MultiTool.Utilities
 			if (itemsCache.Count > 0)
 				return itemsCache;
 
-			foreach (GameObject item in itemdatabase.d.items)
+			foreach (GameObject item in itemdatabase.s.items)
 			{
 				try
 				{
@@ -240,60 +240,60 @@ namespace MultiTool.Utilities
 		/// Load POIs from database.
 		/// </summary>
 		/// <returns>List of POIs</returns>
-		internal static List<POI> LoadPOIs()
-		{
-			// Return cache if not empty.
-			if (POIsCache.Count > 0)
-				return POIsCache;
+		//internal static List<POI> LoadPOIs()
+		//{
+		//	// Return cache if not empty.
+		//	if (POIsCache.Count > 0)
+		//		return POIsCache;
 
-			// Cache empty, populate it.
-			foreach (GameObject POI in itemdatabase.d.buildings)
-			{
-				if (POI.name == "ErrorPrefab" || POI.name == "Falu01") continue;
+		//	// Cache empty, populate it.
+		//	foreach (GameObject POI in itemdatabase.s.buildings)
+		//	{
+		//		if (POI.name == "ErrorPrefab" || POI.name == "Falu01") continue;
 
-				try
-				{
-					// TODO: Some building thumbnails are a bit fucked.
-					POIsCache.Add(new POI()
-					{
-						poi = POI,
-						thumbnail = ThumbnailGenerator.GetThumbnail(POI, POI: true),
-						name = Translator.T(POI.name, "POI"),
-					});
-				}
-				catch (Exception ex)
-				{
-					Logger.Log($"POI init error - {ex}", Logger.LogLevel.Error);
-				}
-			}
+		//		try
+		//		{
+		//			// TODO: Some building thumbnails are a bit fucked.
+		//			POIsCache.Add(new POI()
+		//			{
+		//				poi = POI,
+		//				thumbnail = ThumbnailGenerator.GetThumbnail(POI, POI: true),
+		//				name = Translator.T(POI.name, "POI"),
+		//			});
+		//		}
+		//		catch (Exception ex)
+		//		{
+		//			Logger.Log($"POI init error - {ex}", Logger.LogLevel.Error);
+		//		}
+		//	}
 
-			// Foliage objects.
-			foreach (ObjClass objClass in mainscript.M.terrainGenerationSettings.objGeneration.objTypes)
-			{
-				POIsCache.Add(new POI()
-				{
-					poi = objClass.prefab,
-					thumbnail = ThumbnailGenerator.GetThumbnail(objClass.prefab, POI: true),
-					name = Translator.T(objClass.prefab.name, "POI"),
-				});
-			}
+		//	// Foliage objects.
+		//	foreach (ObjClass objClass in mainscript.s.terrainGenerationSettings.objGeneration.objTypes)
+		//	{
+		//		POIsCache.Add(new POI()
+		//		{
+		//			poi = objClass.prefab,
+		//			thumbnail = ThumbnailGenerator.GetThumbnail(objClass.prefab, POI: true),
+		//			name = Translator.T(objClass.prefab.name, "POI"),
+		//		});
+		//	}
 
-			// Desert tower buildings (ship, water tower, etc).
-			foreach (ObjClass objClass in mainscript.M.terrainGenerationSettings.desertTowerGeneration.objTypes)
-			{
-				// Exclude POIs already loaded.
-				if (POIsCache.Where(p => p.poi.name == objClass.prefab.name).ToList().Count() > 0) continue;
+		//	// Desert tower buildings (ship, water tower, etc).
+		//	foreach (ObjClass objClass in mainscript.s.terrainGenerationSettings.desertTowerGeneration.objTypes)
+		//	{
+		//		// Exclude POIs already loaded.
+		//		if (POIsCache.Where(p => p.poi.name == objClass.prefab.name).ToList().Count() > 0) continue;
 
-				POIsCache.Add(new POI()
-				{
-					poi = objClass.prefab,
-					thumbnail = ThumbnailGenerator.GetThumbnail(objClass.prefab, POI: true),
-					name = Translator.T(objClass.prefab.name, "POI"),
-				});
-			}
+		//		POIsCache.Add(new POI()
+		//		{
+		//			poi = objClass.prefab,
+		//			thumbnail = ThumbnailGenerator.GetThumbnail(objClass.prefab, POI: true),
+		//			name = Translator.T(objClass.prefab.name, "POI"),
+		//		});
+		//	}
 
-			return POIsCache;
-		}
+		//	return POIsCache;
+		//}
 
 		/// <summary>
 		/// Clear database caches.
@@ -302,7 +302,7 @@ namespace MultiTool.Utilities
 		{
 			vehiclesCache.Clear();
 			itemsCache.Clear();
-			POIsCache.Clear();
+			//POIsCache.Clear();
 		}
 
 		/// <summary>
@@ -313,7 +313,7 @@ namespace MultiTool.Utilities
 			ClearCaches();
 			LoadVehicles();
 			LoadItems();
-			LoadPOIs();
+			//LoadPOIs();
 		}
 	}
 }

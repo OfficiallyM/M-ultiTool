@@ -20,7 +20,7 @@ namespace MultiTool.Tabs
         private Vector2 currentTabPosition;
         private Vector2 currentTunerStatsPosition;
         private float lastHeight = 500f;
-        private int lastCarId = 0;
+        private uint lastCarId = 0;
         private string tab = null;
         private readonly string[] tabs = new string[]
         {
@@ -140,14 +140,14 @@ namespace MultiTool.Tabs
 			if (columns == 1)
 				headerWidth = dimensions.width - 20f;
 
-			if (mainscript.M.player.Car == null)
+			if (mainscript.s.player.Car == null)
 			{
 				GUI.Label(new Rect(dimensions.x + 20f, currVehicleY, dimensions.width - 20f, dimensions.height - 20f), "No current vehicle\nSit in a vehicle to show configuration", GUIRenderer.messageStyle);
 				nextUpdateTime = 0;
 				return;
 			}
 
-			carscript car = mainscript.M.player.Car;
+			carscript car = mainscript.s.player.Car;
 			GameObject carObject = car.gameObject;
 			partconditionscript partconditionscript = car.gameObject.GetComponent<partconditionscript>();
 			coolantTankscript coolant = car.coolant;
@@ -1286,7 +1286,7 @@ namespace MultiTool.Tabs
                                 foreach (headlightscript headlight in light.headlights)
                                 {
                                     GameUtilities.SetHeadlightColor(headlight, GUIRenderer.lightColor, light.isInteriorLight);
-                                    int? id = save.idInSave;
+                                    uint? id = save.idInSave;
                                     if (!light.isInteriorLight)
                                         id = headlight.GetComponent<tosaveitemscript>()?.idInSave;
 

@@ -41,14 +41,14 @@ namespace MultiTool.Tabs
 			GUIRenderer.selectedTime = Mathf.Round(time);
 			if (GUI.Button(new Rect(miscX + miscWidth + 10f, miscY, buttonWidth, buttonHeight), "Set"))
 			{
-				mainscript.M.napszak.tekeres = GUIRenderer.selectedTime;
+                napszakvaltakozas.s.tekeres = GUIRenderer.selectedTime;
 			}
 
 			if (GUI.Button(new Rect(miscX + miscWidth + buttonWidth + 20f, miscY, buttonWidth, buttonHeight), GUIRenderer.GetAccessibleString("Unlock", "Lock", GUIRenderer.isTimeLocked)))
 			{
 				GUIRenderer.isTimeLocked = !GUIRenderer.isTimeLocked;
 
-				mainscript.M.napszak.enabled = !GUIRenderer.isTimeLocked;
+                napszakvaltakozas.s.enabled = !GUIRenderer.isTimeLocked;
 			}
 
 			miscY += buttonHeight + 10f;
@@ -63,7 +63,7 @@ namespace MultiTool.Tabs
 					if (GUIRenderer.ufo != null)
 						UnityEngine.Object.Destroy(GUIRenderer.ufo);
 
-					GUIRenderer.ufo = UnityEngine.Object.Instantiate(GUIRenderer.temp.FEDOSPAWN.prefab, mainscript.M.player.transform.position + (mainscript.M.player.transform.forward * 5f) + (Vector3.up * 2f), Quaternion.FromToRotation(Vector3.forward, -mainscript.M.player.transform.right));
+					GUIRenderer.ufo = UnityEngine.Object.Instantiate(GUIRenderer.temp.FEDOSPAWN.prefab, mainscript.s.player.transform.position + (mainscript.s.player.transform.forward * 5f) + (Vector3.up * 2f), Quaternion.FromToRotation(Vector3.forward, -mainscript.s.player.transform.right));
 					fedoscript ufoScript = GUIRenderer.ufo.GetComponent<fedoscript>();
 					ufoScript.ai = false;
 					ufoScript.followRoad = false;
@@ -86,43 +86,43 @@ namespace MultiTool.Tabs
 
 			miscY += buttonHeight + 10f;
 
-			if (GUI.Button(new Rect(miscX, miscY, buttonWidth, buttonHeight), "Respawn nearest building items"))
-			{
-				Vector3 playerPosition = mainscript.M.player.transform.position;
+			//if (GUI.Button(new Rect(miscX, miscY, buttonWidth, buttonHeight), "Respawn nearest building items"))
+			//{
+			//	Vector3 playerPosition = mainscript.s.player.transform.position;
 
-				// Find closest building.
-				float distance = float.MaxValue;
-				GameObject closestBuilding = null;
+			//	// Find closest building.
+			//	float distance = float.MaxValue;
+			//	GameObject closestBuilding = null;
 
-				List<GameObject> buildings = new List<GameObject>();
+			//	List<GameObject> buildings = new List<GameObject>();
 
-				foreach (KeyValuePair<int, GameObject> building in mainscript.M.terrainGenerationSettings.roadBuildingGeneration.placedBuildings)
-				{
-					buildings.Add(building.Value);
-				}
+			//	foreach (KeyValuePair<int, GameObject> building in mainscript.s.terrainGenerationSettings.roadBuildingGeneration.placedBuildings)
+			//	{
+			//		buildings.Add(building.Value);
+			//	}
 
-				foreach (SpawnedPOI spawnedPOI in GUIRenderer.spawnedPOIs)
-				{
-					buildings.Add(spawnedPOI.poi);
-				}
+			//	foreach (SpawnedPOI spawnedPOI in GUIRenderer.spawnedPOIs)
+			//	{
+			//		buildings.Add(spawnedPOI.poi);
+			//	}
 
-				foreach (GameObject building in buildings)
-				{
-					Vector3 position = building.transform.position;
-					float buildingDistance = Vector3.Distance(position, playerPosition);
-					if (buildingDistance < distance)
-					{
-						distance = buildingDistance;
-						closestBuilding = building;
-					}
-				}
+			//	foreach (GameObject building in buildings)
+			//	{
+			//		Vector3 position = building.transform.position;
+			//		float buildingDistance = Vector3.Distance(position, playerPosition);
+			//		if (buildingDistance < distance)
+			//		{
+			//			distance = buildingDistance;
+			//			closestBuilding = building;
+			//		}
+			//	}
 
-				// Trigger item respawn.
-				buildingscript buildingscript = closestBuilding.GetComponent<buildingscript>();
-				buildingscript.itemsSpawned = false;
-				buildingscript.SpawnStuff(0);
-			}
-			miscY += buttonHeight + 10f;
+			//	// Trigger item respawn.
+			//	buildingscript buildingscript = closestBuilding.GetComponent<buildingscript>();
+			//	buildingscript.itemsSpawned = false;
+			//	buildingscript.SpawnStuff(0);
+			//}
+			//miscY += buttonHeight + 10f;
 
 			if (GUI.Button(new Rect(miscX, miscY, buttonWidth, buttonHeight), GUIRenderer.GetAccessibleString("Toggle color picker", settings.mode == "colorPicker")))
 			{

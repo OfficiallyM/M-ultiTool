@@ -185,6 +185,16 @@
 			"objectName": "Car09Tfull",
 			"variant": 1,
 			"name": "Barkas transporter"
+		},
+		{
+			"objectName": "Car11full",
+			"variant": 1,
+			"name": "Lamborghini Countach (Widebody)"
+		},
+		{
+			"objectName": "Car11full",
+			"variant": 2,
+			"name": "Lamborghini Countach (Normal)"
 		}
 	],
 	"POIs": [
@@ -405,6 +415,10 @@
 		{
 			"objectName": "car09T",
 			"name": "Barkas Transporter"
+		},
+		{
+			"objectName": "car11",
+			"name": "Lamborghini Countach"
 		}
 	]
 }

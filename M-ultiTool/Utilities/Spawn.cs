@@ -30,9 +30,9 @@ namespace MultiTool.Utilities
                 {
                     amt = true;
                     if (position == null)
-                        position = mainscript.M.player.lookPoint + Vector3.up * 0.75f;
+                        position = mainscript.s.player.lookPoint + Vector3.up * 0.75f;
                     if (rotation == null)
-                        rotation = Quaternion.FromToRotation(Vector3.forward, -mainscript.M.player.transform.right);
+                        rotation = Quaternion.FromToRotation(Vector3.forward, -mainscript.s.player.transform.right);
 
                     item.gameObject = item.amt.spawnMethod.Invoke(item.amt.modItem, new object[] { position, rotation, item.conditionInt, item.color }) as GameObject;
                 }
@@ -159,8 +159,8 @@ namespace MultiTool.Utilities
             if (vehicle.amt != null)
             {
                 amt = true;
-                Vector3 position = mainscript.M.player.lookPoint + Vector3.up * 0.75f;
-                Quaternion rotation = Quaternion.FromToRotation(Vector3.forward, -mainscript.M.player.transform.right);
+                Vector3 position = mainscript.s.player.lookPoint + Vector3.up * 0.75f;
+                Quaternion rotation = Quaternion.FromToRotation(Vector3.forward, -mainscript.s.player.transform.right);
 
                 spawnedVehicle = vehicle.amt.spawnMethod.Invoke(vehicle.amt.modItem, new object[] { position, rotation, vehicle.conditionInt, vehicle.color }) as GameObject;
             }
@@ -257,86 +257,86 @@ namespace MultiTool.Utilities
 		/// <param name="position">Position override</param>
 		/// <param name="rotation">Rotation override</param>
 		/// <returns>The spawned point of interest</returns>
-		internal static SpawnedPOI Spawn(POI POI, bool spawnItems, Vector3? position = null, Quaternion? rotation = null)
-		{
-			GameObject gameObject = null;
-			int ID = -1;
-			try
-			{
-				bool save = true;
-				Vector3 pos = new Vector3();
-				Quaternion rot = new Quaternion();
+		//internal static SpawnedPOI Spawn(POI POI, bool spawnItems, Vector3? position = null, Quaternion? rotation = null)
+		//{
+		//	GameObject gameObject = null;
+		//	int ID = -1;
+		//	try
+		//	{
+		//		bool save = true;
+		//		Vector3 pos = new Vector3();
+		//		Quaternion rot = new Quaternion();
 
-				// Set default position and rotation.
-				pos = mainscript.M.player.lookPoint + mainscript.M.player.transform.forward * 5f;
-				pos.y = mainscript.M.player.gameObject.transform.position.y;
+		//		// Set default position and rotation.
+		//		pos = mainscript.s.player.lookPoint + mainscript.s.player.transform.forward * 5f;
+		//		pos.y = mainscript.s.player.gameObject.transform.position.y;
 
-				// Starter house needs a different offset.
-				if (POI.poi.name == "haz02")
-					pos += Vector3.up * 0.18f;
-				else
-					pos -= Vector3.up * 0.85f;
+		//		// Starter house needs a different offset.
+		//		if (POI.poi.name == "haz02")
+		//			pos += Vector3.up * 0.18f;
+		//		else
+		//			pos -= Vector3.up * 0.85f;
 
-				rot = Quaternion.FromToRotation(Vector3.forward, -mainscript.M.player.transform.right);
+		//		rot = Quaternion.FromToRotation(Vector3.forward, -mainscript.s.player.transform.right);
 
-				if (position != null && rotation != null)
-				{
-					pos = position.GetValueOrDefault();
-					rot = rotation.GetValueOrDefault();
-					save = false;
-				}
+		//		if (position != null && rotation != null)
+		//		{
+		//			pos = position.GetValueOrDefault();
+		//			rot = rotation.GetValueOrDefault();
+		//			save = false;
+		//		}
 
-				//var components = POI.poi.GetComponents<MonoBehaviour>();
-				//foreach (var component in components)
-				//	Logger.Log($"{component.GetType()}", Logger.LogLevel.Debug);
+		//		//var components = POI.poi.GetComponents<MonoBehaviour>();
+		//		//foreach (var component in components)
+		//		//	Logger.Log($"{component.GetType()}", Logger.LogLevel.Debug);
 
-				gameObject = UnityEngine.Object.Instantiate(POI.poi, pos, rot, mainscript.M.terrainGenerationSettings.roadBuildingGeneration.parent);
+		//		gameObject = UnityEngine.Object.Instantiate(POI.poi, pos, rot, mainscript.s.terrainGenerationSettings.roadBuildingGeneration.parent);
 
-				// TODO: Does fuck all.
-				// Find appropriate terrainHeightAlignToBuildingScript from TerrainGenerator.
-				//terrainHeightAlignToBuildingScript terrain = TerrainGenerator.TG.buildings.Where(b => b.name.Contains(POI.poi.name)).FirstOrDefault();
-				//if (terrain != null)
-				//{
-				//	terrain.FStart(true);
-				//}
+		//		// TODO: Does fuck all.
+		//		// Find appropriate terrainHeightAlignToBuildingScript from TerrainGenerator.
+		//		//terrainHeightAlignToBuildingScript terrain = TerrainGenerator.TG.buildings.Where(b => b.name.Contains(POI.poi.name)).FirstOrDefault();
+		//		//if (terrain != null)
+		//		//{
+		//		//	terrain.FStart(true);
+		//		//}
 
-				// TODO: Also does fuck all.
-				//foreach (digholescript2 componentsInChild in gameObject.GetComponentsInChildren<digholescript2>())
-				//{
-				//	componentsInChild.Refresh();
-				//}
+		//		// TODO: Also does fuck all.
+		//		//foreach (digholescript2 componentsInChild in gameObject.GetComponentsInChildren<digholescript2>())
+		//		//{
+		//		//	componentsInChild.Refresh();
+		//		//}
 
-				buildingscript buildingscript = gameObject.GetComponent<buildingscript>();
-				if (buildingscript != null)
-				{
-					buildingscript.itemsSpawned = !spawnItems;
+		//		buildingscript buildingscript = gameObject.GetComponent<buildingscript>();
+		//		if (buildingscript != null)
+		//		{
+		//			buildingscript.itemsSpawned = !spawnItems;
 
-					// Force start building script.
-					buildingscript.FStart(0);
-				}
+		//			// Force start building script.
+		//			buildingscript.FStart(0);
+		//		}
 
-				// Save the POI.
-				if (save)
-				{
-					ID = SaveUtilities.UpdatePOISaveData(new POIData()
-					{
-						poi = gameObject.name,
-						position = pos,
-						rotation = rot,
-					});
-				}
-			}
-			catch (Exception ex)
-			{
-				Logger.Log($"Error spawning POI - {ex}", Logger.LogLevel.Error);
-			}
+		//		// Save the POI.
+		//		if (save)
+		//		{
+		//			ID = SaveUtilities.UpdatePOISaveData(new POIData()
+		//			{
+		//				poi = gameObject.name,
+		//				position = pos,
+		//				rotation = rot,
+		//			});
+		//		}
+		//	}
+		//	catch (Exception ex)
+		//	{
+		//		Logger.Log($"Error spawning POI - {ex}", Logger.LogLevel.Error);
+		//	}
 
-			return new SpawnedPOI()
-			{
-				ID = ID,
-				poi = gameObject,
-			};
-		}
+		//	return new SpawnedPOI()
+		//	{
+		//		ID = ID,
+		//		poi = gameObject,
+		//	};
+		//}
 
 		/// <summary>
 		/// Based off mainscript Spawn method
@@ -344,9 +344,9 @@ namespace MultiTool.Utilities
 		internal static GameObject Spawn(GameObject gameObject, Color color, int condition, int variant, Vector3? position = null, Quaternion? rotation = null)
 		{
 			if (position == null)
-				position = mainscript.M.player.lookPoint + Vector3.up * 0.75f;
+				position = mainscript.s.player.lookPoint + Vector3.up * 0.75f;
 			if (rotation == null)
-				rotation = Quaternion.FromToRotation(Vector3.forward, -mainscript.M.player.transform.right);
+				rotation = Quaternion.FromToRotation(Vector3.forward, -mainscript.s.player.transform.right);
 			try
 			{
                 GameObject spawned = UnityEngine.Object.Instantiate(gameObject, position.Value, rotation.Value);
@@ -374,7 +374,7 @@ namespace MultiTool.Utilities
 					GameUtilities.Paint(color, conditionscript, true);
 				}
 
-				mainscript.M.PostSpawn(spawned);
+				mainscript.s.PostSpawn(spawned);
 
 				return spawned;
 			}

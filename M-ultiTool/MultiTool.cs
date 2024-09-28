@@ -16,10 +16,10 @@ namespace MultiTool
 	public class MultiTool : Mod
 	{
 		// Mod meta stuff.
-		public override string ID => Meta.ID;
-		public override string Name => Meta.Name;
-		public override string Author => Meta.Author;
-		public override string Version => Meta.Version;
+		public override string ID => "M-ultiTool";
+		public override string Name => "M-ultiTool";
+		public override string Author => "M-";
+		public override string Version => "3.2.0";
         public override bool LoadInDB => true;
 		public override bool LoadInMenu => true;
 
@@ -39,6 +39,8 @@ namespace MultiTool
 
 		public MultiTool()
 		{
+			mod = this;
+
 			// Initialise modules.
 			try
 			{
@@ -57,8 +59,6 @@ namespace MultiTool
 			{
 				Logger.Log($"Module initialisation failed - {ex}", Logger.LogLevel.Critical);
 			}
-
-			mod = this;
 		}
 
 		// Override functions.
@@ -85,7 +85,7 @@ namespace MultiTool
             configVersion = config.GetVersion();
             config.UpdateVersion();
 
-			loaded = true;
+            loaded = true;
 
 			renderer.enabled = CoreUtilities.HasPassedValidation();
 		}
@@ -95,10 +95,10 @@ namespace MultiTool
 			renderer.OnGUI();
 		}
 
-        public override void dbLoad()
+        public override void DbLoad()
         {
             GameObject controller = new GameObject("M-ultiToolController");
-            controller.transform.SetParent(mainscript.M.transform);
+            controller.transform.SetParent(mainscript.s.transform);
             controller.AddComponent<Controller>();
         }
 
@@ -111,8 +111,6 @@ namespace MultiTool
 			// Run spawner migration.
 			MigrateUtilities.MigrateFromSpawner();
 
-			Translator.SetLanguage(mainscript.M.menu.language.languageNames[mainscript.M.menu.language.selectedLanguage]);
-
             // Load the GUI renderer.
             renderer.OnLoad();
 		}
@@ -122,7 +120,7 @@ namespace MultiTool
 			// Return early if M-ultiTool isn't enabled.
 			if (!renderer.enabled)
             {
-                if (mainscript.M == null && !reset && PlayerPrefs.GetFloat("DistanceDriven") == 0)
+                if (mainscript.s == null && !reset && PlayerPrefs.GetFloat("DistanceDriven") == 0)
                 {
                     CoreUtilities.HasPassedValidation();
                     reset = true;
@@ -137,9 +135,9 @@ namespace MultiTool
 			{
 				try
 				{
-					if (Input.GetKeyDown(binds.GetKeyByAction((int)Keybinds.Inputs.deleteMode).key) && mainscript.M.player.seat == null)
+					if (Input.GetKeyDown(binds.GetKeyByAction((int)Keybinds.Inputs.deleteMode).key) && mainscript.s.player.seat == null)
 					{
-						Physics.Raycast(mainscript.M.player.Cam.transform.position, mainscript.M.player.Cam.transform.forward, out var raycastHit, float.PositiveInfinity, mainscript.M.player.useLayer);
+						Physics.Raycast(mainscript.s.player.Cam.transform.position, mainscript.s.player.Cam.transform.forward, out var raycastHit, float.PositiveInfinity, mainscript.s.player.useLayer);
 
 						// Require objects to have a tosaveitemscript in order to delete them.
 						// This prevents players from deleting the world, buildings and other
@@ -147,11 +145,11 @@ namespace MultiTool
 						tosaveitemscript save = raycastHit.transform.gameObject.GetComponent<tosaveitemscript>();
 						if (save != null)
 						{
-							save.removeFromMemory = true;
+							//save.removeFromMemory = true;
 
 							foreach (tosaveitemscript component in raycastHit.transform.root.GetComponentsInChildren<tosaveitemscript>())
 							{
-								component.removeFromMemory = true;
+								//component.removeFromMemory = true;
 							}
 							UnityEngine.Object.Destroy(raycastHit.transform.root.gameObject);
 						}
@@ -168,7 +166,7 @@ namespace MultiTool
 				case "colorPicker":
 					if (Input.GetKeyDown(binds.GetKeyByAction((int)Keybinds.Inputs.action1).key) && !renderer.show)
 					{
-						Physics.Raycast(mainscript.M.player.Cam.transform.position, mainscript.M.player.Cam.transform.forward, out var raycastHit, float.PositiveInfinity, mainscript.M.player.useLayer);
+						Physics.Raycast(mainscript.s.player.Cam.transform.position, mainscript.s.player.Cam.transform.forward, out var raycastHit, float.PositiveInfinity, mainscript.s.player.useLayer);
 						GameObject hitGameObject = raycastHit.transform.gameObject;
 						partconditionscript part = hitGameObject.GetComponent<partconditionscript>();
 						sprayscript spray = hitGameObject.GetComponent<sprayscript>();
@@ -198,7 +196,7 @@ namespace MultiTool
 
 					if (Input.GetKeyDown(binds.GetKeyByAction((int)Keybinds.Inputs.action2).key) && !renderer.show)
 					{
-						Physics.Raycast(mainscript.M.player.Cam.transform.position, mainscript.M.player.Cam.transform.forward, out var raycastHit, float.PositiveInfinity, mainscript.M.player.useLayer);
+						Physics.Raycast(mainscript.s.player.Cam.transform.position, mainscript.s.player.Cam.transform.forward, out var raycastHit, float.PositiveInfinity, mainscript.s.player.useLayer);
 						GameObject hitGameObject = raycastHit.transform.gameObject;
 						partconditionscript part = hitGameObject.transform.root.GetComponent<partconditionscript>();
 						sprayscript spray = hitGameObject.transform.root.GetComponent<sprayscript>();
@@ -222,7 +220,7 @@ namespace MultiTool
                         // Select object.
                         if (Input.GetKeyDown(binds.GetKeyByAction((int)Keybinds.Inputs.action6).key))
                         {
-                            Physics.Raycast(mainscript.M.player.Cam.transform.position, mainscript.M.player.Cam.transform.forward, out var raycastHit, float.PositiveInfinity, mainscript.M.player.useLayer);
+                            Physics.Raycast(mainscript.s.player.Cam.transform.position, mainscript.s.player.Cam.transform.forward, out var raycastHit, float.PositiveInfinity, mainscript.s.player.useLayer);
                             if (raycastHit.collider != null && raycastHit.collider.gameObject != null)
                             {
                                 GameObject hitGameObject = raycastHit.collider.transform.gameObject;
@@ -375,7 +373,7 @@ namespace MultiTool
 					// Select object.
 					if (Input.GetKeyDown(binds.GetKeyByAction((int)Keybinds.Inputs.action1).key))
 					{
-						Physics.Raycast(mainscript.M.player.Cam.transform.position, mainscript.M.player.Cam.transform.forward, out var raycastHit, float.PositiveInfinity, mainscript.M.player.useLayer);
+						Physics.Raycast(mainscript.s.player.Cam.transform.position, mainscript.s.player.Cam.transform.forward, out var raycastHit, float.PositiveInfinity, mainscript.s.player.useLayer);
 						if (raycastHit.collider != null && raycastHit.collider.gameObject != null)
 						{
 							GameObject hitGameObject = raycastHit.collider.transform.gameObject;
@@ -417,7 +415,7 @@ namespace MultiTool
 
 								attached.Detach();
 								attached.targetTosave = spawned.GetComponent<tosaveitemscript>();
-								attached.Load(attached.pointLocalPos);
+								attached.Load(new Vector3d(attached.pointLocalPos));
 							}
 
 							// Re-Set object parent if required.
@@ -430,17 +428,17 @@ namespace MultiTool
 									tosaveitemscript attachSave = attach.targetTosave;
 									attach.Detach();
 									newAttach.targetTosave = attachSave;
-									newAttach.Load(attach.pointLocalPos);
+									newAttach.Load(new Vector3d(attach.pointLocalPos));
 								}
 							}
 
 							partslotscript oldSlot = gameObject.GetComponent<partscript>()?.slot;
 
 							// Destroy the old object.
-							save.removeFromMemory = true;
+							//save.removeFromMemory = true;
 							foreach (tosaveitemscript component in gameObject.GetComponentsInChildren<tosaveitemscript>())
 							{
-								component.removeFromMemory = true;
+								//component.removeFromMemory = true;
 							}
 							UnityEngine.Object.Destroy(gameObject);
 
@@ -452,8 +450,8 @@ namespace MultiTool
 								partscript part = spawned.GetComponent<partscript>();
 								if (oldSlot != null)
 								{
-									oldSlot.Craft(part);
-									part.tosaveitem.Claim(false);
+									oldSlot.Craft(part, true);
+									//part.tosaveitem.Claim(false);
 								}
 							}
 						}
@@ -461,23 +459,26 @@ namespace MultiTool
 					break;
 			}
 
+            // Return early if not in-game.
+            if (mainscript.s.player == null) return;
+
 			// Fake the player being on a ladder to remove the gravity during noclip.
 			// This is needed because setting useGravity directly on the player RigidBody
 			// gets enabled again immediately by the fpscontroller.
 			if (settings.noclip)
-				mainscript.M.player.ladderV = 1;
+				mainscript.s.player.ladderV = 1;
 
 			// Apply player settings.
 			if (GUIRenderer.playerData != null)
 			{
 				PlayerData playerData = GUIRenderer.playerData;
-				fpscontroller player = mainscript.M.player;
+				fpscontroller player = mainscript.s.player;
 				if (player != null)
 				{
 					player.FdefMaxSpeed = playerData.walkSpeed;
 					player.FrunM = playerData.runSpeed;
 					player.FjumpForce = playerData.jumpForce;
-					mainscript.M.pushForce = playerData.pushForce;
+					mainscript.s.pushForce = playerData.pushForce;
 					player.maxWeight = playerData.carryWeight;
 					player.maxPickupForce = playerData.pickupForce;
 					if (player.mass != null && player.mass.Mass() != playerData.mass)
@@ -486,15 +487,6 @@ namespace MultiTool
 					if (player.inHandP != null && player.inHandP.weapon != null)
 					{
 						tosaveitemscript save = player.inHandP.weapon.GetComponent<tosaveitemscript>();
-
-						if (playerData.weaponData == null)
-							playerData.weaponData = new List<WeaponData>();
-
-						WeaponData weaponData = playerData.weaponData.Where(d => d.id == save.idInSave).FirstOrDefault();
-						if (weaponData != null)
-							player.inHandP.weapon.minShootTime = weaponData.fireRate;
-						else
-							playerData.weaponData.Add(new WeaponData() { id = save.idInSave, fireRate = player.inHandP.weapon.minShootTime, defaultFireRate = player.inHandP.weapon.minShootTime });
 
 						player.inHandP.weapon.infinite = playerData.infiniteAmmo;
 					}
@@ -512,7 +504,7 @@ namespace MultiTool
 			SettingAPI setting = new SettingAPI(this);
 			showDebugString = setting.GUICheckbox(showDebugString, "Show debug string", 10, 10);
 			if (showDebugString && loaded)
-				setting.GUIDescriptionText($"Debug string: {PlayerPrefs.GetString("game_settings", string.Empty)}", 60, 10, 40);
+				setting.GUIDescriptionText($"Debug string: {PlayerPrefs.GetString("Data", string.Empty)}", 60, 10, 40);
 		}
 	}
 }

@@ -16,7 +16,7 @@ namespace MultiTool.Core
 	[DataContract]
 	internal class GlassData
 	{
-		[DataMember] public int ID { get; set; }
+		[DataMember] public uint ID { get; set; }
 		[DataMember] public Color color { get; set; }
 		[DataMember] public string type { get; set; }
 	}
@@ -24,7 +24,7 @@ namespace MultiTool.Core
 	[DataContract]
 	internal class MaterialData
 	{
-		[DataMember] public int ID { get; set; }
+		[DataMember] public uint ID { get; set; }
 		[DataMember] public string part { get; set; }
         [DataMember] public bool? isConditionless { get; set; } = false;
 		[DataMember] public bool exact { get; set; }
@@ -35,14 +35,14 @@ namespace MultiTool.Core
 	[DataContract]
 	internal class ScaleData
 	{
-		[DataMember] public int ID { get; set; }
+		[DataMember] public uint ID { get; set; }
 		[DataMember] public Vector3 scale { get; set; }
 	}
 
 	[DataContract]
 	internal class SlotData
 	{
-		[DataMember] public int ID { get; set; }
+		[DataMember] public uint ID { get; set; }
 		[DataMember] public string slot { get; set; }
 		[DataMember] public Vector3 position { get; set; }
 		[DataMember] public Vector3 resetPosition { get; set; }
@@ -53,7 +53,7 @@ namespace MultiTool.Core
     [DataContract]
     internal class LightData
     {
-        [DataMember] public int ID { get; set; }
+        [DataMember] public uint ID { get; set; }
         [DataMember] public string name { get; set; }
         [DataMember] public Color color { get; set; }
     }
@@ -61,21 +61,21 @@ namespace MultiTool.Core
     [DataContract]
     internal class EngineTuningData
     {
-        [DataMember] public int ID { get; set; }
+        [DataMember] public uint ID { get; set; }
         [DataMember] public EngineTuning tuning { get; set; }
     }
 
     [DataContract]
     internal class TransmissionTuningData
     {
-        [DataMember] public int ID { get; set; }
+        [DataMember] public uint ID { get; set; }
         [DataMember] public TransmissionTuning tuning { get; set; }
     }
 
     [DataContract]
     internal class VehicleTuningData
     {
-        [DataMember] public int ID { get; set; }
+        [DataMember] public uint ID { get; set; }
         [DataMember] public VehicleTuning tuning { get; set; }
     }
 

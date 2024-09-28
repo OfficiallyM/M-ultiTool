@@ -159,15 +159,6 @@ namespace MultiTool.Core
 		[DataMember] public float pickupForce { get; set; }
 		[DataMember] public bool infiniteAmmo { get; set; }
 		[DataMember] public float mass { get; set; }
-		[DataMember] public List<WeaponData> weaponData { get; set; }
-	}
-
-	[DataContract]
-	internal class WeaponData
-	{
-		[DataMember] public int id { get; set; }
-		[DataMember] public float fireRate { get; set; }
-		[DataMember] public float defaultFireRate { get; set; }
 	}
 
 	[DataContract]

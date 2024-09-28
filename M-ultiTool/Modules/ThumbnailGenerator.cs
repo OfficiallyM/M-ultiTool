@@ -15,7 +15,7 @@ namespace MultiTool.Modules
 
 		public static void Init()
 		{
-			string configDir =  Path.Combine(ModLoader.ModsFolder, "Config", "Mod Settings", Meta.ID);
+			string configDir =  Path.Combine(ModLoader.ModsFolder, "Config", "Mod Settings", MultiTool.mod.ID);
 			DirectoryInfo dir = Directory.CreateDirectory(Path.Combine(configDir, "Cache"));
 			cacheDir = dir.FullName;
 		}

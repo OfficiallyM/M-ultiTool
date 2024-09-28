@@ -31,7 +31,7 @@ namespace MultiTool.Modules
 				{
 					Directory.CreateDirectory(Path.Combine(ModLoader.ModsFolder, "Logs"));
 					logFile = ModLoader.ModsFolder + "\\Logs\\M-ultiTool.log";
-					File.WriteAllText(logFile, $"M-ultiTool v{Meta.Version} initialised\r\n");
+					File.WriteAllText(logFile, $"M-ultiTool v{MultiTool.mod.Version} initialised\r\n");
 					initialised = true;
 				}
 			}

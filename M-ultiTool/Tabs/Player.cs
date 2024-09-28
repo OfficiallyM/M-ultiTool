@@ -41,7 +41,7 @@ namespace MultiTool.Tabs
 			if (GUI.Button(new Rect(x, y, buttonWidth, buttonHeight), GUIRenderer.GetAccessibleString("God mode", settings.godMode)))
 			{
 				settings.godMode = !settings.godMode;
-				mainscript.M.ChGodMode(settings.godMode);
+				mainscript.s.ChGodMode(settings.godMode);
 			}
 			x += buttonWidth + 10f;
 
@@ -52,21 +52,21 @@ namespace MultiTool.Tabs
 
 				if (settings.noclip)
 				{
-					Noclip noclip = mainscript.M.player.gameObject.AddComponent<Noclip>();
+					Noclip noclip = mainscript.s.player.gameObject.AddComponent<Noclip>();
 					noclip.constructor(GUIRenderer.binds, GUIRenderer.config);
-					GUIRenderer.localRotation = mainscript.M.player.transform.localRotation;
-					mainscript.M.player.Th.localEulerAngles = new Vector3(0f, 0f, 0f);
+					GUIRenderer.localRotation = mainscript.s.player.transform.localRotation;
+					mainscript.s.player.Th.localEulerAngles = new Vector3(0f, 0f, 0f);
 					settings.godMode = true;
 
 					// Disable colliders.
-					foreach (Collider collider in mainscript.M.player.C)
+					foreach (Collider collider in mainscript.s.player.C)
 					{
 						collider.enabled = false;
 					}
 				}
 				else
 				{
-					Noclip noclip = mainscript.M.player.gameObject.GetComponent<Noclip>();
+					Noclip noclip = mainscript.s.player.gameObject.GetComponent<Noclip>();
 					if (noclip != null)
 					{
 						UnityEngine.Object.Destroy(noclip);
@@ -74,10 +74,10 @@ namespace MultiTool.Tabs
 						// Resetting localRotation stops the player from flying infinitely
 						// upwards when coming out of noclip.
 						// I have no idea why, it just works.
-						mainscript.M.player.transform.localRotation = GUIRenderer.localRotation;
+						mainscript.s.player.transform.localRotation = GUIRenderer.localRotation;
 
 						// Re-enable colliders.
-						foreach (Collider collider in mainscript.M.player.C)
+						foreach (Collider collider in mainscript.s.player.C)
 						{
 							collider.enabled = true;
 						}
@@ -86,7 +86,7 @@ namespace MultiTool.Tabs
 					if (GUIRenderer.noclipGodmodeDisable)
 						settings.godMode = false;
 				}
-				mainscript.M.ChGodMode(settings.godMode);
+				mainscript.s.ChGodMode(settings.godMode);
 			}
 
 			x += buttonWidth + 10f;
@@ -235,36 +235,36 @@ namespace MultiTool.Tabs
 			y += buttonHeight + 10f;
 
 			// Fire speed.
-			if (mainscript.M.player.inHandP != null && mainscript.M.player.inHandP.weapon != null)
-			{
-				tosaveitemscript save = mainscript.M.player.inHandP.weapon.GetComponent<tosaveitemscript>();
-				WeaponData weaponData = GUIRenderer.playerData.weaponData.Where(d => d.id == save.idInSave).FirstOrDefault();
+            // TODO: Rewrite saving.
+			//if (mainscript.s.player.inHandP != null && mainscript.s.player.inHandP.weapon != null)
+			//{
+			//	tosaveitemscript save = mainscript.s.player.inHandP.weapon.GetComponent<tosaveitemscript>();
 
-				if (weaponData != null)
-				{
-					GUI.Label(new Rect(x, y, headerWidth, buttonHeight), $"Fire rate: {weaponData.fireRate} (Default: {weaponData.defaultFireRate})", GUIRenderer.labelStyle);
-					y += buttonHeight;
-					float fireRate = GUI.HorizontalSlider(new Rect(x, y, sliderWidth, buttonHeight), weaponData.fireRate, 0.001f, 0.5f);
-					x += sliderWidth + 10f;
-					if (GUI.Button(new Rect(x, y, buttonWidth, buttonHeight), "Reset"))
-					{
-						weaponData.fireRate = weaponData.defaultFireRate;
-						update = true;
-					}
-					else
-					{
-						fireRate = (float)Math.Round(fireRate, 3);
-						if (fireRate != weaponData.fireRate)
-						{
-							weaponData.fireRate = fireRate;
-							update = true;
-						}
-					}
+			//	if (weaponData != null)
+			//	{
+			//		GUI.Label(new Rect(x, y, headerWidth, buttonHeight), $"Fire rate: {weaponData.fireRate} (Default: {weaponData.defaultFireRate})", GUIRenderer.labelStyle);
+			//		y += buttonHeight;
+			//		float fireRate = GUI.HorizontalSlider(new Rect(x, y, sliderWidth, buttonHeight), weaponData.fireRate, 0.001f, 0.5f);
+			//		x += sliderWidth + 10f;
+			//		if (GUI.Button(new Rect(x, y, buttonWidth, buttonHeight), "Reset"))
+			//		{
+			//			weaponData.fireRate = weaponData.defaultFireRate;
+			//			update = true;
+			//		}
+			//		else
+			//		{
+			//			fireRate = (float)Math.Round(fireRate, 3);
+			//			if (fireRate != weaponData.fireRate)
+			//			{
+			//				weaponData.fireRate = fireRate;
+			//				update = true;
+			//			}
+			//		}
 
-					x = startingX;
-					y += buttonHeight + 10f;
-				}
-			}
+			//		x = startingX;
+			//		y += buttonHeight + 10f;
+			//	}
+			//}
 
 			// Mass.
 			GUI.Label(new Rect(x, y, headerWidth, buttonHeight), $"Mass: {GUIRenderer.playerData.mass} (Default: {GUIRenderer.defaultPlayerData.mass})", GUIRenderer.labelStyle);
@@ -292,7 +292,7 @@ namespace MultiTool.Tabs
 			GUI.Label(new Rect(x, y, headerWidth, buttonHeight), $"Bladder control:", GUIRenderer.labelStyle);
 			y += buttonHeight + 10f;
 
-			float pissMax = mainscript.M.player.piss.Tank.F.maxC;
+			float pissMax = mainscript.s.player.piss.Tank.F.maxC;
 			int pissPercentage = 0;
 
 			foreach (KeyValuePair<mainscript.fluidenum, int> fluid in GUIRenderer.piss)
@@ -329,7 +329,7 @@ namespace MultiTool.Tabs
 
 			if (GUI.Button(new Rect(x, y, buttonWidth, buttonHeight), "Get current"))
 			{
-				tankscript tank = mainscript.M.player.piss.Tank;
+				tankscript tank = mainscript.s.player.piss.Tank;
 
 				tempPiss = new Dictionary<mainscript.fluidenum, int>();
 				foreach (KeyValuePair<mainscript.fluidenum, int> fluid in GUIRenderer.piss)
@@ -350,7 +350,7 @@ namespace MultiTool.Tabs
 
 			if (GUI.Button(new Rect(x, y, buttonWidth, buttonHeight), "Apply"))
 			{
-				tankscript tank = mainscript.M.player.piss.Tank;
+				tankscript tank = mainscript.s.player.piss.Tank;
 				tank.F.fluids.Clear();
 				foreach (KeyValuePair<mainscript.fluidenum, int> fluid in GUIRenderer.piss)
 				{

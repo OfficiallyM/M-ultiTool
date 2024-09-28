@@ -37,20 +37,6 @@ namespace MultiTool.Modules
 		private float mainMenuX;
 		private float mainMenuY;
 
-		private float legacyMainMenuWidth;
-		private float legacyMainMenuHeight;
-		private float legacyMainMenuX;
-		private float legacyMainMenuY;
-
-		private float legacyVehicleMenuWidth;
-		private float legacyVehicleMenuHeight;
-		private float legacyVehicleMenuX;
-		private float legacyVehicleMenuY;
-
-		private bool vehicleMenu = false;
-		private bool miscMenu = false;
-		private bool itemsMenu = false;
-
 		private int tab = 0;
 
 		private List<Tab> tabs = new List<Tab>();
@@ -142,7 +128,7 @@ namespace MultiTool.Modules
 			{ "Refillables", new List<Type>() { typeof(ammoscript) } },
 			{ "Food", new List<Type>() { typeof(ediblescript) } },
 			{ "Wearables", new List<Type>() { typeof(wearable) } },
-			{ "Lights", new List<Type>() { typeof(flashlightscript) } },
+			//{ "Lights", new List<Type>() { typeof(flashlightscript) } },
 			{ "Usables", new List<Type>() { typeof(pickupable) } },
 			{ "Mod items", new List<Type>() { typeof(tosaveitemscript) } },
 			{ "Other", new List<Type>() { typeof(MonoBehaviour) } },
@@ -238,6 +224,7 @@ namespace MultiTool.Modules
 			"bus03",
 			"car07",
 			"car09T",
+            "car11",
 		};
 		private string[] bikes = new string[]
 		{
@@ -256,7 +243,7 @@ namespace MultiTool.Modules
 			// Return early if M-ultiTool is disabled.
 			if (!enabled || !settings.hasInit)
 			{
-				if (mainscript.M != null && mainscript.M.menu.Menu.activeSelf)
+				if (mainscript.s != null && mainscript.s.menu.Menu.activeSelf)
 					GUI.Button(new Rect(0, 0, 20, 20), string.Empty);
 				return;
 			}
@@ -270,47 +257,29 @@ namespace MultiTool.Modules
 			// Find screen resolution.
 			resolutionX = Screen.width;
 			resolutionY = Screen.height;
-			int resX = mainscript.M != null ? mainscript.M.SettingObj.S.IResolutionX : mainmenuscript.mainmenu.Settings.S.IResolutionX;
-			int resY = mainscript.M != null ? mainscript.M.SettingObj.S.IResolutionY : mainmenuscript.mainmenu.Settings.S.IResolutionY;
+            int resX = settingsscript.s.S.IResolutionX;
+			int resY = settingsscript.s.S.IResolutionY;
 			if (resX != resolutionX)
 			{
 				resolutionX = resX;
 				resolutionY = resY;
 
-				// Resolution has changed, recalculate menu sizes.
-				legacyMainMenuWidth = resolutionX / 7f;
-				legacyMainMenuHeight = resolutionY / 1.2f;
-				legacyMainMenuX = resolutionX / 2.5f - legacyMainMenuWidth;
-				legacyMainMenuY = 75f;
-
 				mainMenuWidth = resolutionX - 80f;
 				mainMenuHeight = resolutionY - 80f;
 				mainMenuX = 40f;
 				mainMenuY = 40f;
-
-				legacyVehicleMenuX = legacyMainMenuX + legacyMainMenuWidth + 15f;
-				legacyVehicleMenuY = legacyMainMenuY;
-				legacyVehicleMenuWidth = resolutionX / 2f;
-				legacyVehicleMenuHeight = resolutionY / 4.25f;
 			}
 
 			// In game.
-			if (mainscript.M != null)
+			if (mainscript.s.player != null)
 			{
 				if (!loaded) return;
 
-				if (!show && !mainscript.M.menu.Menu.activeSelf)
+				if (!show && !mainscript.s.menu.Menu.activeSelf)
 					RenderHUD();
 
-				// Render the legacy UI if enabled.
-				if (legacyUI)
-				{
-					RenderLegacyUI();
-					return;
-				}
-
 				// Only show visibility menu on pause menu.
-				if (mainscript.M.menu.Menu.activeSelf)
+				if (mainscript.s.menu.Menu.activeSelf)
 				{
 					ToggleVisibility();
 				}
@@ -331,39 +300,6 @@ namespace MultiTool.Modules
 			}
 		}
 
-		/// <summary>
-		/// Render the legacy version of the UI
-		/// </summary>
-		private void RenderLegacyUI()
-		{
-			// Return early if pause menu isn't active.
-			if (!mainscript.M.menu.Menu.activeSelf)
-				return;
-
-			ToggleVisibilityLegacy();
-
-			// Return early if the UI isn't supposed to be visible.
-			if (!show)
-				return;
-
-			// Main menu always shows.
-			MainMenuLegacy();
-
-			if (vehicleMenu)
-			{
-				VehicleMenuLegacy();
-			}
-
-			if (miscMenu) {
-				MiscMenuLegacy();
-			}
-			
-			if (itemsMenu)
-			{
-				ItemsMenuLegacy();
-			}
-		}
-
 		internal void OnLoad()
 		{
 			if (!settings.hasInit) return;
@@ -373,36 +309,23 @@ namespace MultiTool.Modules
 				// Ensure UI loads hidden.
 				show = false;
 
-				resolutionX = mainscript.M.SettingObj.S.IResolutionX;
-				resolutionY = mainscript.M.SettingObj.S.IResolutionY;
-
-				// Set main menu position here so other menus can be based around it.
-				legacyMainMenuWidth = resolutionX / 7f;
-				legacyMainMenuHeight = resolutionY / 1.2f;
-				legacyMainMenuX = resolutionX / 2.5f - legacyMainMenuWidth;
-				legacyMainMenuY = 75f;
+				resolutionX = settingsscript.s.S.IResolutionX;
+				resolutionY = settingsscript.s.S.IResolutionY;
 
 				mainMenuWidth = resolutionX - 80f;
 				mainMenuHeight = resolutionY - 80f;
 				mainMenuX = 40f;
 				mainMenuY = 40f;
 
-				// Also store the vehicle menu so the misc menu can be
-				// placed under it.
-				legacyVehicleMenuX = legacyMainMenuX + legacyMainMenuWidth + 15f;
-				legacyVehicleMenuY = legacyMainMenuY;
-				legacyVehicleMenuWidth = resolutionX / 2f;
-				legacyVehicleMenuHeight = resolutionY / 4.25f;
-
 				// Add available quickspawn items.
-				quickSpawns.Add(new QuickSpawn() { gameObject = itemdatabase.d.goilcan, name = "Oil can" });
-				quickSpawns.Add(new QuickSpawn() { gameObject = itemdatabase.d.ggascan, name = "Jerry can" });
-				quickSpawns.Add(new QuickSpawn() { gameObject = itemdatabase.d.gbarrel, name = "Barrel" });
+				quickSpawns.Add(new QuickSpawn() { gameObject = itemdatabase.s.goilcan, name = "Oil can" });
+				quickSpawns.Add(new QuickSpawn() { gameObject = itemdatabase.s.ggascan, name = "Jerry can" });
+				quickSpawns.Add(new QuickSpawn() { gameObject = itemdatabase.s.gbarrel, name = "Barrel" });
 
 				// Add default tabs.
 				AddTab(new Tabs.VehiclesTab());
 				AddTab(new Tabs.ItemsTab());
-				AddTab(new Tabs.POIsTab());
+				//AddTab(new Tabs.POIsTab());
 				AddTab(new Tabs.ShapesTab());
 				AddTab(new Tabs.PlayerTab());
 				AddTab(new Tabs.VehicleConfigurationTab());
@@ -412,10 +335,10 @@ namespace MultiTool.Modules
 				// Load data from database.
 				vehicles = DatabaseUtilities.LoadVehicles();
 				items = DatabaseUtilities.LoadItems();
-				POIs = DatabaseUtilities.LoadPOIs();
+				//POIs = DatabaseUtilities.LoadPOIs();
 
 				// Load save data.
-				spawnedPOIs = SaveUtilities.LoadPOIs();
+				//spawnedPOIs = SaveUtilities.LoadPOIs();
 				SaveUtilities.LoadSaveData();
 
 				// Clear any existing static values.
@@ -450,18 +373,17 @@ namespace MultiTool.Modules
 					// Get default player data values.
 					if (defaultPlayerData == null)
 					{
-						fpscontroller player = mainscript.M.player;
+						fpscontroller player = mainscript.s.player;
 						defaultPlayerData = new PlayerData()
 						{
 							walkSpeed = player.FdefMaxSpeed,
 							runSpeed = player.FrunM,
 							jumpForce = player.FjumpForce,
-							pushForce = mainscript.M.pushForce,
+							pushForce = mainscript.s.pushForce,
 							carryWeight = player.maxWeight,
 							pickupForce = player.maxPickupForce,
 							mass = player != null && player.mass != null ? player.mass.Mass() : 0,
 							infiniteAmmo = false,
-							weaponData = new List<WeaponData>(),
 						};
 					}
 					playerData = config.GetPlayerData(defaultPlayerData);
@@ -475,7 +397,7 @@ namespace MultiTool.Modules
 				binds.OnLoad();
 
 				// Find instance of temporaryTurnOffGeneration to spawn UFO.
-				temp = mainscript.M.menu.GetComponentInChildren<temporaryTurnOffGeneration>();
+				temp = mainscript.s.menu.GetComponentInChildren<temporaryTurnOffGeneration>();
 
 				// Check if old spawner is installed.
 				foreach (var mod in ModLoader.LoadedMods)
@@ -498,26 +420,26 @@ namespace MultiTool.Modules
 			if (legacyUI)
 				return;
 
-			if (mainscript.M == null)
+			if (mainscript.s.player == null)
 			{
 				MainMenuUpdate();
 				return;
 			}
 
-			if (Input.GetKeyDown(binds.GetKeyByAction((int)Keybinds.Inputs.menu).key) && !mainscript.M.menu.Menu.activeSelf && !mainscript.M.settingsOpen && !mainscript.M.menu.saveScreen.gameObject.activeSelf)
+			if (Input.GetKeyDown(binds.GetKeyByAction((int)Keybinds.Inputs.menu).key) && !mainscript.s.menu.Menu.activeSelf && !mainscript.s.settingsOpen && !mainscript.s.menu.saveScreen.gameObject.activeSelf)
 			{
 				show = !show;
-				mainscript.M.crsrLocked = !show;
-				mainscript.M.SetCursorVisible(show);
-				mainscript.M.menu.gameObject.SetActive(!show);
+				mainscript.s.crsrLocked = !show;
+				mainscript.s.SetCursorVisible(show);
+				mainscript.s.menu.gameObject.SetActive(!show);
 			}
 
-			if (show && !mainscript.M.menu.Menu.activeSelf && Input.GetButtonDown("Cancel"))
+			if (show && !mainscript.s.menu.Menu.activeSelf && Input.GetButtonDown("Cancel"))
 			{
 				show = false;
-				mainscript.M.crsrLocked = !show;
-				mainscript.M.SetCursorVisible(show);
-				mainscript.M.menu.gameObject.SetActive(!show);
+				mainscript.s.crsrLocked = !show;
+				mainscript.s.SetCursorVisible(show);
+				mainscript.s.menu.gameObject.SetActive(!show);
 			}
 
 			// Detect item when item debugging is enabled.
@@ -527,7 +449,7 @@ namespace MultiTool.Modules
 				{
 					GameObject foundObject = null;
 					// Find object the player is looking at.
-					Physics.Raycast(mainscript.M.player.Cam.transform.position, mainscript.M.player.Cam.transform.forward, out var raycastHit, float.PositiveInfinity, mainscript.M.player.useLayer);
+					Physics.Raycast(mainscript.s.player.Cam.transform.position, mainscript.s.player.Cam.transform.forward, out var raycastHit, float.PositiveInfinity, mainscript.s.player.useLayer);
 
 					tosaveitemscript save = raycastHit.transform.gameObject.GetComponent<tosaveitemscript>();
 					if (save != null)
@@ -536,12 +458,12 @@ namespace MultiTool.Modules
 					}
 
 					// Debug picked up if player is holding something.
-					if (mainscript.M.player.pickedUp != null)
-						foundObject = mainscript.M.player.pickedUp.gameObject;
+					if (mainscript.s.player.pickedUp != null)
+						foundObject = mainscript.s.player.pickedUp.gameObject;
 
 					// Debug held item if something is equipped.
-					if (mainscript.M.player.inHandP != null)
-						foundObject = mainscript.M.player.inHandP.gameObject;
+					if (mainscript.s.player.inHandP != null)
+						foundObject = mainscript.s.player.inHandP.gameObject;
 
 					debugObject = foundObject;
 				}
@@ -556,7 +478,7 @@ namespace MultiTool.Modules
 				try
 				{
 					// Unset slotControl mode when exiting a vehicle.
-					if (mainscript.M.player.Car == null)
+					if (mainscript.s.player.Car == null)
 					{
 						SlotMoverDispose();
 					}
@@ -873,9 +795,9 @@ namespace MultiTool.Modules
 			if (settings.showColliders)
 			{
 				RaycastHit hitInfo;
-				if (Input.GetKeyDown(binds.GetKeyByAction((int)Keybinds.Inputs.select).key) && Physics.Raycast(mainscript.M.player.Cam.transform.position, mainscript.M.player.Cam.transform.forward, out hitInfo, float.PositiveInfinity, (int)mainscript.M.player.useLayer))
+				if (Input.GetKeyDown(binds.GetKeyByAction((int)Keybinds.Inputs.select).key) && Physics.Raycast(mainscript.s.player.Cam.transform.position, mainscript.s.player.Cam.transform.forward, out hitInfo, float.PositiveInfinity, (int)mainscript.s.player.useLayer))
 				{
-					Mesh mesh = itemdatabase.d.gerror.GetComponentInChildren<MeshFilter>().mesh;
+					Mesh mesh = itemdatabase.s.gerror.GetComponentInChildren<MeshFilter>().mesh;
 					Material source;
 					try
 					{
@@ -890,7 +812,7 @@ namespace MultiTool.Modules
 					}
 					catch
 					{
-						source = new Material(mainscript.M.conditionmaterials[0].New);
+						source = new Material(mainscript.s.conditionmaterials[0].New);
 					}
 					foreach (Collider componentsInChild in hitInfo.collider.transform.root.GetComponentsInChildren<Collider>())
 					{
@@ -966,17 +888,17 @@ namespace MultiTool.Modules
 				try
 				{
 					// Don't apply any new game changes when loading a save.
-					if (mainscript.M.menu.DFMS.load)
+					if (DataFromMenuScript.s.load)
 					{
 						appliedStartVehicleChanges = true;
 						return;
 					}
 
 					GameObject starterVehicle = null;
-					string starterVehicleName = mainscript.M.StartCar.ToString();
+					string starterVehicleName = mainscript.s.StartCar.ToString();
 					bool isLargeVehicle = largeVehicles.Contains(starterVehicleName);
 					bool isBike = bikes.Contains(starterVehicleName);
-					foreach (var car in mainscript.M.Cars)
+					foreach (var car in mainscript.s.Cars)
 					{
 						if ((isLargeVehicle || isBike) && !car.name.ToLower().Contains("bike"))
 						{
@@ -1078,14 +1000,13 @@ namespace MultiTool.Modules
 			// as OnMenuLoad() is called before anything is started.
 			if (!mainMenuLoaded)
 			{
-				resolutionX = mainmenuscript.mainmenu.Settings.S.IResolutionX;
-				resolutionY = mainmenuscript.mainmenu.Settings.S.IResolutionY;
+				resolutionX = settingsscript.s.S.IResolutionX;
+				resolutionY = settingsscript.s.S.IResolutionY;
 
-				// Default language to English until we can pull it from mainscript.
-				Translator.SetLanguage("English");
+                Translator.SetLanguage(menuhandler.s.language.languageNames[menuhandler.s.language.selectedLanguage]);
 
-				// Set label styling.
-				labelStyle.alignment = TextAnchor.UpperLeft;
+                // Set label styling.
+                labelStyle.alignment = TextAnchor.UpperLeft;
 				labelStyle.normal.textColor = Color.white;
 
 				// Set header styling.
@@ -1116,10 +1037,10 @@ namespace MultiTool.Modules
 
 			if (stateChanged)
 			{
-				string[] toggles = new string[] { "ButtonLoad", "ButtonSettings", "ButtonExit", "ButtonDiscord", "ButtonNews" };
+				string[] toggles = new string[] { "ButtonDiscord", "ButtonNews" };
 				foreach (string toggle in toggles)
 				{
-					mainmenuscript.mainmenu.Canvas.Find($"GameObject/MainStuff/{toggle}").gameObject.SetActive(!show);
+					menuhandler.s.canv2.Find($"2/Menu/{toggle}").gameObject.SetActive(!show);
 				}
 
 				stateChanged = false;
@@ -1131,29 +1052,7 @@ namespace MultiTool.Modules
 		/// </summary>
 		private void ToggleVisibility()
 		{
-			if (GUI.Button(new Rect(resolutionX - 350f, 30f, 300f, 20f), "Switch to Legacy UI"))
-			{
-				legacyUI = true;
-				config.UpdateLegacyMode(legacyUI);
-			}
 			binds.RenderRebindMenu("M-ultiTool menu key", new int[] { (int)Keybinds.Inputs.menu }, resolutionX - 350f, 50f, null, null, true);
-		}
-
-		/// <summary>
-		/// Show menu toggle button.
-		/// </summary>
-		private void ToggleVisibilityLegacy()
-		{
-			if (GUI.Button(new Rect(230f, 10f, 200f, 20f), "Switch to New UI"))
-			{
-				legacyUI = false;
-				config.UpdateLegacyMode(legacyUI);
-
-				// Hide the menu in case it's currently visible.
-				show = false;
-			}
-			if (GUI.Button(new Rect(230f, 30f, 200f, 50f), show ? "<size=28><color=#0F0>M-ultiTool</color></size>" : "<size=28><color=#F00>M-ultiTool</color></size>"))
-				show = !show;
 		}
 
 		/// <summary>
@@ -1184,7 +1083,7 @@ namespace MultiTool.Modules
 			float width = mainMenuWidth;
 			float height = mainMenuHeight;
 
-			GUI.Box(new Rect(x, y, width, height), $"<color=#f87ffa><size=18><b>{Meta.Name}</b></size>\n<size=16>v{Meta.Version} - made with ❤️ by {Meta.Author}</size></color>");
+			GUI.Box(new Rect(x, y, width, height), $"<color=#f87ffa><size=18><b>{MultiTool.mod.Name}</b></size>\n<size=16>v{MultiTool.mod.Version} - made with ❤️ by {MultiTool.mod.Author}</size></color>");
 
 			// Settings button.
 			if (GUI.Button(new Rect(x + 5f, y + 5f, 150f, 25f), GetAccessibleString("Show settings", settingsShow)))
@@ -1760,7 +1659,7 @@ namespace MultiTool.Modules
 			Texture2D previewTexture = new Texture2D(1, 1);
 			Color[] pixels = new Color[] { color };
 
-			if (tab.Source == Meta.Name)
+			if (tab.Source == MultiTool.mod.Name)
 			{
 				switch (tab.Id)
 				{
@@ -2061,7 +1960,7 @@ namespace MultiTool.Modules
 			float y = 100f;
 
 			// Don't render the UI if any game menus are open.
-			if (mainmenuscript.mainmenu.SettingsScreenObj.activeSelf || mainmenuscript.mainmenu.SaveScreenObj.activeSelf) return;
+			if (menuhandler.s.SettingsObject.activeSelf || menuhandler.s.SaveLoadObject.activeSelf) return;
 
 			if (!show) { 
 				if (GUI.Button(new Rect(resolutionX - 200f, resolutionY / 3 - 10f, 200f, 60f), "New game settings"))
@@ -2098,10 +1997,8 @@ namespace MultiTool.Modules
 					{
 						string name = Translator.T(car.ToString(), "menuVehicles");
 
-						if (GUI.Button(new Rect(x, y, width - 40f, 20f), GetAccessibleString(name, mainmenuscript.mainmenu.DFMS.startcar == (itemdatabase.CarType)car)))
-						{
-							mainmenuscript.mainmenu.DFMS.startcar = (itemdatabase.CarType)car;
-						}
+						if (GUI.Button(new Rect(x, y, width - 40f, 20f), GetAccessibleString(name, DataFromMenuScript.s.startcar == (itemdatabase.CarType)car)))
+                            DataFromMenuScript.s.startcar = (itemdatabase.CarType)car;
 
 						y += 25f;
 					}
@@ -2448,8 +2345,8 @@ namespace MultiTool.Modules
 
 			if (settings.showCoords)
 			{
-				GUIExtensions.DrawOutline(new Rect(20f, 20f, 600f, 30f), $"Local position: {mainscript.M.player.transform.position}", hudStyle, Color.black);
-				GUIExtensions.DrawOutline(new Rect(20f, 50f, 600f, 30f), $"Global position: {GameUtilities.GetGlobalObjectPosition(mainscript.M.player.transform.position)}", hudStyle, Color.black);
+				GUIExtensions.DrawOutline(new Rect(20f, 20f, 600f, 30f), $"Local position: {mainscript.s.player.transform.position}", hudStyle, Color.black);
+				//GUIExtensions.DrawOutline(new Rect(20f, 50f, 600f, 30f), $"Global position: {GameUtilities.GetGlobalObjectPosition(mainscript.s.player.transform.position)}", hudStyle, Color.black);
 			}
 
 			width = resolutionX / 4f;
@@ -2472,8 +2369,8 @@ namespace MultiTool.Modules
 				y += 22f;
 				GUI.Label(new Rect(x, y, contentWidth, 20f), $"Local position: {debugObject.transform.position}", labelStyle);
 				y += 22f;
-                GUI.Label(new Rect(x, y, contentWidth, 20f), $"Global position: {GameUtilities.GetGlobalObjectPosition(debugObject.transform.position)}", labelStyle);
-                y += 22f;
+                //GUI.Label(new Rect(x, y, contentWidth, 20f), $"Global position: {GameUtilities.GetGlobalObjectPosition(debugObject.transform.position)}", labelStyle);
+                //y += 22f;
                 GUI.Label(new Rect(x, y, contentWidth, 20f), $"Rotation (Euler angles): {debugObject.transform.rotation.eulerAngles}", labelStyle);
                 y += 22f;
                 GUI.Label(new Rect(x, y, contentWidth, 20f), $"Rotation (Quaternion): {debugObject.transform.rotation}", labelStyle);
@@ -2774,368 +2671,6 @@ namespace MultiTool.Modules
 			{
 				Logger.Log($"Error occurred during slot mover move stage dispose - {ex}", Logger.LogLevel.Warning);
 			}
-		}
-
-		/// <summary> 
-		/// Legacy main menu GUI.
-		/// </summary>
-		private void MainMenuLegacy()
-		{
-			float x = legacyMainMenuX;
-			float y = legacyMainMenuY;
-			float width = legacyMainMenuWidth;
-			float height = legacyMainMenuHeight;
-
-			GUI.Box(new Rect(x, y, width, height), $"<color=#ac78ad><size=16><b>{Meta.Name}</b></size>\n<size=14>v{Meta.Version} - made with ❤️ by {Meta.Author}\n<color=#f98f04>WARNING\nLegacy UI will be removed in v3.2.0</color></size></color>");
-
-			float buttonHeight = 20f;
-			width -= 10f;
-			x += 5f;
-
-			// Delete mode.
-			float deleteY = y + 80f;
-			if (GUI.Button(new Rect(x, deleteY, width, buttonHeight), (settings.deleteMode ? "<color=#0F0>Delete mode</color>" : "<color=#F00>Delete mode</color>") + " (Press del)"))
-			{
-				settings.deleteMode = !settings.deleteMode;
-			}
-
-			// Vehicle settings menu.
-			float vehicleMenuY = deleteY + 25f;
-			if (GUI.Button(new Rect(x, vehicleMenuY, width, buttonHeight), vehicleMenu ? "<color=#0F0>Vehicle menu</color>" : "<color=#F00>Vehicle menu</color>"))
-			{
-				vehicleMenu = !vehicleMenu;
-
-				if (vehicleMenu)
-					itemsMenu = false;
-			}
-
-			// Misc settings menu.
-			float miscMenuY = vehicleMenuY + 25f;
-			if (GUI.Button(new Rect(x, miscMenuY, width, buttonHeight), miscMenu ? "<color=#0F0>Miscellaneous menu</color>" : "<color=#F00>Miscellaneous menu</color>"))
-			{
-				miscMenu = !miscMenu;
-
-				if (miscMenu)
-					itemsMenu = false;
-			}
-
-			// Items menu.
-			float itemsMenuY = miscMenuY + 25f;
-			if (GUI.Button(new Rect(x, itemsMenuY, width, buttonHeight), itemsMenu ? "<color=#0F0>Items menu</color>" : "<color=#F00>Items menu</color>"))
-			{
-				itemsMenu = !itemsMenu;
-
-				// Close all other menus when the items menu opens.
-				if (itemsMenu)
-				{
-					vehicleMenu = false;
-					miscMenu = false;
-				}
-			}
-
-			// Quick spawns.
-			float quickSpawnY = itemsMenuY + 40f;
-			GUI.Label(new Rect(x, quickSpawnY, width, buttonHeight * 2), "<color=#FFF><size=14>Quick spawns</size>\n<size=12>Container fluids can be changed\n using vehicle menu</size></color>", legacyHeaderStyle);
-			quickSpawnY += 50f;
-			foreach (QuickSpawn spawn in quickSpawns)
-			{
-				if (GUI.Button(new Rect(x, quickSpawnY, width, buttonHeight), spawn.name))
-				{
-					SpawnUtilities.Spawn(new Item()
-					{
-						gameObject = spawn.gameObject,
-						conditionInt = conditionInt,
-						fuelMixes = fuelMixes,
-						fuelValues = fuelValues,
-						fuelTypeInts = fuelTypeInts,
-						color = color
-					});
-				}
-				quickSpawnY += 25f;
-			}
-
-			// Vehicle spawner.
-			float scrollHeight = (buttonHeight + 5f) * vehicles.Count;
-			float scrollY = y + height / 2;
-			GUI.Label(new Rect(x, scrollY - 40f, width, buttonHeight * 2), "<color=#FFF><size=14>Vehicles</size>\n<size=12>Scroll for the full list</size></color>", legacyHeaderStyle);
-			scrollPosition = GUI.BeginScrollView(new Rect(x, scrollY, width, height / 2), scrollPosition, new Rect(x, scrollY, width, scrollHeight), GUIStyle.none, GUIStyle.none);
-			foreach (Vehicle vehicle in vehicles)
-			{
-				GameObject gameObject = vehicle.gameObject;
-				string name = Translator.T(gameObject.name, "vehicle", vehicle.variant);
-
-				if (GUI.Button(new Rect(x, scrollY, width, buttonHeight), name))
-				{
-					SpawnUtilities.Spawn(new Vehicle()
-					{
-						gameObject = vehicle.gameObject,
-						variant = vehicle.variant,
-						conditionInt = conditionInt,
-						fuelMixes = fuelMixes,
-						fuelValues = fuelValues,
-						fuelTypeInts = fuelTypeInts,
-						color = color,
-						plate = plate
-					});
-				}
-
-				scrollY += 25f;
-			}
-			GUI.EndScrollView();
-		}
-
-		/// <summary>
-		/// Vehicle config menu GUI.
-		/// </summary>
-		private void VehicleMenuLegacy()
-		{
-
-			float x = legacyVehicleMenuX;
-			float y = legacyVehicleMenuY;
-			float width = legacyVehicleMenuWidth;
-			float height = legacyVehicleMenuHeight;
-
-			height += (fuelMixes * 40f);
-
-			GUI.Box(new Rect(x, y, width, height), "<color=#FFF><size=16><b>Vehicle settings</b></size></color>");
-
-			float sliderX = x + 175f;
-			float sliderY = y + 30f;
-			float sliderWidth = width / 1.75f;
-			float sliderHeight = 20f;
-
-			float textX = sliderX + sliderWidth + 10f;
-			float textWidth = 50f;
-
-			// Condition.
-			GUI.Label(new Rect(x + 10f, sliderY - 2.5f, textWidth, sliderHeight), "Condition:", labelStyle);
-			int maxCondition = (int)Enum.GetValues(typeof(Item.Condition)).Cast<Item.Condition>().Max();
-			float rawCondition = GUI.HorizontalSlider(new Rect(sliderX, sliderY, sliderWidth, sliderHeight), conditionInt, -1, maxCondition);
-			conditionInt = Mathf.RoundToInt(rawCondition);
-
-			string conditionName = ((Item.Condition)conditionInt).ToString();
-
-			GUI.Label(new Rect(textX, sliderY - 2.5f, textWidth, sliderHeight), conditionName, labelStyle);
-
-			sliderY += 20f;
-
-			// Fuel mixes.
-			int maxFuelType = (int)Enum.GetValues(typeof(mainscript.fluidenum)).Cast<mainscript.fluidenum>().Max();
-			GUI.Label(new Rect(x + 10f, sliderY - 2.5f, textWidth, sliderHeight), "Number of fuels:", labelStyle);
-			float rawFuelMixes = GUI.HorizontalSlider(new Rect(sliderX, sliderY, sliderWidth, sliderHeight), fuelMixes, 1, maxFuelType + 1);
-			fuelMixes = Mathf.RoundToInt(rawFuelMixes);
-			GUI.Label(new Rect(textX, sliderY - 2.5f, textWidth, sliderHeight), fuelMixes.ToString(), labelStyle);
-
-			sliderY += 20f;
-
-			for (int i = 0; i < fuelMixes; i++)
-			{
-				if (i > 0)
-					sliderY += 20f;
-
-				// Fuel type.
-				GUI.Label(new Rect(x + 10f, sliderY - 2.5f, textWidth, sliderHeight), $"Fuel type {i + 1}:", labelStyle);
-				float rawFuelType = GUI.HorizontalSlider(new Rect(sliderX, sliderY, sliderWidth, sliderHeight), fuelTypeInts[i], -1, maxFuelType);
-				fuelTypeInts[i] = Mathf.RoundToInt(rawFuelType);
-
-				string fuelType = ((mainscript.fluidenum)fuelTypeInts[i]).ToString();
-				if (fuelTypeInts[i] == -1)
-					fuelType = "Default";
-				else
-					fuelType = fuelType[0].ToString().ToUpper() + fuelType.Substring(1);
-
-				GUI.Label(new Rect(textX, sliderY - 2.5f, textWidth, sliderHeight), fuelType, labelStyle);
-
-				sliderY += 20f;
-
-				// Fuel amount.
-				GUI.Label(new Rect(x + 10f, sliderY - 2.5f, textWidth, sliderHeight), $"Fuel amount {i + 1}:", labelStyle);
-				float rawFuelValue = GUI.HorizontalSlider(new Rect(sliderX, sliderY, sliderWidth, sliderHeight), fuelValues[i], -1f, 1000f);
-				fuelValues[i] = Mathf.Round(rawFuelValue);
-
-				bool fuelValueParse = float.TryParse(GUI.TextField(new Rect(textX, sliderY - 2.5f, textWidth, sliderHeight), fuelValues[i].ToString(), labelStyle), out float tempFuelValue);
-				if (!fuelValueParse)
-					Logger.Log($"{tempFuelValue} is not a number", Logger.LogLevel.Error);
-				else
-					fuelValues[i] = tempFuelValue;
-			}
-
-			// Vehicle colour sliders.
-			// Red.
-			sliderY += 20f;
-			GUI.Label(new Rect(x + 10f, sliderY - 2.5f, textWidth, sliderHeight), GetAccessibleColorString("Red:", new Color(255, 0, 0)), labelStyle);
-			float red = GUI.HorizontalSlider(new Rect(sliderX, sliderY, sliderWidth, sliderHeight), color.r * 255, 0, 255);
-			red = Mathf.Round(red);
-			bool redParse = float.TryParse(GUI.TextField(new Rect(textX, sliderY - 2.5f, textWidth, sliderHeight), red.ToString(), labelStyle), out red);
-			if (!redParse)
-				Logger.Log($"{redParse.ToString()} is not a number", Logger.LogLevel.Error);
-			red = Mathf.Clamp(red, 0f, 255f);
-			color.r = red / 255f;
-			GUI.Label(new Rect(textX, sliderY - 2.5f, textWidth, sliderHeight), red.ToString(), labelStyle);
-
-			// Green.
-			sliderY += 20f;
-			GUI.Label(new Rect(x + 10f, sliderY - 2.5f, textWidth, sliderHeight), GetAccessibleColorString("Green:", new Color(0, 255, 0)), labelStyle);
-			float green = GUI.HorizontalSlider(new Rect(sliderX, sliderY, sliderWidth, sliderHeight), color.g * 255, 0, 255);
-			green = Mathf.Round(green);
-			bool greenParse = float.TryParse(GUI.TextField(new Rect(textX, sliderY - 2.5f, textWidth, sliderHeight), green.ToString(), labelStyle), out green);
-			if (!greenParse)
-				Logger.Log($"{greenParse.ToString()} is not a number", Logger.LogLevel.Error);
-			green = Mathf.Clamp(green, 0f, 255f);
-			color.g = green / 255f;
-			GUI.Label(new Rect(textX, sliderY - 2.5f, textWidth, sliderHeight), green.ToString(), labelStyle);
-
-			// Blue.
-			sliderY += 20f;
-			GUI.Label(new Rect(x + 10f, sliderY - 2.5f, textWidth, sliderHeight), GetAccessibleColorString("Blue:", new Color(0, 0, 255)), labelStyle);
-			float blue = GUI.HorizontalSlider(new Rect(sliderX, sliderY, sliderWidth, sliderHeight), color.b * 255, 0, 255);
-			blue = Mathf.Round(blue);
-			bool blueParse = float.TryParse(GUI.TextField(new Rect(textX, sliderY - 2.5f, textWidth, sliderHeight), blue.ToString(), labelStyle), out blue);
-			if (!blueParse)
-				Logger.Log($"{blueParse.ToString()} is not a number", Logger.LogLevel.Error);
-			blue = Mathf.Clamp(blue, 0f, 255f);
-			color.b = blue / 255f;
-			GUI.Label(new Rect(textX, sliderY - 2.5f, textWidth, sliderHeight), blue.ToString(), labelStyle);
-
-			sliderY += 20f;
-
-			// Colour preview.
-			GUIStyle defaultStyle = GUI.skin.button;
-			GUIStyle previewStyle = new GUIStyle(defaultStyle);
-			Texture2D previewTexture = new Texture2D(1, 1);
-			Color[] pixels = new Color[] { color };
-			previewTexture.SetPixels(pixels);
-			previewTexture.Apply();
-			previewStyle.normal.background = previewTexture;
-			previewStyle.active.background = previewTexture;
-			previewStyle.hover.background = previewTexture;
-			previewStyle.margin = new RectOffset(0, 0, 0, 0);
-			GUI.skin.button = previewStyle;
-			GUI.Button(new Rect(x + 10f, sliderY, width - 20f, 20f), "");
-			GUI.skin.button = defaultStyle;
-
-			// License plate.
-			sliderY += 30f;
-			GUI.Label(new Rect(x + 10f, sliderY - 2.5f, textWidth, sliderHeight), "Plate (blank for random):", labelStyle);
-			plate = GUI.TextField(new Rect(sliderX, sliderY, sliderWidth, sliderHeight), plate, 7, labelStyle);
-		}
-
-		/// <summary>
-		/// Misc menu config GUI.
-		/// </summary>
-		private void MiscMenuLegacy()
-		{
-			float x = legacyVehicleMenuX;
-			float y = legacyVehicleMenuY + legacyVehicleMenuHeight + 25f;
-			float width = legacyVehicleMenuWidth;
-			float height = legacyVehicleMenuHeight;
-
-			y += (fuelMixes * 40f);
-
-			GUI.Box(new Rect(x, y, width, height), "<color=#FFF><size=16><b>Miscellaneous settings</b></size></color>");
-
-			float sliderX = x + 175f;
-			float sliderY = y + 30f;
-			float sliderWidth = width / 1.75f;
-			float sliderHeight = 20f;
-
-			float textX = sliderX + sliderWidth + 10f;
-			float textWidth = 50f;
-
-			// Time setting.
-			// TODO: Work out what the time actually is.
-			GUI.Label(new Rect(x + 10f, sliderY - 2.5f, textWidth, sliderHeight), "Time:", labelStyle);
-			float time = GUI.HorizontalSlider(new Rect(sliderX, sliderY, sliderWidth, sliderHeight), selectedTime, 0f, 360f);
-			selectedTime = Mathf.Round(time);
-			if (GUI.Button(new Rect(textX, sliderY - 15f, textWidth, sliderHeight), "Set"))
-			{
-				mainscript.M.napszak.tekeres = selectedTime;
-			}
-
-			if (GUI.Button(new Rect(textX, sliderY + 5f, textWidth, sliderHeight), isTimeLocked ? "<color=#0F0>Unlock</color>" : "<color=#F00>Lock</color>"))
-			{
-				isTimeLocked = !isTimeLocked;
-
-				mainscript.M.napszak.enabled = !isTimeLocked;
-			}
-
-			sliderY += 25f;
-
-			// TODO: UFO doesn't spawn on main branch, FEDOSPAWN.prefab isn't set.
-			GUI.Label(new Rect(x + 10f, sliderY - 2.5f, textWidth, sliderHeight), "UFO (Beta branch only):", labelStyle);
-
-			if (GUI.Button(new Rect(sliderX, sliderY - 2.5f, textWidth * 2f, sliderHeight), "Spawn UFO"))
-			{
-				try
-				{
-					// Destroy existing UFO.
-					if (ufo != null)
-						UnityEngine.Object.Destroy(ufo);
-
-					ufo = UnityEngine.Object.Instantiate(temp.FEDOSPAWN.prefab, mainscript.M.player.lookPoint + Vector3.up * 0.75f, Quaternion.FromToRotation(Vector3.forward, -mainscript.M.player.transform.right));
-					fedoscript ufoScript = ufo.GetComponent<fedoscript>();
-					ufoScript.ai = false;
-					ufoScript.followRoad = false;
-				}
-				catch (Exception ex)
-				{
-					Logger.Log($"Failed to spawn UFO - {ex}", Logger.LogLevel.Error);
-				}
-			}
-
-			if (GUI.Button(new Rect(sliderX + textWidth * 2 + 5f, sliderY - 2.5f, textWidth * 2f, sliderHeight), "Remove UFO"))
-			{
-				if (ufo != null)
-					UnityEngine.Object.Destroy(ufo);
-			}
-		}
-
-		private void ItemsMenuLegacy()
-		{
-			float x = legacyMainMenuX + legacyMainMenuWidth + 15f;
-			float y = legacyMainMenuY;
-			float width = resolutionX / 1.75f;
-			float height = legacyMainMenuHeight;
-
-			GUI.Box(new Rect(x, y, width, height), "<color=#FFF><size=16><b>Items</b></size></color>");
-
-			float itemWidth = 140f;
-			float itemHeight = 120f;
-			float thumbnailHeight = 90f;
-			float textHeight = 30f;
-			float initialRowX = x + 10f;
-			float itemX = initialRowX;
-			float itemY = 0f;
-
-			int maxRowItems = Mathf.FloorToInt(width / (itemWidth + 10f));
-
-			int columnCount = (int)Math.Ceiling((double)items.Count() / maxRowItems);
-
-			float scrollHeight = (itemHeight + 10f) * (columnCount + 1);
-			itemsScrollPosition = GUI.BeginScrollView(new Rect(x, y + 30f, width - 10f, height - 40f), itemsScrollPosition, new Rect(x, y + 30f, width - 10f, scrollHeight), new GUIStyle(), new GUIStyle());
-
-			for (int i = 0; i < items.Count(); i++)
-			{
-				Item currentItem = items[i];
-				GameObject item = items[i].gameObject;
-
-				itemX += itemWidth + 10f;
-
-				if (i % maxRowItems == 0)
-				{
-					itemX = initialRowX;
-					itemY += itemHeight + 10f;
-				}
-
-				if (GUI.Button(new Rect(itemX, itemY, itemWidth, itemHeight), String.Empty) ||
-					GUI.Button(new Rect(itemX, itemY, itemWidth, thumbnailHeight), currentItem.thumbnail) ||
-					GUI.Button(new Rect(itemX, itemY + thumbnailHeight, itemWidth, textHeight), item.name))
-				{
-					SpawnUtilities.Spawn(currentItem.Clone());
-				}
-			}
-
-			GUI.EndScrollView();
 		}
 	}
 }

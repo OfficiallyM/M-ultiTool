@@ -67,7 +67,7 @@ namespace MultiTool.Utilities
 					if (type == typeof(tosaveitemscript))
 					{
 						// Check if object index is outside the bounds of the regular itemdatabase.
-						int index = Array.FindIndex(itemdatabase.d.items, i => i == gameObject);
+						int index = Array.FindIndex(itemdatabase.s.items, i => i == gameObject);
 						if (index >= databaseLength)
 							return names.IndexOf("Mod items");
 					}
@@ -333,7 +333,7 @@ namespace MultiTool.Utilities
         /// <param name="color">Optional material colour</param>
         public static void SetConditionlessPartMaterial(MeshRenderer mesh, string type, Color? color = null)
         {
-            mainscript.conditionmaterial material = mainscript.M.conditionmaterials.Where(m => m.tipus == type).FirstOrDefault();
+            mainscript.conditionmaterial material = mainscript.s.conditionmaterials.Where(m => m.tipus == type).FirstOrDefault();
             if (material == null) return;
             // Default to new condition material for now.
             // TODO: Make this user customisable?
@@ -493,19 +493,19 @@ namespace MultiTool.Utilities
 		/// </summary>
 		/// <param name="objPos">Object to get global position of</param>
 		/// <returns>Vector3 global object position</returns>
-		public static Vector3 GetGlobalObjectPosition(Vector3 objPos)
-		{
-			return new Vector3((float)(-mainscript.M.mainWorld.coord.x + objPos.x), (float)(-mainscript.M.mainWorld.coord.y + objPos.y), (float)(-mainscript.M.mainWorld.coord.z + objPos.z));
-		}
+		//public static Vector3 GetGlobalObjectPosition(Vector3 objPos)
+		//{
+		//	return new Vector3((float)(-mainscript.s.mainWorld.coord.x + objPos.x), (float)(-mainscript.s.mainWorld.coord.y + objPos.y), (float)(-mainscript.s.mainWorld.coord.z + objPos.z));
+		//}
 
-		/// <summary>
-		/// Get object local position from global.
-		/// </summary>
-		/// <param name="globalPos">Current global position</param>
-		/// <returns>Vector3 local object position</returns>
-		public static Vector3 GetLocalObjectPosition(Vector3 globalPos)
-		{
-			return new Vector3((float)-(-mainscript.M.mainWorld.coord.x - globalPos.x), (float)-(-mainscript.M.mainWorld.coord.y - globalPos.y), (float)-(-mainscript.M.mainWorld.coord.z - globalPos.z));
-		}
+		///// <summary>
+		///// Get object local position from global.
+		///// </summary>
+		///// <param name="globalPos">Current global position</param>
+		///// <returns>Vector3 local object position</returns>
+		//public static Vector3 GetLocalObjectPosition(Vector3 globalPos)
+		//{
+		//	return new Vector3((float)-(-mainscript.s.mainWorld.coord.x - globalPos.x), (float)-(-mainscript.s.mainWorld.coord.y - globalPos.y), (float)-(-mainscript.s.mainWorld.coord.z - globalPos.z));
+		//}
 	}
 }

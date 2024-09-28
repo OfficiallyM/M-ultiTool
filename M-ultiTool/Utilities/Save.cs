@@ -29,41 +29,30 @@ namespace MultiTool.Utilities
 				save_rendszam saveRendszam = null;
 				save_prefab savePrefab1;
 
-				save_rendszam spawnerSaveRendszam = null;
-
 				// Attempt to find existing plate.
-				if ((savedatascript.d.data.farStuff.TryGetValue(Mathf.Abs(Meta.ID.GetHashCode()), out savePrefab1) || savedatascript.d.data.nearStuff.TryGetValue(Mathf.Abs(Meta.ID.GetHashCode()), out savePrefab1)) && savePrefab1.rendszam != null)
+				if (savedatascript.s.data.items.TryGetValue((uint)Mathf.Abs(MultiTool.mod.ID.GetHashCode()), out savePrefab1) && savePrefab1.rendszam != null)
 					saveRendszam = savePrefab1.rendszam;
-
-				// Attempt to find old SpawnerTLD plate.
-				if ((savedatascript.d.data.farStuff.TryGetValue(Mathf.Abs("SpawnerTLD".GetHashCode()), out savePrefab1) || savedatascript.d.data.nearStuff.TryGetValue(Mathf.Abs("SpawnerTLD".GetHashCode()), out savePrefab1)) && savePrefab1.rendszam != null)
-					spawnerSaveRendszam = savePrefab1.rendszam;
 
 				// Plate doesn't exist.
 				if (saveRendszam == null)
 				{
+                    Logger.Log("Save data doesn't exist, creating it.");
 					// Create a new plate to store the input string in.
-					tosaveitemscript component = itemdatabase.d.gplate.GetComponent<tosaveitemscript>();
-					save_prefab savePrefab2 = new save_prefab(component.category, component.id, double.MaxValue, double.MaxValue, double.MaxValue, 0.0f, 0.0f, 0.0f);
+					tosaveitemscript component = itemdatabase.s.gplate.GetComponent<tosaveitemscript>();
+					save_prefab savePrefab2 = new save_prefab(component.id, new Vector3d(double.MaxValue, double.MaxValue, double.MaxValue), new Vector3(0.0f, 0.0f, 0.0f));
 					savePrefab2.rendszam = new save_rendszam();
 					saveRendszam = savePrefab2.rendszam;
 					saveRendszam.S = string.Empty;
-					savedatascript.d.data.farStuff.Add(Mathf.Abs(Meta.ID.GetHashCode()), savePrefab2);
-				}
-
-				// Copy old spawner data to new plate.
-				if (spawnerSaveRendszam != null)
-				{
-					saveRendszam.S = spawnerSaveRendszam.S;
-					// Delete old spawner plate.
-					savedatascript.d.data.farStuff.Remove(Mathf.Abs("SpawnerTLD".GetHashCode()));
+					savedatascript.s.data.items.Add((uint)Mathf.Abs(MultiTool.mod.ID.GetHashCode()), savePrefab2);
 				}
 
 				// Write the input to the plate.
 				if (input != null && input != string.Empty)
 					saveRendszam.S = input;
 
-				return saveRendszam.S;
+                Logger.Log($"Save data: {saveRendszam.S}");
+
+                return saveRendszam.S;
 			}
 			catch (Exception ex)
 			{
@@ -132,7 +121,7 @@ namespace MultiTool.Utilities
 						ID = poi.ID;
 
 						// Save POI with global position.
-						poi.position = GameUtilities.GetGlobalObjectPosition(poi.position);
+						poi.position = poi.position;
 
 						data.pois.Add(poi);
 						break;
@@ -387,34 +376,34 @@ namespace MultiTool.Utilities
         /// Load POIs from save.
         /// </summary>
         /// <returns>List of newly spawned POIs</returns>
-        internal static List<SpawnedPOI> LoadPOIs()
-		{
-			List<POI> POIs = DatabaseUtilities.LoadPOIs();
-			List<SpawnedPOI> spawnedPOIs = new List<SpawnedPOI>();
-			// Load and spawn saved POIs.
-			try
-			{
-				Save data = SaveUtilities.UnserializeSaveData();
-				if (data.pois != null)
-				{
-					foreach (POIData poi in data.pois)
-					{
-						GameObject gameObject = POIs.Where(p => p.poi.name == poi.poi.Replace("(Clone)", "")).FirstOrDefault().poi;
-						if (gameObject != null)
-						{
-							Vector3 position = GameUtilities.GetLocalObjectPosition(poi.position);
-							spawnedPOIs.Add(SpawnUtilities.Spawn(new POI() { poi = gameObject }, false, position, poi.rotation));
-						}
-					}
-				}
-			}
-			catch (Exception ex)
-			{
-				Logger.Log($"POI load error - {ex}", Logger.LogLevel.Error);
-			}
+  //      internal static List<SpawnedPOI> LoadPOIs()
+		//{
+		//	List<POI> POIs = DatabaseUtilities.LoadPOIs();
+		//	List<SpawnedPOI> spawnedPOIs = new List<SpawnedPOI>();
+		//	// Load and spawn saved POIs.
+		//	try
+		//	{
+		//		Save data = SaveUtilities.UnserializeSaveData();
+		//		if (data.pois != null)
+		//		{
+		//			foreach (POIData poi in data.pois)
+		//			{
+		//				GameObject gameObject = POIs.Where(p => p.poi.name == poi.poi.Replace("(Clone)", "")).FirstOrDefault().poi;
+		//				if (gameObject != null)
+		//				{
+		//					//Vector3 position = GameUtilities.GetLocalObjectPosition(poi.position);
+		//					spawnedPOIs.Add(SpawnUtilities.Spawn(new POI() { poi = gameObject }, false, poi.position, poi.rotation));
+		//				}
+		//			}
+		//		}
+		//	}
+		//	catch (Exception ex)
+		//	{
+		//		Logger.Log($"POI load error - {ex}", Logger.LogLevel.Error);
+		//	}
 
-			return spawnedPOIs;
-		}
+		//	return spawnedPOIs;
+		//}
 
         /// <summary>
         /// Load all save data.
@@ -779,7 +768,7 @@ namespace MultiTool.Utilities
         /// <param name="ID">Car save ID</param>
         /// <param name="slot">Slot name</param>
         /// <returns>SlotData if exists, otherwise null</returns>
-        internal static SlotData GetSlotData(int ID, string slot)
+        internal static SlotData GetSlotData(uint ID, string slot)
 		{
 			Save data = UnserializeSaveData();
 
@@ -794,7 +783,7 @@ namespace MultiTool.Utilities
         /// </summary>
         /// <param name="ID">Engine save ID</param>
         /// <returns>EngineTuning if exists, otherwise null</returns>
-        internal static EngineTuning GetEngineTuning(int ID)
+        internal static EngineTuning GetEngineTuning(uint ID)
         {
             Save data = UnserializeSaveData();
 
@@ -806,7 +795,7 @@ namespace MultiTool.Utilities
         /// </summary>
         /// <param name="ID">Vehicle save ID</param>
         /// <returns>TransmissionTuning if exists, otherwise null</returns>
-        internal static TransmissionTuning GetTransmissionTuning(int ID)
+        internal static TransmissionTuning GetTransmissionTuning(uint ID)
         {
             Save data = UnserializeSaveData();
 
@@ -818,7 +807,7 @@ namespace MultiTool.Utilities
         /// </summary>
         /// <param name="ID">Vehicle save ID</param>
         /// <returns>VehicleTuning if exists, otherwise null</returns>
-        internal static VehicleTuning GetVehicleTuning(int ID)
+        internal static VehicleTuning GetVehicleTuning(uint ID)
         {
             Save data = UnserializeSaveData();
 
