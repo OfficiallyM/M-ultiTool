@@ -41,7 +41,7 @@ namespace MultiTool.Tabs
 			if (GUI.Button(new Rect(x, y, buttonWidth, buttonHeight), GUIRenderer.GetAccessibleString("God mode", settings.godMode)))
 			{
 				settings.godMode = !settings.godMode;
-				mainscript.s.ChGodMode(settings.godMode);
+                kaposztaleves.s.settings.god = settings.godMode;
 			}
 			x += buttonWidth + 10f;
 
@@ -86,7 +86,7 @@ namespace MultiTool.Tabs
 					if (GUIRenderer.noclipGodmodeDisable)
 						settings.godMode = false;
 				}
-				mainscript.s.ChGodMode(settings.godMode);
+                kaposztaleves.s.settings.god = settings.godMode;
 			}
 
 			x += buttonWidth + 10f;

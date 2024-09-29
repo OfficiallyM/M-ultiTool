@@ -346,7 +346,7 @@ namespace MultiTool.Utilities
 			if (position == null)
 				position = mainscript.s.player.lookPoint + Vector3.up * 0.75f;
 			if (rotation == null)
-				rotation = Quaternion.FromToRotation(Vector3.forward, -mainscript.s.player.transform.right);
+				rotation = Quaternion.FromToRotation(Vector3.forward, -mainscript.s.player.mainCam.transform.right);
 			try
 			{
                 GameObject spawned = UnityEngine.Object.Instantiate(gameObject, position.Value, rotation.Value);

@@ -204,7 +204,6 @@ namespace MultiTool.Modules
 		private static Dictionary<int, GUIStyle> paletteCache = new Dictionary<int, GUIStyle>();
 
 		// Other.
-		internal static temporaryTurnOffGeneration temp;
 		private bool spawnerDetected = false;
 
 		// Main menu variables.
@@ -396,9 +395,6 @@ namespace MultiTool.Modules
 				// Load keybinds.
 				binds.OnLoad();
 
-				// Find instance of temporaryTurnOffGeneration to spawn UFO.
-				temp = mainscript.s.menu.GetComponentInChildren<temporaryTurnOffGeneration>();
-
 				// Check if old spawner is installed.
 				foreach (var mod in ModLoader.LoadedMods)
 				{
@@ -429,7 +425,7 @@ namespace MultiTool.Modules
 			if (Input.GetKeyDown(binds.GetKeyByAction((int)Keybinds.Inputs.menu).key) && !mainscript.s.menu.Menu.activeSelf && !mainscript.s.settingsOpen && !mainscript.s.menu.saveScreen.gameObject.activeSelf)
 			{
 				show = !show;
-				mainscript.s.crsrLocked = !show;
+				mainscript.s.pauseMenuOpen = show;
 				mainscript.s.SetCursorVisible(show);
 				mainscript.s.menu.gameObject.SetActive(!show);
 			}
@@ -437,7 +433,7 @@ namespace MultiTool.Modules
 			if (show && !mainscript.s.menu.Menu.activeSelf && Input.GetButtonDown("Cancel"))
 			{
 				show = false;
-				mainscript.s.crsrLocked = !show;
+				mainscript.s.pauseMenuOpen = show;
 				mainscript.s.SetCursorVisible(show);
 				mainscript.s.menu.gameObject.SetActive(!show);
 			}

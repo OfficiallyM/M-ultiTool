@@ -53,38 +53,38 @@ namespace MultiTool.Tabs
 
 			miscY += buttonHeight + 10f;
 
-			GUI.Label(new Rect(miscX, miscY, labelWidth, buttonHeight), "UFO spawning (doesn't save):", GUIRenderer.labelStyle);
+			//GUI.Label(new Rect(miscX, miscY, labelWidth, buttonHeight), "UFO spawning (doesn't save):", GUIRenderer.labelStyle);
 
-			if (GUI.Button(new Rect(miscX + miscWidth + 10f, miscY, buttonWidth, buttonHeight), "Spawn"))
-			{
-				try
-				{
-					// Destory existing UFO.
-					if (GUIRenderer.ufo != null)
-						UnityEngine.Object.Destroy(GUIRenderer.ufo);
+			//if (GUI.Button(new Rect(miscX + miscWidth + 10f, miscY, buttonWidth, buttonHeight), "Spawn"))
+			//{
+			//	try
+			//	{
+			//		// Destory existing UFO.
+			//		if (GUIRenderer.ufo != null)
+			//			UnityEngine.Object.Destroy(GUIRenderer.ufo);
 
-					GUIRenderer.ufo = UnityEngine.Object.Instantiate(GUIRenderer.temp.FEDOSPAWN.prefab, mainscript.s.player.transform.position + (mainscript.s.player.transform.forward * 5f) + (Vector3.up * 2f), Quaternion.FromToRotation(Vector3.forward, -mainscript.s.player.transform.right));
-					fedoscript ufoScript = GUIRenderer.ufo.GetComponent<fedoscript>();
-					ufoScript.ai = false;
-					ufoScript.followRoad = false;
-				}
-				catch (Exception ex)
-				{
-					Logger.Log($"Failed to spawn UFO - {ex}", Logger.LogLevel.Error);
-				}
-			}
+			//		GUIRenderer.ufo = UnityEngine.Object.Instantiate(GUIRenderer.temp.FEDOSPAWN.prefab, mainscript.s.player.transform.position + (mainscript.s.player.transform.forward * 5f) + (Vector3.up * 2f), Quaternion.FromToRotation(Vector3.forward, -mainscript.s.player.transform.right));
+			//		fedoscript ufoScript = GUIRenderer.ufo.GetComponent<fedoscript>();
+			//		ufoScript.ai = false;
+			//		ufoScript.followRoad = false;
+			//	}
+			//	catch (Exception ex)
+			//	{
+			//		Logger.Log($"Failed to spawn UFO - {ex}", Logger.LogLevel.Error);
+			//	}
+			//}
 
-			if (GUI.Button(new Rect(miscX + miscWidth + buttonWidth + 20f, miscY, buttonWidth, buttonHeight), "Delete"))
-			{
-				if (GUIRenderer.ufo != null)
-				{
-					fedoscript ufoScript = GUIRenderer.ufo.GetComponent<fedoscript>();
-					if (!ufoScript.seat.inUse)
-						UnityEngine.Object.Destroy(GUIRenderer.ufo);
-				}
-			}
+			//if (GUI.Button(new Rect(miscX + miscWidth + buttonWidth + 20f, miscY, buttonWidth, buttonHeight), "Delete"))
+			//{
+			//	if (GUIRenderer.ufo != null)
+			//	{
+			//		fedoscript ufoScript = GUIRenderer.ufo.GetComponent<fedoscript>();
+			//		if (!ufoScript.seat.inUse)
+			//			UnityEngine.Object.Destroy(GUIRenderer.ufo);
+			//	}
+			//}
 
-			miscY += buttonHeight + 10f;
+			//miscY += buttonHeight + 10f;
 
 			//if (GUI.Button(new Rect(miscX, miscY, buttonWidth, buttonHeight), "Respawn nearest building items"))
 			//{
