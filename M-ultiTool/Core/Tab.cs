@@ -14,7 +14,7 @@ namespace MultiTool.Core
 		public virtual void RenderConfigPane(Dimensions dimensions) { }
 
 		internal virtual string Source { get; set; }
-		internal virtual int Id { get; set; }
+		internal virtual string Id { get; set; }
 
 		bool disabled = false;
 		int errors = 0;

@@ -19,7 +19,7 @@ namespace MultiTool
 		public override string ID => "M-ultiTool";
 		public override string Name => "M-ultiTool";
 		public override string Author => "M-";
-		public override string Version => "3.2.0.2";
+		public override string Version => "3.2.0.4";
         public override bool LoadInDB => true;
 		public override bool LoadInMenu => true;
 
@@ -465,8 +465,8 @@ namespace MultiTool
 			// Fake the player being on a ladder to remove the gravity during noclip.
 			// This is needed because setting useGravity directly on the player RigidBody
 			// gets enabled again immediately by the fpscontroller.
-			if (settings.noclip)
-				mainscript.s.player.ladderV = 1;
+			//if (settings.noclip)
+			//	mainscript.s.player.ladderV = 1;
 
 			// Apply player settings.
 			if (GUIRenderer.playerData != null)

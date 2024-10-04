@@ -422,7 +422,7 @@ namespace MultiTool.Modules
 				return;
 			}
 
-			if (Input.GetKeyDown(binds.GetKeyByAction((int)Keybinds.Inputs.menu).key) && !mainscript.s.menu.Menu.activeSelf && !mainscript.s.settingsOpen && !mainscript.s.menu.saveScreen.gameObject.activeSelf)
+			if (Input.GetKeyDown(binds.GetKeyByAction((int)Keybinds.Inputs.menu).key) && (show || !mainscript.s.pauseMenuOpen))
 			{
 				show = !show;
 				mainscript.s.pauseMenuOpen = show;
@@ -430,7 +430,7 @@ namespace MultiTool.Modules
 				mainscript.s.menu.gameObject.SetActive(!show);
 			}
 
-			if (show && !mainscript.s.menu.Menu.activeSelf && Input.GetButtonDown("Cancel"))
+			if (show && Input.GetButtonDown("Cancel"))
 			{
 				show = false;
 				mainscript.s.pauseMenuOpen = show;
@@ -1062,9 +1062,9 @@ namespace MultiTool.Modules
 			Mod callerMod = ModLoader.LoadedMods.Where(m => m.GetType().Assembly.GetName().Name == caller.GetName().Name).FirstOrDefault();
 
 			tab.Source = callerMod.Name;
-			tab.Id = tabs.Count;
+			tab.Id = tab.Name.ToLower().Replace(' ', '_');
 
-			Logger.Log($"Registered tab {tab.Name} via {tab.Source}");
+			Logger.Log($"Registered tab {tab.Name} (ID: {tab.Id}) via {tab.Source}");
 
 			tabs.Add(tab);
 		}
@@ -1149,15 +1149,15 @@ namespace MultiTool.Modules
 
 				settingsY += configHeight + 10f;
 
-				GUI.Label(new Rect(settingsX, settingsY, settingsWidth, configHeight), "Disabling noclip disables godmode:", labelStyle);
-				settingsY += configHeight;
-				if (GUI.Button(new Rect(settingsX, settingsY, buttonWidth, configHeight), GetAccessibleString("On", "Off", noclipGodmodeDisable)))
-				{
-					noclipGodmodeDisable = !noclipGodmodeDisable;
-					config.UpdateNoclipGodmodeDisable(noclipGodmodeDisable);
-				}
+				//GUI.Label(new Rect(settingsX, settingsY, settingsWidth, configHeight), "Disabling noclip disables godmode:", labelStyle);
+				//settingsY += configHeight;
+				//if (GUI.Button(new Rect(settingsX, settingsY, buttonWidth, configHeight), GetAccessibleString("On", "Off", noclipGodmodeDisable)))
+				//{
+				//	noclipGodmodeDisable = !noclipGodmodeDisable;
+				//	config.UpdateNoclipGodmodeDisable(noclipGodmodeDisable);
+				//}
 
-				settingsY += configHeight + 10f;
+				//settingsY += configHeight + 10f;
 
 				GUI.Label(new Rect(settingsX, settingsY, settingsWidth, configHeight), "Noclip speed increase factor:", labelStyle);
 				settingsY += configHeight;
@@ -1659,8 +1659,8 @@ namespace MultiTool.Modules
 			{
 				switch (tab.Id)
 				{
-					case 0:
-					case 1:
+					case "vehicles":
+					case "items":
 						// Fuel mixes needs multiplying by two as it has two fields per mix.
 						int configItems = 8 + (fuelMixes * 2);
 						float configScrollHeight = configItems * ((configHeight * 3) + 10f);
@@ -1801,7 +1801,7 @@ namespace MultiTool.Modules
 						configY += GUIRenderer.GetPaletteHeight(configWidth) + 10f;
 
 						// License plate only renders for vehicle tab.
-						if (tab.Id == 0)
+						if (tab.Id == "vehicles")
 						{
 							configY += configHeight + 10f;
 							GUI.Label(new Rect(configX, configY, configWidth, configHeight), "Plate (blank for random):", labelStyle);
@@ -1811,7 +1811,7 @@ namespace MultiTool.Modules
 
 						GUI.EndScrollView();
 						break;
-					case 3:
+					case "shapes":
 						int shapeConfigItems = 8;
 						float shapeConfigScrollHeight = shapeConfigItems * ((configHeight * 3) + 10f);
 						shapeConfigScrollHeight += GUIRenderer.GetPaletteHeight(configWidth) + 10f;
