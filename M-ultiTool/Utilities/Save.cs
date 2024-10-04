@@ -36,7 +36,6 @@ namespace MultiTool.Utilities
 				// Plate doesn't exist.
 				if (saveRendszam == null)
 				{
-                    Logger.Log("Save data doesn't exist, creating it.");
 					// Create a new plate to store the input string in.
 					tosaveitemscript component = itemdatabase.s.gplate.GetComponent<tosaveitemscript>();
 					save_prefab savePrefab2 = new save_prefab(component.id, new Vector3d(double.MaxValue, double.MaxValue, double.MaxValue), new Vector3(0.0f, 0.0f, 0.0f));
@@ -49,8 +48,6 @@ namespace MultiTool.Utilities
 				// Write the input to the plate.
 				if (input != null && input != string.Empty)
 					saveRendszam.S = input;
-
-                Logger.Log($"Save data: {saveRendszam.S}");
 
                 return saveRendszam.S;
 			}
