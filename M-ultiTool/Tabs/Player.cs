@@ -50,44 +50,32 @@ namespace MultiTool.Tabs
 			{
 				settings.noclip = !settings.noclip;
 
-				if (settings.noclip)
-				{
-					Noclip noclip = mainscript.s.player.gameObject.AddComponent<Noclip>();
-					noclip.constructor(GUIRenderer.binds, GUIRenderer.config);
-					GUIRenderer.localRotation = mainscript.s.player.transform.localRotation;
-					mainscript.s.player.Th.localEulerAngles = new Vector3(0f, 0f, 0f);
-					settings.godMode = true;
+                if (settings.noclip)
+                {
+                    Noclip noclip = mainscript.s.player.gameObject.AddComponent<Noclip>();
+                    noclip.constructor(GUIRenderer.binds, GUIRenderer.config);
 
-					// Disable colliders.
-					foreach (Collider collider in mainscript.s.player.C)
-					{
-						collider.enabled = false;
-					}
-				}
-				else
-				{
-					Noclip noclip = mainscript.s.player.gameObject.GetComponent<Noclip>();
-					if (noclip != null)
-					{
-						UnityEngine.Object.Destroy(noclip);
+                    // Disable colliders.
+                    foreach (Collider collider in mainscript.s.player.C)
+                    {
+                        collider.enabled = false;
+                    }
+                }
+                else
+                {
+                    Noclip noclip = mainscript.s.player.gameObject.GetComponent<Noclip>();
+                    if (noclip != null)
+                    {
+                        UnityEngine.Object.Destroy(noclip);
 
-						// Resetting localRotation stops the player from flying infinitely
-						// upwards when coming out of noclip.
-						// I have no idea why, it just works.
-						mainscript.s.player.transform.localRotation = GUIRenderer.localRotation;
-
-						// Re-enable colliders.
-						foreach (Collider collider in mainscript.s.player.C)
-						{
-							collider.enabled = true;
-						}
-					}
-
-					if (GUIRenderer.noclipGodmodeDisable)
-						settings.godMode = false;
-				}
-                kaposztaleves.s.settings.god = settings.godMode;
-			}
+                        // Re-enable colliders.
+                        foreach (Collider collider in mainscript.s.player.C)
+                        {
+                            collider.enabled = true;
+                        }
+                    }
+                }
+            }
 
 			x += buttonWidth + 10f;
 

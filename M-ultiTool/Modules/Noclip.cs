@@ -12,42 +12,48 @@ namespace MultiTool.Modules
 		private Keybinds binds;
 		private Config config;
 
-		public float cameraSensitivity = 90f;
-		public float climbSpeed = 10f;
-		public float normalMoveSpeed = 10f;
-		public float fastMoveFactor = 10f;
-		private float rotationX;
-		private float rotationY;
+		private float climbSpeed = 10f;
+		private float normalMoveSpeed = 10f;
+		private float fastMoveFactor = 10f;
 
-		public void constructor(Keybinds _binds, Config _config)
+        private ladderscript ladder = new ladderscript();
+
+		internal void constructor(Keybinds _binds, Config _config)
 		{
 			binds = _binds;
 			config = _config;
+
+            ladder.T = mainscript.s.player.transform;
 		}
 
 		private void Update()
-		{
-			rotationX += Input.GetAxis("Mouse X") * cameraSensitivity * Time.deltaTime;
-			rotationY += Input.GetAxis("Mouse Y") * cameraSensitivity * Time.deltaTime;
-			rotationY = Mathf.Clamp(rotationY, -90f, 90f);
+        {
+            // Fake player being on a ladder, manipulates game to disable the player gravity.
+            fpscontroller player = mainscript.s.player;
+            if (player == null) return;
+            player.ladderV = 1;
+            player.TLadder = ladder;
 
-			transform.localRotation = Quaternion.AngleAxis(rotationX, Vector3.up);
-			transform.localRotation *= Quaternion.AngleAxis(rotationY, Vector3.left);
-
-			float speed = normalMoveSpeed;
-			float climbSpeed = this.climbSpeed;
+            float speed = normalMoveSpeed;
+            float climbSpeed = this.climbSpeed;
             if (Input.GetKey(binds.GetKeyByAction((int)Keybinds.Inputs.noclipSpeedUp).key))
-			{
-				speed *= config.GetNoclipFastMoveFactor(fastMoveFactor);
-				climbSpeed *= config.GetNoclipFastMoveFactor(fastMoveFactor);
-			}
+            {
+                speed *= config.GetNoclipFastMoveFactor(fastMoveFactor);
+                climbSpeed *= config.GetNoclipFastMoveFactor(fastMoveFactor);
+            }
 
-            transform.position += transform.forward * speed * Input.GetAxis("Vertical") * Time.deltaTime;
-            transform.position += transform.right * speed * Input.GetAxis("Horizontal") * Time.deltaTime;
+            if (Input.GetButton("forward"))
+                mainscript.s.player.transform.root.position += Vector3.ProjectOnPlane(mainscript.s.player.BodyRot.forward, Vector3.up) * speed * Time.deltaTime;
             if (Input.GetKey(binds.GetKeyByAction((int)Keybinds.Inputs.noclipUp).key))
-                transform.position += Vector3.up * climbSpeed * Time.deltaTime;
+                mainscript.s.player.transform.root.position += Vector3.up * climbSpeed * Time.deltaTime;
             if (Input.GetKey(binds.GetKeyByAction((int)Keybinds.Inputs.noclipDown).key))
-                transform.position -= Vector3.up * climbSpeed * Time.deltaTime;
+                mainscript.s.player.transform.root.position += -Vector3.up * climbSpeed * Time.deltaTime;
+            if (Input.GetButton("backward"))
+                mainscript.s.player.transform.root.position += Vector3.ProjectOnPlane(-mainscript.s.player.BodyRot.forward, Vector3.up) * speed * Time.deltaTime;
+            if (Input.GetButton("right"))
+                mainscript.s.player.transform.root.position += Vector3.ProjectOnPlane(mainscript.s.player.BodyRot.right, Vector3.up) * speed * Time.deltaTime;
+            if (Input.GetButton("left"))
+                mainscript.s.player.transform.root.position += Vector3.ProjectOnPlane(-mainscript.s.player.BodyRot.right, Vector3.up) * speed * Time.deltaTime;
         }
 	}
 }

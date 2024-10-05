@@ -462,12 +462,6 @@ namespace MultiTool
             // Return early if not in-game.
             if (mainscript.s.player == null) return;
 
-			// Fake the player being on a ladder to remove the gravity during noclip.
-			// This is needed because setting useGravity directly on the player RigidBody
-			// gets enabled again immediately by the fpscontroller.
-			//if (settings.noclip)
-			//	mainscript.s.player.ladderV = 1;
-
 			// Apply player settings.
 			if (GUIRenderer.playerData != null)
 			{
