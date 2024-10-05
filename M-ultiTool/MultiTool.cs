@@ -1,5 +1,4 @@
-﻿using MultiTool.Components;
-using MultiTool.Core;
+﻿using MultiTool.Core;
 using MultiTool.Modules;
 using MultiTool.Utilities;
 using System;
@@ -60,21 +59,6 @@ namespace MultiTool
 		// Override functions.
 		public override void OnMenuLoad()
 		{
-			// Check for and delete old spawner.
-			string file = Path.Combine(ModLoader.ModsFolder, "SpawnerTLD.dll");
-			if (File.Exists(file))
-			{
-				try
-				{
-					File.Delete(file);
-					Logger.Log("Detected and removed old SpawnerTLD.");
-				}
-				catch (Exception ex)
-				{
-					Logger.Log($"Failed to delete old SpawnerTLD, this will cause conflicts - {ex}", Logger.LogLevel.Critical);
-				}
-			}
-
 			// Set the configuration path.
 			config.SetConfigPath(ModLoader.GetModConfigFolder(this) + "\\Config.json");
 
@@ -91,13 +75,6 @@ namespace MultiTool
 			renderer.OnGUI();
 		}
 
-        public override void DbLoad()
-        {
-            GameObject controller = new GameObject("M-ultiToolController");
-            controller.transform.SetParent(mainscript.s.transform);
-            controller.AddComponent<Controller>();
-        }
-
         public override void OnLoad()
 		{
 			// Return early if M-ultiTool is disabled.
@@ -113,7 +90,7 @@ namespace MultiTool
 			// Return early if M-ultiTool isn't enabled.
 			if (!renderer.enabled)
             {
-                if (mainscript.s == null && !reset && PlayerPrefs.GetFloat("DistanceDriven") == 0)
+                if (mainscript.s.player == null && !reset && PlayerPrefs.GetFloat("DistanceDriven") == 0)
                 {
                     CoreUtilities.HasPassedValidation();
                     reset = true;
@@ -480,11 +457,6 @@ namespace MultiTool
 				}
 			}
 		}
-
-        internal static void LateUpdate()
-        {
-            // This was here for something that didn't work, but it's worth keeping for the future.
-        }
 
 		public override void Config()
 		{
