@@ -14,7 +14,7 @@ namespace MultiTool.Utilities
 	/// <summary>
 	/// Game interaction utilities.
 	/// </summary>
-	public static class GameUtilities
+	internal static class GameUtilities
 	{
 		/// <summary>
 		/// Check if an object is a vehicle.

@@ -9,7 +9,7 @@ using TLDLoader;
 
 namespace MultiTool.Modules
 {
-	public static class Logger
+	internal static class Logger
 	{
 		private static string logFile = "";
 		private static bool initialised = false;

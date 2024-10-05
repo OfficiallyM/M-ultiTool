@@ -3,7 +3,6 @@ using MultiTool.Core;
 using MultiTool.Modules;
 using MultiTool.Utilities;
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using TLDLoader;
@@ -19,7 +18,7 @@ namespace MultiTool
 		public override string ID => "M-ultiTool";
 		public override string Name => "M-ultiTool";
 		public override string Author => "M-";
-		public override string Version => "3.2.0.4";
+		public override string Version => "4.0.0-dev";
         public override bool LoadInDB => true;
 		public override bool LoadInMenu => true;
 
@@ -47,9 +46,6 @@ namespace MultiTool
 				Logger.Init();
 				Translator.Init();
 				ThumbnailGenerator.Init();
-
-				// We can't use GetModConfigFolder here as the mod isn't fully initialised yet.
-				string configDirectory = Path.Combine(ModLoader.ModsFolder, "Config", "Mod Settings", ID);
 
 				config = new Config();
 				binds = new Keybinds(config);
@@ -107,9 +103,6 @@ namespace MultiTool
 			// Return early if M-ultiTool is disabled.
 			if (!renderer.enabled)
 				return;
-
-			// Run spawner migration.
-			MigrateUtilities.MigrateFromSpawner();
 
             // Load the GUI renderer.
             renderer.OnLoad();

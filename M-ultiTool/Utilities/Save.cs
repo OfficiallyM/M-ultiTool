@@ -14,7 +14,7 @@ namespace MultiTool.Utilities
 	/// <summary>
 	/// Save data utilities.
 	/// </summary>
-	public static class SaveUtilities
+	internal static class SaveUtilities
 	{
 		/// <summary>
 		/// Read/write data to game save

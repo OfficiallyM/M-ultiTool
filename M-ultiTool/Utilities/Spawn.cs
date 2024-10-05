@@ -14,7 +14,7 @@ namespace MultiTool.Utilities
     /// <summary>
     /// Spawn-related utilities.
     /// </summary>
-    public static class SpawnUtilities
+    internal static class SpawnUtilities
     {
 		/// <summary>
 		/// Wrapper around the default spawn function to handle condition and fuel for items.

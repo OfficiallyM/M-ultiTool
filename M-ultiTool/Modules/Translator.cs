@@ -10,7 +10,7 @@ using TLDLoader;
 
 namespace MultiTool.Modules
 {
-	public static class Translator
+	internal static class Translator
 	{
 		// Translation-related variables.
 		private static string language;

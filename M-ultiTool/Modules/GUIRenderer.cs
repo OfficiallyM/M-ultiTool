@@ -172,7 +172,6 @@ namespace MultiTool.Modules
 		internal static tosaveitemscript selectedObject;
 
 		// Settings.
-		private List<QuickSpawn> quickSpawns = new List<QuickSpawn>();
 		internal static float selectedTime;
 		internal static bool isTimeLocked;
 		internal static GameObject ufo;
@@ -316,11 +315,6 @@ namespace MultiTool.Modules
 				mainMenuX = 40f;
 				mainMenuY = 40f;
 
-				// Add available quickspawn items.
-				quickSpawns.Add(new QuickSpawn() { gameObject = itemdatabase.s.goilcan, name = "Oil can" });
-				quickSpawns.Add(new QuickSpawn() { gameObject = itemdatabase.s.ggascan, name = "Jerry can" });
-				quickSpawns.Add(new QuickSpawn() { gameObject = itemdatabase.s.gbarrel, name = "Barrel" });
-
 				// Add default tabs.
 				AddTab(new Tabs.VehiclesTab());
 				AddTab(new Tabs.ItemsTab());
@@ -394,13 +388,6 @@ namespace MultiTool.Modules
 
 				// Load keybinds.
 				binds.OnLoad();
-
-				// Check if old spawner is installed.
-				foreach (var mod in ModLoader.LoadedMods)
-				{
-					if (mod.ID == "SpawnerTLD")
-						spawnerDetected = true;
-				}
 			}
 			catch (Exception ex)
 			{
