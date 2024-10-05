@@ -118,8 +118,9 @@ namespace MultiTool.Modules
 		internal static List<Item> items = new List<Item>();
 		internal static Dictionary<string, List<Type>> categories = new Dictionary<string, List<Type>>()
 		{
-			{ "Vehicles", new List<Type>() { typeof(carscript) } },
-			{ "Tanks", new List<Type>() { typeof(tankscript) } },
+			{ "Vehicle chassis", new List<Type>() { typeof(carscript) } },
+            { "Trailers", new List<Type>() { typeof(utanfutoscript) } },
+            { "Tanks", new List<Type>() { typeof(tankscript) } },
 			{ "Lights", new List<Type>() { typeof(headlightscript) } },
             { "Engines", new List<Type>() { typeof(enginescript) } },
             { "Wheels", new List<Type>() { typeof(wheelscript) } },
