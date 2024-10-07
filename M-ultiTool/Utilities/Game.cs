@@ -487,25 +487,5 @@ namespace MultiTool.Utilities
             car.brakePower = vehicleTuning.brakePower;
             car.differentialRatio = vehicleTuning.differentialRatio;
         }
-
-		/// <summary>
-		/// Get global position of an object.
-		/// </summary>
-		/// <param name="objPos">Object to get global position of</param>
-		/// <returns>Vector3 global object position</returns>
-		//public static Vector3 GetGlobalObjectPosition(Vector3 objPos)
-		//{
-		//	return new Vector3((float)(-mainscript.s.mainWorld.coord.x + objPos.x), (float)(-mainscript.s.mainWorld.coord.y + objPos.y), (float)(-mainscript.s.mainWorld.coord.z + objPos.z));
-		//}
-
-		///// <summary>
-		///// Get object local position from global.
-		///// </summary>
-		///// <param name="globalPos">Current global position</param>
-		///// <returns>Vector3 local object position</returns>
-		//public static Vector3 GetLocalObjectPosition(Vector3 globalPos)
-		//{
-		//	return new Vector3((float)-(-mainscript.s.mainWorld.coord.x - globalPos.x), (float)-(-mainscript.s.mainWorld.coord.y - globalPos.y), (float)-(-mainscript.s.mainWorld.coord.z - globalPos.z));
-		//}
 	}
 }

@@ -2334,8 +2334,8 @@ namespace MultiTool.Modules
 			if (settings.showCoords)
 			{
 				GUIExtensions.DrawOutline(new Rect(20f, 20f, 600f, 30f), $"Local position: {mainscript.s.player.transform.position}", hudStyle, Color.black);
-				//GUIExtensions.DrawOutline(new Rect(20f, 50f, 600f, 30f), $"Global position: {GameUtilities.GetGlobalObjectPosition(mainscript.s.player.transform.position)}", hudStyle, Color.black);
-			}
+                GUIExtensions.DrawOutline(new Rect(20f, 50f, 600f, 30f), $"Global position: {mainscript.GlobalFromUnityPos(mainscript.s.player.transform.position)}", hudStyle, Color.black);
+            }
 
 			width = resolutionX / 4f;
 			height = resolutionY / 4;
@@ -2357,8 +2357,8 @@ namespace MultiTool.Modules
 				y += 22f;
 				GUI.Label(new Rect(x, y, contentWidth, 20f), $"Local position: {debugObject.transform.position}", labelStyle);
 				y += 22f;
-                //GUI.Label(new Rect(x, y, contentWidth, 20f), $"Global position: {GameUtilities.GetGlobalObjectPosition(debugObject.transform.position)}", labelStyle);
-                //y += 22f;
+                GUI.Label(new Rect(x, y, contentWidth, 20f), $"Global position: {mainscript.GlobalFromUnityPos(debugObject.transform.position)}", labelStyle);
+                y += 22f;
                 GUI.Label(new Rect(x, y, contentWidth, 20f), $"Rotation (Euler angles): {debugObject.transform.rotation.eulerAngles}", labelStyle);
                 y += 22f;
                 GUI.Label(new Rect(x, y, contentWidth, 20f), $"Rotation (Quaternion): {debugObject.transform.rotation}", labelStyle);
