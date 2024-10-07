@@ -243,14 +243,6 @@ namespace MultiTool.Modules
 
 		internal void OnGUI()
 		{
-			// Return early if M-ultiTool is disabled.
-			if (!enabled || !settings.hasInit)
-			{
-				if (mainscript.s != null && mainscript.s.menu.Menu.activeSelf)
-					GUI.Button(new Rect(0, 0, 20, 20), string.Empty);
-				return;
-			}
-
 			// Override scrollbar width and height.
 			GUI.skin.verticalScrollbar.fixedWidth = scrollWidth;
 			GUI.skin.verticalScrollbarThumb.fixedWidth = scrollWidth;
@@ -305,8 +297,6 @@ namespace MultiTool.Modules
 
 		internal void OnLoad()
 		{
-			if (!settings.hasInit) return;
-
 			try
 			{
 				// Ensure UI loads hidden.

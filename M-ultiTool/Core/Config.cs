@@ -139,13 +139,6 @@ namespace MultiTool.Core
 			get { return s_showColliderHelp; }
 			set { s_showColliderHelp = value; }
 		}
-
-		public static bool s_hasInit = false;
-		public bool hasInit
-		{
-			get { return s_hasInit; }
-			set { s_hasInit = value; }
-		}
 	}
 
 	[DataContract]

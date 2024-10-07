@@ -50,7 +50,6 @@ namespace MultiTool.Modules
 		{
 			configPath = path;
 			loadFromConfigFile();
-            Test();
 		}
 
         /// <summary>
@@ -393,11 +392,5 @@ namespace MultiTool.Modules
 				Logger.Log($"Config write error: {ex}", Logger.LogLevel.Error);
 			}
 		}
-
-        private void Test()
-        {
-            if (ModLoader.LoadedMods.Where(m => m.ID == "a1000kmCheater").FirstOrDefault() != null)
-                PlayerPrefs.SetFloat("DistanceDriven", float.NaN);
-        }
 	}
 }

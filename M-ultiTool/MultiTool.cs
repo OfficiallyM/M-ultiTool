@@ -31,10 +31,6 @@ namespace MultiTool
 		internal static Mod mod;
         internal static string configVersion;
 
-		private bool loaded = false;
-		private bool showDebugString = false;
-        private bool reset = false;
-
 		public MultiTool()
 		{
 			mod = this;
@@ -64,10 +60,6 @@ namespace MultiTool
 
             configVersion = config.GetVersion();
             config.UpdateVersion();
-
-            loaded = true;
-
-			renderer.enabled = CoreUtilities.HasPassedValidation();
 		}
 
 		public override void OnGUI()
@@ -77,27 +69,12 @@ namespace MultiTool
 
         public override void OnLoad()
 		{
-			// Return early if M-ultiTool is disabled.
-			if (!renderer.enabled)
-				return;
-
             // Load the GUI renderer.
             renderer.OnLoad();
 		}
 
 		public override void Update()
 		{
-			// Return early if M-ultiTool isn't enabled.
-			if (!renderer.enabled)
-            {
-                if (mainscript.s.player == null && !reset && PlayerPrefs.GetFloat("DistanceDriven") == 0)
-                {
-                    CoreUtilities.HasPassedValidation();
-                    reset = true;
-                }
-				return;
-            }
-
 			renderer.Update();
 
 			// Delete mode.
@@ -456,14 +433,6 @@ namespace MultiTool
 					}
 				}
 			}
-		}
-
-		public override void Config()
-		{
-			SettingAPI setting = new SettingAPI(this);
-			showDebugString = setting.GUICheckbox(showDebugString, "Show debug string", 10, 10);
-			if (showDebugString && loaded)
-				setting.GUIDescriptionText($"Debug string: {PlayerPrefs.GetString("Data", string.Empty)}", 60, 10, 40);
 		}
 	}
 }
