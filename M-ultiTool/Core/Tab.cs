@@ -12,6 +12,8 @@ namespace MultiTool.Core
 		public virtual bool HasConfigPane { get { return false; } }
 		public virtual void RenderTab(Dimensions dimensions) { }
 		public virtual void RenderConfigPane(Dimensions dimensions) { }
+        public virtual void OnRegister() { }
+        public virtual void Update() { }
 
 		internal virtual string Source { get; set; }
 		internal virtual string Id { get; set; }

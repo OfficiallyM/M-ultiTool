@@ -80,6 +80,19 @@ namespace MultiTool.Core
     }
 
     [DataContract]
+    internal class PlayerData
+    {
+        [DataMember] public float walkSpeed { get; set; }
+        [DataMember] public float runSpeed { get; set; }
+        [DataMember] public float jumpForce { get; set; }
+        [DataMember] public float pushForce { get; set; }
+        [DataMember] public float carryWeight { get; set; }
+        [DataMember] public float pickupForce { get; set; }
+        [DataMember] public bool infiniteAmmo { get; set; }
+        [DataMember] public float mass { get; set; }
+    }
+
+    [DataContract]
 	internal class Save
 	{
 		[DataMember] public List<POIData> pois { get; set; }
@@ -91,5 +104,13 @@ namespace MultiTool.Core
         [DataMember] public List<EngineTuningData> engineTuning { get; set; }
         [DataMember] public List<TransmissionTuningData> transmissionTuning { get; set; }
         [DataMember] public List<VehicleTuningData> vehicleTuning { get; set; }
+        [DataMember] public PlayerData playerData { get; set; }
+        [DataMember] public bool isPlayerDataPerSave { get; set; } = false;
+    }
+
+    [DataContract]
+    internal class GlobalSave
+    {
+        [DataMember] public PlayerData playerData { get; set; }
     }
 }

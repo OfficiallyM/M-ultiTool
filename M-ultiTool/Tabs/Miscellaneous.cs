@@ -7,6 +7,7 @@ using System.Linq;
 using UnityEngine;
 using Settings = MultiTool.Core.Settings;
 using Logger = MultiTool.Modules.Logger;
+using MultiTool.Utilities.UI;
 
 namespace MultiTool.Tabs
 {
@@ -26,7 +27,7 @@ namespace MultiTool.Tabs
 			float labelWidth = dimensions.width - 20f;
 
 			// Delete mode.
-			if (GUI.Button(new Rect(miscX, miscY, buttonWidth, buttonHeight), GUIRenderer.GetAccessibleString("Delete mode", settings.deleteMode) + $" (Press {GUIRenderer.binds.GetKeyByAction((int)Keybinds.Inputs.deleteMode).key})"))
+			if (GUI.Button(new Rect(miscX, miscY, buttonWidth, buttonHeight), Accessibility.GetAccessibleString("Delete mode", settings.deleteMode) + $" (Press {MultiTool.Binds.GetKeyByAction((int)Keybinds.Inputs.deleteMode).key})"))
 			{
 				settings.deleteMode = !settings.deleteMode;
 			}
@@ -44,7 +45,7 @@ namespace MultiTool.Tabs
                 napszakvaltakozas.s.tekeres = GUIRenderer.selectedTime;
 			}
 
-			if (GUI.Button(new Rect(miscX + miscWidth + buttonWidth + 20f, miscY, buttonWidth, buttonHeight), GUIRenderer.GetAccessibleString("Unlock", "Lock", GUIRenderer.isTimeLocked)))
+			if (GUI.Button(new Rect(miscX + miscWidth + buttonWidth + 20f, miscY, buttonWidth, buttonHeight), Accessibility.GetAccessibleString("Unlock", "Lock", GUIRenderer.isTimeLocked)))
 			{
 				GUIRenderer.isTimeLocked = !GUIRenderer.isTimeLocked;
 
@@ -124,7 +125,7 @@ namespace MultiTool.Tabs
 			//}
 			//miscY += buttonHeight + 10f;
 
-			if (GUI.Button(new Rect(miscX, miscY, buttonWidth, buttonHeight), GUIRenderer.GetAccessibleString("Toggle color picker", settings.mode == "colorPicker")))
+			if (GUI.Button(new Rect(miscX, miscY, buttonWidth, buttonHeight), Accessibility.GetAccessibleString("Toggle color picker", settings.mode == "colorPicker")))
 			{
 				if (settings.mode == "colorPicker")
 					settings.mode = null;
@@ -133,7 +134,7 @@ namespace MultiTool.Tabs
 			}
 			miscY += buttonHeight + 10f;
 
-			if (GUI.Button(new Rect(miscX, miscY, buttonWidth, buttonHeight), GUIRenderer.GetAccessibleString("Toggle object scale mode", settings.mode == "scale")))
+			if (GUI.Button(new Rect(miscX, miscY, buttonWidth, buttonHeight), Accessibility.GetAccessibleString("Toggle object scale mode", settings.mode == "scale")))
 			{
 				if (settings.mode == "scale")
 					settings.mode = null;
@@ -143,7 +144,7 @@ namespace MultiTool.Tabs
 
 			miscY += buttonHeight + 10f;
 
-			if (GUI.Button(new Rect(miscX, miscY, buttonWidth, buttonHeight), GUIRenderer.GetAccessibleString("Toggle object regenerator", settings.mode == "objectRegenerator")))
+			if (GUI.Button(new Rect(miscX, miscY, buttonWidth, buttonHeight), Accessibility.GetAccessibleString("Toggle object regenerator", settings.mode == "objectRegenerator")))
 			{
 				if (settings.mode == "objectRegenerator")
 				{

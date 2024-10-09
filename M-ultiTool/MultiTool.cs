@@ -18,13 +18,12 @@ namespace MultiTool
 		public override string Name => "M-ultiTool";
 		public override string Author => "M-";
 		public override string Version => "4.0.0-dev";
-        public override bool LoadInDB => true;
 		public override bool LoadInMenu => true;
 
-        // Initialise modules.
-        private readonly GUIRenderer renderer;
-		private readonly Config config;
-		private readonly Keybinds binds;
+        // Modules.
+        internal static GUIRenderer Renderer;
+		internal static Config Configuration;
+		internal static Keybinds Binds;
 
 		private Settings settings = new Settings();
 
@@ -42,9 +41,9 @@ namespace MultiTool
 				Translator.Init();
 				ThumbnailGenerator.Init();
 
-				config = new Config();
-				binds = new Keybinds(config);
-				renderer = new GUIRenderer(config, binds);
+                Renderer = new GUIRenderer();
+                Configuration = new Config();
+                Binds = new Keybinds();
 			}
 			catch (Exception ex)
 			{
@@ -55,34 +54,34 @@ namespace MultiTool
 		// Override functions.
 		public override void OnMenuLoad()
 		{
-			// Set the configuration path.
-			config.SetConfigPath(ModLoader.GetModConfigFolder(this) + "\\Config.json");
+            // Set the configuration path.
+            Configuration.SetConfigPath(Path.Combine(ModLoader.GetModConfigFolder(this), "Config.json"));
 
-            configVersion = config.GetVersion();
-            config.UpdateVersion();
+            configVersion = Configuration.GetVersion();
+            Configuration.UpdateVersion();
 		}
 
 		public override void OnGUI()
 		{
-			renderer.OnGUI();
+            Renderer.OnGUI();
 		}
 
         public override void OnLoad()
 		{
-            // Load the GUI renderer.
-            renderer.OnLoad();
+            // Load the GUI Renderer.
+            Renderer.OnLoad();
 		}
 
 		public override void Update()
 		{
-			renderer.Update();
+            Renderer.Update();
 
 			// Delete mode.
 			if (settings.deleteMode)
 			{
 				try
 				{
-					if (Input.GetKeyDown(binds.GetKeyByAction((int)Keybinds.Inputs.deleteMode).key) && mainscript.s.player.seat == null)
+					if (Input.GetKeyDown(Binds.GetKeyByAction((int)Keybinds.Inputs.deleteMode).key) && mainscript.s.player.seat == null)
 					{
 						Physics.Raycast(mainscript.s.player.Cam.transform.position, mainscript.s.player.Cam.transform.forward, out var raycastHit, float.PositiveInfinity, mainscript.s.player.useLayer);
 
@@ -92,12 +91,6 @@ namespace MultiTool
 						tosaveitemscript save = raycastHit.transform.gameObject.GetComponent<tosaveitemscript>();
 						if (save != null)
 						{
-							//save.removeFromMemory = true;
-
-							foreach (tosaveitemscript component in raycastHit.transform.root.GetComponentsInChildren<tosaveitemscript>())
-							{
-								//component.removeFromMemory = true;
-							}
 							UnityEngine.Object.Destroy(raycastHit.transform.root.gameObject);
 						}
 					}
@@ -111,7 +104,7 @@ namespace MultiTool
 			switch (settings.mode)
 			{
 				case "colorPicker":
-					if (Input.GetKeyDown(binds.GetKeyByAction((int)Keybinds.Inputs.action1).key) && !renderer.show)
+					if (Input.GetKeyDown(Binds.GetKeyByAction((int)Keybinds.Inputs.action1).key) && !Renderer.show)
 					{
 						Physics.Raycast(mainscript.s.player.Cam.transform.position, mainscript.s.player.Cam.transform.forward, out var raycastHit, float.PositiveInfinity, mainscript.s.player.useLayer);
 						GameObject hitGameObject = raycastHit.transform.gameObject;
@@ -129,19 +122,19 @@ namespace MultiTool
 						}
 						else
 						{
-							foreach (Renderer renderer in part.renderers)
+							foreach (Renderer Renderer in part.renderers)
 							{
-								if (renderer.material == null)
+								if (Renderer.material == null)
 									continue;
 
-								objectColor = renderer.material.color;
+								objectColor = Renderer.material.color;
 							}
 						}
 
-						renderer.SetColor(objectColor);
+						Renderer.SetColor(objectColor);
 					}
 
-					if (Input.GetKeyDown(binds.GetKeyByAction((int)Keybinds.Inputs.action2).key) && !renderer.show)
+					if (Input.GetKeyDown(Binds.GetKeyByAction((int)Keybinds.Inputs.action2).key) && !Renderer.show)
 					{
 						Physics.Raycast(mainscript.s.player.Cam.transform.position, mainscript.s.player.Cam.transform.forward, out var raycastHit, float.PositiveInfinity, mainscript.s.player.useLayer);
 						GameObject hitGameObject = raycastHit.transform.gameObject;
@@ -154,18 +147,18 @@ namespace MultiTool
 
 						if (spray != null)
 						{
-							spray.color.color = renderer.GetColor();
+							spray.color.color = Renderer.GetColor();
 							spray.UpdColor();
 						}
 						else
-							GameUtilities.Paint(renderer.GetColor(), part);
+							GameUtilities.Paint(Renderer.GetColor(), part);
 					}
 					break;
 				case "scale":
-					if (!renderer.show)
+					if (!Renderer.show)
 					{
                         // Select object.
-                        if (Input.GetKeyDown(binds.GetKeyByAction((int)Keybinds.Inputs.action6).key))
+                        if (Input.GetKeyDown(Binds.GetKeyByAction((int)Keybinds.Inputs.action6).key))
                         {
                             Physics.Raycast(mainscript.s.player.Cam.transform.position, mainscript.s.player.Cam.transform.forward, out var raycastHit, float.PositiveInfinity, mainscript.s.player.useLayer);
                             if (raycastHit.collider != null && raycastHit.collider.gameObject != null)
@@ -200,9 +193,9 @@ namespace MultiTool
 							Vector3 scale = GUIRenderer.selectedObject.transform.localScale;
 							float scaleValue = GUIRenderer.scaleValue;
 							// Scale up.
-							bool scaleUp = Input.GetKey(binds.GetKeyByAction((int)Keybinds.Inputs.up).key);
+							bool scaleUp = Input.GetKey(Binds.GetKeyByAction((int)Keybinds.Inputs.up).key);
 							if (!GUIRenderer.scaleHold)
-								scaleUp = Input.GetKeyDown(binds.GetKeyByAction((int)Keybinds.Inputs.up).key);
+								scaleUp = Input.GetKeyDown(Binds.GetKeyByAction((int)Keybinds.Inputs.up).key);
 							if (scaleUp)
 							{
 								switch (GUIRenderer.axis)
@@ -227,9 +220,9 @@ namespace MultiTool
 							}
 
 							// Scale down.
-							bool scaleDown = Input.GetKey(binds.GetKeyByAction((int)Keybinds.Inputs.down).key);
+							bool scaleDown = Input.GetKey(Binds.GetKeyByAction((int)Keybinds.Inputs.down).key);
 							if (!GUIRenderer.scaleHold)
-								scaleDown = Input.GetKeyDown(binds.GetKeyByAction((int)Keybinds.Inputs.down).key);
+								scaleDown = Input.GetKeyDown(Binds.GetKeyByAction((int)Keybinds.Inputs.down).key);
 							if (scaleDown)
 							{
 								switch (GUIRenderer.axis)
@@ -254,7 +247,7 @@ namespace MultiTool
 							}
 
 							// Reset scale to default.
-							if (Input.GetKeyDown(binds.GetKeyByAction((int)Keybinds.Inputs.action4).key))
+							if (Input.GetKeyDown(Binds.GetKeyByAction((int)Keybinds.Inputs.action4).key))
 							{
 								// No easy way to store default, just assume it's 1.
 								switch (GUIRenderer.axis)
@@ -291,7 +284,7 @@ namespace MultiTool
 						}
 
 						// Axis selection control.
-						if (Input.GetKeyDown(binds.GetKeyByAction((int)Keybinds.Inputs.action3).key))
+						if (Input.GetKeyDown(Binds.GetKeyByAction((int)Keybinds.Inputs.action3).key))
 						{
 							int currentIndex = Array.FindIndex(GUIRenderer.axisOptions, a => a == GUIRenderer.axis);
 							if (currentIndex == -1 || currentIndex == GUIRenderer.axisOptions.Length - 1)
@@ -301,7 +294,7 @@ namespace MultiTool
 						}
 
 						// Scale value selection control.
-						if (Input.GetKeyDown(binds.GetKeyByAction((int)Keybinds.Inputs.action5).key))
+						if (Input.GetKeyDown(Binds.GetKeyByAction((int)Keybinds.Inputs.action5).key))
 						{
 							int currentIndex = Array.FindIndex(GUIRenderer.scaleOptions, s => s == GUIRenderer.scaleValue);
 							if (currentIndex == -1 || currentIndex == GUIRenderer.scaleOptions.Length - 1)
@@ -310,7 +303,7 @@ namespace MultiTool
 								GUIRenderer.scaleValue = GUIRenderer.scaleOptions[currentIndex + 1];
 						}
 
-						if (Input.GetKeyDown(binds.GetKeyByAction((int)Keybinds.Inputs.select).key))
+						if (Input.GetKeyDown(Binds.GetKeyByAction((int)Keybinds.Inputs.select).key))
 						{
 							GUIRenderer.scaleHold = !GUIRenderer.scaleHold;
 						}
@@ -318,7 +311,7 @@ namespace MultiTool
 					break;
 				case "objectRegenerator":
 					// Select object.
-					if (Input.GetKeyDown(binds.GetKeyByAction((int)Keybinds.Inputs.action1).key))
+					if (Input.GetKeyDown(Binds.GetKeyByAction((int)Keybinds.Inputs.action1).key))
 					{
 						Physics.Raycast(mainscript.s.player.Cam.transform.position, mainscript.s.player.Cam.transform.forward, out var raycastHit, float.PositiveInfinity, mainscript.s.player.useLayer);
 						if (raycastHit.collider != null && raycastHit.collider.gameObject != null)
@@ -338,7 +331,7 @@ namespace MultiTool
                     }
 
 					// Regenerate object.
-					if (Input.GetKeyDown(binds.GetKeyByAction((int)Keybinds.Inputs.action4).key))
+					if (Input.GetKeyDown(Binds.GetKeyByAction((int)Keybinds.Inputs.action4).key))
 					{
 						if (GUIRenderer.selectedObject != null)
 						{
@@ -382,11 +375,6 @@ namespace MultiTool
 							partslotscript oldSlot = gameObject.GetComponent<partscript>()?.slot;
 
 							// Destroy the old object.
-							//save.removeFromMemory = true;
-							foreach (tosaveitemscript component in gameObject.GetComponentsInChildren<tosaveitemscript>())
-							{
-								//component.removeFromMemory = true;
-							}
 							UnityEngine.Object.Destroy(gameObject);
 
 							// Mount the new part if it was previously mounted.
@@ -404,34 +392,6 @@ namespace MultiTool
 						}
 					}
 					break;
-			}
-
-            // Return early if not in-game.
-            if (mainscript.s.player == null) return;
-
-			// Apply player settings.
-			if (GUIRenderer.playerData != null)
-			{
-				PlayerData playerData = GUIRenderer.playerData;
-				fpscontroller player = mainscript.s.player;
-				if (player != null)
-				{
-					player.FdefMaxSpeed = playerData.walkSpeed;
-					player.FrunM = playerData.runSpeed;
-					player.FjumpForce = playerData.jumpForce;
-					mainscript.s.pushForce = playerData.pushForce;
-					player.maxWeight = playerData.carryWeight;
-					player.maxPickupForce = playerData.pickupForce;
-					if (player.mass != null && player.mass.Mass() != playerData.mass)
-						player.mass.SetMass(playerData.mass);
-
-					if (player.inHandP != null && player.inHandP.weapon != null)
-					{
-						tosaveitemscript save = player.inHandP.weapon.GetComponent<tosaveitemscript>();
-
-						player.inHandP.weapon.infinite = playerData.infiniteAmmo;
-					}
-				}
 			}
 		}
 	}

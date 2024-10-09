@@ -7,25 +7,23 @@ using UnityEngine;
 using MultiTool.Extensions;
 using Settings = MultiTool.Core.Settings;
 using MultiTool.Utilities;
-using System.Reflection;
 using UnityEngine.Rendering;
 using System.Text.RegularExpressions;
+using MultiTool.Utilities.UI;
 
 namespace MultiTool.Modules
 {
 	internal class GUIRenderer
 	{
-		private Settings settings = new Settings();
+        // Modules.
+        private static TabController Tabs = new TabController();
 
-		// Modules.
-		internal static Config config;
-		internal static Keybinds binds;
+		private Settings settings = new Settings();
 
 		// Menu control.
 		internal bool enabled = false;
 		internal bool show = false;
 		private bool loaded = false;
-		private bool legacyUI = false;
 		private bool settingsShow = false;
 		private bool creditsShow = false;
 
@@ -36,10 +34,6 @@ namespace MultiTool.Modules
 		private float mainMenuHeight;
 		private float mainMenuX;
 		private float mainMenuY;
-
-		private int tab = 0;
-
-		private List<Tab> tabs = new List<Tab>();
 
 		private Vector2 tabScrollPosition;
 		private Vector2 configScrollPosition;
@@ -68,7 +62,6 @@ namespace MultiTool.Modules
                 textColor = Color.white,
             }
         };
-        private GUIStyle legacyHeaderStyle = new GUIStyle();
 		private float scrollWidth = 10f;
 		internal static GUIStyle messageStyle = new GUIStyle()
 		{
@@ -78,16 +71,6 @@ namespace MultiTool.Modules
 			normal = new GUIStyleState()
 			{
 				textColor = Color.white,
-			}
-		};
-		private GUIStyle alertStyle = new GUIStyle()
-		{
-			fontSize = 24,
-			alignment = TextAnchor.UpperLeft,
-			wordWrap = true,
-			normal = new GUIStyleState()
-			{
-				textColor = Color.red,
 			}
 		};
 		private GUIStyle hudStyle = new GUIStyle()
@@ -148,8 +131,6 @@ namespace MultiTool.Modules
 		private bool linkScale = false;
 
 		// Player variables.
-		internal static PlayerData playerData;
-		internal static PlayerData defaultPlayerData;
 		internal static Dictionary<mainscript.fluidenum, int> piss = new Dictionary<mainscript.fluidenum, int>();
 
 		// Vehicle configuration variables.
@@ -182,17 +163,8 @@ namespace MultiTool.Modules
 		internal static GameObject ufo;
 		internal static Quaternion localRotation;
 		internal static float settingsScrollWidth;
-		internal static bool noclipGodmodeDisable = true;
-		private Dictionary<string, string> accessibilityModes = new Dictionary<string, string>()
-		{
-			{ "none", "None" },
-			{ "contrast", "Improved contrast" },
-			{ "colourless", "Colourless" }
-		};
-		private bool accessibilityShow = false;
-		private static string accessibilityMode = "none";
-		private static bool accessibilityModeAffectsColors = true;
-		internal static float noclipFastMoveFactor = 10f;
+        private bool accessibilityShow = false;
+        internal static float noclipFastMoveFactor = 10f;
         private float settingsLastHeight = 0;
 
 		// HUD variables.
@@ -206,9 +178,6 @@ namespace MultiTool.Modules
 		// Colour palettes.
 		internal static List<Color> palette = new List<Color>();
 		private static Dictionary<int, GUIStyle> paletteCache = new Dictionary<int, GUIStyle>();
-
-		// Other.
-		private bool spawnerDetected = false;
 
 		// Main menu variables.
 		private bool mainMenuLoaded = false;
@@ -235,12 +204,6 @@ namespace MultiTool.Modules
 			"bike03",
 		};
 
-		internal GUIRenderer(Config _config, Keybinds _binds)
-		{
-			config = _config;
-			binds = _binds;
-		}
-
 		internal void OnGUI()
 		{
 			// Override scrollbar width and height.
@@ -266,20 +229,15 @@ namespace MultiTool.Modules
 			}
 
 			// In game.
-			if (mainscript.s.player != null)
+			if (!ModLoader.isOnMainMenu)
 			{
 				if (!loaded) return;
 
-				if (!show && !mainscript.s.menu.Menu.activeSelf)
+				if (!show && !mainscript.s.pauseMenuOpen)
 					RenderHUD();
 
-				// Only show visibility menu on pause menu.
-				if (mainscript.s.menu.Menu.activeSelf)
-				{
-					ToggleVisibility();
-				}
-				else if (spawnerDetected)
-					GUIExtensions.DrawOutline(new Rect(resolutionX - 360f, 10f, 350f, 50f), "Old SpawnerTLD detected.\nPlease delete from mods folder.", alertStyle, Color.black);
+				if (!show && mainscript.s.pauseMenuOpen)
+					RenderPauseMenu();
 
 				// Return early if the UI isn't supposed to be visible.
 				if (!show)
@@ -311,14 +269,14 @@ namespace MultiTool.Modules
 				mainMenuY = 40f;
 
 				// Add default tabs.
-				AddTab(new Tabs.VehiclesTab());
-				AddTab(new Tabs.ItemsTab());
-				//AddTab(new Tabs.POIsTab());
-				AddTab(new Tabs.ShapesTab());
-				AddTab(new Tabs.PlayerTab());
-				AddTab(new Tabs.VehicleConfigurationTab());
-				AddTab(new Tabs.MiscellaneousTab());
-				AddTab(new Tabs.DeveloperTab());
+				Tabs.AddTab(new Tabs.VehiclesTab());
+				Tabs.AddTab(new Tabs.ItemsTab());
+				//Tabs.AddTab(new Tabs.POIsTab());
+				Tabs.AddTab(new Tabs.ShapesTab());
+				Tabs.AddTab(new Tabs.PlayerTab());
+				Tabs.AddTab(new Tabs.VehicleConfigurationTab());
+				Tabs.AddTab(new Tabs.MiscellaneousTab());
+				Tabs.AddTab(new Tabs.DeveloperTab());
 
 				// Load data from database.
 				vehicles = DatabaseUtilities.LoadVehicles();
@@ -353,28 +311,8 @@ namespace MultiTool.Modules
 				// Load any configs not loaded on the main menu.
 				try
 				{
-					legacyUI = config.GetLegacyMode(legacyUI);
 					settingsScrollWidth = scrollWidth;
-					noclipGodmodeDisable = config.GetNoclipGodmodeDisable(noclipGodmodeDisable);
-					noclipFastMoveFactor = config.GetNoclipFastMoveFactor(noclipFastMoveFactor);
-
-					// Get default player data values.
-					if (defaultPlayerData == null)
-					{
-						fpscontroller player = mainscript.s.player;
-						defaultPlayerData = new PlayerData()
-						{
-							walkSpeed = player.FdefMaxSpeed,
-							runSpeed = player.FrunM,
-							jumpForce = player.FjumpForce,
-							pushForce = mainscript.s.pushForce,
-							carryWeight = player.maxWeight,
-							pickupForce = player.maxPickupForce,
-							mass = player != null && player.mass != null ? player.mass.Mass() : 0,
-							infiniteAmmo = false,
-						};
-					}
-					playerData = config.GetPlayerData(defaultPlayerData);
+					noclipFastMoveFactor = MultiTool.Configuration.GetNoclipFastMoveFactor(noclipFastMoveFactor);
 				}
 				catch (Exception ex)
 				{
@@ -382,7 +320,7 @@ namespace MultiTool.Modules
 				}
 
 				// Load keybinds.
-				binds.OnLoad();
+				MultiTool.Binds.OnLoad();
 			}
 			catch (Exception ex)
 			{
@@ -394,17 +332,16 @@ namespace MultiTool.Modules
 
 		internal void Update()
 		{
-			// Return early if the legacy UI is enabled.
-			if (legacyUI)
-				return;
+            // Trigger update for tabs.
+            Tabs.Update();
 
-			if (mainscript.s.player == null)
+			if (ModLoader.isOnMainMenu)
 			{
 				MainMenuUpdate();
 				return;
 			}
 
-			if (Input.GetKeyDown(binds.GetKeyByAction((int)Keybinds.Inputs.menu).key) && (show || !mainscript.s.pauseMenuOpen))
+			if (Input.GetKeyDown(MultiTool.Binds.GetKeyByAction((int)Keybinds.Inputs.menu).key) && (show || !mainscript.s.pauseMenuOpen))
 			{
 				show = !show;
 				mainscript.s.pauseMenuOpen = show;
@@ -530,7 +467,7 @@ namespace MultiTool.Modules
 							}
 
 							// Move selector left.
-							if (Input.GetKeyDown(binds.GetKeyByAction((int)Keybinds.Inputs.left).key))
+							if (Input.GetKeyDown(MultiTool.Binds.GetKeyByAction((int)Keybinds.Inputs.left).key))
 							{
 								previousHoveredSlotIndex = hoveredSlotIndex;
 								hoveredSlotIndex--;
@@ -542,7 +479,7 @@ namespace MultiTool.Modules
 							}
 
 							// Move selector right.
-							if (Input.GetKeyDown(binds.GetKeyByAction((int)Keybinds.Inputs.right).key))
+							if (Input.GetKeyDown(MultiTool.Binds.GetKeyByAction((int)Keybinds.Inputs.right).key))
 							{
 								previousHoveredSlotIndex = hoveredSlotIndex;
 								hoveredSlotIndex++;
@@ -554,7 +491,7 @@ namespace MultiTool.Modules
 							}
 
 							// Select the hovered slot.
-							if (Input.GetKeyDown(binds.GetKeyByAction((int)Keybinds.Inputs.select).key))
+							if (Input.GetKeyDown(MultiTool.Binds.GetKeyByAction((int)Keybinds.Inputs.select).key))
 							{
 								settings.slotStage = "move";
 								selectedSlot = hoveredSlot;
@@ -590,7 +527,7 @@ namespace MultiTool.Modules
 							break;
 						case "move":
 							// Deselect slot.
-							if (Input.GetKeyDown(binds.GetKeyByAction((int)Keybinds.Inputs.select).key))
+							if (Input.GetKeyDown(MultiTool.Binds.GetKeyByAction((int)Keybinds.Inputs.select).key))
 							{
 								settings.slotStage = "slotSelect";
 								hoveredSlotIndex = Array.FindIndex(slots.ToArray(), s => s.name == selectedSlot.name);
@@ -599,13 +536,13 @@ namespace MultiTool.Modules
 							}
 
 							// Switch to rotate mode.
-							if (Input.GetKeyDown(binds.GetKeyByAction((int)Keybinds.Inputs.action3).key))
+							if (Input.GetKeyDown(MultiTool.Binds.GetKeyByAction((int)Keybinds.Inputs.action3).key))
 							{
 								settings.slotStage = "rotate";
 							}
 
 							// Change move amount.
-							if (Input.GetKeyDown(binds.GetKeyByAction((int)Keybinds.Inputs.action5).key))
+							if (Input.GetKeyDown(MultiTool.Binds.GetKeyByAction((int)Keybinds.Inputs.action5).key))
 							{
 								int currentIndex = Array.FindIndex(moveOptions, s => s == moveValue);
 								if (currentIndex == -1 || currentIndex == moveOptions.Length - 1)
@@ -618,43 +555,43 @@ namespace MultiTool.Modules
 							Vector3 oldPos = partTransform.localPosition;
 
 							// Move forward.
-							if (Input.GetKeyDown(binds.GetKeyByAction((int)Keybinds.Inputs.up).key))
+							if (Input.GetKeyDown(MultiTool.Binds.GetKeyByAction((int)Keybinds.Inputs.up).key))
 							{
 								partTransform.localPosition += Vector3.forward * moveValue;
 							}
 
 							// Move backwards.
-							if (Input.GetKeyDown(binds.GetKeyByAction((int)Keybinds.Inputs.down).key))
+							if (Input.GetKeyDown(MultiTool.Binds.GetKeyByAction((int)Keybinds.Inputs.down).key))
 							{
 								partTransform.localPosition += Vector3.back * moveValue;
 							}
 
 							// Move left.
-							if (Input.GetKeyDown(binds.GetKeyByAction((int)Keybinds.Inputs.left).key))
+							if (Input.GetKeyDown(MultiTool.Binds.GetKeyByAction((int)Keybinds.Inputs.left).key))
 							{
 								partTransform.localPosition += Vector3.left * moveValue;
 							}
 
 							// Move right.
-							if (Input.GetKeyDown(binds.GetKeyByAction((int)Keybinds.Inputs.right).key))
+							if (Input.GetKeyDown(MultiTool.Binds.GetKeyByAction((int)Keybinds.Inputs.right).key))
 							{
 								partTransform.localPosition += Vector3.right * moveValue;
 							}
 
 							// Move up.
-							if (Input.GetKeyDown(binds.GetKeyByAction((int)Keybinds.Inputs.noclipSpeedUp).key))
+							if (Input.GetKeyDown(MultiTool.Binds.GetKeyByAction((int)Keybinds.Inputs.noclipSpeedUp).key))
 							{
 								partTransform.localPosition += Vector3.up * moveValue;
 							}
 
 							// Move down.
-							if (Input.GetKeyDown(binds.GetKeyByAction((int)Keybinds.Inputs.noclipDown).key))
+							if (Input.GetKeyDown(MultiTool.Binds.GetKeyByAction((int)Keybinds.Inputs.noclipDown).key))
 							{
 								partTransform.localPosition += Vector3.down * moveValue;
 							}
 
 							// Reset position.
-							if (Input.GetKeyDown(binds.GetKeyByAction((int)Keybinds.Inputs.action4).key))
+							if (Input.GetKeyDown(MultiTool.Binds.GetKeyByAction((int)Keybinds.Inputs.action4).key))
 							{
 								partTransform.localPosition = selectedSlotResetPosition;
 							}
@@ -677,7 +614,7 @@ namespace MultiTool.Modules
 							break;
 						case "rotate":
 							// Deselect slot.
-							if (Input.GetKeyDown(binds.GetKeyByAction((int)Keybinds.Inputs.select).key))
+							if (Input.GetKeyDown(MultiTool.Binds.GetKeyByAction((int)Keybinds.Inputs.select).key))
 							{
 								settings.slotStage = "slotSelect";
 								hoveredSlotIndex = Array.FindIndex(slots.ToArray(), s => s.name == selectedSlot.name);
@@ -686,13 +623,13 @@ namespace MultiTool.Modules
 							}
 
 							// Switch to move mode.
-							if (Input.GetKeyDown(binds.GetKeyByAction((int)Keybinds.Inputs.action3).key))
+							if (Input.GetKeyDown(MultiTool.Binds.GetKeyByAction((int)Keybinds.Inputs.action3).key))
 							{
 								settings.slotStage = "move";
 							}
 
 							// Change move amount.
-							if (Input.GetKeyDown(binds.GetKeyByAction((int)Keybinds.Inputs.action5).key))
+							if (Input.GetKeyDown(MultiTool.Binds.GetKeyByAction((int)Keybinds.Inputs.action5).key))
 							{
 								int currentIndex = Array.FindIndex(moveOptions, s => s == moveValue);
 								if (currentIndex == -1 || currentIndex == moveOptions.Length - 1)
@@ -705,43 +642,43 @@ namespace MultiTool.Modules
 							Quaternion oldRot = rotatePartTransform.localRotation;
 
 							// Rotate forward.
-							if (Input.GetKeyDown(binds.GetKeyByAction((int)Keybinds.Inputs.up).key))
+							if (Input.GetKeyDown(MultiTool.Binds.GetKeyByAction((int)Keybinds.Inputs.up).key))
 							{
 								rotatePartTransform.Rotate(Vector3.right, moveValue);
 							}
 
 							// Rotate backwards.
-							if (Input.GetKeyDown(binds.GetKeyByAction((int)Keybinds.Inputs.down).key))
+							if (Input.GetKeyDown(MultiTool.Binds.GetKeyByAction((int)Keybinds.Inputs.down).key))
 							{
 								rotatePartTransform.Rotate(-Vector3.right, moveValue);
 							}
 
 							// Rotate left.
-							if (Input.GetKeyDown(binds.GetKeyByAction((int)Keybinds.Inputs.left).key))
+							if (Input.GetKeyDown(MultiTool.Binds.GetKeyByAction((int)Keybinds.Inputs.left).key))
 							{
 								rotatePartTransform.Rotate(-Vector3.forward, moveValue);
 							}
 
 							// Rotate right.
-							if (Input.GetKeyDown(binds.GetKeyByAction((int)Keybinds.Inputs.right).key))
+							if (Input.GetKeyDown(MultiTool.Binds.GetKeyByAction((int)Keybinds.Inputs.right).key))
 							{
 								rotatePartTransform.Rotate(Vector3.forward, moveValue);
 							}
 
 							// Rotate anticlockwise.
-							if (Input.GetKeyDown(binds.GetKeyByAction((int)Keybinds.Inputs.noclipSpeedUp).key))
+							if (Input.GetKeyDown(MultiTool.Binds.GetKeyByAction((int)Keybinds.Inputs.noclipSpeedUp).key))
 							{
 								rotatePartTransform.Rotate(Vector3.up, moveValue);
 							}
 
 							// Rotate clockwise.
-							if (Input.GetKeyDown(binds.GetKeyByAction((int)Keybinds.Inputs.noclipDown).key))
+							if (Input.GetKeyDown(MultiTool.Binds.GetKeyByAction((int)Keybinds.Inputs.noclipDown).key))
 							{
 								rotatePartTransform.Rotate(-Vector3.up, moveValue);
 							}
 
 							// Reset position.
-							if (Input.GetKeyDown(binds.GetKeyByAction((int)Keybinds.Inputs.action4).key))
+							if (Input.GetKeyDown(MultiTool.Binds.GetKeyByAction((int)Keybinds.Inputs.action4).key))
 							{
 								rotatePartTransform.localRotation = selectedSlotResetRotation;
 							}
@@ -773,7 +710,7 @@ namespace MultiTool.Modules
 			if (settings.showColliders)
 			{
 				RaycastHit hitInfo;
-				if (Input.GetKeyDown(binds.GetKeyByAction((int)Keybinds.Inputs.select).key) && Physics.Raycast(mainscript.s.player.Cam.transform.position, mainscript.s.player.Cam.transform.forward, out hitInfo, float.PositiveInfinity, (int)mainscript.s.player.useLayer))
+				if (Input.GetKeyDown(MultiTool.Binds.GetKeyByAction((int)Keybinds.Inputs.select).key) && Physics.Raycast(mainscript.s.player.Cam.transform.position, mainscript.s.player.Cam.transform.forward, out hitInfo, float.PositiveInfinity, (int)mainscript.s.player.useLayer))
 				{
 					Mesh mesh = itemdatabase.s.gerror.GetComponentInChildren<MeshFilter>().mesh;
 					Material source;
@@ -843,11 +780,11 @@ namespace MultiTool.Modules
 							try
 							{
 								source = new Material(source);
-								Color color = config.GetColliderColour("basic");
+								Color color = MultiTool.Configuration.GetColliderColour("basic");
 								if (componentsInChild.isTrigger)
-									color = config.GetColliderColour("trigger");
+									color = MultiTool.Configuration.GetColliderColour("trigger");
                                 if (componentsInChild.gameObject.GetComponent<interiorscript>() != null)
-									color = config.GetColliderColour("interior");
+									color = MultiTool.Configuration.GetColliderColour("interior");
                                 source.SetColor("_Color", color);
 							}
 							catch
@@ -987,11 +924,6 @@ namespace MultiTool.Modules
                 labelStyle.alignment = TextAnchor.UpperLeft;
 				labelStyle.normal.textColor = Color.white;
 
-				// Set header styling.
-				legacyHeaderStyle.alignment = TextAnchor.MiddleCenter;
-				legacyHeaderStyle.fontSize = 16;
-				legacyHeaderStyle.normal.textColor = Color.white;
-
 				// Set default palette to all white.
 				palette.Clear();
 				palette = Enumerable.Repeat(Color.white, 60).ToList();
@@ -1000,10 +932,8 @@ namespace MultiTool.Modules
 				// Load any configs needed for the main menu UI.
 				try
 				{
-					scrollWidth = config.GetScrollWidth(scrollWidth);
-					accessibilityMode = config.GetAccessibilityMode(accessibilityMode);
-					accessibilityModeAffectsColors = config.GetAccessibilityModeAffectsColor(accessibilityModeAffectsColors);
-					palette = config.GetPalette(palette);
+					scrollWidth = MultiTool.Configuration.GetScrollWidth(scrollWidth);
+					palette = MultiTool.Configuration.GetPalette(palette);
 				}
 				catch (Exception ex)
 				{
@@ -1028,27 +958,9 @@ namespace MultiTool.Modules
 		/// <summary>
 		/// Show menu toggle button.
 		/// </summary>
-		private void ToggleVisibility()
+		private void RenderPauseMenu()
 		{
-			binds.RenderRebindMenu("M-ultiTool menu key", new int[] { (int)Keybinds.Inputs.menu }, resolutionX - 350f, 50f, null, null, true);
-		}
-
-		/// <summary>
-		/// Add new tab.
-		/// </summary>
-		/// <param name="tab"></param>
-		public void AddTab(Tab tab)
-		{
-			// Find caller mod name.
-			Assembly caller = Assembly.GetCallingAssembly();
-			Mod callerMod = ModLoader.LoadedMods.Where(m => m.GetType().Assembly.GetName().Name == caller.GetName().Name).FirstOrDefault();
-
-			tab.Source = callerMod.Name;
-			tab.Id = tab.Name.ToLower().Replace(' ', '_');
-
-			Logger.Log($"Registered tab {tab.Name} (ID: {tab.Id}) via {tab.Source}");
-
-			tabs.Add(tab);
+			MultiTool.Binds.RenderRebindMenu("M-ultiTool menu key", new int[] { (int)Keybinds.Inputs.menu }, resolutionX - 350f, 50f, null, null, true);
 		}
 
 		/// <summary>
@@ -1064,13 +976,13 @@ namespace MultiTool.Modules
 			GUI.Box(new Rect(x, y, width, height), $"<color=#f87ffa><size=18><b>{MultiTool.mod.Name}</b></size>\n<size=16>v{MultiTool.mod.Version} - made with ❤️ by {MultiTool.mod.Author}</size></color>");
 
 			// Settings button.
-			if (GUI.Button(new Rect(x + 5f, y + 5f, 150f, 25f), GetAccessibleString("Show settings", settingsShow)))
+			if (GUI.Button(new Rect(x + 5f, y + 5f, 150f, 25f), Accessibility.GetAccessibleString("Show settings", settingsShow)))
 			{
 				settingsShow = !settingsShow;
 				creditsShow = false;
 			}
 
-			if (GUI.Button(new Rect(x + mainMenuWidth - 110f, y + 5f, 100f, 25f), GetAccessibleString("Credits", creditsShow)))
+			if (GUI.Button(new Rect(x + mainMenuWidth - 110f, y + 5f, 100f, 25f), Accessibility.GetAccessibleString("Credits", creditsShow)))
 			{
 				creditsShow = !creditsShow;
 				settingsShow = false;
@@ -1081,7 +993,7 @@ namespace MultiTool.Modules
 				// Render the setting page.
 				try
 				{
-					binds.RenderRebindMenu("Rebind keys", (int[])Enum.GetValues(typeof(Keybinds.Inputs)), x + 10f, y + 50f, width * 0.25f, height - 65f);
+					MultiTool.Binds.RenderRebindMenu("Rebind keys", (int[])Enum.GetValues(typeof(Keybinds.Inputs)), x + 10f, y + 50f, width * 0.25f, height - 65f);
 				}
 				catch (Exception ex)
 				{
@@ -1119,33 +1031,23 @@ namespace MultiTool.Modules
 				if (GUI.Button(new Rect(settingsX, settingsY, buttonWidth, configHeight), "Apply"))
 				{
 					scrollWidth = settingsScrollWidth;
-					config.UpdateScrollWidth(scrollWidth);
+					MultiTool.Configuration.UpdateScrollWidth(scrollWidth);
 				}
 
 				if (GUI.Button(new Rect(settingsX + buttonWidth + 10f, settingsY, buttonWidth, configHeight), "Reset"))
 				{
 					scrollWidth = 10f;
 					settingsScrollWidth = scrollWidth;
-					config.UpdateScrollWidth(scrollWidth);
+					MultiTool.Configuration.UpdateScrollWidth(scrollWidth);
 				}
 
 				settingsY += configHeight + 10f;
-
-				//GUI.Label(new Rect(settingsX, settingsY, settingsWidth, configHeight), "Disabling noclip disables godmode:", labelStyle);
-				//settingsY += configHeight;
-				//if (GUI.Button(new Rect(settingsX, settingsY, buttonWidth, configHeight), GetAccessibleString("On", "Off", noclipGodmodeDisable)))
-				//{
-				//	noclipGodmodeDisable = !noclipGodmodeDisable;
-				//	config.UpdateNoclipGodmodeDisable(noclipGodmodeDisable);
-				//}
-
-				//settingsY += configHeight + 10f;
 
 				GUI.Label(new Rect(settingsX, settingsY, settingsWidth, configHeight), "Noclip speed increase factor:", labelStyle);
 				settingsY += configHeight;
 				float factor = GUI.HorizontalSlider(new Rect(settingsX, settingsY, settingsWidth, configHeight), noclipFastMoveFactor, 2f, 100f);
 				noclipFastMoveFactor = Mathf.Round(factor);
-				config.UpdateNoclipFastMoveFactor(noclipFastMoveFactor);
+				MultiTool.Configuration.UpdateNoclipFastMoveFactor(noclipFastMoveFactor);
 				settingsY += configHeight;
 				GUI.Label(new Rect(settingsX, settingsY, settingsWidth, configHeight), noclipFastMoveFactor.ToString());
 
@@ -1158,14 +1060,12 @@ namespace MultiTool.Modules
 				if (accessibilityShow)
 				{
 					settingsY += configHeight;
-					GUI.Box(new Rect(settingsX, settingsY, buttonWidth, (configHeight + 2f) * accessibilityModes.Count), String.Empty);
-					for (int i = 0; i < accessibilityModes.Count; i++)
+					for (int i = 0; i <= Accessibility.GetAccessibilityModeCount(); i++)
 					{
-						KeyValuePair<string, string> mode = accessibilityModes.ElementAt(i);
-						if (GUI.Button(new Rect(settingsX, settingsY, buttonWidth, configHeight), GetAccessibleString(mode.Value, accessibilityMode == mode.Key)))
+						if (GUI.Button(new Rect(settingsX, settingsY, buttonWidth, configHeight), Accessibility.GetAccessibleString(Accessibility.GetAccessibilityModeName(i), (int)Accessibility.GetAccessibilityMode() == i)))
 						{
-							accessibilityMode = mode.Key;
-							config.UpdateAccessibilityMode(accessibilityMode);
+                            Accessibility.SetAccessibilityMode(i);
+							MultiTool.Configuration.UpdateAccessibilityMode(i);
 						}
 
 						settingsY += configHeight + 2f;
@@ -1175,10 +1075,13 @@ namespace MultiTool.Modules
 				settingsY += configHeight + 10f;
 				GUI.Label(new Rect(settingsX, settingsY, settingsWidth, configHeight), "Accessibility mode affects color slider labels:", labelStyle);
 				settingsY += configHeight;
-				if (GUI.Button(new Rect(settingsX, settingsY, buttonWidth, configHeight), GetAccessibleString("On", "Off", accessibilityModeAffectsColors)))
+                bool doesAffectColors = Accessibility.GetDoesAffectColors();
+
+                if (GUI.Button(new Rect(settingsX, settingsY, buttonWidth, configHeight), Accessibility.GetAccessibleString("On", "Off", doesAffectColors)))
 				{
-					accessibilityModeAffectsColors = !accessibilityModeAffectsColors;
-					config.UpdateAccessibilityModeAffectsColor(accessibilityModeAffectsColors);
+                    doesAffectColors = !doesAffectColors;
+					Accessibility.SetDoesAffectColors(doesAffectColors);
+					MultiTool.Configuration.UpdateAccessibilityModeAffectsColor(doesAffectColors);
 				}
 
                 GUIStyle defaultStyle = GUI.skin.button;
@@ -1190,10 +1093,10 @@ namespace MultiTool.Modules
                 GUI.Label(new Rect(settingsX, settingsY, settingsWidth, configHeight), "Basic collider colour", labelStyle);
                 settingsY += configHeight + 10f;
 
-                Color basicCollider = config.GetColliderColour("basic");
+                Color basicCollider = MultiTool.Configuration.GetColliderColour("basic");
 
                 // Red.
-                GUI.Label(new Rect(settingsX, settingsY, settingsWidth, configHeight), GetAccessibleColorString("Red:", new Color(255, 0, 0)), labelStyle);
+                GUI.Label(new Rect(settingsX, settingsY, settingsWidth, configHeight), Accessibility.GetAccessibleColorString("Red:", new Color(255, 0, 0)), labelStyle);
                 settingsY += configHeight;
                 float basicColliderRed = GUI.HorizontalSlider(new Rect(settingsX, settingsY, settingsWidth, configHeight), basicCollider.r * 255, 0, 255);
                 basicColliderRed = Mathf.Round(basicColliderRed);
@@ -1206,7 +1109,7 @@ namespace MultiTool.Modules
 
                 // Green.
                 settingsY += configHeight + 10f;
-                GUI.Label(new Rect(settingsX, settingsY, settingsWidth, configHeight), GetAccessibleColorString("Green:", new Color(0, 255, 0)), labelStyle);
+                GUI.Label(new Rect(settingsX, settingsY, settingsWidth, configHeight), Accessibility.GetAccessibleColorString("Green:", new Color(0, 255, 0)), labelStyle);
                 settingsY += configHeight;
                 float basicColliderGreen = GUI.HorizontalSlider(new Rect(settingsX, settingsY, settingsWidth, configHeight), basicCollider.g * 255, 0, 255);
                 basicColliderGreen = Mathf.Round(basicColliderGreen);
@@ -1219,7 +1122,7 @@ namespace MultiTool.Modules
 
                 // Blue.
                 settingsY += configHeight + 10f;
-                GUI.Label(new Rect(settingsX, settingsY, settingsWidth, configHeight), GetAccessibleColorString("Blue:", new Color(0, 0, 255)), labelStyle);
+                GUI.Label(new Rect(settingsX, settingsY, settingsWidth, configHeight), Accessibility.GetAccessibleColorString("Blue:", new Color(0, 0, 255)), labelStyle);
                 settingsY += configHeight;
                 float basicColliderBlue = GUI.HorizontalSlider(new Rect(settingsX, settingsY, settingsWidth, configHeight), basicCollider.b * 255, 0, 255);
                 basicColliderBlue = Mathf.Round(basicColliderBlue);
@@ -1264,22 +1167,22 @@ namespace MultiTool.Modules
 
                 basicCollider = RenderColourPalette(settingsX, settingsY, settingsWidth / 2, basicCollider);
                 settingsY += GetPaletteHeight(settingsWidth / 2) + 10f;
-                config.UpdateColliderColour(basicCollider, "basic");
+                MultiTool.Configuration.UpdateColliderColour(basicCollider, "basic");
 
                 if (GUI.Button(new Rect(settingsX, settingsY, buttonWidth, configHeight), "Reset to default"))
                 {
                     basicCollider = new Color(1f, 0.0f, 0.0f, 0.8f);
-                    config.UpdateColliderColour(basicCollider, "basic");
+                    MultiTool.Configuration.UpdateColliderColour(basicCollider, "basic");
                 }
 
                 settingsY += configHeight + 10f;
                 GUI.Label(new Rect(settingsX, settingsY, settingsWidth, configHeight), "Trigger collider colour", labelStyle);
                 settingsY += configHeight + 10f;
 
-                Color triggerCollider = config.GetColliderColour("trigger");
+                Color triggerCollider = MultiTool.Configuration.GetColliderColour("trigger");
 
                 // Red.
-                GUI.Label(new Rect(settingsX, settingsY, settingsWidth, configHeight), GetAccessibleColorString("Red:", new Color(255, 0, 0)), labelStyle);
+                GUI.Label(new Rect(settingsX, settingsY, settingsWidth, configHeight), Accessibility.GetAccessibleColorString("Red:", new Color(255, 0, 0)), labelStyle);
                 settingsY += configHeight;
                 float triggerColliderRed = GUI.HorizontalSlider(new Rect(settingsX, settingsY, settingsWidth, configHeight), triggerCollider.r * 255, 0, 255);
                 triggerColliderRed = Mathf.Round(triggerColliderRed);
@@ -1292,7 +1195,7 @@ namespace MultiTool.Modules
 
                 // Green.
                 settingsY += configHeight + 10f;
-                GUI.Label(new Rect(settingsX, settingsY, settingsWidth, configHeight), GetAccessibleColorString("Green:", new Color(0, 255, 0)), labelStyle);
+                GUI.Label(new Rect(settingsX, settingsY, settingsWidth, configHeight), Accessibility.GetAccessibleColorString("Green:", new Color(0, 255, 0)), labelStyle);
                 settingsY += configHeight;
                 float triggerColliderGreen = GUI.HorizontalSlider(new Rect(settingsX, settingsY, settingsWidth, configHeight), triggerCollider.g * 255, 0, 255);
                 triggerColliderGreen = Mathf.Round(triggerColliderGreen);
@@ -1305,7 +1208,7 @@ namespace MultiTool.Modules
 
                 // Blue.
                 settingsY += configHeight + 10f;
-                GUI.Label(new Rect(settingsX, settingsY, settingsWidth, configHeight), GetAccessibleColorString("Blue:", new Color(0, 0, 255)), labelStyle);
+                GUI.Label(new Rect(settingsX, settingsY, settingsWidth, configHeight), Accessibility.GetAccessibleColorString("Blue:", new Color(0, 0, 255)), labelStyle);
                 settingsY += configHeight;
                 float triggerColliderBlue = GUI.HorizontalSlider(new Rect(settingsX, settingsY, settingsWidth, configHeight), triggerCollider.b * 255, 0, 255);
                 triggerColliderBlue = Mathf.Round(triggerColliderBlue);
@@ -1350,22 +1253,22 @@ namespace MultiTool.Modules
 
                 triggerCollider = RenderColourPalette(settingsX, settingsY, settingsWidth / 2, triggerCollider);
                 settingsY += GetPaletteHeight(settingsWidth / 2) + 10f;
-                config.UpdateColliderColour(triggerCollider, "trigger");
+                MultiTool.Configuration.UpdateColliderColour(triggerCollider, "trigger");
 
                 if (GUI.Button(new Rect(settingsX, settingsY, buttonWidth, configHeight), "Reset to default"))
                 {
                     triggerCollider = new Color(0.0f, 1f, 0.0f, 0.8f);
-                    config.UpdateColliderColour(triggerCollider, "trigger");
+                    MultiTool.Configuration.UpdateColliderColour(triggerCollider, "trigger");
                 }
 
                 settingsY += configHeight + 10f;
                 GUI.Label(new Rect(settingsX, settingsY, settingsWidth, configHeight), "Interior collider colour", labelStyle);
                 settingsY += configHeight + 10f;
 
-                Color interiorCollider = config.GetColliderColour("interior");
+                Color interiorCollider = MultiTool.Configuration.GetColliderColour("interior");
 
                 // Red.
-                GUI.Label(new Rect(settingsX, settingsY, settingsWidth, configHeight), GetAccessibleColorString("Red:", new Color(255, 0, 0)), labelStyle);
+                GUI.Label(new Rect(settingsX, settingsY, settingsWidth, configHeight), Accessibility.GetAccessibleColorString("Red:", new Color(255, 0, 0)), labelStyle);
                 settingsY += configHeight;
                 float interiorColliderRed = GUI.HorizontalSlider(new Rect(settingsX, settingsY, settingsWidth, configHeight), interiorCollider.r * 255, 0, 255);
                 interiorColliderRed = Mathf.Round(interiorColliderRed);
@@ -1378,7 +1281,7 @@ namespace MultiTool.Modules
 
                 // Green.
                 settingsY += configHeight + 10f;
-                GUI.Label(new Rect(settingsX, settingsY, settingsWidth, configHeight), GetAccessibleColorString("Green:", new Color(0, 255, 0)), labelStyle);
+                GUI.Label(new Rect(settingsX, settingsY, settingsWidth, configHeight), Accessibility.GetAccessibleColorString("Green:", new Color(0, 255, 0)), labelStyle);
                 settingsY += configHeight;
                 float interiorColliderGreen = GUI.HorizontalSlider(new Rect(settingsX, settingsY, settingsWidth, configHeight), interiorCollider.g * 255, 0, 255);
                 interiorColliderGreen = Mathf.Round(interiorColliderGreen);
@@ -1391,7 +1294,7 @@ namespace MultiTool.Modules
 
                 // Blue.
                 settingsY += configHeight + 10f;
-                GUI.Label(new Rect(settingsX, settingsY, settingsWidth, configHeight), GetAccessibleColorString("Blue:", new Color(0, 0, 255)), labelStyle);
+                GUI.Label(new Rect(settingsX, settingsY, settingsWidth, configHeight), Accessibility.GetAccessibleColorString("Blue:", new Color(0, 0, 255)), labelStyle);
                 settingsY += configHeight;
                 float interiorColliderBlue = GUI.HorizontalSlider(new Rect(settingsX, settingsY, settingsWidth, configHeight), interiorCollider.b * 255, 0, 255);
                 interiorColliderBlue = Mathf.Round(interiorColliderBlue);
@@ -1436,12 +1339,12 @@ namespace MultiTool.Modules
 
                 interiorCollider = RenderColourPalette(settingsX, settingsY, settingsWidth / 2, interiorCollider);
                 settingsY += GetPaletteHeight(settingsWidth / 2) + 10f;
-                config.UpdateColliderColour(interiorCollider, "interior");
+                MultiTool.Configuration.UpdateColliderColour(interiorCollider, "interior");
 
                 if (GUI.Button(new Rect(settingsX, settingsY, buttonWidth, configHeight), "Reset to default"))
                 {
                     interiorCollider = new Color(0f, 0f, 1f, 0.8f);
-                    config.UpdateColliderColour(interiorCollider, "interior");
+                    MultiTool.Configuration.UpdateColliderColour(interiorCollider, "interior");
                 }
 
                 settingsLastHeight = settingsY;
@@ -1517,27 +1420,32 @@ namespace MultiTool.Modules
 				// Navigation tabs.
 				float tabHeight = 25f;
 				float tabButtonWidth = 150f;
-				float tabWidth = (tabButtonWidth + 30f) * tabs.Count;
+				float tabWidth = (tabButtonWidth + 30f) * Tabs.GetCount();
 				float tabX = x + 20f;
 				tabScrollPosition = GUI.BeginScrollView(new Rect(tabX, y + 50f, mainMenuWidth - 40f, tabHeight + 10f), tabScrollPosition, new Rect(tabX, y + 50f, tabWidth, tabHeight), GUI.skin.horizontalScrollbar, new GUIStyle());
-				for (int tabIndex = 0; tabIndex < tabs.Count; tabIndex++)
+				for (int tabIndex = 0; tabIndex < Tabs.GetCount(); tabIndex++)
 				{
-					// Don't render disabled tabs.
-					if (tabs[tabIndex].IsDisabled) continue;
+                    Tab tab = Tabs.GetByIndex(tabIndex);
 
-					if (GUI.Button(new Rect(tabX, y + 50f, tabButtonWidth, tabHeight), tab == tabIndex ? $"<color=#0F0>{tabs[tabIndex].Name}</color>" : tabs[tabIndex].Name))
+                    // Render disabled tabs as unclickable.
+                    if (tab.IsDisabled)
+                        GUI.enabled = false;
+
+					if (GUI.Button(new Rect(tabX, y + 50f, tabButtonWidth, tabHeight), Tabs.GetActive() == tabIndex ? $"<color=#0F0>{tab.Name}</color>" : tab.Name))
 					{
-						tab = tabIndex;
+                        Tabs.SetActive(tabIndex);
 
-						// Reset config scroll position when changing tabs.
+						// Reset MultiTool.Configuration scroll position when changing tabs.
 						configScrollPosition = Vector2.zero;
 					}
 
-					tabX += tabButtonWidth + 30f;
+                    GUI.enabled = true;
+
+                    tabX += tabButtonWidth + 30f;
 				}
 				GUI.EndScrollView();
 
-				RenderTab(tab);
+				RenderTab(Tabs.GetActive());
 			}
 		}
 
@@ -1547,7 +1455,7 @@ namespace MultiTool.Modules
 		/// <param name="tab">The tab index to render</param>
 		private void RenderTab(int tabIndex)
 		{
-			Tab tab = tabs[tabIndex];
+			Tab tab = Tabs.GetByIndex(tabIndex);
 			Dimensions tabDimensions = new Dimensions()
 			{
 				x = mainMenuX + 10f,
@@ -1585,7 +1493,7 @@ namespace MultiTool.Modules
 				catch (Exception ex)
 				{
                     tab.Errors++;
-                    Logger.Log($"Error occurred during tab \"{tab.Name}\" config render ({tab.Errors}/5). Details: {ex}", Logger.LogLevel.Error);
+                    Logger.Log($"Error occurred during tab \"{tab.Name}\" MultiTool.Configuration render ({tab.Errors}/5). Details: {ex}", Logger.LogLevel.Error);
 
                     if (tab.Errors >= 5)
                     {
@@ -1615,9 +1523,9 @@ namespace MultiTool.Modules
 		}
 
 		/// <summary>
-		/// Render the config pane
+		/// Render the MultiTool.Configuration pane
 		/// </summary>
-		/// <param name="tab">The tab index to render the config pane for</param>
+		/// <param name="tab">The tab index to render the MultiTool.Configuration pane for</param>
 		private void RenderConfig(Tab tab, Dimensions configDimensions)
 		{
 			float configX = configDimensions.x + 5f;
@@ -1661,7 +1569,7 @@ namespace MultiTool.Modules
 
 						configY += configHeight + 10f;
 
-						if (GUI.Button(new Rect(configX, configY, 200f, configHeight), GetAccessibleString("Spawn with fuel", settings.spawnWithFuel)))
+						if (GUI.Button(new Rect(configX, configY, 200f, configHeight), Accessibility.GetAccessibleString("Spawn with fuel", settings.spawnWithFuel)))
 							settings.spawnWithFuel = !settings.spawnWithFuel;
 
 						configY += configHeight + 10f;
@@ -1714,7 +1622,7 @@ namespace MultiTool.Modules
 
 						// Vehicle colour sliders.
 						// Red.
-						GUI.Label(new Rect(configX, configY, configWidth, configHeight), GetAccessibleColorString("Red:", new Color(255, 0, 0)), labelStyle);
+						GUI.Label(new Rect(configX, configY, configWidth, configHeight), Accessibility.GetAccessibleColorString("Red:", new Color(255, 0, 0)), labelStyle);
 						configY += configHeight;
 						red = GUI.HorizontalSlider(new Rect(configX, configY, configWidth, configHeight), color.r * 255, 0, 255);
 						red = Mathf.Round(red);
@@ -1728,7 +1636,7 @@ namespace MultiTool.Modules
 
 						// Green.
 						configY += configHeight + 10f;
-						GUI.Label(new Rect(configX, configY, configWidth, configHeight), GetAccessibleColorString("Green:", new Color(0, 255, 0)), labelStyle);
+						GUI.Label(new Rect(configX, configY, configWidth, configHeight), Accessibility.GetAccessibleColorString("Green:", new Color(0, 255, 0)), labelStyle);
 						configY += configHeight;
 						green = GUI.HorizontalSlider(new Rect(configX, configY, configWidth, configHeight), color.g * 255, 0, 255);
 						green = Mathf.Round(green);
@@ -1742,7 +1650,7 @@ namespace MultiTool.Modules
 
 						// Blue.
 						configY += configHeight + 10f;
-						GUI.Label(new Rect(configX, configY, configWidth, configHeight), GetAccessibleColorString("Blue:", new Color(0, 0, 255)), labelStyle);
+						GUI.Label(new Rect(configX, configY, configWidth, configHeight), Accessibility.GetAccessibleColorString("Blue:", new Color(0, 0, 255)), labelStyle);
 						configY += configHeight;
 						blue = GUI.HorizontalSlider(new Rect(configX, configY, configWidth, configHeight), color.b * 255, 0, 255);
 						blue = Mathf.Round(blue);
@@ -1800,7 +1708,7 @@ namespace MultiTool.Modules
 
 						configScrollPosition = GUI.BeginScrollView(new Rect(configX, configY, configWidth, configDimensions.height - 40f), configScrollPosition, new Rect(configX, configY, configWidth, shapeConfigScrollHeight), new GUIStyle(), new GUIStyle());
 						// Red.
-						GUI.Label(new Rect(configX, configY, configWidth, configHeight), GetAccessibleColorString("Red:", new Color(255, 0, 0)), labelStyle);
+						GUI.Label(new Rect(configX, configY, configWidth, configHeight), Accessibility.GetAccessibleColorString("Red:", new Color(255, 0, 0)), labelStyle);
 						configY += configHeight;
 						red = GUI.HorizontalSlider(new Rect(configX, configY, configWidth, configHeight), color.r * 255, 0, 255);
 						red = Mathf.Round(red);
@@ -1813,7 +1721,7 @@ namespace MultiTool.Modules
 
 						// Green.
 						configY += configHeight + 10f;
-						GUI.Label(new Rect(configX, configY, configWidth, configHeight), GetAccessibleColorString("Green:", new Color(0, 255, 0)), labelStyle);
+						GUI.Label(new Rect(configX, configY, configWidth, configHeight), Accessibility.GetAccessibleColorString("Green:", new Color(0, 255, 0)), labelStyle);
 						configY += configHeight;
 						green = GUI.HorizontalSlider(new Rect(configX, configY, configWidth, configHeight), color.g * 255, 0, 255);
 						green = Mathf.Round(green);
@@ -1826,7 +1734,7 @@ namespace MultiTool.Modules
 
 						// Blue.
 						configY += configHeight + 10f;
-						GUI.Label(new Rect(configX, configY, configWidth, configHeight), GetAccessibleColorString("Blue:", new Color(0, 0, 255)), labelStyle);
+						GUI.Label(new Rect(configX, configY, configWidth, configHeight), Accessibility.GetAccessibleColorString("Blue:", new Color(0, 0, 255)), labelStyle);
 						configY += configHeight;
 						blue = GUI.HorizontalSlider(new Rect(configX, configY, configWidth, configHeight), color.b * 255, 0, 255);
 						blue = Mathf.Round(blue);
@@ -1865,7 +1773,7 @@ namespace MultiTool.Modules
 						color = GUIRenderer.RenderColourPalette(configX, configY, configWidth, color);
 						configY += GUIRenderer.GetPaletteHeight(configWidth) + 10f;
 
-						if (GUI.Button(new Rect(configX, configY, configWidth, configHeight), GetAccessibleString("Link scale axis", linkScale)))
+						if (GUI.Button(new Rect(configX, configY, configWidth, configHeight), Accessibility.GetAccessibleString("Link scale axis", linkScale)))
 							linkScale = !linkScale;
 
 						if (linkScale)
@@ -1975,7 +1883,7 @@ namespace MultiTool.Modules
 					{
 						string name = Translator.T(car.ToString(), "menuVehicles");
 
-						if (GUI.Button(new Rect(x, y, width - 40f, 20f), GetAccessibleString(name, DataFromMenuScript.s.startcar == (itemdatabase.CarType)car)))
+						if (GUI.Button(new Rect(x, y, width - 40f, 20f), Accessibility.GetAccessibleString(name, DataFromMenuScript.s.startcar == (itemdatabase.CarType)car)))
                             DataFromMenuScript.s.startcar = (itemdatabase.CarType)car;
 
 						y += 25f;
@@ -2031,7 +1939,7 @@ namespace MultiTool.Modules
 
 						// Vehicle colour sliders.
 						// Red.
-						GUI.Label(new Rect(x, y, width - 40f, 20f), GetAccessibleColorString("Red:", new Color(255, 0, 0)), labelStyle);
+						GUI.Label(new Rect(x, y, width - 40f, 20f), Accessibility.GetAccessibleColorString("Red:", new Color(255, 0, 0)), labelStyle);
 						y += 20f;
 						float red = GUI.HorizontalSlider(new Rect(x, y, width - 40f, 20f), vehicleColor.r * 255, 0, 255);
 						red = Mathf.Round(red);
@@ -2044,7 +1952,7 @@ namespace MultiTool.Modules
 
 						// Green.
 						y += 30f;
-						GUI.Label(new Rect(x, y, width - 40f, 20f), GetAccessibleColorString("Green:", new Color(0, 255, 0)), labelStyle);
+						GUI.Label(new Rect(x, y, width - 40f, 20f), Accessibility.GetAccessibleColorString("Green:", new Color(0, 255, 0)), labelStyle);
 						y += 20f;
 						float green = GUI.HorizontalSlider(new Rect(x, y, width - 40f, 20f), vehicleColor.g * 255, 0, 255);
 						green = Mathf.Round(green);
@@ -2057,7 +1965,7 @@ namespace MultiTool.Modules
 
 						// Blue.
 						y += 30f;
-						GUI.Label(new Rect(x, y, width - 40f, 20f), GetAccessibleColorString("Blue:", new Color(0, 0, 255)), labelStyle);
+						GUI.Label(new Rect(x, y, width - 40f, 20f), Accessibility.GetAccessibleColorString("Blue:", new Color(0, 0, 255)), labelStyle);
 						y += 20f;
 						float blue = GUI.HorizontalSlider(new Rect(x, y, width - 40f, 20f), vehicleColor.b * 255, 0, 255);
 						blue = Mathf.Round(blue);
@@ -2137,8 +2045,8 @@ namespace MultiTool.Modules
 					GUI.Button(new Rect(x, y, width / 2, height / 2), "Copy");
 					GUI.Button(new Rect(x + width / 2, y, width / 2, height / 2), "Paste");
 
-					GUI.Button(new Rect(x, y + height / 2, width / 2, height / 2), binds.GetPrettyName((int)Keybinds.Inputs.action1));
-					GUI.Button(new Rect(x + width / 2, y + height / 2, width / 2, height / 2), binds.GetPrettyName((int)Keybinds.Inputs.action2));
+					GUI.Button(new Rect(x, y + height / 2, width / 2, height / 2), MultiTool.Binds.GetPrettyName((int)Keybinds.Inputs.action1));
+					GUI.Button(new Rect(x + width / 2, y + height / 2, width / 2, height / 2), MultiTool.Binds.GetPrettyName((int)Keybinds.Inputs.action2));
 
 					// Colour preview.
 					GUIStyle defaultStyle = GUI.skin.button;
@@ -2156,7 +2064,7 @@ namespace MultiTool.Modules
 					GUI.skin.button = defaultStyle;
 					break;
 				case "scale":
-                    GUI.Button(new Rect(resolutionX / 2 - 250f, 10f, 500f, 30f), $"Selected object: {(selectedObject != null ? selectedObject.name: "None")} ({binds.GetPrettyName((int)Keybinds.Inputs.action6)} to {(selectedObject != null ? "deselect" : "select")})");
+                    GUI.Button(new Rect(resolutionX / 2 - 250f, 10f, 500f, 30f), $"Selected object: {(selectedObject != null ? selectedObject.name: "None")} ({MultiTool.Binds.GetPrettyName((int)Keybinds.Inputs.action6)} to {(selectedObject != null ? "deselect" : "select")})");
                     if (selectedObject != null)
                     {
                         width = 400f;
@@ -2173,12 +2081,12 @@ namespace MultiTool.Modules
                         GUI.Button(new Rect(x, y + height / rows * 4, width / 2, height / rows), $"Toggle hold to scale ({(scaleHold ? "Hold" : "Click")})");
                         GUI.Button(new Rect(x, y + height / rows * 5, width / 2, height / rows), "Reset");
 
-                        GUI.Button(new Rect(x + width / 2, y, width / 2, height / rows), binds.GetPrettyName((int)Keybinds.Inputs.up));
-                        GUI.Button(new Rect(x + width / 2, y + height / rows, width / 2, height / rows), binds.GetPrettyName((int)Keybinds.Inputs.down));
-                        GUI.Button(new Rect(x + width / 2, y + height / rows * 2, width / 2, height / rows), binds.GetPrettyName((int)Keybinds.Inputs.action3));
-                        GUI.Button(new Rect(x + width / 2, y + height / rows * 3, width / 2, height / rows), binds.GetPrettyName((int)Keybinds.Inputs.action5));
-                        GUI.Button(new Rect(x + width / 2, y + height / rows * 4, width / 2, height / rows), binds.GetPrettyName((int)Keybinds.Inputs.select));
-                        GUI.Button(new Rect(x + width / 2, y + height / rows * 5, width / 2, height / rows), binds.GetPrettyName((int)Keybinds.Inputs.action4));
+                        GUI.Button(new Rect(x + width / 2, y, width / 2, height / rows), MultiTool.Binds.GetPrettyName((int)Keybinds.Inputs.up));
+                        GUI.Button(new Rect(x + width / 2, y + height / rows, width / 2, height / rows), MultiTool.Binds.GetPrettyName((int)Keybinds.Inputs.down));
+                        GUI.Button(new Rect(x + width / 2, y + height / rows * 2, width / 2, height / rows), MultiTool.Binds.GetPrettyName((int)Keybinds.Inputs.action3));
+                        GUI.Button(new Rect(x + width / 2, y + height / rows * 3, width / 2, height / rows), MultiTool.Binds.GetPrettyName((int)Keybinds.Inputs.action5));
+                        GUI.Button(new Rect(x + width / 2, y + height / rows * 4, width / 2, height / rows), MultiTool.Binds.GetPrettyName((int)Keybinds.Inputs.select));
+                        GUI.Button(new Rect(x + width / 2, y + height / rows * 5, width / 2, height / rows), MultiTool.Binds.GetPrettyName((int)Keybinds.Inputs.action4));
 
                         Vector3 scale = selectedObject.transform.localScale;
                         string scaleDisplay = scale.ToString();
@@ -2254,53 +2162,53 @@ namespace MultiTool.Modules
 								}
 								GUI.Button(new Rect(x + width / displayedIndexes.Count * index, y, width / displayedIndexes.Count, 30f), name);
 							}
-							GUI.Button(new Rect(x, y - 30f, width / displayedIndexes.Count, 30f), $"< ({binds.GetPrettyName((int)Keybinds.Inputs.left)})");
-							GUI.Button(new Rect(resolutionX / 2 - (width / displayedIndexes.Count) / 2, y - 30f, width / displayedIndexes.Count, 30f), $"Select ({binds.GetPrettyName((int)Keybinds.Inputs.select)})");
-							GUI.Button(new Rect(resolutionX - width / displayedIndexes.Count, y - 30f, width / displayedIndexes.Count, 30f), $"({binds.GetPrettyName((int)Keybinds.Inputs.right)}) >");
+							GUI.Button(new Rect(x, y - 30f, width / displayedIndexes.Count, 30f), $"< ({MultiTool.Binds.GetPrettyName((int)Keybinds.Inputs.left)})");
+							GUI.Button(new Rect(resolutionX / 2 - (width / displayedIndexes.Count) / 2, y - 30f, width / displayedIndexes.Count, 30f), $"Select ({MultiTool.Binds.GetPrettyName((int)Keybinds.Inputs.select)})");
+							GUI.Button(new Rect(resolutionX - width / displayedIndexes.Count, y - 30f, width / displayedIndexes.Count, 30f), $"({MultiTool.Binds.GetPrettyName((int)Keybinds.Inputs.right)}) >");
 							break;
 						case "move":
 							GUI.Button(new Rect(resolutionX / 2 - 100f, 10f, 300f, 30f), $"Moving: {PrettifySlotName(selectedSlot.name)}");
 
 							int moveControls = 4;
-							GUI.Button(new Rect(x, y, width / moveControls, 30f), $"Back to slot select ({binds.GetPrettyName((int)Keybinds.Inputs.select)})");
-							GUI.Button(new Rect(x + width / moveControls * 3, y, width / moveControls, 30f), $"Switch to rotate ({binds.GetPrettyName((int)Keybinds.Inputs.action3)})");
+							GUI.Button(new Rect(x, y, width / moveControls, 30f), $"Back to slot select ({MultiTool.Binds.GetPrettyName((int)Keybinds.Inputs.select)})");
+							GUI.Button(new Rect(x + width / moveControls * 3, y, width / moveControls, 30f), $"Switch to rotate ({MultiTool.Binds.GetPrettyName((int)Keybinds.Inputs.action3)})");
 
 							// Movement control UI.
 							// Column 2.
-							GUI.Button(new Rect(x + width / moveControls, y, width / moveControls, 30f), $"Move by: {moveValue} ({binds.GetPrettyName((int)Keybinds.Inputs.action5)})");
-							GUI.Button(new Rect(x + width / moveControls, y - 30f, width / moveControls, 30f), $"Left ({binds.GetPrettyName((int)Keybinds.Inputs.left)})");
-							GUI.Button(new Rect(x + width / moveControls, y - 60f, width / moveControls, 30f), $"Up ({binds.GetPrettyName((int)Keybinds.Inputs.noclipSpeedUp)})");
+							GUI.Button(new Rect(x + width / moveControls, y, width / moveControls, 30f), $"Move by: {moveValue} ({MultiTool.Binds.GetPrettyName((int)Keybinds.Inputs.action5)})");
+							GUI.Button(new Rect(x + width / moveControls, y - 30f, width / moveControls, 30f), $"Left ({MultiTool.Binds.GetPrettyName((int)Keybinds.Inputs.left)})");
+							GUI.Button(new Rect(x + width / moveControls, y - 60f, width / moveControls, 30f), $"Up ({MultiTool.Binds.GetPrettyName((int)Keybinds.Inputs.noclipSpeedUp)})");
 							
 							// Column 3.
-							GUI.Button(new Rect(x + width / moveControls * 2, y, width / moveControls, 30f), $"Back ({binds.GetPrettyName((int)Keybinds.Inputs.down)})");
-							GUI.Button(new Rect(x + width / moveControls * 2, y - 30f, width / moveControls, 30f), $"Reset ({binds.GetPrettyName((int)Keybinds.Inputs.action4)})");
-							GUI.Button(new Rect(x + width / moveControls * 2, y - 60f, width / moveControls, 30f), $"Forward ({binds.GetPrettyName((int)Keybinds.Inputs.up)})");
+							GUI.Button(new Rect(x + width / moveControls * 2, y, width / moveControls, 30f), $"Back ({MultiTool.Binds.GetPrettyName((int)Keybinds.Inputs.down)})");
+							GUI.Button(new Rect(x + width / moveControls * 2, y - 30f, width / moveControls, 30f), $"Reset ({MultiTool.Binds.GetPrettyName((int)Keybinds.Inputs.action4)})");
+							GUI.Button(new Rect(x + width / moveControls * 2, y - 60f, width / moveControls, 30f), $"Forward ({MultiTool.Binds.GetPrettyName((int)Keybinds.Inputs.up)})");
 
 							// Column 4.
-							GUI.Button(new Rect(x + width / moveControls * 3, y - 30f, width / moveControls, 30f), $"Right ({binds.GetPrettyName((int)Keybinds.Inputs.right)})");
-							GUI.Button(new Rect(x + width / moveControls * 3, y - 60f, width / moveControls, 30f), $"Down ({binds.GetPrettyName((int)Keybinds.Inputs.noclipDown)})");
+							GUI.Button(new Rect(x + width / moveControls * 3, y - 30f, width / moveControls, 30f), $"Right ({MultiTool.Binds.GetPrettyName((int)Keybinds.Inputs.right)})");
+							GUI.Button(new Rect(x + width / moveControls * 3, y - 60f, width / moveControls, 30f), $"Down ({MultiTool.Binds.GetPrettyName((int)Keybinds.Inputs.noclipDown)})");
 							break;
 						case "rotate":
 							GUI.Button(new Rect(resolutionX / 2 - 100f, 10f, 300f, 30f), $"Rotating: {PrettifySlotName(selectedSlot.name)}");
 
 							int rotateControls = 4;
-							GUI.Button(new Rect(x, y, width / rotateControls, 30f), $"Back to slot select ({binds.GetPrettyName((int)Keybinds.Inputs.select)})");
-							GUI.Button(new Rect(x + width / rotateControls * 3, y, width / rotateControls, 30f), $"Switch to move ({binds.GetPrettyName((int)Keybinds.Inputs.action3)})");
+							GUI.Button(new Rect(x, y, width / rotateControls, 30f), $"Back to slot select ({MultiTool.Binds.GetPrettyName((int)Keybinds.Inputs.select)})");
+							GUI.Button(new Rect(x + width / rotateControls * 3, y, width / rotateControls, 30f), $"Switch to move ({MultiTool.Binds.GetPrettyName((int)Keybinds.Inputs.action3)})");
 
 							// Rotate control UI.
 							// Column 2.
-							GUI.Button(new Rect(x + width / rotateControls, y, width / rotateControls, 30f), $"Rotate by: {moveValue} ({binds.GetPrettyName((int)Keybinds.Inputs.action5)})");
-							GUI.Button(new Rect(x + width / rotateControls, y - 30f, width / rotateControls, 30f), $"Left ({binds.GetPrettyName((int)Keybinds.Inputs.left)})");
-							GUI.Button(new Rect(x + width / rotateControls, y - 60f, width / rotateControls, 30f), $"Anticlockwise ({binds.GetPrettyName((int)Keybinds.Inputs.noclipSpeedUp)})");
+							GUI.Button(new Rect(x + width / rotateControls, y, width / rotateControls, 30f), $"Rotate by: {moveValue} ({MultiTool.Binds.GetPrettyName((int)Keybinds.Inputs.action5)})");
+							GUI.Button(new Rect(x + width / rotateControls, y - 30f, width / rotateControls, 30f), $"Left ({MultiTool.Binds.GetPrettyName((int)Keybinds.Inputs.left)})");
+							GUI.Button(new Rect(x + width / rotateControls, y - 60f, width / rotateControls, 30f), $"Anticlockwise ({MultiTool.Binds.GetPrettyName((int)Keybinds.Inputs.noclipSpeedUp)})");
 
 							// Column 3.
-							GUI.Button(new Rect(x + width / rotateControls * 2, y, width / rotateControls, 30f), $"Back ({binds.GetPrettyName((int)Keybinds.Inputs.down)})");
-							GUI.Button(new Rect(x + width / rotateControls * 2, y - 30f, width / rotateControls, 30f), $"Reset ({binds.GetPrettyName((int)Keybinds.Inputs.action4)})");
-							GUI.Button(new Rect(x + width / rotateControls * 2, y - 60f, width / rotateControls, 30f), $"Forward ({binds.GetPrettyName((int)Keybinds.Inputs.up)})");
+							GUI.Button(new Rect(x + width / rotateControls * 2, y, width / rotateControls, 30f), $"Back ({MultiTool.Binds.GetPrettyName((int)Keybinds.Inputs.down)})");
+							GUI.Button(new Rect(x + width / rotateControls * 2, y - 30f, width / rotateControls, 30f), $"Reset ({MultiTool.Binds.GetPrettyName((int)Keybinds.Inputs.action4)})");
+							GUI.Button(new Rect(x + width / rotateControls * 2, y - 60f, width / rotateControls, 30f), $"Forward ({MultiTool.Binds.GetPrettyName((int)Keybinds.Inputs.up)})");
 
 							// Column 4.
-							GUI.Button(new Rect(x + width / rotateControls * 3, y - 30f, width / rotateControls, 30f), $"Right ({binds.GetPrettyName((int)Keybinds.Inputs.right)})");
-							GUI.Button(new Rect(x + width / rotateControls * 3, y - 60f, width / rotateControls, 30f), $"Clockwise ({binds.GetPrettyName((int)Keybinds.Inputs.noclipDown)})");
+							GUI.Button(new Rect(x + width / rotateControls * 3, y - 30f, width / rotateControls, 30f), $"Right ({MultiTool.Binds.GetPrettyName((int)Keybinds.Inputs.right)})");
+							GUI.Button(new Rect(x + width / rotateControls * 3, y - 60f, width / rotateControls, 30f), $"Clockwise ({MultiTool.Binds.GetPrettyName((int)Keybinds.Inputs.noclipDown)})");
 							break;
 					}
 					break;
@@ -2313,8 +2221,8 @@ namespace MultiTool.Modules
 					GUI.Button(new Rect(x, y, width / 2, height / 2), "Select object");
 					GUI.Button(new Rect(x + width / 2, y, width / 2, height / 2), "Regenerate object");
 
-					GUI.Button(new Rect(x, y + height / 2, width / 2, height / 2), binds.GetPrettyName((int)Keybinds.Inputs.action1));
-					GUI.Button(new Rect(x + width / 2, y + height / 2, width / 2, height / 2), binds.GetPrettyName((int)Keybinds.Inputs.action4));
+					GUI.Button(new Rect(x, y + height / 2, width / 2, height / 2), MultiTool.Binds.GetPrettyName((int)Keybinds.Inputs.action1));
+					GUI.Button(new Rect(x + width / 2, y + height / 2, width / 2, height / 2), MultiTool.Binds.GetPrettyName((int)Keybinds.Inputs.action4));
 
 					if (selectedObject != null)
 						GUI.Button(new Rect(resolutionX / 2 - 250f, 10f, 500f, 30f), $"Selected object: {selectedObject.name} (ID: {selectedObject.idInSave})");
@@ -2396,7 +2304,7 @@ namespace MultiTool.Modules
 				x += 10f;
 				GUI.Label(new Rect(x, y, contentWidth, 20f), $"Look at an object");
 				y += 25f;
-				GUI.Label(new Rect(x, y, contentWidth, 20f), $"Press '{binds.GetPrettyName((int)Keybinds.Inputs.select)}' to toggle colliders");
+				GUI.Label(new Rect(x, y, contentWidth, 20f), $"Press '{MultiTool.Binds.GetPrettyName((int)Keybinds.Inputs.select)}' to toggle colliders");
 				y += 25f;
 				GUI.Label(new Rect(x, y, contentWidth, 20f), "Red: Standard collider");
 				y += 25f;
@@ -2482,7 +2390,7 @@ namespace MultiTool.Modules
 
 							// Update palette index colour.
 							palette[i] = currentColor;
-							config.UpdatePalette(palette);
+							MultiTool.Configuration.UpdatePalette(palette);
 
                             // Update texture cache.
                             GUIStyle swatchStyle = new GUIStyle(defaultStyle);
@@ -2512,66 +2420,6 @@ namespace MultiTool.Modules
 			float buttonHeight = 30f;
 			int rowLength = Mathf.FloorToInt(width / (buttonWidth + 2f));
 			return Mathf.CeilToInt((float)palette.Count / rowLength) * (buttonHeight + 2f);
-		}
-
-		/// <summary>
-		/// Translate a string appropriate for the selected accessibility mode
-		/// </summary>
-		/// <param name="str">The string to translate</param>
-		/// <param name="state">The button state</param>
-		/// <returns>Accessibility mode translated string</returns>
-		public static string GetAccessibleString(string str, bool state)
-		{
-			switch (accessibilityMode)
-			{
-				case "contrast":
-					return state ? $"<color=#0F0>{str}</color>" : $"<color=#FFF>{str}</color>";
-				case "colourless":
-					return state ? $"{str} ✔" : $"{str} ✖";
-			}
-
-			return state ? $"<color=#0F0>{str}</color>" : $"<color=#F00>{str}</color>";
-		}
-
-		/// <summary>
-		/// Translate a string appropriate for the selected accessibility mode
-		/// </summary>
-		/// <param name="trueStr">The string to translate for true</param>
-		/// <param name="falseStr">The string to translate for false</param>
-		/// <param name="state">The button state</param>
-		/// <returns>Accessibility mode translated string</returns>
-		public static string GetAccessibleString(string trueStr, string falseStr, bool state)
-		{
-			switch (accessibilityMode)
-			{
-				case "contrast":
-					return state ? $"<color=#0F0>{trueStr}</color>" : $"<color=#FFF>{falseStr}</color>";
-				case "colourless":
-					return state ? $"{trueStr} ✔" : $"{falseStr} ✖";
-			}
-
-			return state ? $"<color=#0F0>{trueStr}</color>" : $"<color=#F00>{falseStr}</color>";
-		}
-
-		/// <summary>
-		/// Get accessible version of a colour label string.
-		/// </summary>
-		/// <param name="str">The string to translate</param>
-		/// <param name="color">The associated color</param>
-		/// <returns>Accessibility mode translated string</returns>
-		public static string GetAccessibleColorString(string str, Color color)
-		{
-			if (accessibilityModeAffectsColors)
-			{
-				switch (accessibilityMode)
-				{
-					case "contrast":
-					case "colourless":
-						return str;
-				}
-			}
-
-			return $"<color=#{ColorUtility.ToHtmlStringRGB(color)}>{str}</color>";
 		}
 
 		/// <summary>

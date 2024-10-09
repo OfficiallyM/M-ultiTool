@@ -53,7 +53,7 @@ namespace MultiTool.Tabs
 
 			columnCount = (int)Math.Ceiling((double)GUIRenderer.items.Count / maxRowItems);
 			scrollHeight = (itemHeight + 10f) * (columnCount + 1);
-			itemScrollPosition = GUI.BeginScrollView(new Rect(dimensions.x, dimensions.y + 10f + searchHeight, dimensions.width, dimensions.height - 10f - searchHeight), itemScrollPosition, new Rect(dimensions.x, dimensions.y, dimensions.width, scrollHeight - 10f - searchHeight), new GUIStyle(), GUI.skin.verticalScrollbar);
+			itemScrollPosition = GUI.BeginScrollView(new Rect(dimensions.x, dimensions.y + 10f + searchHeight, dimensions.width, dimensions.height - 10f - searchHeight), itemScrollPosition, new Rect(dimensions.x, dimensions.y, dimensions.width, scrollHeight - 10f - searchHeight), false, true);
 			GUI.enabled = !filterShow;
 			for (int i = 0; i < searchItems.Count(); i++)
 			{

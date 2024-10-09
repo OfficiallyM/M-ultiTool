@@ -10,9 +10,6 @@ namespace MultiTool.Modules
 {
 	internal class Keybinds
 	{
-		// Modules.
-		private Config config;
-
 		private GUIStyle labelStyle = new GUIStyle();
 
 		private int rebindAction = -1;
@@ -67,10 +64,8 @@ namespace MultiTool.Modules
 			}
 		}
 
-		public Keybinds(Config _config)
+		public Keybinds()
 		{
-			config = _config;
-
 			try
 			{
 				// Load defaults.
@@ -174,7 +169,7 @@ namespace MultiTool.Modules
 			try
 			{
 				// Load the keybinds from the config.
-				keys = config.GetKeybinds(keys);
+				keys = MultiTool.Configuration.GetKeybinds(keys);
 			}
 			catch (Exception ex)
 			{
@@ -248,8 +243,6 @@ namespace MultiTool.Modules
             if (preventScroll)
                 scrollHeight = 0;
 
-            // TODO: Esc keybind list has a scroll bar.
-
             GUI.Box(new Rect(x, y, width, height), $"<size=16><b>{title}</b></size>");
 
 			Vector2 scrollPosition = GUI.BeginScrollView(new Rect(x + 10f, y + 25f, width - 10f, height - 20f), scrollPositions.ContainsKey(title) ? scrollPositions[title] : new Vector2(0, 0), new Rect(x + 10f, y + 25f, width, scrollHeight), new GUIStyle(), GUI.skin.verticalScrollbar);
@@ -282,7 +275,7 @@ namespace MultiTool.Modules
 				if (GUI.Button(new Rect(buttonX, actionY, buttonWidth, actionHeight / 2), "Reset"))
 				{
 					key.Reset();
-					config.UpdateKeybinds(keys);
+                    MultiTool.Configuration.UpdateKeybinds(keys);
 				}
 
 				actionY += actionHeight + 5f;
@@ -302,7 +295,7 @@ namespace MultiTool.Modules
 						{
 							key.Set(keyCode);
 							rebindAction = -1;
-							config.UpdateKeybinds(keys);
+							MultiTool.Configuration.UpdateKeybinds(keys);
 						}
 					}
 				}

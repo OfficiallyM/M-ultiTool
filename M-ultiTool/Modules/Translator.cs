@@ -14,13 +14,12 @@ namespace MultiTool.Modules
 	{
 		// Translation-related variables.
 		private static string language;
-		private static Dictionary<string, ConfigWrapper> translations = new Dictionary<string, ConfigWrapper>();
+		private static Dictionary<string, Translate> translations = new Dictionary<string, Translate>();
 		private static string translationDir;
 
 		public static void Init()
 		{
-			string configDir = Path.Combine(ModLoader.ModsFolder, "Config", "Mod Settings", MultiTool.mod.ID);
-			DirectoryInfo dir = Directory.CreateDirectory(Path.Combine(configDir, "Translations"));
+			DirectoryInfo dir = Directory.CreateDirectory(Path.Combine(ModLoader.GetModConfigFolder(MultiTool.mod), "Translations"));
 			translationDir = dir.FullName;
 
 			LoadTranslationFiles();
@@ -56,8 +55,8 @@ namespace MultiTool.Modules
 				{
 					string json = File.ReadAllText(file);
 					MemoryStream ms = new MemoryStream(Encoding.UTF8.GetBytes(json));
-					DataContractJsonSerializer jsonSerializer = new DataContractJsonSerializer(typeof(ConfigWrapper));
-					var config = jsonSerializer.ReadObject(ms) as ConfigWrapper;
+					DataContractJsonSerializer jsonSerializer = new DataContractJsonSerializer(typeof(Translate));
+					var config = jsonSerializer.ReadObject(ms) as Translate;
 					ms.Close();
 
 					translations.Add(Path.GetFileNameWithoutExtension(file), config);
@@ -77,6 +76,8 @@ namespace MultiTool.Modules
 		/// <returns>Translated object name or untranslated name if no translation is found</returns>
 		public static string T(string objectName, string type, int? variant = null)
 		{
+            string defaultObjectName = objectName;
+
 			// Fallback to English if the current language isn't supported.
 			if (!translations.ContainsKey(language))
 			{
@@ -85,49 +86,45 @@ namespace MultiTool.Modules
 
 			if (translations.ContainsKey(language))
 			{
-				ConfigWrapper config = translations[language];
+                Translate config = translations[language];
+                List<Translatable> translate = null;
+
+                // Find translation list for type.
 				switch (type)
 				{
 					case "vehicle":
-						List<ConfigVehicle> vehicles = config.vehicles;
-						foreach (ConfigVehicle vehicle in vehicles)
-						{
-							if (vehicle.objectName == objectName)
-							{
-								if (variant != null && variant != -1)
-								{
-									if (vehicle.variant == variant)
-										return vehicle.name;
-								}
-								else
-									return vehicle.name;
-							}
-						}
+                        translate = config.vehicles;
 						break;
 					case "POI":
-						List<ConfigPOI> POIs = config.POIs;
-						foreach (ConfigPOI POI in POIs)
-						{
-							if (POI.objectName == objectName)
-							{
-								return POI.name;
-							}
-						}
+						translate = config.POIs;
 						break;
 					case "menuVehicles":
-						List<ConfigVehicle> menuVehicles = config.menuVehicles;
-						foreach (ConfigVehicle vehicle in menuVehicles)
-						{
-							if (vehicle.objectName == objectName)
-							{
-								return vehicle.name;
-							}
-						}
+						translate = config.menuVehicles;
 						break;
 				}
+
+                // Attempt to find the translation.
+                if (translate != null)
+                {
+                    foreach (Translatable translatable in translate)
+                    {
+                        if (translatable.objectName == objectName)
+                        {
+                            if (variant != null && variant != -1)
+                            {
+                                if (translatable.variant == variant)
+                                    objectName = translatable.name;
+                                break;
+                            }
+                            objectName = translatable.name;
+                            break;
+                        }
+                    }
+                }
 			}
 
-			if (variant != null && variant != -1)
+            // No translation and has a variant, just append the variant number.
+			if (defaultObjectName == objectName && variant != null && variant != -1)
 			{
 				objectName += $" (Variant {variant.GetValueOrDefault()})";
 			}

@@ -9,6 +9,7 @@ using MultiTool.Modules;
 using Logger = MultiTool.Modules.Logger;
 using System.Threading;
 using static mainscript;
+using MultiTool.Utilities.UI;
 
 namespace MultiTool.Tabs
 {
@@ -176,7 +177,7 @@ namespace MultiTool.Tabs
 
             foreach (string tabName in tabs)
             {
-                if (GUILayout.Button(GUIRenderer.GetAccessibleString(tabName, tab == tabName)))
+                if (GUILayout.Button(Accessibility.GetAccessibleString(tabName, tab == tabName)))
                     tab = tabName;
             }
 
@@ -197,7 +198,7 @@ namespace MultiTool.Tabs
             {
                 case "Basics":
                     // Vehicle god mode.
-                    if (GUI.Button(new Rect(currVehicleX, currVehicleY, buttonWidth, buttonHeight), GUIRenderer.GetAccessibleString("Vehicle god mode", car.crashMultiplier <= 0.0)))
+                    if (GUI.Button(new Rect(currVehicleX, currVehicleY, buttonWidth, buttonHeight), Accessibility.GetAccessibleString("Vehicle god mode", car.crashMultiplier <= 0.0)))
                     {
                         car.crashMultiplier *= -1f;
                     }
@@ -205,7 +206,7 @@ namespace MultiTool.Tabs
                     currVehicleY += buttonHeight + 10f;
 
                     // Toggle slot mover.
-                    if (GUI.Button(new Rect(currVehicleX, currVehicleY, buttonWidth, buttonHeight), GUIRenderer.GetAccessibleString("Toggle slot mover", settings.mode == "slotControl")))
+                    if (GUI.Button(new Rect(currVehicleX, currVehicleY, buttonWidth, buttonHeight), Accessibility.GetAccessibleString("Toggle slot mover", settings.mode == "slotControl")))
                     {
                         if (settings.mode == "slotControl")
                         {
@@ -248,7 +249,7 @@ namespace MultiTool.Tabs
                     GUI.Label(new Rect(currVehicleX, currVehicleY, headerWidth, headerHeight), "Color", GUIRenderer.headerStyle);
                     currVehicleY += headerHeight;
                     // Red.
-                    GUI.Label(new Rect(currVehicleX, currVehicleY, buttonWidth, buttonHeight), GUIRenderer.GetAccessibleColorString("Red:", new Color(255, 0, 0)), GUIRenderer.labelStyle);
+                    GUI.Label(new Rect(currVehicleX, currVehicleY, buttonWidth, buttonHeight), Accessibility.GetAccessibleColorString("Red:", new Color(255, 0, 0)), GUIRenderer.labelStyle);
                     currVehicleY += buttonHeight;
                     float red = GUI.HorizontalSlider(new Rect(currVehicleX, currVehicleY, sliderWidth, buttonHeight), GUIRenderer.color.r * 255, 0, 255);
                     red = Mathf.Round(red);
@@ -261,7 +262,7 @@ namespace MultiTool.Tabs
 
                     // Green.
                     currVehicleY += buttonHeight + 10f;
-                    GUI.Label(new Rect(currVehicleX, currVehicleY, buttonWidth, buttonHeight), GUIRenderer.GetAccessibleColorString("Green:", new Color(0, 255, 0)), GUIRenderer.labelStyle);
+                    GUI.Label(new Rect(currVehicleX, currVehicleY, buttonWidth, buttonHeight), Accessibility.GetAccessibleColorString("Green:", new Color(0, 255, 0)), GUIRenderer.labelStyle);
                     currVehicleY += buttonHeight;
                     float green = GUI.HorizontalSlider(new Rect(currVehicleX, currVehicleY, sliderWidth, buttonHeight), GUIRenderer.color.g * 255, 0, 255);
                     green = Mathf.Round(green);
@@ -274,7 +275,7 @@ namespace MultiTool.Tabs
 
                     // Blue.
                     currVehicleY += buttonHeight + 10f;
-                    GUI.Label(new Rect(currVehicleX, currVehicleY, buttonWidth, buttonHeight), GUIRenderer.GetAccessibleColorString("Blue:", new Color(0, 0, 255)), GUIRenderer.labelStyle);
+                    GUI.Label(new Rect(currVehicleX, currVehicleY, buttonWidth, buttonHeight), Accessibility.GetAccessibleColorString("Blue:", new Color(0, 0, 255)), GUIRenderer.labelStyle);
                     currVehicleY += buttonHeight;
                     float blue = GUI.HorizontalSlider(new Rect(currVehicleX, currVehicleY, sliderWidth, buttonHeight), GUIRenderer.color.b * 255, 0, 255);
                     blue = Mathf.Round(blue);
@@ -624,7 +625,7 @@ namespace MultiTool.Tabs
 
                     // Window colour sliders.
                     // Red.
-                    GUI.Label(new Rect(currVehicleX, currVehicleY, buttonWidth, buttonHeight), GUIRenderer.GetAccessibleColorString("Red:", new Color(255, 0, 0)), GUIRenderer.labelStyle);
+                    GUI.Label(new Rect(currVehicleX, currVehicleY, buttonWidth, buttonHeight), Accessibility.GetAccessibleColorString("Red:", new Color(255, 0, 0)), GUIRenderer.labelStyle);
                     currVehicleY += buttonHeight;
                     float windowRed = GUI.HorizontalSlider(new Rect(currVehicleX, currVehicleY, sliderWidth, buttonHeight), GUIRenderer.windowColor.r * 255, 0, 255);
                     windowRed = Mathf.Round(windowRed);
@@ -637,7 +638,7 @@ namespace MultiTool.Tabs
 
                     // Green.
                     currVehicleY += buttonHeight + 10f;
-                    GUI.Label(new Rect(currVehicleX, currVehicleY, buttonWidth, buttonHeight), GUIRenderer.GetAccessibleColorString("Green:", new Color(0, 255, 0)), GUIRenderer.labelStyle);
+                    GUI.Label(new Rect(currVehicleX, currVehicleY, buttonWidth, buttonHeight), Accessibility.GetAccessibleColorString("Green:", new Color(0, 255, 0)), GUIRenderer.labelStyle);
                     currVehicleY += buttonHeight;
                     float windowGreen = GUI.HorizontalSlider(new Rect(currVehicleX, currVehicleY, sliderWidth, buttonHeight), GUIRenderer.windowColor.g * 255, 0, 255);
                     windowGreen = Mathf.Round(windowGreen);
@@ -650,7 +651,7 @@ namespace MultiTool.Tabs
 
                     // Blue.
                     currVehicleY += buttonHeight + 10f;
-                    GUI.Label(new Rect(currVehicleX, currVehicleY, buttonWidth, buttonHeight), GUIRenderer.GetAccessibleColorString("Blue:", new Color(0, 0, 255)), GUIRenderer.labelStyle);
+                    GUI.Label(new Rect(currVehicleX, currVehicleY, buttonWidth, buttonHeight), Accessibility.GetAccessibleColorString("Blue:", new Color(0, 0, 255)), GUIRenderer.labelStyle);
                     currVehicleY += buttonHeight;
                     float windowBlue = GUI.HorizontalSlider(new Rect(currVehicleX, currVehicleY, sliderWidth, buttonHeight), GUIRenderer.windowColor.b * 255, 0, 255);
                     windowBlue = Mathf.Round(windowBlue);
@@ -751,7 +752,7 @@ namespace MultiTool.Tabs
 
                             // Sunroof colour sliders.
                             // Red.
-                            GUI.Label(new Rect(currVehicleX, currVehicleY, buttonWidth, buttonHeight), GUIRenderer.GetAccessibleColorString("Red:", new Color(255, 0, 0)), GUIRenderer.labelStyle);
+                            GUI.Label(new Rect(currVehicleX, currVehicleY, buttonWidth, buttonHeight), Accessibility.GetAccessibleColorString("Red:", new Color(255, 0, 0)), GUIRenderer.labelStyle);
                             currVehicleY += buttonHeight;
                             float sunroofRed = GUI.HorizontalSlider(new Rect(currVehicleX, currVehicleY, sliderWidth, buttonHeight), GUIRenderer.sunRoofColor.r * 255, 0, 255);
                             sunroofRed = Mathf.Round(sunroofRed);
@@ -764,7 +765,7 @@ namespace MultiTool.Tabs
 
                             // Green.
                             currVehicleY += buttonHeight + 10f;
-                            GUI.Label(new Rect(currVehicleX, currVehicleY, buttonWidth, buttonHeight), GUIRenderer.GetAccessibleColorString("Green:", new Color(0, 255, 0)), GUIRenderer.labelStyle);
+                            GUI.Label(new Rect(currVehicleX, currVehicleY, buttonWidth, buttonHeight), Accessibility.GetAccessibleColorString("Green:", new Color(0, 255, 0)), GUIRenderer.labelStyle);
                             currVehicleY += buttonHeight;
                             float sunroofGreen = GUI.HorizontalSlider(new Rect(currVehicleX, currVehicleY, sliderWidth, buttonHeight), GUIRenderer.sunRoofColor.g * 255, 0, 255);
                             sunroofGreen = Mathf.Round(sunroofGreen);
@@ -777,7 +778,7 @@ namespace MultiTool.Tabs
 
                             // Blue.
                             currVehicleY += buttonHeight + 10f;
-                            GUI.Label(new Rect(currVehicleX, currVehicleY, buttonWidth, buttonHeight), GUIRenderer.GetAccessibleColorString("Blue:", new Color(0, 0, 255)), GUIRenderer.labelStyle);
+                            GUI.Label(new Rect(currVehicleX, currVehicleY, buttonWidth, buttonHeight), Accessibility.GetAccessibleColorString("Blue:", new Color(0, 0, 255)), GUIRenderer.labelStyle);
                             currVehicleY += buttonHeight;
                             float sunroofBlue = GUI.HorizontalSlider(new Rect(currVehicleX, currVehicleY, sliderWidth, buttonHeight), GUIRenderer.sunRoofColor.b * 255, 0, 255);
                             sunroofBlue = Mathf.Round(sunroofBlue);
@@ -962,7 +963,7 @@ namespace MultiTool.Tabs
                         if (colorSelectorOpen)
                         {
                             // Red.
-                            GUI.Label(new Rect(currVehicleX, currVehicleY, buttonWidth, buttonHeight), GUIRenderer.GetAccessibleColorString("Red:", new Color(255, 0, 0)), GUIRenderer.labelStyle);
+                            GUI.Label(new Rect(currVehicleX, currVehicleY, buttonWidth, buttonHeight), Accessibility.GetAccessibleColorString("Red:", new Color(255, 0, 0)), GUIRenderer.labelStyle);
                             currVehicleY += buttonHeight;
                             float seatRed = GUI.HorizontalSlider(new Rect(currVehicleX, currVehicleY, sliderWidth, buttonHeight), GUIRenderer.materialColor.r * 255, 0, 255);
                             seatRed = Mathf.Round(seatRed);
@@ -975,7 +976,7 @@ namespace MultiTool.Tabs
 
                             // Green.
                             currVehicleY += buttonHeight + 10f;
-                            GUI.Label(new Rect(currVehicleX, currVehicleY, buttonWidth, buttonHeight), GUIRenderer.GetAccessibleColorString("Green:", new Color(0, 255, 0)), GUIRenderer.labelStyle);
+                            GUI.Label(new Rect(currVehicleX, currVehicleY, buttonWidth, buttonHeight), Accessibility.GetAccessibleColorString("Green:", new Color(0, 255, 0)), GUIRenderer.labelStyle);
                             currVehicleY += buttonHeight;
                             float seatGreen = GUI.HorizontalSlider(new Rect(currVehicleX, currVehicleY, sliderWidth, buttonHeight), GUIRenderer.materialColor.g * 255, 0, 255);
                             seatGreen = Mathf.Round(seatGreen);
@@ -988,7 +989,7 @@ namespace MultiTool.Tabs
 
                             // Blue.
                             currVehicleY += buttonHeight + 10f;
-                            GUI.Label(new Rect(currVehicleX, currVehicleY, buttonWidth, buttonHeight), GUIRenderer.GetAccessibleColorString("Blue:", new Color(0, 0, 255)), GUIRenderer.labelStyle);
+                            GUI.Label(new Rect(currVehicleX, currVehicleY, buttonWidth, buttonHeight), Accessibility.GetAccessibleColorString("Blue:", new Color(0, 0, 255)), GUIRenderer.labelStyle);
                             currVehicleY += buttonHeight;
                             float seatBlue = GUI.HorizontalSlider(new Rect(currVehicleX, currVehicleY, sliderWidth, buttonHeight), GUIRenderer.materialColor.b * 255, 0, 255);
                             seatBlue = Mathf.Round(seatBlue);
@@ -1209,7 +1210,7 @@ namespace MultiTool.Tabs
                     currVehicleY += buttonHeight + 10f;
 
                     // Red.
-                    GUI.Label(new Rect(currVehicleX, currVehicleY, buttonWidth, buttonHeight), GUIRenderer.GetAccessibleColorString("Red:", new Color(255, 0, 0)), GUIRenderer.labelStyle);
+                    GUI.Label(new Rect(currVehicleX, currVehicleY, buttonWidth, buttonHeight), Accessibility.GetAccessibleColorString("Red:", new Color(255, 0, 0)), GUIRenderer.labelStyle);
                     currVehicleY += buttonHeight;
                     float lightRed = GUI.HorizontalSlider(new Rect(currVehicleX, currVehicleY, sliderWidth, buttonHeight), GUIRenderer.lightColor.r * 255, 0, 255);
                     lightRed = Mathf.Round(lightRed);
@@ -1222,7 +1223,7 @@ namespace MultiTool.Tabs
 
                     // Green.
                     currVehicleY += buttonHeight + 10f;
-                    GUI.Label(new Rect(currVehicleX, currVehicleY, buttonWidth, buttonHeight), GUIRenderer.GetAccessibleColorString("Green:", new Color(0, 255, 0)), GUIRenderer.labelStyle);
+                    GUI.Label(new Rect(currVehicleX, currVehicleY, buttonWidth, buttonHeight), Accessibility.GetAccessibleColorString("Green:", new Color(0, 255, 0)), GUIRenderer.labelStyle);
                     currVehicleY += buttonHeight;
                     float lightGreen = GUI.HorizontalSlider(new Rect(currVehicleX, currVehicleY, sliderWidth, buttonHeight), GUIRenderer.lightColor.g * 255, 0, 255);
                     lightGreen = Mathf.Round(lightGreen);
@@ -1235,7 +1236,7 @@ namespace MultiTool.Tabs
 
                     // Blue.
                     currVehicleY += buttonHeight + 10f;
-                    GUI.Label(new Rect(currVehicleX, currVehicleY, buttonWidth, buttonHeight), GUIRenderer.GetAccessibleColorString("Blue:", new Color(0, 0, 255)), GUIRenderer.labelStyle);
+                    GUI.Label(new Rect(currVehicleX, currVehicleY, buttonWidth, buttonHeight), Accessibility.GetAccessibleColorString("Blue:", new Color(0, 0, 255)), GUIRenderer.labelStyle);
                     currVehicleY += buttonHeight;
                     float lightBlue = GUI.HorizontalSlider(new Rect(currVehicleX, currVehicleY, sliderWidth, buttonHeight), GUIRenderer.lightColor.b * 255, 0, 255);
                     lightBlue = Mathf.Round(lightBlue);
@@ -1479,7 +1480,7 @@ namespace MultiTool.Tabs
 
                     GUILayout.BeginHorizontal();
                     GUILayout.Label("No overheat");
-                    if (GUILayout.Button(GUIRenderer.GetAccessibleString("Yes", "No", engineTuning.noOverheat), GUILayout.MaxWidth(200)))
+                    if (GUILayout.Button(Accessibility.GetAccessibleString("Yes", "No", engineTuning.noOverheat), GUILayout.MaxWidth(200)))
                         engineTuning.noOverheat = !engineTuning.noOverheat;
                     if (GUILayout.Button("Reset", GUILayout.MaxWidth(200)))
                         engineTuning.noOverheat = engineTuning.defaultNoOverheat;
@@ -1494,7 +1495,7 @@ namespace MultiTool.Tabs
                     {
                         GUILayout.BeginHorizontal();
                         GUILayout.Label("Is two-stroke?");
-                        if (GUILayout.Button(GUIRenderer.GetAccessibleString("Yes", "No", engineTuning.twoStroke), GUILayout.MaxWidth(200)))
+                        if (GUILayout.Button(Accessibility.GetAccessibleString("Yes", "No", engineTuning.twoStroke), GUILayout.MaxWidth(200)))
                             engineTuning.twoStroke = !engineTuning.twoStroke;
                         if (GUILayout.Button("Reset", GUILayout.MaxWidth(200)))
                             engineTuning.twoStroke = engineTuning.defaultTwoStroke;
@@ -1585,7 +1586,7 @@ namespace MultiTool.Tabs
                                 continue;
 
                             fluidenum fuelFluid = (fluidenum)fuelFluidIndex;
-                            if (GUILayout.Button(GUIRenderer.GetAccessibleString(fuelFluid.ToString().ToSentenceCase(), fuelFluid == fluid.type), GUILayout.MaxWidth(200)))
+                            if (GUILayout.Button(Accessibility.GetAccessibleString(fuelFluid.ToString().ToSentenceCase(), fuelFluid == fluid.type), GUILayout.MaxWidth(200)))
                                 fluid.type = fuelFluid;
                         }
                         fluid.amount = GUILayout.HorizontalSlider(fluid.amount, 0f, 500f);
@@ -1698,7 +1699,7 @@ namespace MultiTool.Tabs
                         GUILayout.Label($"Max torque: {engineStats.maxTorque.ToString("F2")}Nm");
                         GUILayout.Label($"Max RPM: {engineStats.maxRPM.ToString("F2")}");
                         GUILayout.Label($"Max horsepower: {engineStats.maxHp.ToString("F2")}");
-                        if (GUILayout.Button(GUIRenderer.GetAccessibleString("Hide last graph point", hideLastTorquePoint), GUILayout.MaxWidth(200)))
+                        if (GUILayout.Button(Accessibility.GetAccessibleString("Hide last graph point", hideLastTorquePoint), GUILayout.MaxWidth(200)))
                         {
                             hideLastTorquePoint = !hideLastTorquePoint;
                             UpdateEngineTunerStats();
@@ -1737,7 +1738,7 @@ namespace MultiTool.Tabs
                     }
 
                     GUILayout.FlexibleSpace();
-                    if (GUILayout.Button(GUIRenderer.GetAccessibleString("Toggle stats", isEngineTuningStatsOpen), GUILayout.MaxWidth(200)))
+                    if (GUILayout.Button(Accessibility.GetAccessibleString("Toggle stats", isEngineTuningStatsOpen), GUILayout.MaxWidth(200)))
                         isEngineTuningStatsOpen = !isEngineTuningStatsOpen;
                     GUILayout.EndHorizontal();
                     GUILayout.EndVertical();
@@ -1806,7 +1807,7 @@ namespace MultiTool.Tabs
                         float.TryParse(GUILayout.TextField(gear.ratio.ToString("F2"), GUILayout.MaxWidth(200)), out gear.ratio);
 
                         GUILayout.Label("Free run");
-                        if (GUILayout.Button(GUIRenderer.GetAccessibleString("Yes", "No", gear.freeRun), GUILayout.MaxWidth(200)))
+                        if (GUILayout.Button(Accessibility.GetAccessibleString("Yes", "No", gear.freeRun), GUILayout.MaxWidth(200)))
                             gear.freeRun = !gear.freeRun;
 
                         GUILayout.Space(5);
