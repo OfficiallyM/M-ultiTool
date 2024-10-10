@@ -418,6 +418,7 @@ namespace MultiTool.Tabs
         {
             // Apply infinite ammo.
             fpscontroller player = mainscript.s.player;
+            if (player == null) return;
             if (player.inHandP != null && player.inHandP.weapon != null)
             {
                 if (isPerSave)
