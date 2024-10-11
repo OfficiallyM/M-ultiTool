@@ -1848,185 +1848,103 @@ namespace MultiTool.Modules
 			// Don't render the UI if any game menus are open.
 			if (menuhandler.s.SettingsObject.activeSelf || menuhandler.s.SaveLoadObject.activeSelf) return;
 
-			if (!show) { 
-				if (GUI.Button(new Rect(resolutionX - 200f, resolutionY / 3 - 10f, 200f, 60f), "New game settings"))
-				{
-					show = true;
-					stateChanged = true;
-				}
+			if (!show) {
+                GUILayout.BeginArea(new Rect(resolutionX - 200f, resolutionY / 3 - 10f, 200f, 60f));
+                if (GUILayout.Button("New game settings", GUILayout.MinHeight(60)))
+                {
+                    show = true;
+                    stateChanged = true;
+                }
+                GUILayout.EndArea();
 			}
 
 			if (!show)
 				return;
 
-			GUI.Box(new Rect(x, y, width, height), "<color=#f87ffa><size=18><b>New game settings</b></size></color>");
-			if (GUI.Button(new Rect(resolutionX - 40f, y, 40f, 40f), "<size=30><color=#F00>X</color></size>"))
+			GUILayout.BeginArea(new Rect(x, y, width, height), "<color=#f87ffa><size=18><b>New game settings</b></size></color>", "box");
+            GUILayout.BeginHorizontal();
+            GUILayout.FlexibleSpace();
+			if (GUILayout.Button("<size=30><color=#F00>X</color></size>", GUILayout.MinWidth(40f)))
 			{
 				show = false;
 				stateChanged = true;
 			}
+            GUILayout.EndHorizontal();
 
-			x += 20f;
-			y += 60f;
+            GUILayout.BeginVertical();
+            currentMainMenuPosition = GUILayout.BeginScrollView(currentMainMenuPosition);
+            switch (mainMenuStage)
+            {
+                case "vehicle":
+                    int optionCount = (int)Enum.GetValues(typeof(itemdatabase.CarType)).Cast<itemdatabase.CarType>().Max();
+                    foreach (var car in Enum.GetValues(typeof(itemdatabase.CarType)))
+                    {
+                        string name = Translator.T(car.ToString(), "menuVehicles");
 
-			float contentHeight = 0;
-			
-			switch (mainMenuStage)
-			{
-				case "vehicle":
-					int optionCount = (int)Enum.GetValues(typeof(itemdatabase.CarType)).Cast<itemdatabase.CarType>().Max();
-					contentHeight = optionCount * 25f;
-
-					currentMainMenuPosition = GUI.BeginScrollView(new Rect(x, y, width - 40f, height - 120f), currentMainMenuPosition, new Rect(x, y, width - 40f, contentHeight), new GUIStyle(), GUI.skin.verticalScrollbar);
-
-					foreach (var car in Enum.GetValues(typeof(itemdatabase.CarType)))
-					{
-						string name = Translator.T(car.ToString(), "menuVehicles");
-
-						if (GUI.Button(new Rect(x, y, width - 40f, 20f), Accessibility.GetAccessibleString(name, DataFromMenuScript.s.startcar == (itemdatabase.CarType)car)))
+                        if (GUILayout.Button(Accessibility.GetAccessibleString(name, DataFromMenuScript.s.startcar == (itemdatabase.CarType)car)))
                             DataFromMenuScript.s.startcar = (itemdatabase.CarType)car;
+                    }
+                    break;
 
-						y += 25f;
-					}
+                case "basics":
+                    // Condition.
+                    GUILayout.Label($"Condition:", labelStyle);
+                    int maxCondition = (int)Enum.GetValues(typeof(Item.Condition)).Cast<Item.Condition>().Max();
+                    float rawCondition = GUILayout.HorizontalSlider(startVehicleCondition, -1, maxCondition);
+                    startVehicleCondition = Mathf.RoundToInt(rawCondition);
+                    string conditionName = ((Item.Condition)startVehicleCondition).ToString();
+                    GUILayout.Label(conditionName, labelStyle);
 
-					GUI.EndScrollView();
-					break;
-				case "basics":
-					contentHeight = 70f;
+                    GUILayout.Space(10);
 
-					currentMainMenuPosition = GUI.BeginScrollView(new Rect(x, y, width - 40f, height - 120f), currentMainMenuPosition, new Rect(x, y, width - 40f, contentHeight), new GUIStyle(), GUI.skin.verticalScrollbar);
+                    // License plate.
+                    GUILayout.Label("Plate (blank for random):", labelStyle);
+                    startVehiclePlate = GUILayout.TextField(startVehiclePlate, 7, labelStyle);
+                    break;
 
-					// Condition.
-					GUI.Label(new Rect(x, y, width - 40f, 20f), $"Condition:", labelStyle);
-					y += 20f;
-					int maxCondition = (int)Enum.GetValues(typeof(Item.Condition)).Cast<Item.Condition>().Max();
-					float rawCondition = GUI.HorizontalSlider(new Rect(x, y, width - 40f, 20f), startVehicleCondition, -1, maxCondition);
-					startVehicleCondition = Mathf.RoundToInt(rawCondition);
-					y += 20f;
-					string conditionName = ((Item.Condition)startVehicleCondition).ToString();
-					GUI.Label(new Rect(x, y, width - 40f, 20f), conditionName, labelStyle);
+                case "color":
+                    if (GUILayout.Button($"Use {(startVehicleColor.HasValue ? "custom" : "random")} colour"))
+                    {
+                        if (startVehicleColor.HasValue)
+                            startVehicleColor = null;
+                        else
+                            startVehicleColor = Color.white;
+                    }
+                    GUILayout.Space(10);
 
-					y += 30f;
+                    if (startVehicleColor.HasValue)
+                        startVehicleColor = Colour.RenderColourSliders(width - 20f, startVehicleColor.Value);
+                    break;
+            }
+            GUILayout.EndScrollView();
+            GUILayout.EndVertical();
+            GUILayout.FlexibleSpace();
+            GUILayout.BeginHorizontal();
+            // Back button.
+            if (mainMenuStage != mainMenuStages.First())
+            {
+                string previousStage = mainMenuStages[Array.FindIndex(mainMenuStages, s => s == mainMenuStage) - 1];
+                if (GUILayout.Button($"To {previousStage}", GUILayout.MinWidth(200), GUILayout.Height(20)))
+                {
+                    mainMenuStage = previousStage;
+                    currentMainMenuPosition = Vector2.zero;
+                }
+            }
 
-					GUI.Label(new Rect(x, y, width - 40f, 20f), "Plate (blank for random):", labelStyle);
-					y += 20f;
-					startVehiclePlate = GUI.TextField(new Rect(x, y, width - 40f, 20f), startVehiclePlate, 7, labelStyle);
+            GUILayout.FlexibleSpace();
 
-					y += 30f;
-
-					GUI.EndScrollView();
-
-					break;
-				case "color":
-					if (GUI.Button(new Rect(x, y, 200f, 20f), $"Use {(startVehicleColor.HasValue ? "custom" : "random")} colour"))
-					{
-						if (startVehicleColor.HasValue)
-							startVehicleColor = null;
-						else
-							startVehicleColor = Color.white;
-					}
-
-					y += 30f;
-
-					if (startVehicleColor.HasValue)
-					{
-						contentHeight = 210f;
-						contentHeight += GetPaletteHeight(width - 40f) + 10f;
-
-						currentMainMenuPosition = GUI.BeginScrollView(new Rect(x, y, width - 40f, height - 120f), currentMainMenuPosition, new Rect(x, y, width - 40f, contentHeight), new GUIStyle(), GUI.skin.verticalScrollbar);
-
-						Color vehicleColor = startVehicleColor.Value;
-
-						// Vehicle colour sliders.
-						// Red.
-						GUI.Label(new Rect(x, y, width - 40f, 20f), Accessibility.GetAccessibleColorString("Red:", new Color(255, 0, 0)), labelStyle);
-						y += 20f;
-						float red = GUI.HorizontalSlider(new Rect(x, y, width - 40f, 20f), vehicleColor.r * 255, 0, 255);
-						red = Mathf.Round(red);
-						y += 20f;
-						bool redParse = float.TryParse(GUI.TextField(new Rect(x, y, width - 40f, 20f), red.ToString(), labelStyle), out red);
-						if (!redParse)
-							Logger.Log($"{redParse} is not a number", Logger.LogLevel.Error);
-						red = Mathf.Clamp(red, 0f, 255f);
-						vehicleColor.r = red / 255f;
-
-						// Green.
-						y += 30f;
-						GUI.Label(new Rect(x, y, width - 40f, 20f), Accessibility.GetAccessibleColorString("Green:", new Color(0, 255, 0)), labelStyle);
-						y += 20f;
-						float green = GUI.HorizontalSlider(new Rect(x, y, width - 40f, 20f), vehicleColor.g * 255, 0, 255);
-						green = Mathf.Round(green);
-						y += 20f;
-						bool greenParse = float.TryParse(GUI.TextField(new Rect(x, y, width - 40f, 20f), green.ToString(), labelStyle), out green);
-						if (!greenParse)
-							Logger.Log($"{greenParse} is not a number", Logger.LogLevel.Error);
-						green = Mathf.Clamp(green, 0f, 255f);
-						vehicleColor.g = green / 255f;
-
-						// Blue.
-						y += 30f;
-						GUI.Label(new Rect(x, y, width - 40f, 20f), Accessibility.GetAccessibleColorString("Blue:", new Color(0, 0, 255)), labelStyle);
-						y += 20f;
-						float blue = GUI.HorizontalSlider(new Rect(x, y, width - 40f, 20f), vehicleColor.b * 255, 0, 255);
-						blue = Mathf.Round(blue);
-						y += 20f;
-						bool blueParse = float.TryParse(GUI.TextField(new Rect(x, y, width - 40f, 20f), blue.ToString(), labelStyle), out blue);
-						if (!blueParse)
-							Logger.Log($"{blueParse} is not a number", Logger.LogLevel.Error);
-						blue = Mathf.Clamp(blue, 0f, 255f);
-						vehicleColor.b = blue / 255f;
-
-						startVehicleColor = vehicleColor;
-
-						y += 30f;
-
-						// Colour preview.
-						GUIStyle defaultStyle = GUI.skin.button;
-						GUIStyle previewStyle = new GUIStyle(defaultStyle);
-						Texture2D previewTexture = new Texture2D(1, 1);
-						Color[] pixels = new Color[] { startVehicleColor.Value };
-						previewTexture.SetPixels(pixels);
-						previewTexture.Apply();
-						previewStyle.normal.background = previewTexture;
-						previewStyle.active.background = previewTexture;
-						previewStyle.hover.background = previewTexture;
-						previewStyle.margin = new RectOffset(0, 0, 0, 0);
-						GUI.skin.button = previewStyle;
-						GUI.Button(new Rect(x, y, width - 40f, 20f), "");
-						GUI.skin.button = defaultStyle;
-
-						y += 30f;
-
-						startVehicleColor = RenderColourPalette(x, y, width - 40f, startVehicleColor.Value);
-						y += GetPaletteHeight(width - 40f) + 10f;
-
-						GUI.EndScrollView();
-					}
-
-					break;
-			}
-
-			// Back button.
-			if (mainMenuStage != mainMenuStages.First())
-			{
-				string previousStage = mainMenuStages[Array.FindIndex(mainMenuStages, s => s == mainMenuStage) - 1];
-				if (GUI.Button(new Rect(x, resolutionY - 140f, 200f, 20f), $"To {previousStage}"))
-				{
-					mainMenuStage = previousStage;
-					currentMainMenuPosition = Vector2.zero;
-				}
-			}
-
-			// Next button.
-			if (mainMenuStage != mainMenuStages.Last())
-			{
-				string nextStage = mainMenuStages[Array.FindIndex(mainMenuStages, s => s == mainMenuStage) + 1];
-				if (GUI.Button(new Rect(resolutionX - 220f, resolutionY - 140f, 200f, 20f), $"To {nextStage}"))
-				{
-					mainMenuStage = nextStage;
-					currentMainMenuPosition = Vector2.zero;
-				}
-			}
+            // Next button.
+            if (mainMenuStage != mainMenuStages.Last())
+            {
+                string nextStage = mainMenuStages[Array.FindIndex(mainMenuStages, s => s == mainMenuStage) + 1];
+                if (GUILayout.Button($"To {nextStage}", GUILayout.MinWidth(200), GUILayout.Height(20)))
+                {
+                    mainMenuStage = nextStage;
+                    currentMainMenuPosition = Vector2.zero;
+                }
+            }
+            GUILayout.EndHorizontal();
+            GUILayout.EndArea();			
 		}
 
 		/// <summary>
