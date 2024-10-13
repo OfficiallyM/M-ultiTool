@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using UnityEngine;
 
 namespace MultiTool.Core
 {
@@ -10,8 +6,10 @@ namespace MultiTool.Core
 	{
 		public virtual string Name { get; set; }
 		public virtual bool HasConfigPane { get { return false; } }
-		public virtual void RenderTab(Dimensions dimensions) { }
-		public virtual void RenderConfigPane(Dimensions dimensions) { }
+        public virtual bool ShowInNavigation { get { return true; } }
+        internal virtual bool IsFullScreen { get { return false; } }
+		public virtual void RenderTab(Rect dimensions) { }
+		public virtual void RenderConfigPane(Rect dimensions) { }
         public virtual void OnRegister() { }
         public virtual void Update() { }
 
@@ -22,13 +20,5 @@ namespace MultiTool.Core
 		int errors = 0;
 		internal virtual bool IsDisabled { get => disabled; set => disabled = value; }
 		internal virtual int Errors { get => errors; set => errors = value; }
-	}
-
-	public class Dimensions
-	{
-		public float x;
-		public float y;
-		public float width;
-		public float height;
 	}
 }

@@ -1,8 +1,10 @@
 ﻿using MultiTool.Core;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using TLDLoader;
+using UnityEngine;
 
 namespace MultiTool.Modules
 {
@@ -22,7 +24,8 @@ namespace MultiTool.Modules
 		/// Add new tab.
 		/// </summary>
 		/// <param name="tab"></param>
-		public void AddTab(Tab tab)
+        /// <returns>Index of the added tab or -1 if tab is invalid</returns>
+		public int AddTab(Tab tab)
         {
             // Find caller mod name.
             Assembly caller = Assembly.GetCallingAssembly();
@@ -31,7 +34,7 @@ namespace MultiTool.Modules
             if (ModLoader.isOnMainMenu)
             {
                 Logger.Log($"Mod {callerMod.Name} attempted to register a tab too early. Tabs should be registered during OnLoad().", Logger.LogLevel.Error);
-                return;
+                return -1;
             }
 
             tab.Source = callerMod.Name;
@@ -39,13 +42,15 @@ namespace MultiTool.Modules
 
             // Block duplicate tab registration.
             if (_tabs.Where(t => t.Id == tab.Id).FirstOrDefault() != null)
-                return;
+                return -1;
 
             Logger.Log($"Registered tab {tab.Name} (ID: {tab.Id}) via {tab.Source}");
 
             tab.OnRegister();
 
             _tabs.Add(tab);
+
+            return _tabs.Count - 1;
         }
 
         /// <summary>
@@ -79,5 +84,80 @@ namespace MultiTool.Modules
         /// <param name="id">Index of tab to find</param>
         /// <returns>Tab if the ID is valid, otherwise null</returns>
         internal Tab GetByIndex(int id) => _tabs[id];
+
+        /// <summary>
+		/// Render a given tab
+		/// </summary>
+		/// <param name="tab">The tab index to render</param>
+		internal void RenderTab(int? tabIndex = null)
+        {
+            if (tabIndex == null) tabIndex = _tab;
+            Tab tab = GetByIndex(tabIndex.Value);
+
+            Rect tabDimensions = new Rect()
+            {
+                x = MultiTool.Renderer.mainMenuX + 10f,
+                y = MultiTool.Renderer.mainMenuX + (tab.IsFullScreen ? 50f : 90f),
+                width = MultiTool.Renderer.mainMenuWidth - 20f,
+                height = MultiTool.Renderer.mainMenuHeight - 105f,
+            };
+
+            float configWidth = (MultiTool.Renderer.mainMenuWidth * 0.25f);
+            float configX = MultiTool.Renderer.mainMenuX + MultiTool.Renderer.mainMenuWidth - configWidth - 10f;
+
+            // Return early if tab is disabled.
+            if (tab.IsDisabled) return;
+
+            // Config pane.
+            if (tab.HasConfigPane)
+            {
+                // Decrease tab width to account for content pane.
+                tabDimensions.width -= configWidth + 5f;
+
+                GUI.Box(new Rect(configX, tabDimensions.y, configWidth, tabDimensions.height), "<size=16>Configuration</size>");
+
+                Rect configDimensions = new Rect()
+                {
+                    x = configX,
+                    y = tabDimensions.y,
+                    width = configWidth,
+                    height = tabDimensions.height,
+                };
+
+                try
+                {
+                    MultiTool.Renderer.RenderConfig(tab, configDimensions);
+                }
+                catch (Exception ex)
+                {
+                    tab.Errors++;
+                    Logger.Log($"Error occurred during tab \"{tab.Name}\" MultiTool.Configuration render ({tab.Errors}/5). Details: {ex}", Logger.LogLevel.Error);
+
+                    if (tab.Errors >= 5)
+                    {
+                        tab.IsDisabled = true;
+                        Logger.Log($"Tab {tab.Name} threw too many errors and has been disabled.", Logger.LogLevel.Warning);
+                    }
+                }
+            }
+
+            GUI.Box(new Rect(tabDimensions.x, tabDimensions.y, tabDimensions.width, tabDimensions.height), String.Empty);
+
+            try
+            {
+                tab.RenderTab(tabDimensions);
+            }
+            catch (Exception ex)
+            {
+                tab.Errors++;
+                Logger.Log($"Error occurred during tab \"{tab.Name}\" render ({tab.Errors}/5). Details: {ex}", Logger.LogLevel.Error);
+
+                if (tab.Errors >= 5)
+                {
+                    tab.IsDisabled = true;
+                    Logger.Log($"Tab {tab.Name} threw too many errors and has been disabled.", Logger.LogLevel.Warning);
+                }
+            }
+        }
     }
 }

@@ -53,7 +53,7 @@ namespace MultiTool.Tabs
             ApplyPlayerData();
         }
 
-        public override void RenderTab(Dimensions dimensions)
+        public override void RenderTab(Rect dimensions)
 		{
 			float startingX = dimensions.x + 10f;
 			float x = startingX;

@@ -14,7 +14,7 @@ namespace MultiTool.Tabs
 	{
 		public override string Name => "Shapes";
 		public override bool HasConfigPane => true;
-		public override void RenderTab(Dimensions dimensions)
+		public override void RenderTab(Rect dimensions)
 		{
 			GUI.skin.button.wordWrap = true;
 

@@ -18,7 +18,7 @@ namespace MultiTool.Tabs
 		private bool filterShow = false;
 		private List<int> filters = new List<int>();
 
-		public override void RenderTab(Dimensions dimensions)
+		public override void RenderTab(Rect dimensions)
 		{
 			GUI.skin.button.wordWrap = true;
 			float itemWidth = 140f;

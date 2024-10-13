@@ -16,7 +16,7 @@ namespace MultiTool.Tabs
 		public override string Name => "Miscellaneous";
 
 		private Settings settings = new Settings();
-		public override void RenderTab(Dimensions dimensions)
+		public override void RenderTab(Rect dimensions)
 		{
 			float miscX = dimensions.x + 10f;
 			float miscY = dimensions.y + 10f;

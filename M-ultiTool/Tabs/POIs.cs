@@ -15,7 +15,7 @@ namespace MultiTool.Tabs
 
 		private Vector2 poiScrollPosition;
 		private bool poiSpawnItems = true;
-		public override void RenderTab(Dimensions dimensions)
+		public override void RenderTab(Rect dimensions)
 		{
 			//GUI.skin.button.wordWrap = true;
 

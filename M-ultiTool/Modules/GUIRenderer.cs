@@ -25,20 +25,20 @@ namespace MultiTool.Modules
 		internal bool show = false;
 		private bool loaded = false;
 		private bool settingsShow = false;
+        private int settingsTabIndex = -1;
 		private bool creditsShow = false;
+        private int creditsTabIndex = -1;
 
 		private int resolutionX;
 		private int resolutionY;
 
-		private float mainMenuWidth;
-		private float mainMenuHeight;
-		private float mainMenuX;
-		private float mainMenuY;
+		internal float mainMenuWidth;
+        internal float mainMenuHeight;
+        internal float mainMenuX;
+        internal float mainMenuY;
 
 		private Vector2 tabScrollPosition;
 		private Vector2 configScrollPosition;
-		private Vector2 creditScrollPosition;
-        private Vector2 settingsScrollPosition;
 
 		// Styling.
 		internal static GUIStyle labelStyle = new GUIStyle();
@@ -62,7 +62,7 @@ namespace MultiTool.Modules
                 textColor = Color.white,
             }
         };
-		private float scrollWidth = 10f;
+		internal static float scrollWidth = 10f;
 		internal static GUIStyle messageStyle = new GUIStyle()
 		{
 			fontSize = 40,
@@ -163,9 +163,8 @@ namespace MultiTool.Modules
 		internal static GameObject ufo;
 		internal static Quaternion localRotation;
 		internal static float settingsScrollWidth;
-        private bool accessibilityShow = false;
+        internal static bool accessibilityShow = false;
         internal static float noclipFastMoveFactor = 10f;
-        private float settingsLastHeight = 0;
 
 		// HUD variables.
 		private GameObject debugObject = null;
@@ -277,6 +276,8 @@ namespace MultiTool.Modules
 				Tabs.AddTab(new Tabs.VehicleConfigurationTab());
 				Tabs.AddTab(new Tabs.MiscellaneousTab());
 				Tabs.AddTab(new Tabs.DeveloperTab());
+                settingsTabIndex = Tabs.AddTab(new Tabs.SettingsTab());
+                creditsTabIndex = Tabs.AddTab(new Tabs.CreditsTab());
 
 				// Load data from database.
 				vehicles = DatabaseUtilities.LoadVehicles();
@@ -988,7 +989,7 @@ namespace MultiTool.Modules
 			GUI.Box(new Rect(x, y, width, height), $"<color=#f87ffa><size=18><b>{MultiTool.mod.Name}</b></size>\n<size=16>v{MultiTool.mod.Version} - made with ❤️ by {MultiTool.mod.Author}</size></color>");
 
 			// Settings button.
-			if (GUI.Button(new Rect(x + 5f, y + 5f, 150f, 25f), Accessibility.GetAccessibleString("Show settings", settingsShow)))
+			if (GUI.Button(new Rect(x + 5f, y + 5f, 150f, 25f), Accessibility.GetAccessibleString("Settings", settingsShow)))
 			{
 				settingsShow = !settingsShow;
 				creditsShow = false;
@@ -1001,429 +1002,12 @@ namespace MultiTool.Modules
 			}
 
 			if (settingsShow)
-			{
-				// Render the setting page.
-				try
-				{
-					MultiTool.Binds.RenderRebindMenu("Rebind keys", (int[])Enum.GetValues(typeof(Keybinds.Inputs)), x + 10f, y + 50f, width * 0.25f, height - 65f);
-				}
-				catch (Exception ex)
-				{
-					Logger.Log($"Error building settings rebind menu - {ex}", Logger.LogLevel.Error);
-				}
-
-				// Other settings.
-				float settingsX = x + (width * 0.25f) + 20f;
-				float settingsY = y + 50f;
-				float settingsWidth = width * 0.75f - 30f;
-				float settingsHeight = height - 65f;
-				GUI.Box(new Rect(settingsX, settingsY, settingsWidth, settingsHeight), "Settings");
-                settingsScrollPosition = GUI.BeginScrollView(new Rect(settingsX, settingsY, settingsWidth, settingsHeight), settingsScrollPosition, new Rect(settingsX, settingsY, settingsWidth, settingsLastHeight), new GUIStyle(), GUI.skin.verticalScrollbar);
-
-                settingsX += 10f;
-				settingsY += 50f;
-				float configHeight = 20f;
-
-				float buttonWidth = 200f;
-
-				settingsWidth -= 20f;
-
-				GUI.Label(new Rect(settingsX, settingsY, settingsWidth, configHeight), "Scroll bar width:", labelStyle);
-				settingsY += configHeight;
-				float tempScrollWidth = GUI.HorizontalSlider(new Rect(settingsX, settingsY, settingsWidth, configHeight), settingsScrollWidth, 5f, 30f);
-				settingsScrollWidth = Mathf.Round(tempScrollWidth);
-				settingsY += configHeight;
-
-				// GUI.VerticalScrollbar doesn't work properly so just use a button as the preview.
-				GUI.Button(new Rect(settingsX, settingsY, settingsScrollWidth, configHeight), String.Empty);
-				GUI.Label(new Rect(settingsX + settingsScrollWidth + 10f, settingsY, settingsWidth - settingsScrollWidth - 10f, configHeight), settingsScrollWidth.ToString());
-
-				settingsY += configHeight;
-
-				if (GUI.Button(new Rect(settingsX, settingsY, buttonWidth, configHeight), "Apply"))
-				{
-					scrollWidth = settingsScrollWidth;
-					MultiTool.Configuration.UpdateScrollWidth(scrollWidth);
-				}
-
-				if (GUI.Button(new Rect(settingsX + buttonWidth + 10f, settingsY, buttonWidth, configHeight), "Reset"))
-				{
-					scrollWidth = 10f;
-					settingsScrollWidth = scrollWidth;
-					MultiTool.Configuration.UpdateScrollWidth(scrollWidth);
-				}
-
-				settingsY += configHeight + 10f;
-
-				GUI.Label(new Rect(settingsX, settingsY, settingsWidth, configHeight), "Noclip speed increase factor:", labelStyle);
-				settingsY += configHeight;
-				float factor = GUI.HorizontalSlider(new Rect(settingsX, settingsY, settingsWidth, configHeight), noclipFastMoveFactor, 2f, 100f);
-				noclipFastMoveFactor = Mathf.Round(factor);
-				MultiTool.Configuration.UpdateNoclipFastMoveFactor(noclipFastMoveFactor);
-				settingsY += configHeight;
-				GUI.Label(new Rect(settingsX, settingsY, settingsWidth, configHeight), noclipFastMoveFactor.ToString());
-
-				settingsY += configHeight + 10f;
-
-				if (GUI.Button(new Rect(settingsX, settingsY, buttonWidth, configHeight), "Accessibility mode"))
-				{
-					accessibilityShow = !accessibilityShow;
-				}
-				if (accessibilityShow)
-				{
-					settingsY += configHeight;
-					for (int i = 0; i <= Accessibility.GetAccessibilityModeCount(); i++)
-					{
-						if (GUI.Button(new Rect(settingsX, settingsY, buttonWidth, configHeight), Accessibility.GetAccessibleString(Accessibility.GetAccessibilityModeName(i), (int)Accessibility.GetAccessibilityMode() == i)))
-						{
-                            Accessibility.SetAccessibilityMode(i);
-							MultiTool.Configuration.UpdateAccessibilityMode(i);
-						}
-
-						settingsY += configHeight + 2f;
-					}
-				}
-
-				settingsY += configHeight + 10f;
-				GUI.Label(new Rect(settingsX, settingsY, settingsWidth, configHeight), "Accessibility mode affects color slider labels:", labelStyle);
-				settingsY += configHeight;
-                bool doesAffectColors = Accessibility.GetDoesAffectColors();
-
-                if (GUI.Button(new Rect(settingsX, settingsY, buttonWidth, configHeight), Accessibility.GetAccessibleString("On", "Off", doesAffectColors)))
-				{
-                    doesAffectColors = !doesAffectColors;
-					Accessibility.SetDoesAffectColors(doesAffectColors);
-					MultiTool.Configuration.UpdateAccessibilityModeAffectsColor(doesAffectColors);
-				}
-
-                GUIStyle defaultStyle = GUI.skin.button;
-                GUIStyle previewStyle = new GUIStyle(defaultStyle);
-                Texture2D previewTexture = new Texture2D(1, 1);
-                Color[] pixels = null;
-
-                settingsY += configHeight + 10f;
-                GUI.Label(new Rect(settingsX, settingsY, settingsWidth, configHeight), "Basic collider colour", labelStyle);
-                settingsY += configHeight + 10f;
-
-                Color basicCollider = MultiTool.Configuration.GetColliderColour("basic");
-
-                // Red.
-                GUI.Label(new Rect(settingsX, settingsY, settingsWidth, configHeight), Accessibility.GetAccessibleColorString("Red:", new Color(255, 0, 0)), labelStyle);
-                settingsY += configHeight;
-                float basicColliderRed = GUI.HorizontalSlider(new Rect(settingsX, settingsY, settingsWidth, configHeight), basicCollider.r * 255, 0, 255);
-                basicColliderRed = Mathf.Round(basicColliderRed);
-                settingsY += configHeight;
-                bool basicColliderRedParse = float.TryParse(GUI.TextField(new Rect(settingsX, settingsY, settingsWidth, configHeight), basicColliderRed.ToString(), labelStyle), out basicColliderRed);
-                if (!basicColliderRedParse)
-                    Logger.Log($"{basicColliderRedParse} is not a number", Logger.LogLevel.Error);
-                basicColliderRed = Mathf.Clamp(basicColliderRed, 0f, 255f);
-                basicCollider.r = basicColliderRed / 255f;
-
-                // Green.
-                settingsY += configHeight + 10f;
-                GUI.Label(new Rect(settingsX, settingsY, settingsWidth, configHeight), Accessibility.GetAccessibleColorString("Green:", new Color(0, 255, 0)), labelStyle);
-                settingsY += configHeight;
-                float basicColliderGreen = GUI.HorizontalSlider(new Rect(settingsX, settingsY, settingsWidth, configHeight), basicCollider.g * 255, 0, 255);
-                basicColliderGreen = Mathf.Round(basicColliderGreen);
-                settingsY += configHeight;
-                bool basicColliderGreenParse = float.TryParse(GUI.TextField(new Rect(settingsX, settingsY, settingsWidth, configHeight), basicColliderGreen.ToString(), labelStyle), out basicColliderGreen);
-                if (!basicColliderGreenParse)
-                    Logger.Log($"{basicColliderGreenParse} is not a number", Logger.LogLevel.Error);
-                basicColliderGreen = Mathf.Clamp(basicColliderGreen, 0f, 255f);
-                basicCollider.g = basicColliderGreen / 255f;
-
-                // Blue.
-                settingsY += configHeight + 10f;
-                GUI.Label(new Rect(settingsX, settingsY, settingsWidth, configHeight), Accessibility.GetAccessibleColorString("Blue:", new Color(0, 0, 255)), labelStyle);
-                settingsY += configHeight;
-                float basicColliderBlue = GUI.HorizontalSlider(new Rect(settingsX, settingsY, settingsWidth, configHeight), basicCollider.b * 255, 0, 255);
-                basicColliderBlue = Mathf.Round(basicColliderBlue);
-                settingsY += configHeight;
-                bool basicColliderBlueParse = float.TryParse(GUI.TextField(new Rect(settingsX, settingsY, settingsWidth, configHeight), basicColliderBlue.ToString(), labelStyle), out basicColliderBlue);
-                if (!basicColliderBlueParse)
-                    Logger.Log($"{basicColliderBlueParse.ToString()} is not a number", Logger.LogLevel.Error);
-                basicColliderBlue = Mathf.Clamp(basicColliderBlue, 0f, 255f);
-                basicCollider.b = basicColliderBlue / 255f;
-
-                // Alpha.
-                settingsY += configHeight + 10f;
-                GUI.Label(new Rect(settingsX, settingsY, settingsWidth, configHeight), "Alpha:", labelStyle);
-                settingsY += configHeight;
-                float basicColliderAlpha = GUI.HorizontalSlider(new Rect(settingsX, settingsY, settingsWidth, configHeight), basicCollider.a * 255, 0, 255);
-                basicColliderAlpha = Mathf.Round(basicColliderAlpha);
-                settingsY += configHeight;
-                bool basicColliderAlphaParse = float.TryParse(GUI.TextField(new Rect(settingsX, settingsY, settingsWidth, configHeight), basicColliderAlpha.ToString(), labelStyle), out basicColliderAlpha);
-                if (!basicColliderAlphaParse)
-                    Logger.Log($"{basicColliderAlphaParse.ToString()} is not a number", Logger.LogLevel.Error);
-                basicColliderAlpha = Mathf.Clamp(basicColliderAlpha, 0f, 255f);
-                basicCollider.a = basicColliderAlpha / 255f;
-
-                settingsY += configHeight + 10f;
-
-                // Colour preview.
-                // Override alpha for colour preview.
-                Color basicColliderPreview = basicCollider;
-                basicColliderPreview.a = 1;
-                pixels = new Color[] { basicColliderPreview };
-                previewTexture.SetPixels(pixels);
-                previewTexture.Apply();
-                previewStyle.normal.background = previewTexture;
-                previewStyle.active.background = previewTexture;
-                previewStyle.hover.background = previewTexture;
-                previewStyle.margin = new RectOffset(0, 0, 0, 0);
-                GUI.skin.button = previewStyle;
-                GUI.Button(new Rect(settingsX, settingsY, settingsWidth / 2, configHeight * 2), "");
-                GUI.skin.button = defaultStyle;
-
-                settingsY += configHeight * 2 + 10f;
-
-                basicCollider = RenderColourPalette(settingsX, settingsY, settingsWidth / 2, basicCollider);
-                settingsY += GetPaletteHeight(settingsWidth / 2) + 10f;
-                MultiTool.Configuration.UpdateColliderColour(basicCollider, "basic");
-
-                if (GUI.Button(new Rect(settingsX, settingsY, buttonWidth, configHeight), "Reset to default"))
-                {
-                    basicCollider = new Color(1f, 0.0f, 0.0f, 0.8f);
-                    MultiTool.Configuration.UpdateColliderColour(basicCollider, "basic");
-                }
-
-                settingsY += configHeight + 10f;
-                GUI.Label(new Rect(settingsX, settingsY, settingsWidth, configHeight), "Trigger collider colour", labelStyle);
-                settingsY += configHeight + 10f;
-
-                Color triggerCollider = MultiTool.Configuration.GetColliderColour("trigger");
-
-                // Red.
-                GUI.Label(new Rect(settingsX, settingsY, settingsWidth, configHeight), Accessibility.GetAccessibleColorString("Red:", new Color(255, 0, 0)), labelStyle);
-                settingsY += configHeight;
-                float triggerColliderRed = GUI.HorizontalSlider(new Rect(settingsX, settingsY, settingsWidth, configHeight), triggerCollider.r * 255, 0, 255);
-                triggerColliderRed = Mathf.Round(triggerColliderRed);
-                settingsY += configHeight;
-                bool triggerColliderRedParse = float.TryParse(GUI.TextField(new Rect(settingsX, settingsY, settingsWidth, configHeight), triggerColliderRed.ToString(), labelStyle), out triggerColliderRed);
-                if (!triggerColliderRedParse)
-                    Logger.Log($"{triggerColliderRedParse} is not a number", Logger.LogLevel.Error);
-                triggerColliderRed = Mathf.Clamp(triggerColliderRed, 0f, 255f);
-                triggerCollider.r = triggerColliderRed / 255f;
-
-                // Green.
-                settingsY += configHeight + 10f;
-                GUI.Label(new Rect(settingsX, settingsY, settingsWidth, configHeight), Accessibility.GetAccessibleColorString("Green:", new Color(0, 255, 0)), labelStyle);
-                settingsY += configHeight;
-                float triggerColliderGreen = GUI.HorizontalSlider(new Rect(settingsX, settingsY, settingsWidth, configHeight), triggerCollider.g * 255, 0, 255);
-                triggerColliderGreen = Mathf.Round(triggerColliderGreen);
-                settingsY += configHeight;
-                bool triggerColliderGreenParse = float.TryParse(GUI.TextField(new Rect(settingsX, settingsY, settingsWidth, configHeight), triggerColliderGreen.ToString(), labelStyle), out triggerColliderGreen);
-                if (!triggerColliderGreenParse)
-                    Logger.Log($"{triggerColliderGreenParse} is not a number", Logger.LogLevel.Error);
-                triggerColliderGreen = Mathf.Clamp(triggerColliderGreen, 0f, 255f);
-                triggerCollider.g = triggerColliderGreen / 255f;
-
-                // Blue.
-                settingsY += configHeight + 10f;
-                GUI.Label(new Rect(settingsX, settingsY, settingsWidth, configHeight), Accessibility.GetAccessibleColorString("Blue:", new Color(0, 0, 255)), labelStyle);
-                settingsY += configHeight;
-                float triggerColliderBlue = GUI.HorizontalSlider(new Rect(settingsX, settingsY, settingsWidth, configHeight), triggerCollider.b * 255, 0, 255);
-                triggerColliderBlue = Mathf.Round(triggerColliderBlue);
-                settingsY += configHeight;
-                bool triggerColliderBlueParse = float.TryParse(GUI.TextField(new Rect(settingsX, settingsY, settingsWidth, configHeight), triggerColliderBlue.ToString(), labelStyle), out triggerColliderBlue);
-                if (!triggerColliderBlueParse)
-                    Logger.Log($"{triggerColliderBlueParse.ToString()} is not a number", Logger.LogLevel.Error);
-                triggerColliderBlue = Mathf.Clamp(triggerColliderBlue, 0f, 255f);
-                triggerCollider.b = triggerColliderBlue / 255f;
-
-                // Alpha.
-                settingsY += configHeight + 10f;
-                GUI.Label(new Rect(settingsX, settingsY, settingsWidth, configHeight), "Alpha:", labelStyle);
-                settingsY += configHeight;
-                float triggerColliderAlpha = GUI.HorizontalSlider(new Rect(settingsX, settingsY, settingsWidth, configHeight), triggerCollider.a * 255, 0, 255);
-                triggerColliderAlpha = Mathf.Round(triggerColliderAlpha);
-                settingsY += configHeight;
-                bool triggerColliderAlphaParse = float.TryParse(GUI.TextField(new Rect(settingsX, settingsY, settingsWidth, configHeight), triggerColliderAlpha.ToString(), labelStyle), out triggerColliderAlpha);
-                if (!triggerColliderAlphaParse)
-                    Logger.Log($"{triggerColliderAlphaParse.ToString()} is not a number", Logger.LogLevel.Error);
-                triggerColliderAlpha = Mathf.Clamp(triggerColliderAlpha, 0f, 255f);
-                triggerCollider.a = triggerColliderAlpha / 255f;
-
-                settingsY += configHeight + 10f;
-
-                // Colour preview.
-                // Override alpha for colour preview.
-                Color triggerColliderPreview = triggerCollider;
-                triggerColliderPreview.a = 1;
-                pixels = new Color[] { triggerColliderPreview };
-                previewTexture.SetPixels(pixels);
-                previewTexture.Apply();
-                previewStyle.normal.background = previewTexture;
-                previewStyle.active.background = previewTexture;
-                previewStyle.hover.background = previewTexture;
-                previewStyle.margin = new RectOffset(0, 0, 0, 0);
-                GUI.skin.button = previewStyle;
-                GUI.Button(new Rect(settingsX, settingsY, settingsWidth / 2, configHeight * 2), "");
-                GUI.skin.button = defaultStyle;
-
-                settingsY += configHeight * 2 + 10f;
-
-                triggerCollider = RenderColourPalette(settingsX, settingsY, settingsWidth / 2, triggerCollider);
-                settingsY += GetPaletteHeight(settingsWidth / 2) + 10f;
-                MultiTool.Configuration.UpdateColliderColour(triggerCollider, "trigger");
-
-                if (GUI.Button(new Rect(settingsX, settingsY, buttonWidth, configHeight), "Reset to default"))
-                {
-                    triggerCollider = new Color(0.0f, 1f, 0.0f, 0.8f);
-                    MultiTool.Configuration.UpdateColliderColour(triggerCollider, "trigger");
-                }
-
-                settingsY += configHeight + 10f;
-                GUI.Label(new Rect(settingsX, settingsY, settingsWidth, configHeight), "Interior collider colour", labelStyle);
-                settingsY += configHeight + 10f;
-
-                Color interiorCollider = MultiTool.Configuration.GetColliderColour("interior");
-
-                // Red.
-                GUI.Label(new Rect(settingsX, settingsY, settingsWidth, configHeight), Accessibility.GetAccessibleColorString("Red:", new Color(255, 0, 0)), labelStyle);
-                settingsY += configHeight;
-                float interiorColliderRed = GUI.HorizontalSlider(new Rect(settingsX, settingsY, settingsWidth, configHeight), interiorCollider.r * 255, 0, 255);
-                interiorColliderRed = Mathf.Round(interiorColliderRed);
-                settingsY += configHeight;
-                bool interiorColliderRedParse = float.TryParse(GUI.TextField(new Rect(settingsX, settingsY, settingsWidth, configHeight), interiorColliderRed.ToString(), labelStyle), out interiorColliderRed);
-                if (!interiorColliderRedParse)
-                    Logger.Log($"{interiorColliderRedParse} is not a number", Logger.LogLevel.Error);
-                interiorColliderRed = Mathf.Clamp(interiorColliderRed, 0f, 255f);
-                interiorCollider.r = interiorColliderRed / 255f;
-
-                // Green.
-                settingsY += configHeight + 10f;
-                GUI.Label(new Rect(settingsX, settingsY, settingsWidth, configHeight), Accessibility.GetAccessibleColorString("Green:", new Color(0, 255, 0)), labelStyle);
-                settingsY += configHeight;
-                float interiorColliderGreen = GUI.HorizontalSlider(new Rect(settingsX, settingsY, settingsWidth, configHeight), interiorCollider.g * 255, 0, 255);
-                interiorColliderGreen = Mathf.Round(interiorColliderGreen);
-                settingsY += configHeight;
-                bool interiorColliderGreenParse = float.TryParse(GUI.TextField(new Rect(settingsX, settingsY, settingsWidth, configHeight), interiorColliderGreen.ToString(), labelStyle), out interiorColliderGreen);
-                if (!interiorColliderGreenParse)
-                    Logger.Log($"{interiorColliderGreenParse} is not a number", Logger.LogLevel.Error);
-                interiorColliderGreen = Mathf.Clamp(interiorColliderGreen, 0f, 255f);
-                interiorCollider.g = interiorColliderGreen / 255f;
-
-                // Blue.
-                settingsY += configHeight + 10f;
-                GUI.Label(new Rect(settingsX, settingsY, settingsWidth, configHeight), Accessibility.GetAccessibleColorString("Blue:", new Color(0, 0, 255)), labelStyle);
-                settingsY += configHeight;
-                float interiorColliderBlue = GUI.HorizontalSlider(new Rect(settingsX, settingsY, settingsWidth, configHeight), interiorCollider.b * 255, 0, 255);
-                interiorColliderBlue = Mathf.Round(interiorColliderBlue);
-                settingsY += configHeight;
-                bool interiorColliderBlueParse = float.TryParse(GUI.TextField(new Rect(settingsX, settingsY, settingsWidth, configHeight), interiorColliderBlue.ToString(), labelStyle), out interiorColliderBlue);
-                if (!interiorColliderBlueParse)
-                    Logger.Log($"{interiorColliderBlueParse.ToString()} is not a number", Logger.LogLevel.Error);
-                interiorColliderBlue = Mathf.Clamp(interiorColliderBlue, 0f, 255f);
-                interiorCollider.b = interiorColliderBlue / 255f;
-
-                // Alpha.
-                settingsY += configHeight + 10f;
-                GUI.Label(new Rect(settingsX, settingsY, settingsWidth, configHeight), "Alpha:", labelStyle);
-                settingsY += configHeight;
-                float interiorColliderAlpha = GUI.HorizontalSlider(new Rect(settingsX, settingsY, settingsWidth, configHeight), interiorCollider.a * 255, 0, 255);
-                interiorColliderAlpha = Mathf.Round(interiorColliderAlpha);
-                settingsY += configHeight;
-                bool interiorColliderAlphaParse = float.TryParse(GUI.TextField(new Rect(settingsX, settingsY, settingsWidth, configHeight), interiorColliderAlpha.ToString(), labelStyle), out interiorColliderAlpha);
-                if (!interiorColliderAlphaParse)
-                    Logger.Log($"{interiorColliderAlphaParse.ToString()} is not a number", Logger.LogLevel.Error);
-                interiorColliderAlpha = Mathf.Clamp(interiorColliderAlpha, 0f, 255f);
-                interiorCollider.a = interiorColliderAlpha / 255f;
-
-                settingsY += configHeight + 10f;
-
-                // Colour preview.
-                // Override alpha for colour preview.
-                Color interiorColliderPreview = interiorCollider;
-                interiorColliderPreview.a = 1;
-                pixels = new Color[] { interiorColliderPreview };
-                previewTexture.SetPixels(pixels);
-                previewTexture.Apply();
-                previewStyle.normal.background = previewTexture;
-                previewStyle.active.background = previewTexture;
-                previewStyle.hover.background = previewTexture;
-                previewStyle.margin = new RectOffset(0, 0, 0, 0);
-                GUI.skin.button = previewStyle;
-                GUI.Button(new Rect(settingsX, settingsY, settingsWidth / 2, configHeight * 2), "");
-                GUI.skin.button = defaultStyle;
-
-                settingsY += configHeight * 2 + 10f;
-
-                interiorCollider = RenderColourPalette(settingsX, settingsY, settingsWidth / 2, interiorCollider);
-                settingsY += GetPaletteHeight(settingsWidth / 2) + 10f;
-                MultiTool.Configuration.UpdateColliderColour(interiorCollider, "interior");
-
-                if (GUI.Button(new Rect(settingsX, settingsY, buttonWidth, configHeight), "Reset to default"))
-                {
-                    interiorCollider = new Color(0f, 0f, 1f, 0.8f);
-                    MultiTool.Configuration.UpdateColliderColour(interiorCollider, "interior");
-                }
-
-                settingsLastHeight = settingsY;
-
-                GUI.EndScrollView();
+            {
+                Tabs.RenderTab(settingsTabIndex);
             }
 			else if (creditsShow)
 			{
-				float creditsX = x + 10f;
-				float creditsY = y + 50f;
-				float creditsWidth = width - 20f;
-				float creditsHeight = height - 65f;
-				GUI.Box(new Rect(creditsX, creditsY, creditsWidth, creditsHeight), "<size=18>Credits</size>");
-
-				creditsX += 10f;
-				creditsY += 50f;
-
-
-				List<string> credits = new List<string>()
-				{
-					"M- - Maintainer",
-					"RUNDEN - Thumbnail generator",
-					"FreakShow - Original spawner",
-					"_RainBowSheep_ - Original spawner",
-					"Jessica - New mod name suggestion",
-				};
-
-				List<string> other = new List<string>()
-				{
-					"copperboltwire",
-					"SgtJoe",
-					"Tumpy_Noodles",
-					"SubG",
-					"_Starixx",
-					"Sabi",
-					"Jessica",
-					"Doubt",
-					"dela",
-					"DummyModder",
-					"Cerulean",
-					"Cassidy",
-					"Runden",
-					"Ghaleas",
-					"PPSz",
-					"Egerdion",
-					"Platinum",
-					"Iron",
-                    "sinNeer",
-				};
-
-				float totalCreditsHeight = (credits.Count + other.Count) * 20f;
-
-				creditScrollPosition = GUI.BeginScrollView(new Rect(creditsX, creditsY, creditsWidth, creditsHeight), creditScrollPosition, new Rect(creditsX, creditsY, creditsWidth, totalCreditsHeight));
-
-				foreach (string credit in credits)
-				{
-					GUI.Label(new Rect(creditsX, creditsY, creditsWidth, 20f), $"<size=16>{credit}</size>");
-					creditsY += 30f;
-				}
-
-				GUI.Label(new Rect(creditsX, creditsY, creditsWidth, 20f), $"<b><size=16>With special thanks to the following for the bug reports/feature suggestions:</size></b>");
-				creditsY += 30f;
-				foreach (string name in other)
-				{
-					GUI.Label(new Rect(creditsX, creditsY, creditsWidth, 20f), $"<size=16>{name}</size>");
-					creditsY += 25f;
-				}
+                Tabs.RenderTab(creditsTabIndex);
 			}
 			else
 			{
@@ -1438,6 +1022,9 @@ namespace MultiTool.Modules
 				for (int tabIndex = 0; tabIndex < Tabs.GetCount(); tabIndex++)
 				{
                     Tab tab = Tabs.GetByIndex(tabIndex);
+
+                    // Ignore any tabs excluded from navigation.
+                    if (!tab.ShowInNavigation) continue;
 
                     // Render disabled tabs as unclickable.
                     if (tab.IsDisabled)
@@ -1457,80 +1044,7 @@ namespace MultiTool.Modules
 				}
 				GUI.EndScrollView();
 
-				RenderTab(Tabs.GetActive());
-			}
-		}
-
-		/// <summary>
-		/// Render a given tab
-		/// </summary>
-		/// <param name="tab">The tab index to render</param>
-		private void RenderTab(int tabIndex)
-		{
-			Tab tab = Tabs.GetByIndex(tabIndex);
-			Dimensions tabDimensions = new Dimensions()
-			{
-				x = mainMenuX + 10f,
-				y = mainMenuX + 90f,
-				width = mainMenuWidth - 20f,
-				height = mainMenuHeight - 105f,
-			};
-
-			float configWidth = (mainMenuWidth * 0.25f);
-			float configX = mainMenuX + mainMenuWidth - configWidth - 10f;
-
-			// Return early if tab is disabled.
-			if (tab.IsDisabled) return;
-
-			// Config pane.
-			if (tab.HasConfigPane)
-			{
-				// Decrease tab width to account for content pane.
-				tabDimensions.width -= configWidth + 5f;
-
-				GUI.Box(new Rect(configX, tabDimensions.y, configWidth, tabDimensions.height), "<size=16>Configuration</size>");
-
-				Dimensions configDimensions = new Dimensions()
-				{
-					x = configX,
-					y = tabDimensions.y,
-					width = configWidth,
-					height = tabDimensions.height,	
-				};
-
-				try
-				{
-					RenderConfig(tab, configDimensions);
-				}
-				catch (Exception ex)
-				{
-                    tab.Errors++;
-                    Logger.Log($"Error occurred during tab \"{tab.Name}\" MultiTool.Configuration render ({tab.Errors}/5). Details: {ex}", Logger.LogLevel.Error);
-
-                    if (tab.Errors >= 5)
-                    {
-                        tab.IsDisabled = true;
-                        Logger.Log($"Tab {tab.Name} threw too many errors and has been disabled.", Logger.LogLevel.Warning);
-                    }
-                }
-			}
-
-			GUI.Box(new Rect(tabDimensions.x, tabDimensions.y, tabDimensions.width, tabDimensions.height), String.Empty);
-
-			try
-			{
-				tab.RenderTab(tabDimensions);
-			}
-			catch (Exception ex)
-			{
-				tab.Errors++;
-				Logger.Log($"Error occurred during tab \"{tab.Name}\" render ({tab.Errors}/5). Details: {ex}", Logger.LogLevel.Error);
-
-				if (tab.Errors >= 5)
-				{
-					tab.IsDisabled = true;
-					Logger.Log($"Tab {tab.Name} threw too many errors and has been disabled.", Logger.LogLevel.Warning);
-				}
+				Tabs.RenderTab();
 			}
 		}
 
@@ -1538,7 +1052,7 @@ namespace MultiTool.Modules
 		/// Render the MultiTool.Configuration pane
 		/// </summary>
 		/// <param name="tab">The tab index to render the MultiTool.Configuration pane for</param>
-		private void RenderConfig(Tab tab, Dimensions configDimensions)
+		internal void RenderConfig(Tab tab, Rect configDimensions)
 		{
 			float configX = configDimensions.x + 5f;
 			float configY = configDimensions.y + 30f;

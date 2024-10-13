@@ -22,7 +22,7 @@ namespace MultiTool.Tabs
 
 		private Settings settings = new Settings();
 		private Vector2 currentPosition;
-		public override void RenderTab(Dimensions dimensions)
+		public override void RenderTab(Rect dimensions)
 		{
 			float x = dimensions.x + 10f;
 			float y = dimensions.y + 10f;

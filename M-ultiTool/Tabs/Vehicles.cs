@@ -14,7 +14,7 @@ namespace MultiTool.Tabs
 		public override bool HasConfigPane => true;
 
 		private Vector2 vehicleScrollPosition;
-		public override void RenderTab(Dimensions dimensions)
+		public override void RenderTab(Rect dimensions)
 		{
 			GUI.skin.button.wordWrap = true;
 

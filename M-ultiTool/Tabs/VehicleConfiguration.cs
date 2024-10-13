@@ -114,7 +114,7 @@ namespace MultiTool.Tabs
 		private float nextUpdateTime = 0;
 		private float updateFrequency = 2;
 
-		public override void RenderTab(Dimensions dimensions)
+		public override void RenderTab(Rect dimensions)
 		{
             if (tab == null)
                 tab = tabs[0];
