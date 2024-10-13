@@ -37,6 +37,10 @@ namespace MultiTool.Modules
             tab.Source = callerMod.Name;
             tab.Id = tab.Name.ToLower().Replace(' ', '_');
 
+            // Block duplicate tab registration.
+            if (_tabs.Where(t => t.Id == tab.Id).FirstOrDefault() != null)
+                return;
+
             Logger.Log($"Registered tab {tab.Name} (ID: {tab.Id}) via {tab.Source}");
 
             tab.OnRegister();
