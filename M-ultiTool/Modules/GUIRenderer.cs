@@ -813,90 +813,102 @@ namespace MultiTool.Modules
 					string starterVehicleName = mainscript.s.StartCar.ToString();
 					bool isLargeVehicle = largeVehicles.Contains(starterVehicleName);
 					bool isBike = bikes.Contains(starterVehicleName);
-					foreach (var car in mainscript.s.Cars)
-					{
-						if ((isLargeVehicle || isBike) && !car.name.ToLower().Contains("bike"))
-						{
-							// Attempt to find the position of the starter car to override the vehicle.
-							starterVehicle = car.gameObject;
-						}
-						else if (car.name.ToLower().Contains(starterVehicleName.ToLower()))
-						{
-							// Find the selected starter car object.
-							starterVehicle = car.gameObject;
-						}
-					}
+                    if (!isLargeVehicle && !isBike)
+                    {
+                        foreach (var car in mainscript.s.Cars)
+                        {
+                            if (car.name.ToLower().Contains(starterVehicleName.ToLower()))
+                                // Find the selected starter car object.
+                                starterVehicle = car.gameObject;
+                        }
+                        if (starterVehicle == null)
+                        {
+                            // Unable to find starter vehicle to modify, return early.
+                            appliedStartVehicleChanges = true;
+                            return;
+                        }
+                    }
 
-					if (starterVehicle == null) return;
+                    // Starter vehicle isn't normal, manually spawn it.
+                    if (isLargeVehicle || isBike)
+                    {
+                        // Find starter car position.
+                        Transform starterCarPos = null;
+                        fixedSpawnScript fixedSpawn = GameObject.FindObjectOfType<fixedSpawnScript>();
+                        List<GameObject> startCars = fixedSpawn.startCars;
+                        startCars.Reverse();
+                        foreach (GameObject startCar in startCars)
+                        {
+                            if (startCar != null)
+                            {
+                                starterCarPos = startCar.transform;
+                                break;
+                            }
+                        }
 
-					GameObject finalStarterVehicle = null;
+                        if (starterCarPos == null)
+                        {
+                            // Unable to locate starter house, return early.
+                            appliedStartVehicleChanges = true;
+                            return;
+                        }
 
-					if (isBike || isLargeVehicle)
-					{
-						// Store the position and rotation to keep the bikes at the original spawn position.
-						Vector3 position = starterVehicle.transform.position;
-						Quaternion rotation = starterVehicle.transform.rotation;
+                        Vector3 position = starterCarPos.position;
+                        Quaternion rotation = starterCarPos.rotation;
+                        if (isLargeVehicle)
+                        {
+                            position += (Vector3.left * 15f) + (Vector3.up * 5f);
+                            rotation *= Quaternion.AngleAxis(-90, Vector3.up);
+                        }
 
-						if (isLargeVehicle)
-						{
-							position = starterVehicle.transform.position + (Vector3.left * 15f) + (Vector3.up * 5f);
-							rotation = starterVehicle.transform.rotation * Quaternion.AngleAxis(-90, Vector3.up);
-						}
+                        Color color = UnityEngine.Random.ColorHSV();
+                        color.a = 1;
+                        if (startVehicleColor.HasValue)
+                            color = startVehicleColor.Value;
 
-						Color color = starterVehicle.GetComponent<partconditionscript>().color;
-						if (startVehicleColor.HasValue)
-							color = startVehicleColor.Value;
+                        Vehicle vehicle = vehicles.Where(v => v.gameObject.name.ToLower().Contains(starterVehicleName.ToLower())).FirstOrDefault();
+                        if (vehicle != null)
+                        {
+                            starterVehicle = SpawnUtilities.Spawn(vehicle.gameObject, color, startVehicleCondition, -1, position, rotation);
+                        }
+                    }
+                    else
+                    {
+                        // Set starter vehicle colour.
+                        if (startVehicleColor.HasValue)
+                        {
+                            partconditionscript partconditionscript = starterVehicle.GetComponent<partconditionscript>();
+                            GameUtilities.Paint(startVehicleColor.Value, partconditionscript);
+                        }
 
-						// Destroying the actual starter car doesn't want to cooperate
-						// so drop it out the map instead.
-						UnityEngine.Object.Destroy(starterVehicle.gameObject);
-						starterVehicle.transform.position += Vector3.down * 15f;
+                        // Set starter vehicle condition.
+                        if (startVehicleCondition != -1)
+                        {
+                            partconditionscript partconditionscript = starterVehicle.GetComponent<partconditionscript>();
+                            List<partconditionscript> children = GameUtilities.FindPartChildren(partconditionscript);
 
-						Vehicle vehicle = vehicles.Where(v => v.gameObject.name.ToLower().Contains(starterVehicleName.ToLower())).FirstOrDefault();
-						if (vehicle != null)
-						{
-							finalStarterVehicle = SpawnUtilities.Spawn(vehicle.gameObject, color, startVehicleCondition, -1, position, rotation);
-						}
-					}
-					else
-					{
-						finalStarterVehicle = starterVehicle;
+                            foreach (partconditionscript child in children)
+                            {
+                                child.state = startVehicleCondition;
+                                child.Refresh();
+                            }
+                        }
+                    }
 
-						// Set starter vehicle colour.
-						if (startVehicleColor.HasValue)
-						{
-							partconditionscript partconditionscript = finalStarterVehicle.GetComponent<partconditionscript>();
-							GameUtilities.Paint(startVehicleColor.Value, partconditionscript);
-						}
+                    // Set starter vehicle plate.
+                    if (startVehiclePlate != string.Empty)
+                    {
+                        rendszamscript[] plateScripts = starterVehicle.GetComponentsInChildren<rendszamscript>();
+                        foreach (rendszamscript plateScript in plateScripts)
+                        {
+                            if (plateScript == null)
+                                continue;
 
-						// Set starter vehicle condition.
-						if (startVehicleCondition != -1)
-						{
-							partconditionscript partconditionscript = finalStarterVehicle.GetComponent<partconditionscript>();
-							List<partconditionscript> children = GameUtilities.FindPartChildren(partconditionscript);
+                            plateScript.Same(startVehiclePlate);
+                        }
+                    }
 
-							foreach (partconditionscript child in children)
-							{
-								child.state = startVehicleCondition;
-								child.Refresh();
-							}
-						}
-					}
-
-					// Set starter vehicle plate.
-					if (startVehiclePlate != string.Empty)
-					{
-						rendszamscript[] plateScripts = finalStarterVehicle.GetComponentsInChildren<rendszamscript>();
-						foreach (rendszamscript plateScript in plateScripts)
-						{
-							if (plateScript == null)
-								continue;
-
-							plateScript.Same(startVehiclePlate);
-						}
-					}
-
-					appliedStartVehicleChanges = true;
+                    appliedStartVehicleChanges = true;
 				}
 				catch (Exception ex)
 				{
