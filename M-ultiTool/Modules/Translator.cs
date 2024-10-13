@@ -113,18 +113,23 @@ namespace MultiTool.Modules
                             if (variant != null && variant != -1)
                             {
                                 if (translatable.variant == variant)
+                                {
                                     objectName = translatable.name;
+                                    break;
+                                }
+                            }
+                            else
+                            {
+                                objectName = translatable.name;
                                 break;
                             }
-                            objectName = translatable.name;
-                            break;
                         }
                     }
                 }
 			}
 
             // No translation and has a variant, just append the variant number.
-			if (defaultObjectName == objectName && variant != null && variant != -1)
+            if (defaultObjectName == objectName && variant != null && variant != -1)
 			{
 				objectName += $" (Variant {variant.GetValueOrDefault()})";
 			}
