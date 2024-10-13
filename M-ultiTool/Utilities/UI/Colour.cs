@@ -46,7 +46,6 @@ namespace MultiTool.Utilities.UI
         /// </summary>
         private static void PopulatePaletteCache()
         {
-            GUIStyle defaultStyle = GUI.skin.button;
             for (int i = 0; i < _palette.Count; i++)
             {
                 Color paletteColour = _palette[i];
@@ -54,7 +53,7 @@ namespace MultiTool.Utilities.UI
                 // Build cache if empty.
                 if (!_paletteCache.ContainsKey(i))
                 {
-                    GUIStyle swatchStyle = new GUIStyle(defaultStyle);
+                    GUIStyle swatchStyle = new GUIStyle(GUI.skin.button);
                     Texture2D swatchTexture = GUIExtensions.ColorTexture(1, 1, paletteColour);
                     Color hoverColour = paletteColour.ChangeBrightness(0.1f);
                     Texture2D swatchHoverTexture = GUIExtensions.ColorTexture(1, 1, hoverColour);
@@ -77,8 +76,7 @@ namespace MultiTool.Utilities.UI
             if (!_paletteCache.ContainsKey(index))
                 throw new KeyNotFoundException();
 
-            GUIStyle defaultStyle = GUI.skin.button;
-            GUIStyle swatchStyle = new GUIStyle(defaultStyle);
+            GUIStyle swatchStyle = new GUIStyle(GUI.skin.button);
             Texture2D swatchTexture = GUIExtensions.ColorTexture(1, 1, newColour);
             Color hoverColour = newColour.ChangeBrightness(0.1f);
             Texture2D swatchHoverTexture = GUIExtensions.ColorTexture(1, 1, hoverColour);
@@ -127,7 +125,6 @@ namespace MultiTool.Utilities.UI
                 int rowLength = Mathf.FloorToInt(maxWidth / 32f);
                 _paletteChunked = _palette.ChunkBy(rowLength);
                 _lastPaletteWidth = maxWidth;
-                Logger.Log($"Chunked palette in to rows of {rowLength}");
             }
 
             GUILayout.BeginVertical("box");
@@ -242,8 +239,7 @@ namespace MultiTool.Utilities.UI
             // Colour preview.
             Color previewColour = _colour;
             previewColour.a = 1;
-            GUIStyle defaultStyle = GUI.skin.button;
-            GUIStyle previewStyle = new GUIStyle(defaultStyle);
+            GUIStyle previewStyle = new GUIStyle(GUI.skin.button);
             Texture2D previewTexture = new Texture2D(1, 1);
             Color[] pixels = new Color[] { previewColour };
             previewTexture.SetPixels(pixels);
@@ -252,9 +248,7 @@ namespace MultiTool.Utilities.UI
             previewStyle.active.background = previewTexture;
             previewStyle.hover.background = previewTexture;
             previewStyle.margin = new RectOffset(0, 0, 0, 0);
-            GUI.skin.button = previewStyle;
-            GUILayout.Button(string.Empty, GUILayout.Height(30));
-            GUI.skin.button = defaultStyle;
+            GUILayout.Button(string.Empty, previewStyle, GUILayout.Height(30));
 
             GUILayout.Space(10);
             sliderColour = RenderColourPalette(maxWidth, sliderColour);
