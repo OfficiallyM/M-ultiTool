@@ -1034,7 +1034,7 @@ namespace MultiTool.Modules
 					{
                         Tabs.SetActive(tabIndex);
 
-						// Reset MultiTool.Configuration scroll position when changing tabs.
+						// Reset config scroll position when changing tabs.
 						configScrollPosition = Vector2.zero;
 					}
 
@@ -1049,9 +1049,9 @@ namespace MultiTool.Modules
 		}
 
 		/// <summary>
-		/// Render the MultiTool.Configuration pane
+		/// Render the config pane
 		/// </summary>
-		/// <param name="tab">The tab index to render the MultiTool.Configuration pane for</param>
+		/// <param name="tab">The tab index to render the config pane for</param>
 		internal void RenderConfig(Tab tab, Rect configDimensions)
 		{
 			float configX = configDimensions.x + 5f;
