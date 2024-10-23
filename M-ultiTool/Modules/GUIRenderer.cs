@@ -40,7 +40,8 @@ namespace MultiTool.Modules
 		private Vector2 tabScrollPosition;
 		private Vector2 configScrollPosition;
 
-		// Styling.
+        // Styling.
+        private bool _hasCreatedTextures = false;
 		internal static GUIStyle labelStyle = new GUIStyle();
 		internal static GUIStyle headerStyle = new GUIStyle()
 		{
@@ -205,14 +206,11 @@ namespace MultiTool.Modules
 
 		internal void OnGUI()
 		{
-			// Override scrollbar width and height.
-			GUI.skin.verticalScrollbar.fixedWidth = scrollWidth;
-			GUI.skin.verticalScrollbarThumb.fixedWidth = scrollWidth;
-			GUI.skin.horizontalScrollbar.fixedHeight = scrollWidth;
-			GUI.skin.horizontalScrollbarThumb.fixedHeight = scrollWidth;
+            Styling.CreateStyling();
+            GUI.skin = Styling.Skin;
 
-			// Find screen resolution.
-			resolutionX = Screen.width;
+            // Find screen resolution.
+            resolutionX = Screen.width;
 			resolutionY = Screen.height;
             int resX = settingsscript.s.S.IResolutionX;
 			int resY = settingsscript.s.S.IResolutionY;
@@ -230,26 +228,26 @@ namespace MultiTool.Modules
 			// In game.
 			if (!ModLoader.isOnMainMenu)
 			{
-				if (!loaded) return;
+				if (loaded)
+                {
+				    if (!show && !mainscript.s.pauseMenuOpen)
+					    RenderHUD();
 
-				if (!show && !mainscript.s.pauseMenuOpen)
-					RenderHUD();
+				    if (!show && mainscript.s.pauseMenuOpen)
+					    RenderPauseMenu();
 
-				if (!show && mainscript.s.pauseMenuOpen)
-					RenderPauseMenu();
-
-				// Return early if the UI isn't supposed to be visible.
-				if (!show)
-					return;
-
-				// Main menu always shows.
-				MainMenu();
+				    if (show)
+				        MainMenu();
+                }
 			}
 			// Main menu.
 			else
 			{
 				GameMainMenuUI();
 			}
+            
+            // Reset back to default Unity skin to avoid styling bleeding to other UI mods.
+            GUI.skin = null;
 		}
 
 		internal void OnLoad()
@@ -267,15 +265,17 @@ namespace MultiTool.Modules
 				mainMenuX = 40f;
 				mainMenuY = 40f;
 
-				// Add default tabs.
+				// Add default navigation tabs.
 				Tabs.AddTab(new Tabs.VehiclesTab());
 				Tabs.AddTab(new Tabs.ItemsTab());
-				//Tabs.AddTab(new Tabs.POIsTab());
-				Tabs.AddTab(new Tabs.ShapesTab());
-				Tabs.AddTab(new Tabs.PlayerTab());
+                //Tabs.AddTab(new Tabs.POIsTab());
+                Tabs.AddTab(new Tabs.ShapesTab());
+                Tabs.AddTab(new Tabs.PlayerTab());
 				Tabs.AddTab(new Tabs.VehicleConfigurationTab());
 				Tabs.AddTab(new Tabs.MiscellaneousTab());
 				Tabs.AddTab(new Tabs.DeveloperTab());
+
+                // Add default hidden tabs.
                 settingsTabIndex = Tabs.AddTab(new Tabs.SettingsTab());
                 creditsTabIndex = Tabs.AddTab(new Tabs.CreditsTab());
 
@@ -973,7 +973,7 @@ namespace MultiTool.Modules
 		/// </summary>
 		private void RenderPauseMenu()
 		{
-			MultiTool.Binds.RenderRebindMenu("M-ultiTool menu key", new int[] { (int)Keybinds.Inputs.menu }, resolutionX - 350f, 50f, null, null, true);
+			MultiTool.Binds.RenderRebindMenu("M-ultiTool menu key", new int[] { (int)Keybinds.Inputs.menu }, resolutionX - 350f, 50f, 300f, 100f);
 		}
 
 		/// <summary>
@@ -986,41 +986,43 @@ namespace MultiTool.Modules
 			float width = mainMenuWidth;
 			float height = mainMenuHeight;
 
-			GUI.Box(new Rect(x, y, width, height), $"<color=#f87ffa><size=18><b>{MultiTool.mod.Name}</b></size>\n<size=16>v{MultiTool.mod.Version} - made with ❤️ by {MultiTool.mod.Author}</size></color>");
+            GUILayout.BeginArea(new Rect(x, y, width, height), $"<color=#f87ffa><size=18><b>{MultiTool.mod.Name}</b></size>\n<size=16>v{MultiTool.mod.Version} - made with ❤️ by {MultiTool.mod.Author}</size></color>", "box");
+            GUILayout.BeginVertical();
+            GUILayout.BeginHorizontal();
+            GUILayout.FlexibleSpace();
+            if (GUILayout.Button(Accessibility.GetAccessibleString("Settings", settingsShow), "ButtonSecondary", GUILayout.MinHeight(30)))
+            {
+                settingsShow = !settingsShow;
+                creditsShow = false;
+            }
 
-			// Settings button.
-			if (GUI.Button(new Rect(x + 5f, y + 5f, 150f, 25f), Accessibility.GetAccessibleString("Settings", settingsShow)))
-			{
-				settingsShow = !settingsShow;
-				creditsShow = false;
-			}
+            GUILayout.Space(10);
 
-			if (GUI.Button(new Rect(x + mainMenuWidth - 110f, y + 5f, 100f, 25f), Accessibility.GetAccessibleString("Credits", creditsShow)))
-			{
-				creditsShow = !creditsShow;
-				settingsShow = false;
-			}
+            if (GUILayout.Button(Accessibility.GetAccessibleString("Credits", creditsShow), "ButtonSecondary", GUILayout.MinHeight(30)))
+            {
+                creditsShow = !creditsShow;
+                settingsShow = false;
+            }
+            GUILayout.EndHorizontal();
+            GUILayout.Space(20);
 
-			if (settingsShow)
+            if (settingsShow)
             {
                 Tabs.RenderTab(settingsTabIndex);
             }
-			else if (creditsShow)
-			{
+            else if (creditsShow)
+            {
                 Tabs.RenderTab(creditsTabIndex);
-			}
-			else
-			{
-				// Render the menu.
+            }
+            else
+            {
+                // Render navigation bar.
+                GUILayout.BeginHorizontal();
+                // TODO: ScrollView makes all the tabs stack vertically and breaks tab scrolling using scroll wheel.
+                //tabScrollPosition = GUILayout.BeginScrollView(tabScrollPosition);
 
-				// Navigation tabs.
-				float tabHeight = 25f;
-				float tabButtonWidth = 150f;
-				float tabWidth = (tabButtonWidth + 30f) * Tabs.GetCount();
-				float tabX = x + 20f;
-				tabScrollPosition = GUI.BeginScrollView(new Rect(tabX, y + 50f, mainMenuWidth - 40f, tabHeight + 10f), tabScrollPosition, new Rect(tabX, y + 50f, tabWidth, tabHeight), GUI.skin.horizontalScrollbar, new GUIStyle());
-				for (int tabIndex = 0; tabIndex < Tabs.GetCount(); tabIndex++)
-				{
+                for (int tabIndex = 0; tabIndex < Tabs.GetCount(); tabIndex++)
+                {
                     Tab tab = Tabs.GetByIndex(tabIndex);
 
                     // Ignore any tabs excluded from navigation.
@@ -1030,22 +1032,24 @@ namespace MultiTool.Modules
                     if (tab.IsDisabled)
                         GUI.enabled = false;
 
-					if (GUI.Button(new Rect(tabX, y + 50f, tabButtonWidth, tabHeight), Tabs.GetActive() == tabIndex ? $"<color=#0F0>{tab.Name}</color>" : tab.Name))
-					{
+                    if (GUILayout.Button(Tabs.GetActive() == tabIndex ? $"<color=#0F0>{tab.Name}</color>" : tab.Name, GUILayout.MinWidth(60), GUILayout.MaxHeight(30)))
+                    {
                         Tabs.SetActive(tabIndex);
 
-						// Reset config scroll position when changing tabs.
-						configScrollPosition = Vector2.zero;
-					}
+                        // Reset config scroll position when changing tabs.
+                        configScrollPosition = Vector2.zero;
+                    }
 
                     GUI.enabled = true;
+                }
+                //GUILayout.EndScrollView();
+                GUILayout.EndHorizontal();
 
-                    tabX += tabButtonWidth + 30f;
-				}
-				GUI.EndScrollView();
-
-				Tabs.RenderTab();
-			}
+                // Render the active tab.
+                Tabs.RenderTab();
+            }
+            GUILayout.EndVertical();
+            GUILayout.EndArea();
 		}
 
 		/// <summary>
@@ -1376,7 +1380,7 @@ namespace MultiTool.Modules
 
 			if (!show) {
                 GUILayout.BeginArea(new Rect(resolutionX - 200f, resolutionY / 3 - 10f, 200f, 60f));
-                if (GUILayout.Button("New game settings", GUILayout.MinHeight(60)))
+                if (GUILayout.Button("New game settings", "ButtonBlackTranslucent", GUILayout.MinHeight(60)))
                 {
                     show = true;
                     stateChanged = true;
@@ -1390,14 +1394,14 @@ namespace MultiTool.Modules
 			GUILayout.BeginArea(new Rect(x, y, width, height), "<color=#f87ffa><size=18><b>New game settings</b></size></color>", "box");
             GUILayout.BeginHorizontal();
             GUILayout.FlexibleSpace();
-			if (GUILayout.Button("<size=30><color=#F00>X</color></size>", GUILayout.MinWidth(40f)))
+			if (GUILayout.Button("<size=30><color=#F00>X</color></size>", "ButtonBlack", GUILayout.MinWidth(40f)))
 			{
 				show = false;
 				stateChanged = true;
 			}
             GUILayout.EndHorizontal();
 
-            GUILayout.BeginVertical();
+            GUILayout.BeginVertical(GUILayout.MaxWidth(width - 15f));
             currentMainMenuPosition = GUILayout.BeginScrollView(currentMainMenuPosition);
             switch (mainMenuStage)
             {
@@ -1429,7 +1433,7 @@ namespace MultiTool.Modules
                     break;
 
                 case "color":
-                    if (GUILayout.Button($"Use {(startVehicleColor.HasValue ? "custom" : "random")} colour"))
+                    if (GUILayout.Button($"Using {(startVehicleColor.HasValue ? "custom" : "random")} colour"))
                     {
                         if (startVehicleColor.HasValue)
                             startVehicleColor = null;

@@ -160,7 +160,7 @@ namespace MultiTool.Modules
 				Logger.Log($"Keybind load error: {ex}", Logger.LogLevel.Error);
 			}
 
-			labelStyle.alignment = TextAnchor.MiddleLeft;
+			labelStyle.alignment = TextAnchor.MiddleCenter;
 			labelStyle.normal.textColor = Color.white;
 		}
 
@@ -207,62 +207,41 @@ namespace MultiTool.Modules
 			}
 		}
 
-		/// <summary>
-		/// <para>Render a rebind menu</para>
-		/// <para>This should be called from an OnGUI function</para>
-		/// </summary>
-		/// <param name="title">The menu title</param>
-		/// <param name="actions">Int array of actions to display rebinds for</param>
-		/// <param name="x">The X position to display the menu</param>
-		/// <param name="y">The Y position to display the menu</param>
-		public void RenderRebindMenu(string title, int[] actions, float x, float y, float? widthOverride = null, float? heightOverride = null, bool preventScroll = false)
+        /// <summary>
+        /// <para>Render a rebind menu</para>
+        /// <para>This should be called from an OnGUI function</para>
+        /// </summary>
+        /// <param name="title">The menu title</param>
+        /// <param name="actions">Int array of actions to display rebinds for</param>
+        /// <param name="x">The X position to display the menu</param>
+        /// <param name="y">The Y position to display the menu</param>
+        /// <param name="width">Width of the menu</param>
+        /// <param name="height">Height of the menu</param>
+        public void RenderRebindMenu(string title, int[] actions, float x, float y, float width, float height)
 		{
 			if (actions.Length == 0)
 				return;
 
-			float width = 300f;
-			float actionHeight = 40f;
-			float actionY = y + 25f;
-			float labelWidth = 295f;
-			float buttonWidth = 80f;
-			float scrollHeight = actions.Length * ((actionHeight * 1.5f) + 5f);
-
-            float height;
-
-            if (scrollHeight > Screen.height * 0.9f)
-				height = Screen.height * 0.9f;
-            else 
-			    height = scrollHeight + 20f;
-
-			if (widthOverride != null)
-				width = widthOverride.Value;
-
-            if (heightOverride != null)
-                height = heightOverride.Value;
-
-            if (preventScroll)
-                scrollHeight = 0;
-
-            GUI.Box(new Rect(x, y, width, height), $"<size=16><b>{title}</b></size>");
-
-			Vector2 scrollPosition = GUI.BeginScrollView(new Rect(x + 10f, y + 25f, width - 10f, height - 20f), scrollPositions.ContainsKey(title) ? scrollPositions[title] : new Vector2(0, 0), new Rect(x + 10f, y + 25f, width, scrollHeight), new GUIStyle(), GUI.skin.verticalScrollbar);
-			if (!scrollPositions.ContainsKey(title))
-				scrollPositions.Add(title, scrollPosition);
-			else
-				scrollPositions[title] = scrollPosition;
+            GUILayout.BeginArea(new Rect(x, y, width, height), $"<size=16><b>{title}</b></size>", "box");
+            GUILayout.BeginVertical();
+            GUILayout.Space(30);
+            Vector2 scrollPosition = GUILayout.BeginScrollView(scrollPositions.ContainsKey(title) ? scrollPositions[title] : new Vector2(0, 0));
+            if (!scrollPositions.ContainsKey(title))
+                scrollPositions.Add(title, scrollPosition);
+            else
+                scrollPositions[title] = scrollPosition;
 
 			for (int i = 0; i < actions.Length; i++)
 			{
 				int action = actions[i];
 				Key key = GetKeyByAction(action);
 
-				GUI.Label(new Rect(x + 10f, actionY, labelWidth, actionHeight / 2), $"{key.name} - Current ({key.key}) - Default ({keys[action].defaultKey})", labelStyle);
-				actionY += actionHeight / 2;
+				GUILayout.Label($"{key.name} - Current ({key.key}) - Default ({keys[action].defaultKey})", labelStyle);
 
-				float buttonX = x + 10f;
-
+                GUILayout.BeginHorizontal();
+                GUILayout.FlexibleSpace();
 				string rebindText = rebindAction == action ? "Waiting..." : "Rebind";
-				if (GUI.Button(new Rect(buttonX, actionY, buttonWidth, actionHeight / 2), rebindText))
+				if (GUILayout.Button(rebindText))
 				{
 					if (rebindAction == -1)
 					{
@@ -270,19 +249,19 @@ namespace MultiTool.Modules
 					}
 				}
 
-				buttonX += buttonWidth + 10f;
+                GUILayout.FlexibleSpace();
 
-				if (GUI.Button(new Rect(buttonX, actionY, buttonWidth, actionHeight / 2), "Reset"))
+				if (GUILayout.Button("Reset"))
 				{
 					key.Reset();
                     MultiTool.Configuration.UpdateKeybinds(keys);
 				}
-
-				actionY += actionHeight + 5f;
-
+                GUILayout.FlexibleSpace();
+                GUILayout.EndHorizontal();
+                GUILayout.Space(10);
             }
 
-			GUI.EndScrollView();
+			GUILayout.EndScrollView();
 
 			if (rebindAction != -1)
 			{
@@ -300,6 +279,8 @@ namespace MultiTool.Modules
 					}
 				}
 			}
+            GUILayout.EndVertical();
+            GUILayout.EndArea();
 		}
 	}
 }

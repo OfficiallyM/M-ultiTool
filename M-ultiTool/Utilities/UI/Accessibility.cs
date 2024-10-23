@@ -13,7 +13,7 @@ namespace MultiTool.Utilities.UI
             Colourless,
         }
 
-        private static AccessibilityMode _accessibilityMode = 0;
+        private static AccessibilityMode _accessibilityMode = AccessibilityMode.Contrast;
         private static bool _doesAffectColors = true;
         private static bool _hasLoadedFromConfig = false;
 
@@ -96,7 +96,7 @@ namespace MultiTool.Utilities.UI
             switch (_accessibilityMode)
             {
                 case AccessibilityMode.Contrast:
-                    return state ? $"<color=#0F0>{str}</color>" : $"<color=#FFF>{str}</color>";
+                    return state ? $"<color=#0D0>{str}</color>" : str;
                 case AccessibilityMode.Colourless:
                     return state ? $"{str} ✔" : $"{str} ✖";
             }

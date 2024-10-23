@@ -26,7 +26,6 @@ namespace MultiTool.Utilities.UI
             // Set default palette to all white.
             _palette.Clear();
             _palette = Enumerable.Repeat(Color.white, 60).ToList();
-            _paletteCache.Clear();
 
             try
             {
@@ -46,23 +45,20 @@ namespace MultiTool.Utilities.UI
         /// </summary>
         private static void PopulatePaletteCache()
         {
+            _paletteCache.Clear();
             for (int i = 0; i < _palette.Count; i++)
             {
                 Color paletteColour = _palette[i];
 
-                // Build cache if empty.
-                if (!_paletteCache.ContainsKey(i))
-                {
-                    GUIStyle swatchStyle = new GUIStyle(GUI.skin.button);
-                    Texture2D swatchTexture = GUIExtensions.ColorTexture(1, 1, paletteColour);
-                    Color hoverColour = paletteColour.ChangeBrightness(0.1f);
-                    Texture2D swatchHoverTexture = GUIExtensions.ColorTexture(1, 1, hoverColour);
-                    swatchStyle.normal.background = swatchTexture;
-                    swatchStyle.active.background = swatchTexture;
-                    swatchStyle.hover.background = swatchHoverTexture;
-                    swatchStyle.margin = new RectOffset(0, 0, 0, 0);
-                    _paletteCache.Add(i, swatchStyle);
-                }
+                GUIStyle swatchStyle = new GUIStyle(GUI.skin.button);
+                Texture2D swatchTexture = GUIExtensions.ColorTexture(1, 1, paletteColour);
+                Color hoverColour = paletteColour.ChangeBrightness(0.1f);
+                Texture2D swatchHoverTexture = GUIExtensions.ColorTexture(1, 1, hoverColour);
+                swatchStyle.normal.background = swatchTexture;
+                swatchStyle.active.background = swatchTexture;
+                swatchStyle.hover.background = swatchHoverTexture;
+                swatchStyle.margin = new RectOffset(0, 0, 0, 0);
+                _paletteCache.Add(i, swatchStyle);
             }
         }
 
@@ -125,9 +121,12 @@ namespace MultiTool.Utilities.UI
                 int rowLength = Mathf.FloorToInt(maxWidth / 32f);
                 _paletteChunked = _palette.ChunkBy(rowLength);
                 _lastPaletteWidth = maxWidth;
+                
+                // Rebuild the cache.
+                PopulatePaletteCache();
             }
 
-            GUILayout.BeginVertical("box");
+            GUILayout.BeginVertical("box", GUILayout.MaxWidth(maxWidth));
             int index = 0;
             foreach (List<Color> palette in _paletteChunked)
             {
@@ -237,9 +236,9 @@ namespace MultiTool.Utilities.UI
             GUILayout.Space(5);
 
             // Colour preview.
-            Color previewColour = _colour;
+            Color previewColour = sliderColour;
             previewColour.a = 1;
-            GUIStyle previewStyle = new GUIStyle(GUI.skin.button);
+            GUIStyle previewStyle = new GUIStyle(Styling.Skin.button);
             Texture2D previewTexture = new Texture2D(1, 1);
             Color[] pixels = new Color[] { previewColour };
             previewTexture.SetPixels(pixels);

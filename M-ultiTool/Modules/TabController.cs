@@ -96,14 +96,14 @@ namespace MultiTool.Modules
 
             Rect tabDimensions = new Rect()
             {
-                x = MultiTool.Renderer.mainMenuX + 10f,
-                y = MultiTool.Renderer.mainMenuX + (tab.IsFullScreen ? 50f : 90f),
+                x = MultiTool.Renderer.mainMenuX - 30f,
+                y = MultiTool.Renderer.mainMenuX + (tab.IsFullScreen ? 20f : 60f),
                 width = MultiTool.Renderer.mainMenuWidth - 20f,
-                height = MultiTool.Renderer.mainMenuHeight - 105f,
+                height = MultiTool.Renderer.mainMenuHeight - (tab.IsFullScreen ? 70f : 110f),
             };
 
-            float configWidth = (MultiTool.Renderer.mainMenuWidth * 0.25f);
-            float configX = MultiTool.Renderer.mainMenuX + MultiTool.Renderer.mainMenuWidth - configWidth - 10f;
+            float configWidth = tabDimensions.width * 0.25f;
+            float configX = tabDimensions.x + tabDimensions.width - configWidth;
 
             // Return early if tab is disabled.
             if (tab.IsDisabled) return;
@@ -141,8 +141,7 @@ namespace MultiTool.Modules
                 }
             }
 
-            GUI.Box(new Rect(tabDimensions.x, tabDimensions.y, tabDimensions.width, tabDimensions.height), String.Empty);
-
+            //GUILayout.BeginArea(new Rect(tabDimensions.x, tabDimensions.y, tabDimensions.width, tabDimensions.height), string.Empty, "box");
             try
             {
                 tab.RenderTab(tabDimensions);
@@ -158,6 +157,7 @@ namespace MultiTool.Modules
                     Logger.Log($"Tab {tab.Name} threw too many errors and has been disabled.", Logger.LogLevel.Warning);
                 }
             }
+            //GUILayout.EndArea();
         }
     }
 }

@@ -266,33 +266,6 @@ namespace MultiTool.Utilities
 		}
 
         /// <summary>
-        /// Update light data in save.
-        /// </summary>
-        /// <param name="light">Light data</param>
-        public static void UpdateLight(LightData light)
-        {
-            Save data = UnserializeSaveData();
-
-            try
-            {
-                if (data.lights == null)
-                    data.lights = new List<LightData>();
-
-                LightData existing = data.lights.Where(l => l.ID == light.ID && l.name == light.name).FirstOrDefault();
-                if (existing != null)
-                    existing.color = light.color;
-                else
-                    data.lights.Add(light);
-            }
-            catch (Exception ex)
-            {
-                Logger.Log($"Light update error - {ex}", Logger.LogLevel.Error);
-            }
-
-            SerializeSaveData(data);
-        }
-
-        /// <summary>
         /// Update engine tuning data in save.
         /// </summary>
         /// <param name="engineTuning">Engine tuning data</param>
@@ -447,7 +420,6 @@ namespace MultiTool.Utilities
                 LoadMaterials(save, data);
                 LoadScale(save, data);
                 LoadSlots(save, data);
-                LoadLights(save, data);
                 LoadEngineTuning(save, data);
                 LoadTransmissionTuning(save, data);
                 LoadVehicleTuning(save, data);
@@ -668,52 +640,6 @@ namespace MultiTool.Utilities
 			    }
 			}
 		}
-
-        /// <summary>
-        /// Load light data
-        /// </summary>
-        /// <param name="save">Savable object to check</param>
-        /// <param name="data">Save data</param>
-        private static void LoadLights(tosaveitemscript save, Save data)
-        {
-            // Return early if no light data is set.
-            if (data.lights == null) return;
-
-            foreach (LightData light in data.lights)
-            {
-                try
-                {
-                    if (save.idInSave == light.ID)
-                    {
-                        headlightscript headlight = null;
-                        bool isInteriorLight = false;
-                        if (light.name != null && light.name != string.Empty)
-                        {
-                            headlightscript[] lights = save.GetComponentsInChildren<headlightscript>();
-                            foreach (headlightscript childLight in lights)
-                            {
-                                if (childLight.name.ToLower().Contains(light.name.ToLower()))
-                                    headlight = childLight;
-                            }
-                            isInteriorLight = true;
-                        }
-                        else
-                        {
-                            headlight = save.GetComponent<headlightscript>();
-                        }
-
-                        // Unable to find headlight, skip.
-                        if (headlight == null) continue;
-
-                        GameUtilities.SetHeadlightColor(headlight, light.color, isInteriorLight);
-                    }
-                }
-                catch (Exception ex)
-                {
-                    Logger.Log($"Light data load error - {ex}", Logger.LogLevel.Error);
-                }
-            }
-        }
 
         /// <summary>
         /// Load engine tuning data
