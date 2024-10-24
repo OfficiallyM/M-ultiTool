@@ -1,6 +1,5 @@
 ﻿using MultiTool.Extensions;
 using MultiTool.Modules;
-using System.Runtime.InteropServices;
 using UnityEngine;
 
 namespace MultiTool.Utilities.UI
@@ -56,6 +55,7 @@ namespace MultiTool.Utilities.UI
                 Skin.verticalSlider = new GUIStyle(GUI.skin.verticalSlider);
                 Skin.verticalSliderThumb = new GUIStyle(GUI.skin.verticalSliderThumb);
                 Skin.window = new GUIStyle(GUI.skin.window);
+                Skin.font = GUI.skin.font;
 
                 // Create any required textures.
                 _black = GUIExtensions.ColorTexture(1, 1, new Color(0f, 0f, 0f));
