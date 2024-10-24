@@ -1418,18 +1418,16 @@ namespace MultiTool.Modules
 
                 case "basics":
                     // Condition.
-                    GUILayout.Label($"Condition:", labelStyle);
+                    GUILayout.Label($"Condition: {(Item.Condition)startVehicleCondition}");
                     int maxCondition = (int)Enum.GetValues(typeof(Item.Condition)).Cast<Item.Condition>().Max();
                     float rawCondition = GUILayout.HorizontalSlider(startVehicleCondition, -1, maxCondition);
                     startVehicleCondition = Mathf.RoundToInt(rawCondition);
-                    string conditionName = ((Item.Condition)startVehicleCondition).ToString();
-                    GUILayout.Label(conditionName, labelStyle);
 
                     GUILayout.Space(10);
 
                     // License plate.
-                    GUILayout.Label("Plate (blank for random):", labelStyle);
-                    startVehiclePlate = GUILayout.TextField(startVehiclePlate, 7, labelStyle);
+                    GUILayout.Label("Plate (blank for random):");
+                    startVehiclePlate = GUILayout.TextField(startVehiclePlate, 7);
                     break;
 
                 case "color":
