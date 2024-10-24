@@ -59,7 +59,7 @@ namespace MultiTool
 
             configVersion = Configuration.GetVersion();
             Configuration.UpdateVersion();
-		}
+        }
 
 		public override void OnGUI()
 		{
@@ -351,28 +351,27 @@ namespace MultiTool
 							// Handle attached children.
 							foreach (attachablescript attached in gameObject.GetComponentsInChildren<attachablescript>())
 							{
-								if (attached.targetTosave == null || attached.targetTosave.gameObject != gameObject) continue;
+								if (attached.tosave == null || attached.tosave.gameObject != gameObject) continue;
 
 								attached.Detach();
-								attached.targetTosave = spawned.GetComponent<tosaveitemscript>();
-								attached.Load(new Vector3d(attached.pointLocalPos));
+								attached.tosave = spawned.GetComponent<tosaveitemscript>();
 							}
 
 							// Re-Set object parent if required.
 							attachablescript attach = gameObject.GetComponent<attachablescript>();
-							if (attach != null && attach.targetTosave != null)
+							if (attach != null && attach.tosave != null)
 							{
 								attachablescript newAttach = spawned.GetComponent<attachablescript>();
 								if (newAttach != null)
 								{
-									tosaveitemscript attachSave = attach.targetTosave;
+									tosaveitemscript attachSave = attach.tosave;
 									attach.Detach();
-									newAttach.targetTosave = attachSave;
-									newAttach.Load(new Vector3d(attach.pointLocalPos));
+									newAttach.tosave = attachSave;
+									newAttach.Attach(attach.point);
 								}
 							}
 
-							partslotscript oldSlot = gameObject.GetComponent<partscript>()?.slot;
+							partslotscript oldSlot = gameObject.GetComponent<attachablescript>()?.slot;
 
 							// Destroy the old object.
 							UnityEngine.Object.Destroy(gameObject);
@@ -382,7 +381,7 @@ namespace MultiTool
 							// Also, anything mounted to something you're regenerating gets destroyed.
 							if (oldSlot != null)
 							{
-								partscript part = spawned.GetComponent<partscript>();
+								attachablescript part = spawned.GetComponent<attachablescript>();
 								if (oldSlot != null)
 								{
 									oldSlot.Craft(part, true);

@@ -111,7 +111,7 @@ namespace MultiTool.Modules
             { "Tires", new List<Type>() { typeof(gumiscript) } },
             { "Dials", new List<Type>() { typeof(meterscript) } },
             { "Attachables", new List<Type>() { typeof(attachablescript) } },
-            { "Other vehicle parts", new List<Type>() { typeof(partscript) } },
+            { "Other vehicle parts", new List<Type>() { typeof(attachablescript) } },
 			{ "Guns", new List<Type>() { typeof(weaponscript) } },
 			{ "Melee weapons", new List<Type>() { typeof(meleeweaponscript) } },
 			{ "Cleaning", new List<Type>() { typeof(drotkefescript), typeof(spricniscript) } },

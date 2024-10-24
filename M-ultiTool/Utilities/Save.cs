@@ -30,30 +30,29 @@ namespace MultiTool.Utilities
 		{
 			try
 			{
-				save_rendszam saveRendszam = null;
-				save_prefab savePrefab1;
+				save_rendszam plate = null;
 
-				// Attempt to find existing plate.
-				if (savedatascript.s.data.items.TryGetValue((uint)Mathf.Abs(MultiTool.mod.ID.GetHashCode()), out savePrefab1) && savePrefab1.rendszam != null)
-					saveRendszam = savePrefab1.rendszam;
+                // Attempt to find existing plate.
+                save_rendszam foundPlate = savedatascript.s.data.itemData.rendszam.Where(r => r.id == (uint)Mathf.Abs(MultiTool.mod.ID.GetHashCode())).FirstOrDefault();
+				if (foundPlate != null && foundPlate.S != null)
+                    plate = foundPlate;
 
 				// Plate doesn't exist.
-				if (saveRendszam == null)
+				if (plate == null)
 				{
 					// Create a new plate to store the input string in.
 					tosaveitemscript component = itemdatabase.s.gplate.GetComponent<tosaveitemscript>();
-					save_prefab savePrefab2 = new save_prefab(component.id, new Vector3d(double.MaxValue, double.MaxValue, double.MaxValue), new Vector3(0.0f, 0.0f, 0.0f));
-					savePrefab2.rendszam = new save_rendszam();
-					saveRendszam = savePrefab2.rendszam;
-					saveRendszam.S = string.Empty;
-					savedatascript.s.data.items.Add((uint)Mathf.Abs(MultiTool.mod.ID.GetHashCode()), savePrefab2);
+					plate = new save_rendszam();
+                    plate.id = (uint)Mathf.Abs(MultiTool.mod.ID.GetHashCode());
+                    plate.S = string.Empty;
+					savedatascript.s.data.itemData.rendszam.Add(plate);
 				}
 
 				// Write the input to the plate.
 				if (input != null && input != string.Empty)
-					saveRendszam.S = input;
+					plate.S = input;
 
-                return saveRendszam.S;
+                return plate.S;
 			}
 			catch (Exception ex)
 			{

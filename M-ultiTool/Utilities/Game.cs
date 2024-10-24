@@ -202,11 +202,11 @@ namespace MultiTool.Utilities
 
 			foreach (partslotscript slot in tosave.partslotscripts)
 			{
-				if (slot.part == null || slot.part.condition == null)
+				if (!slot.hasPart() || slot.part().condition == null)
 					continue;
 
-				children.Add(slot.part.condition);
-				FindPartChildren(slot.part.condition, ref children);
+				children.Add(slot.part().condition);
+				FindPartChildren(slot.part().condition, ref children);
 			}
 		}
 
