@@ -100,10 +100,8 @@ namespace MultiTool.Utilities
 
 			foreach (partconditionscript part in parts)
 			{
-                Logger.Log($"Attempting paint on {part.name}");
                 if (!part.IsPaintable())
                 {
-                    Logger.Log($"Not paintable");
                     continue;
                 }
 
