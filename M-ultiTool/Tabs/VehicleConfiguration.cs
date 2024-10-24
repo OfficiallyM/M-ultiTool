@@ -1450,22 +1450,27 @@ namespace MultiTool.Tabs
 
                     GUILayout.BeginVertical();
                     GUILayout.Label("Torque curve", GUIRenderer.headerStyle);
+                    int torqueIndex = 0;
                     foreach (TorqueCurve torque in engineTuning.torqueCurve)
                     {
                         float originalTorque = torque.torque;
                         float originalRpm = torque.rpm;
 
-                        GUILayout.Label("Torque");
-                        torque.torque = GUILayout.HorizontalSlider(torque.torque, 0, 1000);
+                        bool lastIndex = torqueIndex == engineTuning.torqueCurve.Count - 1;
+                        bool firstIndex = torqueIndex == 0;
+
+                        GUILayout.Label($"Torque {(firstIndex || lastIndex ? "(Should be zero)" : string.Empty)}");
+                        // Lock first or last curve point to zero.
+                        torque.torque = GUILayout.HorizontalSlider(torque.torque, 0, firstIndex || lastIndex ? 0 : 1000);
                         float.TryParse(GUILayout.TextField(torque.torque.ToString("F2"), GUILayout.MaxWidth(200)), out torque.torque);
 
-                        GUILayout.Label("RPM");
-                        torque.rpm = GUILayout.HorizontalSlider(torque.rpm, 0, 20000);
+                        GUILayout.Label($"RPM {(firstIndex ? "(Should be zero)" : string.Empty)}");
+                        torque.rpm = GUILayout.HorizontalSlider(torque.rpm, 0, firstIndex ? 0 : 20000);
                         float.TryParse(GUILayout.TextField(torque.rpm.ToString("F2"), GUILayout.MaxWidth(200)), out torque.rpm);
 
                         GUILayout.Space(5);
                         GUILayout.BeginHorizontal();
-                        if (GUILayout.Button("Remove", GUILayout.MaxWidth(200)))
+                        if (engineTuning.torqueCurve.Count > 3 && GUILayout.Button("Remove", GUILayout.MaxWidth(200)))
                         {
                             engineTuning.torqueCurve.Remove(torque);
                             break;
@@ -1488,11 +1493,12 @@ namespace MultiTool.Tabs
                             updateEngineStats = true;
 
                         GUILayout.Space(10);
+                        torqueIndex++;
                     }
                     GUILayout.BeginHorizontal();
                     if (GUILayout.Button("Add new", GUILayout.MaxWidth(200)))
                     {
-                        engineTuning.torqueCurve.Add(new TorqueCurve(0, 0));
+                        engineTuning.torqueCurve.Add(new TorqueCurve(0, engineTuning.torqueCurve[engineTuning.torqueCurve.Count - 1].rpm));
                         updateEngineStats = true;
                     }
                     GUILayout.Space(5);

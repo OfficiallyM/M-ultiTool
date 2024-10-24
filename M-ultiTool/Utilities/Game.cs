@@ -1,11 +1,8 @@
 ﻿using MultiTool.Core;
-using MultiTool.Extensions;
 using MultiTool.Modules;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using UnityEngine;
 using Logger = MultiTool.Modules.Logger;
 
@@ -371,20 +368,61 @@ namespace MultiTool.Utilities
             foreach (Fluid fluid in engineTuning.consumption)
                 engine.FuelConsumption.fluids.Add(new mainscript.fluid() { type = fluid.type, amount = fluid.amount });
 
-            // Remove existing torque curve.
-            for (int torqueKey = 0; torqueKey < engine.torqueCurve.length; torqueKey++)
-                engine.torqueCurve.RemoveKey(torqueKey);
-
-            // Apply new torque curve, find new maxRpm and maxNm.
-            engineTuning.torqueCurve = engineTuning.torqueCurve.OrderBy(t => t.rpm).ToList();
-            engine.maxRpm = engineTuning.torqueCurve.Last().rpm;
-            float maxNm = 0;
-            foreach (TorqueCurve torqueCurve in engineTuning.torqueCurve)
+            // Ensure engine torque curve count matches the new count.
+            List<Keyframe> curve = engine.torqueCurve.keys.ToList();
+            if (engineTuning.torqueCurve.Count > curve.Count)
             {
+                int diff = engineTuning.torqueCurve.Count - curve.Count;
+
+                // Copy the second key as the first and last will often have different internal values.
+                Keyframe copy = curve[1];
+
+                // Add new keyframes to reach the desired count.
+                for (int i = 0; i < diff; i++)
+                    curve.Insert(curve.Count - 2, copy);
+            }
+            else if (engineTuning.torqueCurve.Count < curve.Count)
+            {
+                int diff = curve.Count - engineTuning.torqueCurve.Count;
+
+                // Store and remove the last key to add it back on later.
+                Keyframe last = curve[curve.Count - 1];
+                curve.Remove(last);
+
+                // Remove keyframes to reach the desired count.
+                for (int i = 0; i < diff; i++)
+                    curve.RemoveAt(curve.Count - 1);
+
+                // Add the last keyframe back to the end.
+                curve.Add(last);
+                engine.torqueCurve.keys = curve.ToArray();
+            }
+
+            // Set new torque curve, find new maxRpm and maxNm.
+            float maxRpm = 0;
+            float maxNm = 0;
+            for (int i = 0; i < curve.Count; i++)
+            {
+                TorqueCurve torqueCurve = engineTuning.torqueCurve[i];
+                Keyframe frame = curve[i];
+
+                // Find new maxNm.
                 if (torqueCurve.torque > maxNm)
                     maxNm = torqueCurve.torque;
-                engine.torqueCurve.AddKey(torqueCurve.torque, torqueCurve.rpm);
+
+                // Find new maxRpm.
+                if (torqueCurve.rpm > maxRpm)
+                    maxRpm = torqueCurve.rpm;
+
+                // Set the new curve values.
+                frame.value = torqueCurve.torque;
+                frame.time = torqueCurve.rpm;
+                curve[i] = frame;
             }
+
+            // Apply the new values.
+            engine.torqueCurve = new AnimationCurve(curve.ToArray());
+            engine.maxRpm = maxRpm;
             engine.maxNm = maxNm;
         }
 
