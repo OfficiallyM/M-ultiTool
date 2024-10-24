@@ -3,6 +3,7 @@ using MultiTool.Modules;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Sockets;
 using UnityEngine;
 using Logger = MultiTool.Modules.Logger;
 
@@ -99,9 +100,14 @@ namespace MultiTool.Utilities
 
 			foreach (partconditionscript part in parts)
 			{
-				if (!part.IsPaintable()) continue;
+                Logger.Log($"Attempting paint on {part.name}");
+                if (!part.IsPaintable())
+                {
+                    Logger.Log($"Not paintable");
+                    continue;
+                }
 
-				part.Refresh(part.state, c);
+                part.Refresh(part.state, c);
 			}
 		}
 
@@ -186,7 +192,7 @@ namespace MultiTool.Utilities
 		}
 
 		/// <summary>
-		/// Find all child parts recursively with tosaveitemscript.
+		/// Find all child parts recursively with partconditionscript.childs.
 		/// </summary>
 		/// <param name="root">Root part</param>
 		/// <param name="children">Child partconditionscript passed by reference</param>
@@ -194,17 +200,16 @@ namespace MultiTool.Utilities
 		{
 			if (!children.Contains(root)) children.Add(root);
 
-			tosaveitemscript tosave = root.GetComponent<tosaveitemscript>();
-			if (tosave == null || tosave.partslotscripts == null) return;
+            foreach (var child in root.childs)
+            {
+                if (!child.CanPaint()) continue;
 
-			foreach (partslotscript slot in tosave.partslotscripts)
-			{
-				if (!slot.hasPart() || slot.part().condition == null)
-					continue;
-
-				children.Add(slot.part().condition);
-				FindPartChildren(slot.part().condition, ref children);
-			}
+                if (!children.Contains(child))
+                {
+                    children.Add(child);
+                    FindPartChildren(child, ref children);
+                }
+            }
 		}
 
 		/// <summary>
