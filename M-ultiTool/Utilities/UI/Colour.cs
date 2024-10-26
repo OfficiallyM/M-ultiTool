@@ -223,7 +223,7 @@ namespace MultiTool.Utilities.UI
             if (hasAlpha)
             {
                 // Alpha.
-                GUILayout.Label(Accessibility.GetAccessibleColorString("Alpha:", new Color(0, 0, 255)));
+                GUILayout.Label("Alpha:");
                 float alpha = GUILayout.HorizontalSlider(sliderColour.a * 255, 0, 255);
                 alpha = Mathf.Round(alpha);
                 bool alphaParse = float.TryParse(GUILayout.TextField(alpha.ToString()), out alpha);
