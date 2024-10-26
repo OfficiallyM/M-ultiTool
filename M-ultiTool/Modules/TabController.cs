@@ -44,13 +44,24 @@ namespace MultiTool.Modules
             if (_tabs.Where(t => t.Id == tab.Id).FirstOrDefault() != null)
                 return -1;
 
-            Logger.Log($"Registered tab {tab.Name} (ID: {tab.Id}) via {tab.Source}");
-
             tab.OnRegister();
 
             _tabs.Add(tab);
 
             return _tabs.Count - 1;
+        }
+
+        /// <summary>
+        /// Unregister all tabs to ensure they can be registered again next load.
+        /// </summary>
+        internal void UnregisterAll()
+        {
+            foreach (var tab in _tabs)
+            {
+                tab.OnUnregister();
+            }
+
+            _tabs.Clear();
         }
 
         /// <summary>

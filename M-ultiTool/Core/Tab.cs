@@ -11,6 +11,7 @@ namespace MultiTool.Core
 		public virtual void RenderTab(Rect dimensions) { }
 		public virtual void RenderConfigPane(Rect dimensions) { }
         public virtual void OnRegister() { }
+        public virtual void OnUnregister() { }
         public virtual void Update() { }
 
 		internal virtual string Source { get; set; }

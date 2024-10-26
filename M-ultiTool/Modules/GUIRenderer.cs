@@ -41,7 +41,6 @@ namespace MultiTool.Modules
 		private Vector2 configScrollPosition;
 
         // Styling.
-        private bool _hasCreatedTextures = false;
 		internal static GUIStyle labelStyle = new GUIStyle();
 		internal static GUIStyle headerStyle = new GUIStyle()
 		{
@@ -338,6 +337,10 @@ namespace MultiTool.Modules
 
 			if (ModLoader.isOnMainMenu)
 			{
+                // Unregister tabs when on the main menu.
+                if (Tabs.GetCount() > 0)
+                    Tabs.UnregisterAll();
+
 				MainMenuUpdate();
 				return;
 			}
