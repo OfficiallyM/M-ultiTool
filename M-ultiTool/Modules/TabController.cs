@@ -130,14 +130,14 @@ namespace MultiTool.Modules
                 Rect configDimensions = new Rect()
                 {
                     x = configX,
-                    y = tabDimensions.y,
-                    width = configWidth,
-                    height = tabDimensions.height,
+                    y = tabDimensions.y + 20f,
+                    width = configWidth - 10f,
+                    height = tabDimensions.height - 20f,
                 };
 
                 try
                 {
-                    MultiTool.Renderer.RenderConfig(tab, configDimensions);
+                    tab.RenderConfigPane(configDimensions);
                 }
                 catch (Exception ex)
                 {

@@ -26,6 +26,7 @@ namespace MultiTool.Utilities.UI
         private static Texture2D _whiteHover;
         private static Texture2D _blackTranslucent;
         private static Texture2D _blackTranslucentHover;
+        private static Texture2D _transparent;
 
         public static void CreateStyling()
         {
@@ -70,6 +71,7 @@ namespace MultiTool.Utilities.UI
                 _whiteHover = GUIExtensions.ColorTexture(1, 1, new Color(0.9f, 0.9f, 0.9f));
                 _blackTranslucent = GUIExtensions.ColorTexture(1, 1, new Color(0, 0, 0, 0.4f));
                 _blackTranslucentHover = GUIExtensions.ColorTexture(1, 1, new Color(0, 0, 0, 0.5f));
+                _transparent = GUIExtensions.ColorTexture(1, 1, new Color(0, 0, 0, 0));
 
                 // Override scrollbar width and height.
                 Skin.verticalScrollbar.fixedWidth = GUIRenderer.scrollWidth;
@@ -138,6 +140,19 @@ namespace MultiTool.Utilities.UI
                 buttonWhite.active.textColor = Color.black;
                 buttonWhite.focused.textColor = Color.black;
 
+                GUIStyle buttonTransparent = new GUIStyle(_buttonStyle);
+                buttonTransparent.name = "ButtonTransparent";
+                buttonTransparent.normal.background = null;
+                buttonTransparent.hover.background = _transparent;
+                buttonTransparent.active.background = _transparent;
+                buttonTransparent.focused.background = _transparent;
+                buttonTransparent.normal.textColor = Color.white;
+                buttonTransparent.hover.textColor = Color.white;
+                buttonTransparent.active.textColor = Color.white;
+                buttonTransparent.focused.textColor = Color.white;
+                buttonTransparent.wordWrap = true;
+                buttonTransparent.alignment = TextAnchor.LowerCenter;
+
                 // Box styling.
                 Skin.box.normal.background = _blackTranslucent;
 
@@ -150,6 +165,7 @@ namespace MultiTool.Utilities.UI
                     buttonBlackTranslucent,
                     buttonLightGrey,
                     buttonWhite,
+                    buttonTransparent,
 
                     // These are just here to prevent log errors, idk where they're coming from.
                     new GUIStyle() { name = "thumb" },

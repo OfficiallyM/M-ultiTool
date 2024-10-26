@@ -91,11 +91,6 @@ namespace MultiTool.Modules
 		internal static Color color = new Color(255f / 255f, 255f / 255f, 255f / 255f);
 		internal static int conditionInt = 0;
 		internal static bool applyConditionToAttached = false;
-		internal static int fuelMixes = 1;
-		internal static List<float> fuelValues = new List<float> { -1f };
-		internal static List<int> fuelTypeInts = new List<int> { -1 };
-		internal static Vector2 scrollPosition;
-		internal static string plate = String.Empty;
 
 		// Item menu variables.
 		internal static List<Item> items = new List<Item>();
@@ -278,8 +273,8 @@ namespace MultiTool.Modules
                 settingsTabIndex = Tabs.AddTab(new Tabs.SettingsTab());
                 creditsTabIndex = Tabs.AddTab(new Tabs.CreditsTab());
 
-				// Load data from database.
-				vehicles = DatabaseUtilities.LoadVehicles();
+                // Load data from database.
+                vehicles = DatabaseUtilities.LoadVehicles();
 				items = DatabaseUtilities.LoadItems();
 				//POIs = DatabaseUtilities.LoadPOIs();
 
@@ -288,8 +283,6 @@ namespace MultiTool.Modules
 				SaveUtilities.LoadSaveData();
 
 				// Clear any existing static values.
-				fuelValues.Clear();
-				fuelTypeInts.Clear();
 				coolants.Clear();
 				oils.Clear();
 				fuels.Clear();
@@ -299,9 +292,6 @@ namespace MultiTool.Modules
 				int maxFuelType = (int)Enum.GetValues(typeof(mainscript.fluidenum)).Cast<mainscript.fluidenum>().Max();
 				for (int i = 0; i <= maxFuelType; i++)
 				{
-					fuelValues.Add(-1f);
-					fuelTypeInts.Add(-1);
-
 					coolants.Add((mainscript.fluidenum)i, 0);
 					oils.Add((mainscript.fluidenum)i, 0);
 					fuels.Add((mainscript.fluidenum)i, 0);
@@ -1053,319 +1043,6 @@ namespace MultiTool.Modules
             }
             GUILayout.EndVertical();
             GUILayout.EndArea();
-		}
-
-		/// <summary>
-		/// Render the config pane
-		/// </summary>
-		/// <param name="tab">The tab index to render the config pane for</param>
-		internal void RenderConfig(Tab tab, Rect configDimensions)
-		{
-			float configX = configDimensions.x + 5f;
-			float configY = configDimensions.y + 30f;
-			float configWidth = configDimensions.width - 10f;
-			float configHeight = 20f;
-
-			float red;
-			float green;
-			float blue;
-			bool redParse;
-			bool greenParse;
-			bool blueParse;
-
-			GUIStyle defaultStyle = GUI.skin.button;
-			GUIStyle previewStyle = new GUIStyle(defaultStyle);
-			Texture2D previewTexture = new Texture2D(1, 1);
-			Color[] pixels = new Color[] { color };
-
-			if (tab.Source == MultiTool.mod.Name)
-			{
-				switch (tab.Id)
-				{
-					case "vehicles":
-					case "items":
-						// Fuel mixes needs multiplying by two as it has two fields per mix.
-						int configItems = 8 + (fuelMixes * 2);
-						float configScrollHeight = configItems * ((configHeight * 3) + 10f);
-						configScrollHeight += GUIRenderer.GetPaletteHeight(configWidth) + 10f;
-						configScrollPosition = GUI.BeginScrollView(new Rect(configX, configY, configWidth, configDimensions.height - 40f), configScrollPosition, new Rect(configX, configY, configWidth, configScrollHeight), new GUIStyle(), new GUIStyle());
-
-						// Condition.
-						GUI.Label(new Rect(configX, configY, configWidth, configHeight), $"Condition:", labelStyle);
-						configY += configHeight;
-						int maxCondition = (int)Enum.GetValues(typeof(Item.Condition)).Cast<Item.Condition>().Max();
-						float rawCondition = GUI.HorizontalSlider(new Rect(configX, configY, configWidth, configHeight), conditionInt, -1, maxCondition);
-						conditionInt = Mathf.RoundToInt(rawCondition);
-						configY += configHeight;
-						string conditionName = ((Item.Condition)conditionInt).ToString();
-						GUI.Label(new Rect(configX, configY, configWidth, configHeight), conditionName, labelStyle);
-
-						configY += configHeight + 10f;
-
-						if (GUI.Button(new Rect(configX, configY, 200f, configHeight), Accessibility.GetAccessibleString("Spawn with fuel", settings.spawnWithFuel)))
-							settings.spawnWithFuel = !settings.spawnWithFuel;
-
-						configY += configHeight + 10f;
-
-						// Fuel mixes.
-						int maxFuelType = (int)Enum.GetValues(typeof(mainscript.fluidenum)).Cast<mainscript.fluidenum>().Max();
-						GUI.Label(new Rect(configX, configY, configWidth, configHeight), "Number of fuels:", labelStyle);
-						configY += configHeight;
-						float rawFuelMixes = GUI.HorizontalSlider(new Rect(configX, configY, configWidth, configHeight), fuelMixes, 1, maxFuelType + 1);
-						fuelMixes = Mathf.RoundToInt(rawFuelMixes);
-						configY += configHeight;
-						GUI.Label(new Rect(configX, configY, configWidth, configHeight), fuelMixes.ToString(), labelStyle);
-
-						for (int i = 0; i < fuelMixes; i++)
-						{
-							configY += configHeight + 10f;
-
-							// Fuel type.
-							GUI.Label(new Rect(configX, configY, configWidth, configHeight), $"Fuel type {i + 1}:", labelStyle);
-							configY += configHeight;
-							float rawFuelType = GUI.HorizontalSlider(new Rect(configX, configY, configWidth, configHeight), fuelTypeInts[i], -1, maxFuelType);
-							fuelTypeInts[i] = Mathf.RoundToInt(rawFuelType);
-							configY += configHeight;
-
-							string fuelType = ((mainscript.fluidenum)fuelTypeInts[i]).ToString();
-							if (fuelTypeInts[i] == -1)
-								fuelType = "Default";
-							else
-								fuelType = fuelType[0].ToString().ToUpper() + fuelType.Substring(1);
-
-							GUI.Label(new Rect(configX, configY, configWidth, configHeight), fuelType, labelStyle);
-
-							configY += configHeight + 10f;
-
-							// Fuel amount.
-							GUI.Label(new Rect(configX, configY, configWidth, configHeight), $"Fuel amount {i + 1}:", labelStyle);
-							configY += configHeight;
-							float rawFuelValue = GUI.HorizontalSlider(new Rect(configX, configY, configWidth, configHeight), fuelValues[i], -1f, 1000f);
-							fuelValues[i] = Mathf.Round(rawFuelValue);
-							configY += configHeight;
-
-							bool fuelValueParse = float.TryParse(GUI.TextField(new Rect(configX, configY, configWidth, configHeight), fuelValues[i].ToString(), labelStyle), out float tempFuelValue);
-							if (!fuelValueParse)
-								Logger.Log($"{tempFuelValue} is not a number", Logger.LogLevel.Error);
-							else
-								fuelValues[i] = tempFuelValue;
-						}
-
-						configY += configHeight + 10f;
-
-						// Vehicle colour sliders.
-						// Red.
-						GUI.Label(new Rect(configX, configY, configWidth, configHeight), Accessibility.GetAccessibleColorString("Red:", new Color(255, 0, 0)), labelStyle);
-						configY += configHeight;
-						red = GUI.HorizontalSlider(new Rect(configX, configY, configWidth, configHeight), color.r * 255, 0, 255);
-						red = Mathf.Round(red);
-						configY += configHeight;
-						redParse = float.TryParse(GUI.TextField(new Rect(configX, configY, configWidth, configHeight), red.ToString(), labelStyle), out red);
-						if (!redParse)
-							Logger.Log($"{redParse} is not a number", Logger.LogLevel.Error);
-						red = Mathf.Clamp(red, 0f, 255f);
-						color.r = red / 255f;
-						//GUI.Label(new Rect(configX, configY, configWidth, configHeight), red.ToString(), labelStyle);
-
-						// Green.
-						configY += configHeight + 10f;
-						GUI.Label(new Rect(configX, configY, configWidth, configHeight), Accessibility.GetAccessibleColorString("Green:", new Color(0, 255, 0)), labelStyle);
-						configY += configHeight;
-						green = GUI.HorizontalSlider(new Rect(configX, configY, configWidth, configHeight), color.g * 255, 0, 255);
-						green = Mathf.Round(green);
-						configY += configHeight;
-						greenParse = float.TryParse(GUI.TextField(new Rect(configX, configY, configWidth, configHeight), green.ToString(), labelStyle), out green);
-						if (!greenParse)
-							Logger.Log($"{greenParse} is not a number", Logger.LogLevel.Error);
-						green = Mathf.Clamp(green, 0f, 255f);
-						color.g = green / 255f;
-						//GUI.Label(new Rect(configX, configY, configWidth, configHeight), green.ToString(), labelStyle);
-
-						// Blue.
-						configY += configHeight + 10f;
-						GUI.Label(new Rect(configX, configY, configWidth, configHeight), Accessibility.GetAccessibleColorString("Blue:", new Color(0, 0, 255)), labelStyle);
-						configY += configHeight;
-						blue = GUI.HorizontalSlider(new Rect(configX, configY, configWidth, configHeight), color.b * 255, 0, 255);
-						blue = Mathf.Round(blue);
-						configY += configHeight;
-						blueParse = float.TryParse(GUI.TextField(new Rect(configX, configY, configWidth, configHeight), blue.ToString(), labelStyle), out blue);
-						if (!blueParse)
-							Logger.Log($"{blueParse.ToString()} is not a number", Logger.LogLevel.Error);
-						blue = Mathf.Clamp(blue, 0f, 255f);
-						color.b = blue / 255f;
-						//GUI.Label(new Rect(configX, configY, configWidth, configHeight), blue.ToString(), labelStyle);
-
-						configY += configHeight + 10f;
-
-						if (GUI.Button(new Rect(configX, configY, 200f, configHeight), "Randomise colour"))
-						{
-							color.r = UnityEngine.Random.Range(0f, 255f) / 255f;
-							color.g = UnityEngine.Random.Range(0f, 255f) / 255f;
-							color.b = UnityEngine.Random.Range(0f, 255f) / 255f;
-						}
-
-						configY += configHeight + 10f;
-
-						// Colour preview.
-						pixels = new Color[] { color };
-						previewTexture.SetPixels(pixels);
-						previewTexture.Apply();
-						previewStyle.normal.background = previewTexture;
-						previewStyle.active.background = previewTexture;
-						previewStyle.hover.background = previewTexture;
-						previewStyle.margin = new RectOffset(0, 0, 0, 0);
-						GUI.skin.button = previewStyle;
-						GUI.Button(new Rect(configX, configY, configWidth, configHeight), "");
-						GUI.skin.button = defaultStyle;
-
-						configY += configHeight + 10f;
-
-						color = GUIRenderer.RenderColourPalette(configX, configY, configWidth, color);
-						configY += GUIRenderer.GetPaletteHeight(configWidth) + 10f;
-
-						// License plate only renders for vehicle tab.
-						if (tab.Id == "vehicles")
-						{
-							configY += configHeight + 10f;
-							GUI.Label(new Rect(configX, configY, configWidth, configHeight), "Plate (blank for random):", labelStyle);
-							configY += configHeight;
-							plate = GUI.TextField(new Rect(configX, configY, configWidth, configHeight), plate, 7, labelStyle);
-						}
-
-						GUI.EndScrollView();
-						break;
-					case "shapes":
-						int shapeConfigItems = 8;
-						float shapeConfigScrollHeight = shapeConfigItems * ((configHeight * 3) + 10f);
-						shapeConfigScrollHeight += GUIRenderer.GetPaletteHeight(configWidth) + 10f;
-
-						configScrollPosition = GUI.BeginScrollView(new Rect(configX, configY, configWidth, configDimensions.height - 40f), configScrollPosition, new Rect(configX, configY, configWidth, shapeConfigScrollHeight), new GUIStyle(), new GUIStyle());
-						// Red.
-						GUI.Label(new Rect(configX, configY, configWidth, configHeight), Accessibility.GetAccessibleColorString("Red:", new Color(255, 0, 0)), labelStyle);
-						configY += configHeight;
-						red = GUI.HorizontalSlider(new Rect(configX, configY, configWidth, configHeight), color.r * 255, 0, 255);
-						red = Mathf.Round(red);
-						configY += configHeight;
-						redParse = float.TryParse(GUI.TextField(new Rect(configX, configY, configWidth, configHeight), red.ToString(), labelStyle), out red);
-						if (!redParse)
-							Logger.Log($"{redParse} is not a number", Logger.LogLevel.Error);
-						red = Mathf.Clamp(red, 0f, 255f);
-						color.r = red / 255f;
-
-						// Green.
-						configY += configHeight + 10f;
-						GUI.Label(new Rect(configX, configY, configWidth, configHeight), Accessibility.GetAccessibleColorString("Green:", new Color(0, 255, 0)), labelStyle);
-						configY += configHeight;
-						green = GUI.HorizontalSlider(new Rect(configX, configY, configWidth, configHeight), color.g * 255, 0, 255);
-						green = Mathf.Round(green);
-						configY += configHeight;
-						greenParse = float.TryParse(GUI.TextField(new Rect(configX, configY, configWidth, configHeight), green.ToString(), labelStyle), out green);
-						if (!greenParse)
-							Logger.Log($"{greenParse} is not a number", Logger.LogLevel.Error);
-						green = Mathf.Clamp(green, 0f, 255f);
-						color.g = green / 255f;
-
-						// Blue.
-						configY += configHeight + 10f;
-						GUI.Label(new Rect(configX, configY, configWidth, configHeight), Accessibility.GetAccessibleColorString("Blue:", new Color(0, 0, 255)), labelStyle);
-						configY += configHeight;
-						blue = GUI.HorizontalSlider(new Rect(configX, configY, configWidth, configHeight), color.b * 255, 0, 255);
-						blue = Mathf.Round(blue);
-						configY += configHeight;
-						blueParse = float.TryParse(GUI.TextField(new Rect(configX, configY, configWidth, configHeight), blue.ToString(), labelStyle), out blue);
-						if (!blueParse)
-							Logger.Log($"{blueParse.ToString()} is not a number", Logger.LogLevel.Error);
-						blue = Mathf.Clamp(blue, 0f, 255f);
-						color.b = blue / 255f;
-
-						configY += configHeight + 10f;
-
-						if (GUI.Button(new Rect(configX, configY, 200f, configHeight), "Randomise colour"))
-						{
-							color.r = UnityEngine.Random.Range(0f, 255f) / 255f;
-							color.g = UnityEngine.Random.Range(0f, 255f) / 255f;
-							color.b = UnityEngine.Random.Range(0f, 255f) / 255f;
-						}
-
-						configY += configHeight + 10f;
-
-						// Colour preview.
-						pixels = new Color[] { color };
-						previewTexture.SetPixels(pixels);
-						previewTexture.Apply();
-						previewStyle.normal.background = previewTexture;
-						previewStyle.active.background = previewTexture;
-						previewStyle.hover.background = previewTexture;
-						previewStyle.margin = new RectOffset(0, 0, 0, 0);
-						GUI.skin.button = previewStyle;
-						GUI.Button(new Rect(configX, configY, configWidth, configHeight), "");
-						GUI.skin.button = defaultStyle;
-
-						configY += configHeight + 10f;
-
-						color = GUIRenderer.RenderColourPalette(configX, configY, configWidth, color);
-						configY += GUIRenderer.GetPaletteHeight(configWidth) + 10f;
-
-						if (GUI.Button(new Rect(configX, configY, configWidth, configHeight), Accessibility.GetAccessibleString("Link scale axis", linkScale)))
-							linkScale = !linkScale;
-
-						if (linkScale)
-						{
-							// Scale.
-							configY += configHeight + 10f;
-							GUI.Label(new Rect(configX, configY, configWidth, configHeight), "Scale:", labelStyle);
-							configY += configHeight;
-							float allScale = GUI.HorizontalSlider(new Rect(configX, configY, configWidth, configHeight), scale.x, 0.1f, 10f);
-							allScale = (float)Math.Round(allScale, 2);
-							configY += configHeight;
-							allScale = (float)Math.Round(double.Parse(GUI.TextField(new Rect(configX, configY, configWidth, configHeight), allScale.ToString(), labelStyle)), 2);
-							allScale = Mathf.Clamp(allScale, 0.1f, 100f);
-							scale = new Vector3(allScale, allScale, allScale);
-						}
-						else
-						{
-							// X.
-							configY += configHeight + 10f;
-							GUI.Label(new Rect(configX, configY, configWidth, configHeight), "Scale X:", labelStyle);
-							configY += configHeight;
-							float x = GUI.HorizontalSlider(new Rect(configX, configY, configWidth, configHeight), scale.x, 0.1f, 10f);
-							x = (float)Math.Round(x, 2);
-							configY += configHeight;
-							x = (float)Math.Round(double.Parse(GUI.TextField(new Rect(configX, configY, configWidth, configHeight), x.ToString(), labelStyle)), 2);
-							x = Mathf.Clamp(x, 0.1f, 100f);
-							scale.x = x;
-
-							// Y.
-							configY += configHeight + 10f;
-							GUI.Label(new Rect(configX, configY, configWidth, configHeight), "Scale Y:", labelStyle);
-							configY += configHeight;
-							float y = GUI.HorizontalSlider(new Rect(configX, configY, configWidth, configHeight), scale.y, 0.1f, 10f);
-							y = (float)Math.Round(y, 2);
-							configY += configHeight;
-							y = (float)Math.Round(double.Parse(GUI.TextField(new Rect(configX, configY, configWidth, configHeight), y.ToString(), labelStyle)), 2);
-							y = Mathf.Clamp(y, 0.1f, 100f);
-							scale.y = y;
-
-							// Z.
-							configY += configHeight + 10f;
-							GUI.Label(new Rect(configX, configY, configWidth, configHeight), "Scale Z:", labelStyle);
-							configY += configHeight;
-							float z = GUI.HorizontalSlider(new Rect(configX, configY, configWidth, configHeight), scale.z, 0.1f, 10f);
-							z = (float)Math.Round(z, 2);
-							configY += configHeight;
-							z = (float)Math.Round(double.Parse(GUI.TextField(new Rect(configX, configY, configWidth, configHeight), z.ToString(), labelStyle)), 2);
-							z = Mathf.Clamp(z, 0.1f, 100f);
-							scale.z = z;
-						}
-
-						GUI.EndScrollView();
-						break;
-				}
-			}
-			else
-			{
-				tab.RenderConfigPane(configDimensions);
-			}
 		}
 
 		/// <summary>
