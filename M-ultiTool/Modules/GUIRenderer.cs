@@ -248,8 +248,12 @@ namespace MultiTool.Modules
 		{
 			try
 			{
-				// Ensure UI loads hidden.
-				show = false;
+                // Unregister tabs so they re-register correctly if already loaded.
+                if (Tabs.GetCount() > 0)
+                    Tabs.UnregisterAll();
+
+                // Ensure UI loads hidden.
+                show = false;
 
 				resolutionX = settingsscript.s.S.IResolutionX;
 				resolutionY = settingsscript.s.S.IResolutionY;
@@ -327,10 +331,6 @@ namespace MultiTool.Modules
 
 			if (ModLoader.isOnMainMenu)
 			{
-                // Unregister tabs when on the main menu.
-                if (Tabs.GetCount() > 0)
-                    Tabs.UnregisterAll();
-
 				MainMenuUpdate();
 				return;
 			}
