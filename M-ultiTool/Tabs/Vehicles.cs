@@ -24,6 +24,7 @@ namespace MultiTool.Tabs
         private Vector2 _configScrollPosition;
 
         // Main tab variables.
+        private Rect _dimensions;
         private string _search = string.Empty;
         private string _lastSearch = string.Empty;
         private float _lastWidth = 0;
@@ -51,24 +52,30 @@ namespace MultiTool.Tabs
             _fuelTypes.Clear();
         }
 
-        public override void RenderTab(Rect dimensions)
-		{
+        public override void Update()
+        {
             List<Vehicle> vehicles = GUIRenderer.vehicles;
             if (_search != _lastSearch)
             {
                 vehicles = GUIRenderer.vehicles.Where(v => v.name.ToLower().Contains(_search.ToLower()) || v.gameObject.name.ToLower().Contains(_search.ToLower())).ToList();
                 _rechunk = true;
                 _lastSearch = _search;
+                _vehicleScrollPosition = new Vector2(0, 0);
             }
 
-            if (_lastWidth != dimensions.width || _rechunk)
+            if (_lastWidth != _dimensions.width || _rechunk)
             {
-                int rowLength = Mathf.FloorToInt(dimensions.width / 150f);
+                int rowLength = Mathf.FloorToInt(_dimensions.width / 150f);
                 _vehiclesChunked = vehicles.ChunkBy(rowLength);
-                _lastWidth = dimensions.width;
+                _lastWidth = _dimensions.width;
 
                 _rechunk = false;
             }
+        }
+
+        public override void RenderTab(Rect dimensions)
+		{
+            _dimensions = dimensions;
 
             GUILayout.BeginArea(dimensions);
             GUILayout.BeginVertical();

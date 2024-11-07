@@ -23,11 +23,12 @@ namespace MultiTool.Tabs
         private Vector2 _filterScrollPosition;
 
         // Main tab variables.
+        private Rect _dimensions;
 		private bool _filterShow = false;
 		private List<int> _filters = new List<int>();
         private string _search = string.Empty;
-        private string _lastSearch = string.Empty;
         private float _lastWidth = 0;
+        private int _lastRowLength = 0;
         private List<List<Item>> _itemsChunked = new List<List<Item>>();
         private bool _rechunk = false;
 
@@ -52,14 +53,13 @@ namespace MultiTool.Tabs
             _fuelTypes.Clear();
         }
 
-        public override void RenderTab(Rect dimensions)
-		{
+        public override void Update()
+        {
             List<Item> items = GUIRenderer.items;
-            if (_search != _lastSearch)
+            if (_search != string.Empty)
             {
                 items = GUIRenderer.items.Where(i => i.gameObject.name.ToLower().Contains(_search.ToLower())).ToList();
                 _rechunk = true;
-                _lastSearch = _search;
                 _itemScrollPosition = new Vector2(0, 0);
             }
 
@@ -70,19 +70,24 @@ namespace MultiTool.Tabs
                 _itemScrollPosition = new Vector2(0, 0);
             }
 
-            float width = dimensions.width;
+            float width = _dimensions.width;
             if (_filterShow)
                 width -= 200f;
 
-            if (_lastWidth != width || _rechunk)
+            int rowLength = Mathf.FloorToInt(width / 150f);
+            if (_lastRowLength != rowLength || _rechunk)
             {
-                int rowLength = Mathf.FloorToInt(width / 150f);
-                width = rowLength * 150f;
                 _itemsChunked = items.ChunkBy(rowLength);
-                _lastWidth = width;
+                _lastRowLength = rowLength;
+                _lastWidth = rowLength * 150f;
 
                 _rechunk = false;
             }
+        }
+
+        public override void RenderTab(Rect dimensions)
+        {
+            _dimensions = dimensions;
 
             GUILayout.BeginArea(dimensions);
             GUILayout.BeginVertical();
@@ -94,7 +99,6 @@ namespace MultiTool.Tabs
             if (GUILayout.Button("Reset", GUILayout.MaxWidth(70)))
             {
                 _search = string.Empty;
-                _lastSearch = string.Empty;
                 _rechunk = true;
             }
             GUILayout.FlexibleSpace();
@@ -104,28 +108,12 @@ namespace MultiTool.Tabs
                 _rechunk = true;
             }
 
-            //if (_filterShow)
-            //{
-            //    for (int i = 0; i < GUIRenderer.categories.Count; i++)
-            //    {
-            //        string name = GUIRenderer.categories.ElementAt(i).Key;
-            //        if (GUILayout.Button(Accessibility.GetAccessibleString(name, _filters.Contains(i))))
-            //        {
-            //            if (_filters.Contains(i))
-            //                _filters.Remove(i);
-            //            else
-            //                _filters.Add(i);
-
-            //            _itemScrollPosition = new Vector2(0, 0);
-            //        }
-            //    }
-            //}
             GUILayout.EndHorizontal();
             GUILayout.Space(10);
 
             GUILayout.BeginHorizontal();
-            GUILayout.BeginVertical(GUILayout.MaxWidth(_lastWidth));
             _itemScrollPosition = GUILayout.BeginScrollView(_itemScrollPosition);
+            GUILayout.BeginVertical(GUILayout.MaxWidth(_lastWidth));
             foreach (List<Item> itemsRow in _itemsChunked)
             {
                 GUILayout.BeginHorizontal();
@@ -153,8 +141,8 @@ namespace MultiTool.Tabs
                 GUILayout.EndHorizontal();
                 GUILayout.Space(5);
             }
-            GUILayout.EndScrollView();
             GUILayout.EndVertical();
+            GUILayout.EndScrollView();
             if (_filterShow)
             {
                 GUILayout.FlexibleSpace();

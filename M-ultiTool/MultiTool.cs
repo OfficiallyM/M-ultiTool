@@ -18,7 +18,8 @@ namespace MultiTool
 		public override string Name => "M-ultiTool";
 		public override string Author => "M-";
 		public override string Version => "4.0.0-dev";
-		public override bool LoadInMenu => true;
+        public override string TargetGameVersion => "2024.10.27_test";
+        public override bool LoadInMenu => true;
 
         // Modules.
         internal static GUIRenderer Renderer;
@@ -384,7 +385,7 @@ namespace MultiTool
 								attachablescript part = spawned.GetComponent<attachablescript>();
 								if (oldSlot != null)
 								{
-									oldSlot.Craft(part, true);
+									oldSlot.Craft(part);
 									//part.tosaveitem.Claim(false);
 								}
 							}
