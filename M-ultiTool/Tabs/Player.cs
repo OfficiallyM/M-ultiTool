@@ -4,14 +4,10 @@ using MultiTool.Utilities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using UnityEngine;
 using MultiTool.Modules;
 using Logger = MultiTool.Modules.Logger;
 using Settings = MultiTool.Core.Settings;
-using TLDLoader;
-using System.Runtime.CompilerServices;
 using MultiTool.Utilities.UI;
 
 namespace MultiTool.Tabs
@@ -55,35 +51,24 @@ namespace MultiTool.Tabs
 
         public override void RenderTab(Rect dimensions)
 		{
-			float startingX = dimensions.x + 10f;
-			float x = startingX;
-			float y = dimensions.y + 10f;
-			float buttonWidth = 200f;
-			float buttonHeight = 20f;
-			float sliderWidth = 300f;
-			float headerWidth = dimensions.width - 20f;
-			float headerHeight = 40f;
-
-			float scrollHeight = 580f;
-
 			bool update = false;
 
             PlayerData activePlayerData = isPerSave ? playerData : globalPlayerData;
 
-			currentPosition = GUI.BeginScrollView(new Rect(x, y, dimensions.width - 20f, dimensions.height - 20f), currentPosition, new Rect(x, y, dimensions.width - 20f, scrollHeight), new GUIStyle(), GUI.skin.verticalScrollbar);
-
-			// God toggle.
-			if (GUI.Button(new Rect(x, y, buttonWidth, buttonHeight), Accessibility.GetAccessibleString("God mode", settings.godMode)))
-			{
-				settings.godMode = !settings.godMode;
+            GUILayout.BeginArea(dimensions);
+            GUILayout.BeginVertical();
+            currentPosition = GUILayout.BeginScrollView(currentPosition);
+            GUILayout.BeginHorizontal();
+            if (GUILayout.Button(Accessibility.GetAccessibleString("God mode", settings.godMode), GUILayout.MaxWidth(200)))
+            {
+                settings.godMode = !settings.godMode;
                 kaposztaleves.s.settings.god = settings.godMode;
-			}
-			x += buttonWidth + 10f;
+            }
+            GUILayout.Space(10);
 
-			// Noclip toggle.
-			if (GUI.Button(new Rect(x, y, buttonWidth, buttonHeight), Accessibility.GetAccessibleString("Noclip", settings.noclip)))
-			{
-				settings.noclip = !settings.noclip;
+            if (GUILayout.Button(Accessibility.GetAccessibleString("Noclip", settings.noclip), GUILayout.MaxWidth(200)))
+            {
+                settings.noclip = !settings.noclip;
 
                 if (settings.noclip)
                 {
@@ -110,35 +95,30 @@ namespace MultiTool.Tabs
                     }
                 }
             }
+            GUILayout.EndHorizontal();
+            GUILayout.Space(10);
 
-			x += buttonWidth + 10f;
-
-			// Infinite ammo toggle.
-			if (GUI.Button(new Rect(x, y, buttonWidth, buttonHeight), Accessibility.GetAccessibleString("Infinite ammo", activePlayerData.infiniteAmmo)))
-			{
-                activePlayerData.infiniteAmmo = !activePlayerData.infiniteAmmo;
-				update = true;
-			}
-
-			x = startingX;
-			y += buttonHeight + 10f;
-
-            // Per save/global toggle.
-            if (GUI.Button(new Rect(x, y, buttonWidth, buttonHeight), Accessibility.GetAccessibleString("Set to global player settings", "Set to per-save player settings", isPerSave)))
+            GUILayout.BeginVertical(GUILayout.MaxWidth(dimensions.width / 2));
+            if (GUILayout.Button(Accessibility.GetAccessibleString("Set to global player settings", "Set to per-save player settings", isPerSave), GUILayout.MaxWidth(200)))
             {
                 isPerSave = !isPerSave;
                 SaveUtilities.UpdateIsPlayerDataPerSave(isPerSave);
                 ApplyPlayerData();
             }
+            GUILayout.Space(20);
 
-            y += buttonHeight + 10f;
+            if (GUILayout.Button(Accessibility.GetAccessibleString("Infinite ammo", activePlayerData.infiniteAmmo), GUILayout.MaxWidth(200)))
+            {
+                activePlayerData.infiniteAmmo = !activePlayerData.infiniteAmmo;
+                update = true;
+            }
+            GUILayout.Space(10);
 
             // Walk speed.
-            GUI.Label(new Rect(x, y, headerWidth, buttonHeight), $"Walk speed: {activePlayerData.walkSpeed} (Default: {defaultPlayerData.walkSpeed})", GUIRenderer.labelStyle);
-			y += buttonHeight;
-			float walkSpeed = GUI.HorizontalSlider(new Rect(x, y, sliderWidth, buttonHeight), activePlayerData.walkSpeed, 1f, 10f);
-			x += sliderWidth + 10f;
-			if (GUI.Button(new Rect(x, y, buttonWidth, buttonHeight), "Reset"))
+            GUILayout.Label($"Walk speed: {activePlayerData.walkSpeed} (Default: {defaultPlayerData.walkSpeed})");
+            GUILayout.BeginHorizontal();
+			float walkSpeed = GUILayout.HorizontalSlider(activePlayerData.walkSpeed, 1f, 10f);
+			if (GUILayout.Button("Reset", GUILayout.MaxWidth(200)))
 			{
                 activePlayerData.walkSpeed = defaultPlayerData.walkSpeed;
 				update = true;
@@ -152,15 +132,14 @@ namespace MultiTool.Tabs
 					update = true;
 				}
 			}
-			x = startingX;
-			y += buttonHeight + 10f;
+            GUILayout.EndHorizontal();
+            GUILayout.Space(10);
 
-			// Run speed.
-			GUI.Label(new Rect(x, y, headerWidth, buttonHeight), $"Run speed: {activePlayerData.runSpeed} (Default: {defaultPlayerData.runSpeed})", GUIRenderer.labelStyle);
-			y += buttonHeight;
-			float runSpeed = GUI.HorizontalSlider(new Rect(x, y, sliderWidth, buttonHeight), activePlayerData.runSpeed, 1f, 10f);
-			x += sliderWidth + 10f;
-			if (GUI.Button(new Rect(x, y, buttonWidth, buttonHeight), "Reset"))
+            // Run speed.
+            GUILayout.Label($"Run speed: {activePlayerData.runSpeed} (Default: {defaultPlayerData.runSpeed})");
+            GUILayout.BeginHorizontal();
+            float runSpeed = GUILayout.HorizontalSlider(activePlayerData.runSpeed, 1f, 10f);
+			if (GUILayout.Button("Reset", GUILayout.MaxWidth(200)))
 			{
                 activePlayerData.runSpeed = defaultPlayerData.runSpeed;
 				update = true;
@@ -174,15 +153,14 @@ namespace MultiTool.Tabs
 					update = true;
 				}
 			}
-			x = startingX;
-			y += buttonHeight + 10f;
+            GUILayout.EndHorizontal();
+            GUILayout.Space(10);
 
-			// Jump force.
-			GUI.Label(new Rect(x, y, headerWidth, buttonHeight), $"Jump force: {activePlayerData.jumpForce / 100} (Default: {defaultPlayerData.jumpForce / 100})", GUIRenderer.labelStyle);
-			y += buttonHeight;
-			float jumpForce = GUI.HorizontalSlider(new Rect(x, y, sliderWidth, buttonHeight), activePlayerData.jumpForce / 100, 1f, 2000f);
-			x += sliderWidth + 10f;
-			if (GUI.Button(new Rect(x, y, buttonWidth, buttonHeight), "Reset"))
+            // Jump force.
+            GUILayout.Label($"Jump force: {activePlayerData.jumpForce / 100} (Default: {defaultPlayerData.jumpForce / 100})");
+            GUILayout.BeginHorizontal();
+            float jumpForce = GUILayout.HorizontalSlider(activePlayerData.jumpForce / 100, 1f, 2000f);
+			if (GUILayout.Button("Reset", GUILayout.MaxWidth(200)))
 			{
                 activePlayerData.jumpForce = defaultPlayerData.jumpForce;
 				update = true;
@@ -196,15 +174,14 @@ namespace MultiTool.Tabs
 					update = true;
 				}
 			}
-			x = startingX;
-			y += buttonHeight + 10f;
+            GUILayout.EndHorizontal();
+            GUILayout.Space(10);
 
-			// Push force.
-			GUI.Label(new Rect(x, y, headerWidth, buttonHeight), $"Push force: {activePlayerData.pushForce / 10} (Default: {defaultPlayerData.pushForce / 10})", GUIRenderer.labelStyle);
-			y += buttonHeight;
-			float pushForce = GUI.HorizontalSlider(new Rect(x, y, sliderWidth, buttonHeight), activePlayerData.pushForce / 10, 1f, 2000f);
-			x += sliderWidth + 10f;
-			if (GUI.Button(new Rect(x, y, buttonWidth, buttonHeight), "Reset"))
+            // Push force.
+            GUILayout.Label($"Push force: {activePlayerData.pushForce / 10} (Default: {defaultPlayerData.pushForce / 10})");
+            GUILayout.BeginHorizontal();
+            float pushForce = GUILayout.HorizontalSlider(activePlayerData.pushForce / 10, 1f, 2000f);
+			if (GUILayout.Button("Reset", GUILayout.MaxWidth(200)))
 			{
                 activePlayerData.pushForce = defaultPlayerData.pushForce;
 				update = true;
@@ -218,15 +195,14 @@ namespace MultiTool.Tabs
 					update = true;
 				}
 			}
-			x = startingX;
-			y += buttonHeight + 10f;
+            GUILayout.EndHorizontal();
+            GUILayout.Space(10);
 
-			// Carry weight.
-			GUI.Label(new Rect(x, y, headerWidth, buttonHeight), $"Carry weight: {activePlayerData.carryWeight} (Default: {defaultPlayerData.carryWeight})", GUIRenderer.labelStyle);
-			y += buttonHeight;
-			float carryWeight = GUI.HorizontalSlider(new Rect(x, y, sliderWidth, buttonHeight), activePlayerData.carryWeight, 1f, 1000f);
-			x += sliderWidth + 10f;
-			if (GUI.Button(new Rect(x, y, buttonWidth, buttonHeight), "Reset"))
+            // Carry weight.
+            GUILayout.Label($"Carry weight: {activePlayerData.carryWeight} (Default: {defaultPlayerData.carryWeight})");
+            GUILayout.BeginHorizontal();
+            float carryWeight = GUILayout.HorizontalSlider(activePlayerData.carryWeight, 1f, 1000f);
+			if (GUILayout.Button("Reset", GUILayout.MaxWidth(200)))
 			{
                 activePlayerData.carryWeight = defaultPlayerData.carryWeight;
 				update = true;
@@ -240,15 +216,14 @@ namespace MultiTool.Tabs
 					update = true;
 				}
 			}
-			x = startingX;
-			y += buttonHeight + 10f;
+            GUILayout.EndHorizontal();
+            GUILayout.Space(10);
 
-			// Pickup force.
-			GUI.Label(new Rect(x, y, headerWidth, buttonHeight), $"Pickup force: {activePlayerData.pickupForce} (Default: {defaultPlayerData.pickupForce})", GUIRenderer.labelStyle);
-			y += buttonHeight;
-			float pickupForce = GUI.HorizontalSlider(new Rect(x, y, sliderWidth, buttonHeight), activePlayerData.pickupForce, 1f, 1000f);
-			x += sliderWidth + 10f;
-			if (GUI.Button(new Rect(x, y, buttonWidth, buttonHeight), "Reset"))
+            // Pickup force.
+            GUILayout.Label($"Pickup force: {activePlayerData.pickupForce} (Default: {defaultPlayerData.pickupForce})");
+            GUILayout.BeginHorizontal();
+            float pickupForce = GUILayout.HorizontalSlider(activePlayerData.pickupForce, 1f, 1000f);
+			if (GUILayout.Button("Reset", GUILayout.MaxWidth(200)))
 			{
                 activePlayerData.pickupForce = defaultPlayerData.pickupForce;
 				update = true;
@@ -262,47 +237,43 @@ namespace MultiTool.Tabs
 					update = true;
 				}
 			}
-			x = startingX;
-			y += buttonHeight + 10f;
+            GUILayout.EndHorizontal();
+            GUILayout.Space(10);
 
-			// Fire speed.
+            // Fire speed.
             // TODO: Rewrite saving.
-			//if (mainscript.s.player.inHandP != null && mainscript.s.player.inHandP.weapon != null)
-			//{
-			//	tosaveitemscript save = mainscript.s.player.inHandP.weapon.GetComponent<tosaveitemscript>();
+            //if (mainscript.s.player.inHandP != null && mainscript.s.player.inHandP.weapon != null)
+            //{
+            //	tosaveitemscript save = mainscript.s.player.inHandP.weapon.GetComponent<tosaveitemscript>();
 
-			//	if (weaponData != null)
-			//	{
-			//		GUI.Label(new Rect(x, y, headerWidth, buttonHeight), $"Fire rate: {weaponData.fireRate} (Default: {weaponData.defaultFireRate})", GUIRenderer.labelStyle);
-			//		y += buttonHeight;
-			//		float fireRate = GUI.HorizontalSlider(new Rect(x, y, sliderWidth, buttonHeight), weaponData.fireRate, 0.001f, 0.5f);
-			//		x += sliderWidth + 10f;
-			//		if (GUI.Button(new Rect(x, y, buttonWidth, buttonHeight), "Reset"))
-			//		{
-			//			weaponData.fireRate = weaponData.defaultFireRate;
-			//			update = true;
-			//		}
-			//		else
-			//		{
-			//			fireRate = (float)Math.Round(fireRate, 3);
-			//			if (fireRate != weaponData.fireRate)
-			//			{
-			//				weaponData.fireRate = fireRate;
-			//				update = true;
-			//			}
-			//		}
+            //	if (weaponData != null)
+            //	{
+            //		GUILayout.Label($"Fire rate: {weaponData.fireRate} (Default: {weaponData.defaultFireRate})");
+            //		GUILayout.BeginHorizontal();
+            //		float fireRate = GUILayout.HorizontalSlider(weaponData.fireRate, 0.001f, 0.5f);
+            //		if (GUILayout.Button("Reset", GUILayout.MaxWidth(200)))
+            //		{
+            //			weaponData.fireRate = weaponData.defaultFireRate;
+            //			update = true;
+            //		}
+            //		else
+            //		{
+            //			fireRate = (float)Math.Round(fireRate, 3);
+            //			if (fireRate != weaponData.fireRate)
+            //			{
+            //				weaponData.fireRate = fireRate;
+            //				update = true;
+            //			}
+            //		}
+            //      GUILayout.EndHorizontal();
+            //	}
+            //}
 
-			//		x = startingX;
-			//		y += buttonHeight + 10f;
-			//	}
-			//}
-
-			// Mass.
-			GUI.Label(new Rect(x, y, headerWidth, buttonHeight), $"Mass: {activePlayerData.mass} (Default: {defaultPlayerData.mass})", GUIRenderer.labelStyle);
-			y += buttonHeight;
-			float mass = GUI.HorizontalSlider(new Rect(x, y, sliderWidth, buttonHeight), activePlayerData.mass, 1f, 1000f);
-			x += sliderWidth + 10f;
-			if (GUI.Button(new Rect(x, y, buttonWidth, buttonHeight), "Reset"))
+            // Mass.
+            GUILayout.Label($"Mass: {activePlayerData.mass} (Default: {defaultPlayerData.mass})");
+            GUILayout.BeginHorizontal();
+            float mass = GUILayout.HorizontalSlider(activePlayerData.mass, 1f, 1000f);
+			if (GUILayout.Button("Reset", GUILayout.MaxWidth(200)))
 			{
                 activePlayerData.mass = defaultPlayerData.mass;
 				update = true;
@@ -316,12 +287,11 @@ namespace MultiTool.Tabs
 					update = true;
 				}
 			}
-			x = startingX;
-			y += buttonHeight + 10f;
+            GUILayout.EndHorizontal();
+            GUILayout.Space(10);
 
-			// Bladder control.
-			GUI.Label(new Rect(x, y, headerWidth, buttonHeight), $"Bladder control:", GUIRenderer.labelStyle);
-			y += buttonHeight + 10f;
+            // Bladder control.
+            GUILayout.Label($"Bladder control:");
 
 			float pissMax = mainscript.s.player.piss.Tank.F.maxC;
 			int pissPercentage = 0;
@@ -341,24 +311,24 @@ namespace MultiTool.Tabs
 
 			foreach (KeyValuePair<mainscript.fluidenum, int> fluid in GUIRenderer.piss)
 			{
-				GUI.Label(new Rect(x, y, buttonWidth / 3, buttonHeight), fluid.Key.ToString().ToSentenceCase(), GUIRenderer.labelStyle);
-				x += buttonWidth / 3;
-				int percentage = Mathf.RoundToInt(GUI.HorizontalSlider(new Rect(x, y, sliderWidth, buttonHeight), fluid.Value, 0, 100));
+                GUILayout.BeginHorizontal();
+                GUILayout.Label(fluid.Key.ToString().ToSentenceCase(), GUILayout.MaxWidth(100));
+				int percentage = Mathf.RoundToInt(GUILayout.HorizontalSlider(fluid.Value, 0, 100));
 				if (percentage + (pissPercentage - fluid.Value) <= 100)
 				{
 					tempPiss[fluid.Key] = percentage;
 					changed = true;
 				}
-				x += sliderWidth + 5f;
-				GUI.Label(new Rect(x, y, buttonWidth, buttonHeight), $"{percentage}%", GUIRenderer.labelStyle);
-				x = startingX;
-				y += buttonHeight;
+                GUILayout.Space(5);
+				GUILayout.Label($"{percentage}%");
+                GUILayout.EndHorizontal();
 			}
 
 			if (changed)
 				GUIRenderer.piss = tempPiss;
 
-			if (GUI.Button(new Rect(x, y, buttonWidth, buttonHeight), "Get current"))
+            GUILayout.BeginHorizontal();
+			if (GUILayout.Button("Get current", GUILayout.MaxWidth(200)))
 			{
 				tankscript tank = mainscript.s.player.piss.Tank;
 
@@ -377,9 +347,7 @@ namespace MultiTool.Tabs
 				}
 			}
 
-			x += buttonWidth + 10f;
-
-			if (GUI.Button(new Rect(x, y, buttonWidth, buttonHeight), "Apply piss"))
+			if (GUILayout.Button("Apply piss", GUILayout.MaxWidth(200)))
 			{
 				tankscript tank = mainscript.s.player.piss.Tank;
 				tank.F.fluids.Clear();
@@ -391,9 +359,12 @@ namespace MultiTool.Tabs
 					}
 				}
 			}
+            GUILayout.EndHorizontal();
 			
-			x = startingX;
-			y += buttonHeight + 10f;
+            GUILayout.EndVertical();
+            GUILayout.EndScrollView();
+            GUILayout.EndVertical();
+            GUILayout.EndArea();
 
 			// Trigger update if values have changed.
 			if (update)
@@ -410,8 +381,6 @@ namespace MultiTool.Tabs
                 }
                 ApplyPlayerData();
             }
-
-			GUI.EndScrollView();
 		}
 
         public override void Update()
