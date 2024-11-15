@@ -25,9 +25,9 @@ namespace MultiTool.Modules
 		internal bool show = false;
 		private bool loaded = false;
 		private bool settingsShow = false;
-        private int settingsTabIndex = -1;
+        private string settingsTabId = null;
 		private bool creditsShow = false;
-        private int creditsTabIndex = -1;
+        private string creditsTabId = null;
 
 		private int resolutionX;
 		private int resolutionY;
@@ -274,8 +274,8 @@ namespace MultiTool.Modules
 				Tabs.AddTab(new Tabs.DeveloperTab());
 
                 // Add default hidden tabs.
-                settingsTabIndex = Tabs.AddTab(new Tabs.SettingsTab());
-                creditsTabIndex = Tabs.AddTab(new Tabs.CreditsTab());
+                settingsTabId = Tabs.AddTab(new Tabs.SettingsTab());
+                creditsTabId = Tabs.AddTab(new Tabs.CreditsTab());
 
                 // Load data from database.
                 vehicles = DatabaseUtilities.LoadVehicles();
@@ -1001,11 +1001,11 @@ namespace MultiTool.Modules
 
             if (settingsShow)
             {
-                Tabs.RenderTab(settingsTabIndex);
+                Tabs.RenderTab(settingsTabId);
             }
             else if (creditsShow)
             {
-                Tabs.RenderTab(creditsTabIndex);
+                Tabs.RenderTab(creditsTabId);
             }
             else
             {
@@ -1025,9 +1025,9 @@ namespace MultiTool.Modules
                     if (tab.IsDisabled)
                         GUI.enabled = false;
 
-                    if (GUILayout.Button(Tabs.GetActive() == tabIndex ? $"<color=#0F0>{tab.Name}</color>" : tab.Name, GUILayout.MinWidth(60), GUILayout.MaxHeight(30)))
+                    if (GUILayout.Button(Tabs.GetActive() == tab.Id ? $"<color=#0F0>{tab.Name}</color>" : tab.Name, GUILayout.MinWidth(60), GUILayout.MaxHeight(30)))
                     {
-                        Tabs.SetActive(tabIndex);
+                        Tabs.SetActive(tab.Id);
 
                         // Reset config scroll position when changing tabs.
                         configScrollPosition = Vector2.zero;

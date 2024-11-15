@@ -10,7 +10,8 @@ namespace MultiTool.Modules
 {
     public class TabController
     {
-        private int _tab = 0;
+        private string _tab = null;
+        private Tab _lastRenderedTab = null;
 
         private List<Tab> _tabs = new List<Tab>();
 
@@ -24,8 +25,8 @@ namespace MultiTool.Modules
 		/// Add new tab.
 		/// </summary>
 		/// <param name="tab"></param>
-        /// <returns>Index of the added tab or -1 if tab is invalid</returns>
-		public int AddTab(Tab tab)
+        /// <returns>Identifier of the added tab or null if tab is invalid</returns>
+		public string AddTab(Tab tab)
         {
             // Find caller mod name.
             Assembly caller = Assembly.GetCallingAssembly();
@@ -34,7 +35,7 @@ namespace MultiTool.Modules
             if (ModLoader.isOnMainMenu)
             {
                 Logger.Log($"Mod {callerMod.Name} attempted to register a tab too early. Tabs should be registered during OnLoad().", Logger.LogLevel.Error);
-                return -1;
+                return null;
             }
 
             tab.Source = callerMod.Name;
@@ -42,13 +43,13 @@ namespace MultiTool.Modules
 
             // Block duplicate tab registration.
             if (_tabs.Where(t => t.Id == tab.Id).FirstOrDefault() != null)
-                return -1;
+                return null;
 
             tab.OnRegister();
 
             _tabs.Add(tab);
 
-            return _tabs.Count - 1;
+            return tab.Id;
         }
 
         /// <summary>
@@ -67,21 +68,17 @@ namespace MultiTool.Modules
         /// <summary>
         /// Set the active tab.
         /// </summary>
-        /// <param name="id">Id of the tab to set</param>
-        /// <exception cref="KeyNotFoundException">Thrown if the tab index doesn't exist</exception>
-        internal void SetActive(int id)
+        /// <param name="id">Identifier of the tab to set</param>
+        internal void SetActive(string id)
         {
-            if (_tabs.Count > id && _tabs[id] != null)
-                _tab = id;
-            else
-                throw new KeyNotFoundException();
+            _tab = id;
         }
 
         /// <summary>
         /// Get the currently active tab index.
         /// </summary>
         /// <returns>Index of the currently active tab</returns>
-        internal int GetActive() => _tab;
+        internal string GetActive() => _tab;
 
         /// <summary>
         /// Get number of tabs.
@@ -90,20 +87,34 @@ namespace MultiTool.Modules
         internal int GetCount() => _tabs.Count;
 
         /// <summary>
+        /// Get tab by identifier.
+        /// </summary>
+        /// <param name="id">Identifier of tab to find</param>
+        /// <returns>Tab if the ID is valid, otherwise null</returns>
+        internal Tab GetById(string id) => _tabs.Where(t => t.Id == id).FirstOrDefault();
+
+        /// <summary>
         /// Get tab by index.
         /// </summary>
-        /// <param name="id">Index of tab to find</param>
-        /// <returns>Tab if the ID is valid, otherwise null</returns>
-        internal Tab GetByIndex(int id) => _tabs[id];
+        /// <param name="index">Index of tab to find</param>
+        /// <returns>Tab if the index is valid, otherwise null</returns>
+        internal Tab GetByIndex(int index) => _tabs.Count() > index ? _tabs[index] : null;
 
         /// <summary>
 		/// Render a given tab
 		/// </summary>
 		/// <param name="tab">The tab index to render</param>
-		internal void RenderTab(int? tabIndex = null)
+		internal void RenderTab(string id = null)
         {
-            if (tabIndex == null) tabIndex = _tab;
-            Tab tab = GetByIndex(tabIndex.Value);
+            if (_tab == null) _tab = GetByIndex(0).Id;
+            if (id == null) id = _tab;
+            Tab tab = _lastRenderedTab;
+            if (tab == null || tab.Id != id)
+            {
+                tab = GetById(id);
+                // Cache last rendered tab for better performance.
+                _lastRenderedTab = tab;
+            }
 
             Rect tabDimensions = new Rect()
             {
