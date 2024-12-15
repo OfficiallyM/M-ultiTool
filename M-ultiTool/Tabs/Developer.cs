@@ -1,16 +1,5 @@
 ﻿using MultiTool.Core;
-using MultiTool.Extensions;
-using MultiTool.Utilities;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using UnityEngine;
-using MultiTool.Modules;
-using Logger = MultiTool.Modules.Logger;
-using TLDLoader;
-using UnityEngine.UI;
 using Settings = MultiTool.Core.Settings;
 using MultiTool.Utilities.UI;
 
@@ -20,90 +9,72 @@ namespace MultiTool.Tabs
 	{
 		public override string Name => "Developer Tools";
 
-		private Settings settings = new Settings();
-		private Vector2 currentPosition;
+		private Settings _settings = new Settings();
+		private Vector2 _position;
+
 		public override void RenderTab(Rect dimensions)
 		{
-			float x = dimensions.x + 10f;
-			float y = dimensions.y + 10f;
-			float buttonWidth = 200f;
-			float buttonHeight = 20f;
-			float sliderWidth = 300f;
-			float headerWidth = dimensions.width - 20f;
-			float headerHeight = 40f;
-
-			float scrollHeight = 100f;
-
-			currentPosition = GUI.BeginScrollView(new Rect(x, y, dimensions.width - 20f, dimensions.height - 20f), currentPosition, new Rect(x, y, dimensions.width - 20f, scrollHeight), new GUIStyle(), GUI.skin.verticalScrollbar);
+			GUILayout.BeginArea(dimensions);
+			GUILayout.BeginVertical();
+			_position = GUILayout.BeginScrollView(_position);
 
 			// Toggle show coords.
-			if (GUI.Button(new Rect(x, y, buttonWidth, buttonHeight), Accessibility.GetAccessibleString("Show coords", settings.showCoords)))
+			if (GUILayout.Button(Accessibility.GetAccessibleString("Show coords", _settings.showCoords), GUILayout.MaxWidth(200)))
 			{
-				settings.showCoords = !settings.showCoords;
+				_settings.showCoords = !_settings.showCoords;
 			}
-			y += buttonHeight + 10f;
 
-            // Toggle show object debug.
-            if (GUI.Button(new Rect(x, y, buttonWidth, buttonHeight), Accessibility.GetAccessibleString("Object debug mode", settings.objectDebug)))
-            {
-                settings.objectDebug = !settings.objectDebug;
-            }
-
-            if (settings.objectDebug)
+			// Toggle show object debug.
+			if (GUILayout.Button(Accessibility.GetAccessibleString("Object debug mode", _settings.objectDebug), GUILayout.MaxWidth(200)))
 			{
-				y += buttonHeight + 10f;
+				_settings.objectDebug = !_settings.objectDebug;
+			}
 
-                // Toggle advanced object debug.
-                if (GUI.Button(new Rect(x, y, buttonWidth, buttonHeight), Accessibility.GetAccessibleString("Enable advanced debug", settings.advancedObjectDebug)))
-                {
-                    settings.advancedObjectDebug = !settings.advancedObjectDebug;
-                }
-            }
-
-			if (settings.advancedObjectDebug)
+			if (_settings.objectDebug)
 			{
-				y += buttonHeight + 10f;
-
-				// Toggle showing Unity components.
-				if (GUI.Button(new Rect(x, y, buttonWidth, buttonHeight), Accessibility.GetAccessibleString("Show Unity components", settings.objectDebugShowUnity)))
+				// Toggle advanced object debug.
+				if (GUILayout.Button(Accessibility.GetAccessibleString("Enable advanced debug", _settings.advancedObjectDebug), GUILayout.MaxWidth(200)))
 				{
-					settings.objectDebugShowUnity = !settings.objectDebugShowUnity;
+					_settings.advancedObjectDebug = !_settings.advancedObjectDebug;
 				}
+			}
 
-				y += buttonHeight + 10f;
+			if (_settings.advancedObjectDebug)
+			{
+				// Toggle showing Unity components.
+				if (GUILayout.Button(Accessibility.GetAccessibleString("Show Unity components", _settings.objectDebugShowUnity), GUILayout.MaxWidth(200)))
+				{
+					_settings.objectDebugShowUnity = !_settings.objectDebugShowUnity;
+				}
 
 				// Toggle showing core components.
-				if (GUI.Button(new Rect(x, y, buttonWidth, buttonHeight), Accessibility.GetAccessibleString("Show core game components", settings.objectDebugShowCore)))
+				if (GUILayout.Button(Accessibility.GetAccessibleString("Show core game components", _settings.objectDebugShowCore), GUILayout.MaxWidth(200)))
 				{
-					settings.objectDebugShowCore = !settings.objectDebugShowCore;
+					_settings.objectDebugShowCore = !_settings.objectDebugShowCore;
 				}
-
-				y += buttonHeight + 10f;
 
 				// Toggle showing child components.
-				if (GUI.Button(new Rect(x, y, buttonWidth, buttonHeight), Accessibility.GetAccessibleString("Show child components", settings.objectDebugShowChildren)))
+				if (GUILayout.Button(Accessibility.GetAccessibleString("Show child components", _settings.objectDebugShowChildren), GUILayout.MaxWidth(200)))
 				{
-					settings.objectDebugShowChildren = !settings.objectDebugShowChildren;
+					_settings.objectDebugShowChildren = !_settings.objectDebugShowChildren;
 				}
 			}
 
-			y += buttonHeight + 10f;
-
 			// Toggle showing colliders.
-			if (GUI.Button(new Rect(x, y, buttonWidth, buttonHeight), Accessibility.GetAccessibleString("Show colliders", settings.showColliders)))
+			if (GUILayout.Button(Accessibility.GetAccessibleString("Show colliders", _settings.showColliders), GUILayout.MaxWidth(200)))
 			{
-				settings.showColliders = !settings.showColliders;
+				_settings.showColliders = !_settings.showColliders;
 			}
-
-			y += buttonHeight + 10f;
 
 			// Toggle showing collider help.
-			if (GUI.Button(new Rect(x, y, buttonWidth, buttonHeight), Accessibility.GetAccessibleString("Show collider help", settings.showColliderHelp)))
+			if (GUILayout.Button(Accessibility.GetAccessibleString("Show collider help", _settings.showColliderHelp), GUILayout.MaxWidth(200)))
 			{
-				settings.showColliderHelp = !settings.showColliderHelp;
+				_settings.showColliderHelp = !_settings.showColliderHelp;
 			}
 
-			GUI.EndScrollView();
+			GUILayout.EndScrollView();
+			GUILayout.EndVertical();
+			GUILayout.EndArea();
 		}
 	}
 }

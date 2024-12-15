@@ -109,7 +109,6 @@ namespace MultiTool.Tabs.VehicleConfiguration
 			if (GUILayout.Button(partSelectString, GUILayout.MaxWidth(400)))
 				_partSelectorOpen = !_partSelectorOpen;
 
-
 			if (_partSelectorOpen)
 			{
 				if (GUILayout.Button("None", GUILayout.MaxWidth(400)))

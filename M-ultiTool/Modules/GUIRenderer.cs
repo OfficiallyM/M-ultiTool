@@ -1162,7 +1162,7 @@ namespace MultiTool.Modules
 		{
 			float width = 400f;
 			float height = 40f;
-			float x = resolutionX / 2 - 100f;
+			float x = resolutionX / 2 - 200f;
 			float y = resolutionY * 0.90f;
 			switch (settings.mode)
 			{
@@ -1178,7 +1178,7 @@ namespace MultiTool.Modules
 					GUIStyle defaultStyle = GUI.skin.button;
 					GUIStyle previewStyle = new GUIStyle(defaultStyle);
 					Texture2D previewTexture = new Texture2D(1, 1);
-					Color[] pixels = new Color[] { color };
+					Color[] pixels = new Color[] { Colour.GetColour() };
 					previewTexture.SetPixels(pixels);
 					previewTexture.Apply();
 					previewStyle.normal.background = previewTexture;
@@ -1452,121 +1452,6 @@ namespace MultiTool.Modules
             name = name.Trim();
             return name.IsAllLower() ? name.ToSentenceCase() : name;
         }
-
-		/// <summary>
-		/// Render colour palette.
-		/// </summary>
-		/// <param name="posX">Palette starting X position</param>
-		/// <param name="posY">Palette starting Y position</param>
-		/// <param name="width">Palette max width</param>
-		/// <param name="currentColor">Current selected colour</param>
-		/// <returns>Selected colour</returns>
-		internal static Color RenderColourPalette(float posX, float posY, float width, Color currentColor)
-		{
-			Color selectedColor = currentColor;
-			float buttonWidth = 30f;
-			float buttonHeight = 30f;
-
-			int rowLength = Mathf.FloorToInt(width / (buttonWidth + 2f));
-
-			float x = posX;
-			float y = posY;
-			for (int i = 0; i < palette.Count; i++)
-			{
-				Color color = palette[i];
-
-				if (i > 0)
-				{
-					x += buttonWidth + 2f;
-					if (i % rowLength == 0)
-					{
-						x = posX;
-						y += buttonHeight + 2f;
-					}
-				}
-
-				GUIStyle defaultStyle = GUI.skin.button;
-
-				// Build cache if empty.
-				if (!paletteCache.ContainsKey(i))
-				{
-                    GUIStyle swatchStyle = new GUIStyle(defaultStyle);
-					Texture2D swatchTexture = GUIExtensions.ColorTexture(1, 1, color);
-                    swatchStyle.normal.background = swatchTexture;
-                    swatchStyle.active.background = swatchTexture;
-                    swatchStyle.hover.background = swatchTexture;
-					swatchStyle.margin = new RectOffset(0, 0, 0, 0);
-                    paletteCache.Add(i, swatchStyle);
-				}
-				
-				GUI.skin.button = paletteCache[i];
-				if (GUI.Button(new Rect(x, y, buttonWidth, buttonHeight), ""))
-				{
-					switch (Event.current.button)
-					{
-						// Left click, apply colour.
-						case 0:
-							selectedColor = color;
-							break;
-						
-						// Right click, set new colour.
-						case 1:
-							// Override alpha.
-							currentColor.a = 1;
-
-							// Update palette index colour.
-							palette[i] = currentColor;
-							MultiTool.Configuration.UpdatePalette(palette);
-
-                            // Update texture cache.
-                            GUIStyle swatchStyle = new GUIStyle(defaultStyle);
-                            Texture2D swatchTexture = GUIExtensions.ColorTexture(1, 1, currentColor);
-                            swatchStyle.normal.background = swatchTexture;
-                            swatchStyle.active.background = swatchTexture;
-                            swatchStyle.hover.background = swatchTexture;
-                            swatchStyle.margin = new RectOffset(0, 0, 0, 0);
-                            paletteCache[i] = swatchStyle;
-							break;
-					}
-				}
-				GUI.skin.button = defaultStyle;
-			}
-
-			return selectedColor;
-		}
-
-		/// <summary>
-		/// Get height of the palette UI.
-		/// </summary>
-		/// <param name="width"></param>
-		/// <returns></returns>
-		internal static float GetPaletteHeight(float width)
-		{
-			float buttonWidth = 30f;
-			float buttonHeight = 30f;
-			int rowLength = Mathf.FloorToInt(width / (buttonWidth + 2f));
-			return Mathf.CeilToInt((float)palette.Count / rowLength) * (buttonHeight + 2f);
-		}
-
-		/// <summary>
-		/// Set selected color.
-		/// </summary>
-		/// <param name="_color">Color to select</param>
-		public void SetColor(Color _color)
-		{
-			if (_color.a == 0)
-				_color.a = 1;
-			color = _color;
-		}
-
-		/// <summary>
-		/// Get currently selected color.
-		/// </summary>
-		/// <returns></returns>
-		public Color GetColor()
-		{
-			return color;
-		}
 
 		/// <summary>
 		/// Dispose of anything pertaining to slot mover.

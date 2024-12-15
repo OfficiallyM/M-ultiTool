@@ -93,7 +93,11 @@ namespace MultiTool.Utilities.UI
                 // Default to use primary button.
                 Skin.button = buttonPrimary;
 
-                GUIStyle buttonSecondary = new GUIStyle(_buttonStyle);
+				GUIStyle buttonPrimaryWrap = new GUIStyle(buttonPrimary);
+				buttonPrimaryWrap.name = "ButtonPrimaryWrap";
+				buttonPrimaryWrap.wordWrap = true;
+
+				GUIStyle buttonSecondary = new GUIStyle(_buttonStyle);
                 buttonSecondary.name = "ButtonSecondary";
                 buttonSecondary.normal.background = _darkGrey;
                 buttonSecondary.hover.background = _darkGreyHover;
@@ -184,7 +188,8 @@ namespace MultiTool.Utilities.UI
                 {
                     // Buttons.
                     buttonPrimary,
-                    buttonSecondary,
+					buttonPrimaryWrap,
+					buttonSecondary,
                     buttonBlack,
                     buttonBlackTranslucent,
                     buttonLightGrey,

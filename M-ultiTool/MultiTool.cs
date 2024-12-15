@@ -1,6 +1,7 @@
 ﻿using MultiTool.Core;
 using MultiTool.Modules;
 using MultiTool.Utilities;
+using MultiTool.Utilities.UI;
 using System;
 using System.IO;
 using System.Linq;
@@ -132,7 +133,8 @@ namespace MultiTool
 							}
 						}
 
-						Renderer.SetColor(objectColor);
+						objectColor.a = 1;
+						Colour.SetColour(objectColor);
 					}
 
 					if (Input.GetKeyDown(Binds.GetKeyByAction((int)Keybinds.Inputs.action2).key) && !Renderer.show)
@@ -148,11 +150,10 @@ namespace MultiTool
 
 						if (spray != null)
 						{
-							spray.color.color = Renderer.GetColor();
-							spray.UpdColor();
+							spray.color.color = Colour.GetColour();
 						}
 						else
-							GameUtilities.Paint(Renderer.GetColor(), part);
+							GameUtilities.Paint(Colour.GetColour(), part);
 					}
 					break;
 				case "scale":

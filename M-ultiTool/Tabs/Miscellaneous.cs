@@ -8,6 +8,8 @@ using UnityEngine;
 using Settings = MultiTool.Core.Settings;
 using Logger = MultiTool.Modules.Logger;
 using MultiTool.Utilities.UI;
+using static ScottPlot.Plottable.PopulationPlot;
+using ScottPlot.Palettes;
 
 namespace MultiTool.Tabs
 {
@@ -15,48 +17,44 @@ namespace MultiTool.Tabs
 	{
 		public override string Name => "Miscellaneous";
 
-		private Settings settings = new Settings();
+		private Settings _settings = new Settings();
+		private Vector2 _position;
+
 		public override void RenderTab(Rect dimensions)
 		{
-			float miscX = dimensions.x + 10f;
-			float miscY = dimensions.y + 10f;
-			float buttonWidth = 200f;
-			float buttonHeight = 20f;
-
-			float miscWidth = 250f;
-			float labelWidth = dimensions.width - 20f;
+			GUILayout.BeginArea(dimensions);
+			GUILayout.BeginVertical();
+			_position = GUILayout.BeginScrollView(_position);
 
 			// Delete mode.
-			if (GUI.Button(new Rect(miscX, miscY, buttonWidth, buttonHeight), Accessibility.GetAccessibleString("Delete mode", settings.deleteMode) + $" (Press {MultiTool.Binds.GetKeyByAction((int)Keybinds.Inputs.deleteMode).key})"))
+			if (GUILayout.Button(Accessibility.GetAccessibleString("Delete mode", _settings.deleteMode) + $" (Press {MultiTool.Binds.GetKeyByAction((int)Keybinds.Inputs.deleteMode).key})", GUILayout.MaxWidth(250)))
 			{
-				settings.deleteMode = !settings.deleteMode;
+				_settings.deleteMode = !_settings.deleteMode;
 			}
-
-			miscY += buttonHeight + 20f;
+			GUILayout.Space(10);
 
 			// Time setting.
 			// TODO: Work out what the time actually is.
-			GUI.Label(new Rect(miscX, miscY, labelWidth, buttonHeight), "Time:", GUIRenderer.labelStyle);
-			miscY += buttonHeight;
-			float time = GUI.HorizontalSlider(new Rect(miscX, miscY, miscWidth, buttonHeight), GUIRenderer.selectedTime, 0f, 360f);
+			GUILayout.Label("Time:");
+			float time = GUILayout.HorizontalSlider(GUIRenderer.selectedTime, 0f, 360f, GUILayout.MaxWidth(dimensions.width / 2));
 			GUIRenderer.selectedTime = Mathf.Round(time);
-			if (GUI.Button(new Rect(miscX + miscWidth + 10f, miscY, buttonWidth, buttonHeight), "Set"))
+			GUILayout.BeginHorizontal();
+			if (GUILayout.Button("Set", GUILayout.MaxWidth(250)))
 			{
-                napszakvaltakozas.s.tekeres = GUIRenderer.selectedTime;
+				napszakvaltakozas.s.tekeres = GUIRenderer.selectedTime;
 			}
 
-			if (GUI.Button(new Rect(miscX + miscWidth + buttonWidth + 20f, miscY, buttonWidth, buttonHeight), Accessibility.GetAccessibleString("Unlock", "Lock", GUIRenderer.isTimeLocked)))
+			if (GUILayout.Button(Accessibility.GetAccessibleString("Unlock", "Lock", GUIRenderer.isTimeLocked), GUILayout.MaxWidth(250)))
 			{
 				GUIRenderer.isTimeLocked = !GUIRenderer.isTimeLocked;
 
-                napszakvaltakozas.s.enabled = !GUIRenderer.isTimeLocked;
+				napszakvaltakozas.s.enabled = !GUIRenderer.isTimeLocked;
 			}
+			GUILayout.EndHorizontal();
+			GUILayout.Space(10);
 
-			miscY += buttonHeight + 10f;
-
-			//GUI.Label(new Rect(miscX, miscY, labelWidth, buttonHeight), "UFO spawning (doesn't save):", GUIRenderer.labelStyle);
-
-			//if (GUI.Button(new Rect(miscX + miscWidth + 10f, miscY, buttonWidth, buttonHeight), "Spawn"))
+			//GUILayout.Label("UFO spawning (doesn't save):");
+			//if (GUILayout.Button("Spawn", GUILayout.MaxWidth(250)))
 			//{
 			//	try
 			//	{
@@ -75,7 +73,7 @@ namespace MultiTool.Tabs
 			//	}
 			//}
 
-			//if (GUI.Button(new Rect(miscX + miscWidth + buttonWidth + 20f, miscY, buttonWidth, buttonHeight), "Delete"))
+			//if (GUILayout.Button("Delete", GUILayout.MaxWidth(200)))
 			//{
 			//	if (GUIRenderer.ufo != null)
 			//	{
@@ -84,81 +82,88 @@ namespace MultiTool.Tabs
 			//			UnityEngine.Object.Destroy(GUIRenderer.ufo);
 			//	}
 			//}
+			//GUILayout.Space(10);
 
-			//miscY += buttonHeight + 10f;
-
-			//if (GUI.Button(new Rect(miscX, miscY, buttonWidth, buttonHeight), "Respawn nearest building items"))
-			//{
-			//	Vector3 playerPosition = mainscript.s.player.transform.position;
-
-			//	// Find closest building.
-			//	float distance = float.MaxValue;
-			//	GameObject closestBuilding = null;
-
-			//	List<GameObject> buildings = new List<GameObject>();
-
-			//	foreach (KeyValuePair<int, GameObject> building in mainscript.s.terrainGenerationSettings.roadBuildingGeneration.placedBuildings)
-			//	{
-			//		buildings.Add(building.Value);
-			//	}
-
-			//	foreach (SpawnedPOI spawnedPOI in GUIRenderer.spawnedPOIs)
-			//	{
-			//		buildings.Add(spawnedPOI.poi);
-			//	}
-
-			//	foreach (GameObject building in buildings)
-			//	{
-			//		Vector3 position = building.transform.position;
-			//		float buildingDistance = Vector3.Distance(position, playerPosition);
-			//		if (buildingDistance < distance)
-			//		{
-			//			distance = buildingDistance;
-			//			closestBuilding = building;
-			//		}
-			//	}
-
-			//	// Trigger item respawn.
-			//	buildingscript buildingscript = closestBuilding.GetComponent<buildingscript>();
-			//	buildingscript.itemsSpawned = false;
-			//	buildingscript.SpawnStuff(0);
-			//}
-			//miscY += buttonHeight + 10f;
-
-			if (GUI.Button(new Rect(miscX, miscY, buttonWidth, buttonHeight), Accessibility.GetAccessibleString("Toggle color picker", settings.mode == "colorPicker")))
+			if (GUILayout.Button("Respawn nearest building items", GUILayout.MaxWidth(250)))
 			{
-				if (settings.mode == "colorPicker")
-					settings.mode = null;
-				else
-					settings.mode = "colorPicker";
-			}
-			miscY += buttonHeight + 10f;
+				Vector3 playerPosition = mainscript.s.player.transform.position;
 
-			if (GUI.Button(new Rect(miscX, miscY, buttonWidth, buttonHeight), Accessibility.GetAccessibleString("Toggle object scale mode", settings.mode == "scale")))
-			{
-				if (settings.mode == "scale")
-					settings.mode = null;
-				else
-					settings.mode = "scale";
-			}
+				// Find all generated buildings.
+				List<poiGenScript.poiClass> buildings = new List<poiGenScript.poiClass>();
 
-			miscY += buttonHeight + 10f;
-
-			if (GUI.Button(new Rect(miscX, miscY, buttonWidth, buttonHeight), Accessibility.GetAccessibleString("Toggle object regenerator", settings.mode == "objectRegenerator")))
-			{
-				if (settings.mode == "objectRegenerator")
+				for (int index = 0; index < menuhandler.s.currentMainMap.poiGens.Count; index++)
 				{
-					settings.mode = null;
+					foreach (KeyValuePair<Vector3d, poiGenScript.chunkClass> chunk in menuhandler.s.currentMainMap.poiGens[index].chunks)
+					{
+						foreach (KeyValuePair<Vector3d, poiGenScript.poiClass> poi in chunk.Value.pois)
+						{
+							buildings.Add(poi.Value);
+						}
+					}
+				}
+
+				// Have 100 attempts to find the closest valid building.
+				poiGenScript.poiClass closestBuilding = null;
+				for (int attempt = 0; attempt < 100; attempt++)
+				{
+					closestBuilding = poiGenScript.NearestPoi(mainscript.GlobalFromUnityPos(playerPosition), buildings);
+					if (closestBuilding != null && closestBuilding.pobj != null && !closestBuilding.poiName.ToLower().Contains("haz02"))
+					{
+						// Found a valid building, break.
+						break;
+					}
+					else
+					{
+						// Continue the loop but remove the invalid building we've just checked.
+						buildings.Remove(closestBuilding);
+					}
+				}
+
+				if (closestBuilding != null)
+				{
+					// Trigger item respawn.
+					closestBuilding.spawnedItems = false;
+					closestBuilding.pobj.SpawnStuff(closestBuilding);
+				}
+			}
+			GUILayout.Space(10);
+
+			if (GUILayout.Button(Accessibility.GetAccessibleString("Toggle color picker", _settings.mode == "colorPicker"), GUILayout.MaxWidth(250)))
+			{
+				if (_settings.mode == "colorPicker")
+					_settings.mode = null;
+				else
+					_settings.mode = "colorPicker";
+			}
+			GUILayout.Space(10);
+
+			if (GUILayout.Button(Accessibility.GetAccessibleString("Toggle object scale mode", _settings.mode == "scale"), GUILayout.MaxWidth(250)))
+			{
+				if (_settings.mode == "scale")
+					_settings.mode = null;
+				else
+					_settings.mode = "scale";
+			}
+			GUILayout.Space(10);
+
+			if (GUILayout.Button(Accessibility.GetAccessibleString("Toggle object regenerator", _settings.mode == "objectRegenerator"), GUILayout.MaxWidth(250)))
+			{
+				if (_settings.mode == "objectRegenerator")
+				{
+					_settings.mode = null;
 					GUIRenderer.selectedObject = null;
 				}
 				else
-					settings.mode = "objectRegenerator";
+					_settings.mode = "objectRegenerator";
 			}
+			GUILayout.Space(10);
 
-			miscY += buttonHeight + 10f;
-
-			if (GUI.Button(new Rect(miscX, miscY, buttonWidth * 2, buttonHeight), "Rebuild thumbnail cache (this will lag)"))
+			if (GUILayout.Button("Rebuild thumbnail cache (this will lag)", "ButtonPrimaryWrap", GUILayout.MaxWidth(250)))
 				ThumbnailGenerator.RebuildCache();
+
+			GUILayout.EndScrollView();
+			GUILayout.EndVertical();
+			GUILayout.EndArea();
 		}
 	}
 }
