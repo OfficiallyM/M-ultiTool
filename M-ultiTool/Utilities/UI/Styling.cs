@@ -156,9 +156,33 @@ namespace MultiTool.Utilities.UI
                 // Box styling.
                 Skin.box.normal.background = _blackTranslucent;
 
-                // Add custom styles.
-                Skin.customStyles = new GUIStyle[]
+                // Label styling.
+                GUIStyle labelHeader = new GUIStyle(Skin.label);
+                labelHeader.name = "LabelHeader";
+                labelHeader.alignment = TextAnchor.MiddleLeft;
+                labelHeader.fontSize = 24;
+                labelHeader.fontStyle = FontStyle.Bold;
+                labelHeader.normal.textColor = Color.white;
+                labelHeader.hover.textColor = Color.white;
+                labelHeader.active.textColor = Color.white;
+                labelHeader.focused.textColor = Color.white;
+                labelHeader.wordWrap = true;
+
+				GUIStyle labelMessage = new GUIStyle(Skin.label);
+				labelMessage.name = "LabelMessage";
+				labelMessage.alignment = TextAnchor.MiddleCenter;
+				labelMessage.fontSize = 40;
+				labelMessage.fontStyle = FontStyle.Bold;
+				labelMessage.normal.textColor = Color.white;
+				labelMessage.hover.textColor = Color.white;
+				labelMessage.active.textColor = Color.white;
+				labelMessage.focused.textColor = Color.white;
+				labelMessage.wordWrap = true;
+
+				// Add custom styles.
+				Skin.customStyles = new GUIStyle[]
                 {
+                    // Buttons.
                     buttonPrimary,
                     buttonSecondary,
                     buttonBlack,
@@ -166,6 +190,10 @@ namespace MultiTool.Utilities.UI
                     buttonLightGrey,
                     buttonWhite,
                     buttonTransparent,
+
+                    // Labels.
+                    labelHeader,
+					labelMessage,
 
                     // These are just here to prevent log errors, idk where they're coming from.
                     new GUIStyle() { name = "thumb" },

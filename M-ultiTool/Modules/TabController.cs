@@ -8,7 +8,7 @@ using UnityEngine;
 
 namespace MultiTool.Modules
 {
-    public class TabController
+    public sealed class TabController
     {
         private string _tab = null;
         private Tab _lastRenderedTab = null;
@@ -93,18 +93,39 @@ namespace MultiTool.Modules
         /// <returns>Tab if the ID is valid, otherwise null</returns>
         internal Tab GetById(string id) => _tabs.Where(t => t.Id == id).FirstOrDefault();
 
-        /// <summary>
-        /// Get tab by index.
-        /// </summary>
-        /// <param name="index">Index of tab to find</param>
-        /// <returns>Tab if the index is valid, otherwise null</returns>
-        internal Tab GetByIndex(int index) => _tabs.Count() > index ? _tabs[index] : null;
+		/// <summary>
+		/// Get tab by identifier.
+		/// </summary>
+		/// <param name="id">Identifier of tab to find</param>
+		/// <returns>Tab if the ID is valid, otherwise null</returns>
+		internal T GetById<T>(string id) where T : Tab {
+			Tab tab = _tabs.Where(t => t.Id == id).FirstOrDefault();
+			return tab as T;
+		}
 
-        /// <summary>
+		/// <summary>
+		/// Get tab by index.
+		/// </summary>
+		/// <param name="index">Index of tab to find</param>
+		/// <returns>Tab if the index is valid, otherwise null</returns>
+		internal Tab GetByIndex(int index) => _tabs.Count() > index ? _tabs[index] : null;
+
+		/// <summary>
+		/// Get tab by index.
+		/// </summary>
+		/// <param name="index">Index of tab to find</param>
+		/// <returns>Tab if the index is valid, otherwise null</returns>
+		internal T GetByIndex<T>(int index) where T: Tab
+		{
+			Tab tab = _tabs.Count() > index ? _tabs[index] : null;
+			return tab as T;
+		}
+
+		/// <summary>
 		/// Render a given tab
 		/// </summary>
 		/// <param name="tab">The tab index to render</param>
-		internal void RenderTab(string id = null)
+		public void RenderTab(string id = null, Rect? dimensions = null)
         {
             if (_tab == null) _tab = GetByIndex(0).Id;
             if (id == null) id = _tab;
@@ -123,6 +144,9 @@ namespace MultiTool.Modules
                 width = MultiTool.Renderer.mainMenuWidth - 20f,
                 height = MultiTool.Renderer.mainMenuHeight - (tab.IsFullScreen ? 70f : 110f),
             };
+
+            if (dimensions != null)
+                tabDimensions = dimensions.Value;
 
             float configWidth = tabDimensions.width * 0.25f;
             float configX = tabDimensions.x + tabDimensions.width - configWidth;
@@ -163,7 +187,6 @@ namespace MultiTool.Modules
                 }
             }
 
-            //GUILayout.BeginArea(new Rect(tabDimensions.x, tabDimensions.y, tabDimensions.width, tabDimensions.height), string.Empty, "box");
             try
             {
                 tab.RenderTab(tabDimensions);
@@ -179,7 +202,6 @@ namespace MultiTool.Modules
                     Logger.Log($"Tab {tab.Name} threw too many errors and has been disabled.", Logger.LogLevel.Warning);
                 }
             }
-            //GUILayout.EndArea();
         }
     }
 }

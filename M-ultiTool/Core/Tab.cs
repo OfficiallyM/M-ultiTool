@@ -22,4 +22,10 @@ namespace MultiTool.Core
 		internal virtual bool IsDisabled { get => disabled; set => disabled = value; }
 		internal virtual int Errors { get => errors; set => errors = value; }
 	}
+
+	internal abstract class VehicleConfigurationTab : Tab
+	{
+		public virtual void OnVehicleChange() { }
+		public virtual void OnCacheRefresh() { }
+	}
 }
