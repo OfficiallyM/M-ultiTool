@@ -40,6 +40,9 @@ namespace MultiTool.Tabs
 
 		public override void Update()
 		{
+			// Edge case for player somehow not existing.
+			if (mainscript.s.player == null) return;
+
 			// Player not in a vehicle, return early.
 			if (mainscript.s.player.Car == null) return;
 
