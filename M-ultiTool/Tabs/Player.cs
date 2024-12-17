@@ -16,22 +16,24 @@ namespace MultiTool.Tabs
 	{
 		public override string Name => "Player";
 
-		private Vector2 currentPosition;
-		private Settings settings = new Settings();
+		private Vector2 _currentPosition;
+		private Settings _settings = new Settings();
 
-        private PlayerData playerData;
-        private PlayerData globalPlayerData;
-        private PlayerData defaultPlayerData;
+        private PlayerData _playerData;
+        private PlayerData _globalPlayerData;
+        private PlayerData _defaultPlayerData;
 
-        private bool isPerSave = false;
+        private bool _isPerSave = false;
+
+		private List<Vector3d> _previousBuildingTeleports = new List<Vector3d>();
 
         public override void OnRegister()
         {
             // Get default player data values.
-            if (defaultPlayerData == null)
+            if (_defaultPlayerData == null)
             {
                 fpscontroller player = mainscript.s.player;
-                defaultPlayerData = new PlayerData()
+                _defaultPlayerData = new PlayerData()
                 {
                     walkSpeed = player.FdefMaxSpeed,
                     runSpeed = player.FrunM,
@@ -43,9 +45,9 @@ namespace MultiTool.Tabs
                     infiniteAmmo = false,
                 };
             }
-            playerData = SaveUtilities.LoadPlayerData(defaultPlayerData);
-            globalPlayerData = SaveUtilities.LoadGlobalPlayerData(defaultPlayerData);
-            isPerSave = SaveUtilities.LoadIsPlayerDataPerSave();
+            _playerData = SaveUtilities.LoadPlayerData(_defaultPlayerData);
+            _globalPlayerData = SaveUtilities.LoadGlobalPlayerData(_defaultPlayerData);
+            _isPerSave = SaveUtilities.LoadIsPlayerDataPerSave();
             ApplyPlayerData();
         }
 
@@ -53,24 +55,24 @@ namespace MultiTool.Tabs
 		{
 			bool update = false;
 
-            PlayerData activePlayerData = isPerSave ? playerData : globalPlayerData;
+            PlayerData activePlayerData = _isPerSave ? _playerData : _globalPlayerData;
 
             GUILayout.BeginArea(dimensions);
             GUILayout.BeginVertical();
-            currentPosition = GUILayout.BeginScrollView(currentPosition);
+            _currentPosition = GUILayout.BeginScrollView(_currentPosition);
             GUILayout.BeginHorizontal();
-            if (GUILayout.Button(Accessibility.GetAccessibleString("God mode", settings.godMode), GUILayout.MaxWidth(200)))
+            if (GUILayout.Button(Accessibility.GetAccessibleString("God mode", _settings.godMode), GUILayout.MaxWidth(200)))
             {
-                settings.godMode = !settings.godMode;
-                kaposztaleves.s.settings.god = settings.godMode;
+                _settings.godMode = !_settings.godMode;
+                kaposztaleves.s.settings.god = _settings.godMode;
             }
             GUILayout.Space(10);
 
-            if (GUILayout.Button(Accessibility.GetAccessibleString("Noclip", settings.noclip), GUILayout.MaxWidth(200)))
+            if (GUILayout.Button(Accessibility.GetAccessibleString("Noclip", _settings.noclip), GUILayout.MaxWidth(200)))
             {
-                settings.noclip = !settings.noclip;
+                _settings.noclip = !_settings.noclip;
 
-                if (settings.noclip)
+                if (_settings.noclip)
                 {
                     Noclip noclip = mainscript.s.player.gameObject.AddComponent<Noclip>();
 
@@ -95,14 +97,14 @@ namespace MultiTool.Tabs
                     }
                 }
             }
-            GUILayout.EndHorizontal();
+			GUILayout.EndHorizontal();
             GUILayout.Space(10);
 
             GUILayout.BeginVertical(GUILayout.MaxWidth(dimensions.width / 2));
-            if (GUILayout.Button(Accessibility.GetAccessibleString("Set to global player settings", "Set to per-save player settings", isPerSave), GUILayout.MaxWidth(200)))
+            if (GUILayout.Button(Accessibility.GetAccessibleString("Set to global player settings", "Set to per-save player settings", _isPerSave), GUILayout.MaxWidth(200)))
             {
-                isPerSave = !isPerSave;
-                SaveUtilities.UpdateIsPlayerDataPerSave(isPerSave);
+                _isPerSave = !_isPerSave;
+                SaveUtilities.UpdateIsPlayerDataPerSave(_isPerSave);
                 ApplyPlayerData();
             }
             GUILayout.Space(20);
@@ -115,12 +117,12 @@ namespace MultiTool.Tabs
             GUILayout.Space(10);
 
             // Walk speed.
-            GUILayout.Label($"Walk speed: {activePlayerData.walkSpeed} (Default: {defaultPlayerData.walkSpeed})");
+            GUILayout.Label($"Walk speed: {activePlayerData.walkSpeed} (Default: {_defaultPlayerData.walkSpeed})");
             GUILayout.BeginHorizontal();
 			float walkSpeed = GUILayout.HorizontalSlider(activePlayerData.walkSpeed, 1f, 10f);
 			if (GUILayout.Button("Reset", GUILayout.MaxWidth(200)))
 			{
-                activePlayerData.walkSpeed = defaultPlayerData.walkSpeed;
+                activePlayerData.walkSpeed = _defaultPlayerData.walkSpeed;
 				update = true;
 			}
 			else
@@ -136,12 +138,12 @@ namespace MultiTool.Tabs
             GUILayout.Space(10);
 
             // Run speed.
-            GUILayout.Label($"Run speed: {activePlayerData.runSpeed} (Default: {defaultPlayerData.runSpeed})");
+            GUILayout.Label($"Run speed: {activePlayerData.runSpeed} (Default: {_defaultPlayerData.runSpeed})");
             GUILayout.BeginHorizontal();
             float runSpeed = GUILayout.HorizontalSlider(activePlayerData.runSpeed, 1f, 10f);
 			if (GUILayout.Button("Reset", GUILayout.MaxWidth(200)))
 			{
-                activePlayerData.runSpeed = defaultPlayerData.runSpeed;
+                activePlayerData.runSpeed = _defaultPlayerData.runSpeed;
 				update = true;
 			}
 			else
@@ -157,12 +159,12 @@ namespace MultiTool.Tabs
             GUILayout.Space(10);
 
             // Jump force.
-            GUILayout.Label($"Jump force: {activePlayerData.jumpForce / 100} (Default: {defaultPlayerData.jumpForce / 100})");
+            GUILayout.Label($"Jump force: {activePlayerData.jumpForce / 100} (Default: {_defaultPlayerData.jumpForce / 100})");
             GUILayout.BeginHorizontal();
             float jumpForce = GUILayout.HorizontalSlider(activePlayerData.jumpForce / 100, 1f, 2000f);
 			if (GUILayout.Button("Reset", GUILayout.MaxWidth(200)))
 			{
-                activePlayerData.jumpForce = defaultPlayerData.jumpForce;
+                activePlayerData.jumpForce = _defaultPlayerData.jumpForce;
 				update = true;
 			}
 			else
@@ -178,12 +180,12 @@ namespace MultiTool.Tabs
             GUILayout.Space(10);
 
             // Push force.
-            GUILayout.Label($"Push force: {activePlayerData.pushForce / 10} (Default: {defaultPlayerData.pushForce / 10})");
+            GUILayout.Label($"Push force: {activePlayerData.pushForce / 10} (Default: {_defaultPlayerData.pushForce / 10})");
             GUILayout.BeginHorizontal();
             float pushForce = GUILayout.HorizontalSlider(activePlayerData.pushForce / 10, 1f, 2000f);
 			if (GUILayout.Button("Reset", GUILayout.MaxWidth(200)))
 			{
-                activePlayerData.pushForce = defaultPlayerData.pushForce;
+                activePlayerData.pushForce = _defaultPlayerData.pushForce;
 				update = true;
 			}
 			else
@@ -199,12 +201,12 @@ namespace MultiTool.Tabs
             GUILayout.Space(10);
 
             // Carry weight.
-            GUILayout.Label($"Carry weight: {activePlayerData.carryWeight} (Default: {defaultPlayerData.carryWeight})");
+            GUILayout.Label($"Carry weight: {activePlayerData.carryWeight} (Default: {_defaultPlayerData.carryWeight})");
             GUILayout.BeginHorizontal();
             float carryWeight = GUILayout.HorizontalSlider(activePlayerData.carryWeight, 1f, 1000f);
 			if (GUILayout.Button("Reset", GUILayout.MaxWidth(200)))
 			{
-                activePlayerData.carryWeight = defaultPlayerData.carryWeight;
+                activePlayerData.carryWeight = _defaultPlayerData.carryWeight;
 				update = true;
 			}
 			else 
@@ -220,12 +222,12 @@ namespace MultiTool.Tabs
             GUILayout.Space(10);
 
             // Pickup force.
-            GUILayout.Label($"Pickup force: {activePlayerData.pickupForce} (Default: {defaultPlayerData.pickupForce})");
+            GUILayout.Label($"Pickup force: {activePlayerData.pickupForce} (Default: {_defaultPlayerData.pickupForce})");
             GUILayout.BeginHorizontal();
             float pickupForce = GUILayout.HorizontalSlider(activePlayerData.pickupForce, 1f, 1000f);
 			if (GUILayout.Button("Reset", GUILayout.MaxWidth(200)))
 			{
-                activePlayerData.pickupForce = defaultPlayerData.pickupForce;
+                activePlayerData.pickupForce = _defaultPlayerData.pickupForce;
 				update = true;
 			}
 			else
@@ -270,12 +272,12 @@ namespace MultiTool.Tabs
             //}
 
             // Mass.
-            GUILayout.Label($"Mass: {activePlayerData.mass} (Default: {defaultPlayerData.mass})");
+            GUILayout.Label($"Mass: {activePlayerData.mass} (Default: {_defaultPlayerData.mass})");
             GUILayout.BeginHorizontal();
             float mass = GUILayout.HorizontalSlider(activePlayerData.mass, 1f, 1000f);
 			if (GUILayout.Button("Reset", GUILayout.MaxWidth(200)))
 			{
-                activePlayerData.mass = defaultPlayerData.mass;
+                activePlayerData.mass = _defaultPlayerData.mass;
 				update = true;
 			}
 			else
@@ -291,7 +293,7 @@ namespace MultiTool.Tabs
             GUILayout.Space(10);
 
             // Bladder control.
-            GUILayout.Label($"Bladder control:");
+            GUILayout.Label($"Bladder control", "LabelHeader");
 
 			float pissMax = mainscript.s.player.piss.Tank.F.maxC;
 			int pissPercentage = 0;
@@ -360,8 +362,70 @@ namespace MultiTool.Tabs
 				}
 			}
             GUILayout.EndHorizontal();
-			
-            GUILayout.EndVertical();
+
+			GUILayout.Label("Teleporting", "LabelHeader");
+
+			if (GUILayout.Button(Accessibility.GetAccessibleString("Click to teleport", activePlayerData.clickTeleport) + $"\n(Press {MultiTool.Binds.GetPrettyName((int)Keybinds.Inputs.action1)})", "ButtonPrimaryWrap", GUILayout.MaxWidth(200)))
+			{
+				activePlayerData.clickTeleport = !activePlayerData.clickTeleport;
+				update = true;
+			}
+			GUILayout.Space(10);
+
+			if (GUILayout.Button("Teleport to next building", GUILayout.MaxWidth(200)))
+			{
+				poiGenScript.poiClass closestBuilding = GameUtilities.FindNearestBuilding(mainscript.s.player.transform.position, _previousBuildingTeleports.Count > 0 ? 1 : 0);
+
+				if (closestBuilding != null)
+				{
+					mainscript.s.player.TeleportWithParent(mainscript.UnityPosFromGlobal(closestBuilding.pos) + Vector3.up * 2f);
+					_previousBuildingTeleports.Add(closestBuilding.pos);
+				}
+			}
+			GUILayout.Space(10);
+
+			if (_previousBuildingTeleports.Count > 1)
+			{
+				if (GUILayout.Button("Teleport to previous building", GUILayout.MaxWidth(200)))
+				{
+					int highestIndex = _previousBuildingTeleports.Count - 1;
+					Vector3d previousBuilding = _previousBuildingTeleports[highestIndex - 1];
+					mainscript.s.player.TeleportWithParent(mainscript.UnityPosFromGlobal(previousBuilding) + Vector3.up * 2f);
+					_previousBuildingTeleports.RemoveAt(highestIndex);
+					_previousBuildingTeleports.Remove(previousBuilding);
+				}
+				GUILayout.Space(10);
+			}
+
+			if (GUILayout.Button("Teleport to starter house", GUILayout.MaxWidth(200)))
+			{
+				// Find all generated buildings.
+				List<poiGenScript.poiClass> buildings = new List<poiGenScript.poiClass>();
+
+				for (int index = 0; index < menuhandler.s.currentMainMap.poiGens.Count; index++)
+				{
+					foreach (KeyValuePair<Vector3d, poiGenScript.chunkClass> chunk in menuhandler.s.currentMainMap.poiGens[index].chunks)
+					{
+						foreach (KeyValuePair<Vector3d, poiGenScript.poiClass> poi in chunk.Value.pois)
+						{
+							buildings.Add(poi.Value);
+						}
+					}
+				}
+
+				foreach (poiGenScript.poiClass building in buildings)
+				{
+					if (building.poiName.ToLower().Contains("haz02"))
+					{
+						Transform transform = building.pobj.transform.Find("PlayerStart");
+						if (transform != null)
+							mainscript.s.player.Teleport(transform.position, transform.eulerAngles);
+						break;
+					}
+				}
+			}
+
+			GUILayout.EndVertical();
             GUILayout.EndScrollView();
             GUILayout.EndVertical();
             GUILayout.EndArea();
@@ -369,15 +433,15 @@ namespace MultiTool.Tabs
 			// Trigger update if values have changed.
 			if (update)
             {
-                if (isPerSave)
+                if (_isPerSave)
                 {
                     SaveUtilities.UpdatePlayerData(activePlayerData);
-                    playerData = activePlayerData;
+                    _playerData = activePlayerData;
                 }
                 else
                 {
                     SaveUtilities.UpdateGlobalPlayerData(activePlayerData);
-                    globalPlayerData = activePlayerData;
+                    _globalPlayerData = activePlayerData;
                 }
                 ApplyPlayerData();
             }
@@ -385,55 +449,61 @@ namespace MultiTool.Tabs
 
         public override void Update()
         {
-            // Apply infinite ammo.
             fpscontroller player = mainscript.s.player;
             if (player == null) return;
-            if (player.inHandP != null && player.inHandP.weapon != null)
-            {
-                if (isPerSave)
-                    player.inHandP.weapon.infinite = playerData.infiniteAmmo;
-                else
-                    player.inHandP.weapon.infinite = globalPlayerData.infiniteAmmo;
-            }
+
+			PlayerData activePlayerData = _isPerSave ? _playerData : _globalPlayerData;
+
+			// Apply infinite ammo.
+			if (player.inHandP != null && player.inHandP.weapon != null)
+				player.inHandP.weapon.infinite = activePlayerData.infiniteAmmo;
+
+			// Click to teleport.
+			if (activePlayerData.clickTeleport && 
+				!MultiTool.Renderer.show &&
+				Input.GetKeyDown(MultiTool.Binds.GetKeyByAction((int)Keybinds.Inputs.action1).key) && 
+				Physics.Raycast(player.Cam.transform.position + player.Cam.transform.forward,player.Cam.transform.forward, out RaycastHit hitInfo, float.PositiveInfinity)
+			)
+				player.TeleportWithParent(hitInfo.point + Vector3.up * 2f);
         }
 
         private void ApplyPlayerData()
         {
-            if (isPerSave)
+            if (_isPerSave)
             {
-                // Apply player settings.
-                if (playerData != null)
+                // Apply player _settings.
+                if (_playerData != null)
                 {
                     fpscontroller player = mainscript.s.player;
                     if (player != null)
                     {
-                        player.FdefMaxSpeed = playerData.walkSpeed;
-                        player.FrunM = playerData.runSpeed;
-                        player.FjumpForce = playerData.jumpForce;
-                        mainscript.s.pushForce = playerData.pushForce;
-                        player.maxWeight = playerData.carryWeight;
-                        player.maxPickupForce = playerData.pickupForce;
-                        if (player.mass != null && player.mass.Mass() != playerData.mass)
-                            player.mass.SetMass(playerData.mass);
+                        player.FdefMaxSpeed = _playerData.walkSpeed;
+                        player.FrunM = _playerData.runSpeed;
+                        player.FjumpForce = _playerData.jumpForce;
+                        mainscript.s.pushForce = _playerData.pushForce;
+                        player.maxWeight = _playerData.carryWeight;
+                        player.maxPickupForce = _playerData.pickupForce;
+                        if (player.mass != null && player.mass.Mass() != _playerData.mass)
+                            player.mass.SetMass(_playerData.mass);
                     }
                 }
                 return;
             }
 
-            // Apply global player settings.
-            if (globalPlayerData != null)
+            // Apply global player _settings.
+            if (_globalPlayerData != null)
             {
                 fpscontroller player = mainscript.s.player;
                 if (player != null)
                 {
-                    player.FdefMaxSpeed = globalPlayerData.walkSpeed;
-                    player.FrunM = globalPlayerData.runSpeed;
-                    player.FjumpForce = globalPlayerData.jumpForce;
-                    mainscript.s.pushForce = globalPlayerData.pushForce;
-                    player.maxWeight = globalPlayerData.carryWeight;
-                    player.maxPickupForce = globalPlayerData.pickupForce;
-                    if (player.mass != null && player.mass.Mass() != globalPlayerData.mass)
-                        player.mass.SetMass(globalPlayerData.mass);
+                    player.FdefMaxSpeed = _globalPlayerData.walkSpeed;
+                    player.FrunM = _globalPlayerData.runSpeed;
+                    player.FjumpForce = _globalPlayerData.jumpForce;
+                    mainscript.s.pushForce = _globalPlayerData.pushForce;
+                    player.maxWeight = _globalPlayerData.carryWeight;
+                    player.maxPickupForce = _globalPlayerData.pickupForce;
+                    if (player.mass != null && player.mass.Mass() != _globalPlayerData.mass)
+                        player.mass.SetMass(_globalPlayerData.mass);
                 }
             }
         }

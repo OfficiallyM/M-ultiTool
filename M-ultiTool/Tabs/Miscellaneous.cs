@@ -86,38 +86,7 @@ namespace MultiTool.Tabs
 
 			if (GUILayout.Button("Respawn nearest building items", GUILayout.MaxWidth(250)))
 			{
-				Vector3 playerPosition = mainscript.s.player.transform.position;
-
-				// Find all generated buildings.
-				List<poiGenScript.poiClass> buildings = new List<poiGenScript.poiClass>();
-
-				for (int index = 0; index < menuhandler.s.currentMainMap.poiGens.Count; index++)
-				{
-					foreach (KeyValuePair<Vector3d, poiGenScript.chunkClass> chunk in menuhandler.s.currentMainMap.poiGens[index].chunks)
-					{
-						foreach (KeyValuePair<Vector3d, poiGenScript.poiClass> poi in chunk.Value.pois)
-						{
-							buildings.Add(poi.Value);
-						}
-					}
-				}
-
-				// Have 100 attempts to find the closest valid building.
-				poiGenScript.poiClass closestBuilding = null;
-				for (int attempt = 0; attempt < 100; attempt++)
-				{
-					closestBuilding = poiGenScript.NearestPoi(mainscript.GlobalFromUnityPos(playerPosition), buildings);
-					if (closestBuilding != null && closestBuilding.pobj != null && !closestBuilding.poiName.ToLower().Contains("haz02"))
-					{
-						// Found a valid building, break.
-						break;
-					}
-					else
-					{
-						// Continue the loop but remove the invalid building we've just checked.
-						buildings.Remove(closestBuilding);
-					}
-				}
+				poiGenScript.poiClass closestBuilding = GameUtilities.FindNearestBuilding(mainscript.s.player.transform.position);
 
 				if (closestBuilding != null)
 				{

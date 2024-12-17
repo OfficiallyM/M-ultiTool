@@ -90,6 +90,7 @@ namespace MultiTool.Core
         [DataMember] public float pickupForce { get; set; }
         [DataMember] public bool infiniteAmmo { get; set; }
         [DataMember] public float mass { get; set; }
+		[DataMember] public bool clickTeleport { get; set; }
     }
 
     [DataContract]

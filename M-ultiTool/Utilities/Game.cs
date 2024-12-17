@@ -461,5 +461,48 @@ namespace MultiTool.Utilities
             car.brakePower = vehicleTuning.brakePower;
             car.differentialRatio = vehicleTuning.differentialRatio;
         }
+
+		public static poiGenScript.poiClass FindNearestBuilding(Vector3 position, int skip = 0)
+		{
+			// Find all generated buildings.
+			List<poiGenScript.poiClass> buildings = new List<poiGenScript.poiClass>();
+
+			for (int index = 0; index < menuhandler.s.currentMainMap.poiGens.Count; index++)
+			{
+				foreach (KeyValuePair<Vector3d, poiGenScript.chunkClass> chunk in menuhandler.s.currentMainMap.poiGens[index].chunks)
+				{
+					foreach (KeyValuePair<Vector3d, poiGenScript.poiClass> poi in chunk.Value.pois)
+					{
+						buildings.Add(poi.Value);
+					}
+				}
+			}
+
+			// Have 100 attempts to find the closest valid building.
+			poiGenScript.poiClass closestBuilding = null;
+			for (int attempt = 0; attempt < 100; attempt++)
+			{
+				closestBuilding = poiGenScript.NearestPoi(mainscript.GlobalFromUnityPos(position), buildings);
+				bool valid = closestBuilding != null && closestBuilding.pobj != null && !closestBuilding.poiName.ToLower().Contains("haz02");
+				if (valid && skip > 0)
+				{
+					// Building valid but skip is set, ignore.
+					skip--;
+					buildings.Remove(closestBuilding);
+				}
+				else if (valid)
+				{
+					// Found a valid building, no skip needed, break.
+					break;
+				}
+				else
+				{
+					// Continue the loop but remove the invalid building we've just checked.
+					buildings.Remove(closestBuilding);
+				}
+			}
+
+			return closestBuilding;
+		}
 	}
 }
