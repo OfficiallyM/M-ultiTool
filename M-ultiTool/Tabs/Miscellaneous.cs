@@ -34,9 +34,13 @@ namespace MultiTool.Tabs
 			GUILayout.Space(10);
 
 			// Time setting.
-			// TODO: Work out what the time actually is.
-			GUILayout.Label("Time:");
-			float time = GUILayout.HorizontalSlider(GUIRenderer.selectedTime, 0f, 360f, GUILayout.MaxWidth(dimensions.width / 2));
+			float currentTime = Mathf.InverseLerp(0f, napszakvaltakozas.s.dt + napszakvaltakozas.s.nt, napszakvaltakozas.s.time + GUIRenderer.selectedTime - napszakvaltakozas.s.startTime);
+			int totalSeconds = (int)(currentTime * 24 * 60 * 60);
+			int hours = totalSeconds / 3600;
+			int minutes = (totalSeconds % 3600) / 60;
+			int seconds = totalSeconds % 60;
+			GUILayout.Label($"Time: {hours}:{minutes}:{seconds}");
+			float time = GUILayout.HorizontalSlider(GUIRenderer.selectedTime, 0f, napszakvaltakozas.s.dt + napszakvaltakozas.s.nt, GUILayout.MaxWidth(dimensions.width / 2));
 			GUIRenderer.selectedTime = Mathf.Round(time);
 			GUILayout.BeginHorizontal();
 			if (GUILayout.Button("Set", GUILayout.MaxWidth(250)))
