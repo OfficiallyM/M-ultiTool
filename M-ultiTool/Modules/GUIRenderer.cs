@@ -1377,7 +1377,7 @@ namespace MultiTool.Modules
 				y += 30f;
 
 				// Basic object information.
-				GUI.Label(new Rect(x, y, contentWidth, 20f), $"Save ID: {debugObject.GetComponent<tosaveitemscript>().idInSave}", labelStyle);
+				GUI.Label(new Rect(x, y, contentWidth, 20f), $"Save ID: {debugObject.GetComponent<tosaveitemscript>()?.idInSave}", labelStyle);
 				y += 22f;
 				GUI.Label(new Rect(x, y, contentWidth, 20f), $"Local position: {debugObject.transform.position}", labelStyle);
 				y += 22f;
