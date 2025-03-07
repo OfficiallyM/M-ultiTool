@@ -1,11 +1,11 @@
-﻿using MultiTool.Components;
-using MultiTool.Core;
+﻿using MultiTool.Core;
 using MultiTool.Modules;
 using MultiTool.Utilities;
+using MultiTool.Utilities.UI;
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using TLDLoader;
 using UnityEngine;
 using Logger = MultiTool.Modules.Logger;
@@ -16,29 +16,27 @@ namespace MultiTool
 	public class MultiTool : Mod
 	{
 		// Mod meta stuff.
-		public override string ID => Meta.ID;
-		public override string Name => Meta.Name;
-		public override string Author => Meta.Author;
-		public override string Version => Meta.Version;
-        public override bool LoadInDB => true;
-		public override bool LoadInMenu => true;
+		public override string ID => "M-ultiTool";
+		public override string Name => "M-ultiTool";
+		public override string Author => "M-";
+		public override string Version => "4.0.0-dev";
+        public override bool LoadInMenu => true;
 
-        // Initialise modules.
-        private readonly GUIRenderer renderer;
-		private readonly Config config;
-		private readonly Keybinds binds;
+        // Modules.
+        internal static GUIRenderer Renderer;
+		internal static Config Configuration;
+		internal static Keybinds Binds;
 
 		private Settings settings = new Settings();
 
 		internal static Mod mod;
         internal static string configVersion;
-
-		private bool loaded = false;
-		private bool showDebugString = false;
-        private bool reset = false;
+		internal static bool isOnMainMenu = true;
 
 		public MultiTool()
 		{
+			mod = this;
+
 			// Initialise modules.
 			try
 			{
@@ -46,98 +44,51 @@ namespace MultiTool
 				Translator.Init();
 				ThumbnailGenerator.Init();
 
-				// We can't use GetModConfigFolder here as the mod isn't fully initialised yet.
-				string configDirectory = Path.Combine(ModLoader.ModsFolder, "Config", "Mod Settings", ID);
-
-				config = new Config();
-				binds = new Keybinds(config);
-				renderer = new GUIRenderer(config, binds);
+                Renderer = new GUIRenderer();
+                Configuration = new Config();
+                Binds = new Keybinds();
 			}
 			catch (Exception ex)
 			{
 				Logger.Log($"Module initialisation failed - {ex}", Logger.LogLevel.Critical);
 			}
-
-			mod = this;
 		}
 
 		// Override functions.
 		public override void OnMenuLoad()
 		{
-			// Check for and delete old spawner.
-			string file = Path.Combine(ModLoader.ModsFolder, "SpawnerTLD.dll");
-			if (File.Exists(file))
-			{
-				try
-				{
-					File.Delete(file);
-					Logger.Log("Detected and removed old SpawnerTLD.");
-				}
-				catch (Exception ex)
-				{
-					Logger.Log($"Failed to delete old SpawnerTLD, this will cause conflicts - {ex}", Logger.LogLevel.Critical);
-				}
-			}
+            // Set the configuration path.
+            Configuration.SetConfigPath(Path.Combine(ModLoader.GetModConfigFolder(this), "Config.json"));
 
-			// Set the configuration path.
-			config.SetConfigPath(ModLoader.GetModConfigFolder(this) + "\\Config.json");
-
-            configVersion = config.GetVersion();
-            config.UpdateVersion();
-
-			loaded = true;
-
-			renderer.enabled = CoreUtilities.HasPassedValidation();
-		}
+            configVersion = Configuration.GetVersion();
+            Configuration.UpdateVersion();
+			isOnMainMenu = true;
+        }
 
 		public override void OnGUI()
 		{
-			renderer.OnGUI();
+			Renderer.OnGUI();
 		}
-
-        public override void dbLoad()
-        {
-            GameObject controller = new GameObject("M-ultiToolController");
-            controller.transform.SetParent(mainscript.M.transform);
-            controller.AddComponent<Controller>();
-        }
 
         public override void OnLoad()
 		{
-			// Return early if M-ultiTool is disabled.
-			if (!renderer.enabled)
-				return;
-
-			// Run spawner migration.
-			MigrateUtilities.MigrateFromSpawner();
-
 			Translator.SetLanguage(mainscript.M.menu.language.languageNames[mainscript.M.menu.language.selectedLanguage]);
+			isOnMainMenu = false;
 
-            // Load the GUI renderer.
-            renderer.OnLoad();
+			// Load the GUI Renderer.
+			Renderer.OnLoad();
 		}
 
 		public override void Update()
 		{
-			// Return early if M-ultiTool isn't enabled.
-			if (!renderer.enabled)
-            {
-                if (mainscript.M == null && !reset && PlayerPrefs.GetFloat("DistanceDriven") == 0)
-                {
-                    CoreUtilities.HasPassedValidation();
-                    reset = true;
-                }
-				return;
-            }
-
-			renderer.Update();
+            Renderer.Update();
 
 			// Delete mode.
 			if (settings.deleteMode)
 			{
 				try
 				{
-					if (Input.GetKeyDown(binds.GetKeyByAction((int)Keybinds.Inputs.deleteMode).key) && mainscript.M.player.seat == null)
+					if (Input.GetKeyDown(Binds.GetKeyByAction((int)Keybinds.Inputs.deleteMode).key) && mainscript.M.player.seat == null)
 					{
 						Physics.Raycast(mainscript.M.player.Cam.transform.position, mainscript.M.player.Cam.transform.forward, out var raycastHit, float.PositiveInfinity, mainscript.M.player.useLayer);
 
@@ -166,7 +117,7 @@ namespace MultiTool
 			switch (settings.mode)
 			{
 				case "colorPicker":
-					if (Input.GetKeyDown(binds.GetKeyByAction((int)Keybinds.Inputs.action1).key) && !renderer.show)
+					if (Input.GetKeyDown(Binds.GetKeyByAction((int)Keybinds.Inputs.action1).key) && !Renderer.show)
 					{
 						Physics.Raycast(mainscript.M.player.Cam.transform.position, mainscript.M.player.Cam.transform.forward, out var raycastHit, float.PositiveInfinity, mainscript.M.player.useLayer);
 						GameObject hitGameObject = raycastHit.transform.gameObject;
@@ -184,19 +135,20 @@ namespace MultiTool
 						}
 						else
 						{
-							foreach (Renderer renderer in part.renderers)
+							foreach (Renderer Renderer in part.renderers)
 							{
-								if (renderer.material == null)
+								if (Renderer.material == null)
 									continue;
 
-								objectColor = renderer.material.color;
+								objectColor = Renderer.material.color;
 							}
 						}
 
-						renderer.SetColor(objectColor);
+						objectColor.a = 1;
+						Colour.SetColour(objectColor);
 					}
 
-					if (Input.GetKeyDown(binds.GetKeyByAction((int)Keybinds.Inputs.action2).key) && !renderer.show)
+					if (Input.GetKeyDown(Binds.GetKeyByAction((int)Keybinds.Inputs.action2).key) && !Renderer.show)
 					{
 						Physics.Raycast(mainscript.M.player.Cam.transform.position, mainscript.M.player.Cam.transform.forward, out var raycastHit, float.PositiveInfinity, mainscript.M.player.useLayer);
 						GameObject hitGameObject = raycastHit.transform.gameObject;
@@ -209,18 +161,17 @@ namespace MultiTool
 
 						if (spray != null)
 						{
-							spray.color.color = renderer.GetColor();
-							spray.UpdColor();
+							spray.color.color = Colour.GetColour();
 						}
 						else
-							GameUtilities.Paint(renderer.GetColor(), part);
+							GameUtilities.Paint(Colour.GetColour(), part);
 					}
 					break;
 				case "scale":
-					if (!renderer.show)
+					if (!Renderer.show)
 					{
                         // Select object.
-                        if (Input.GetKeyDown(binds.GetKeyByAction((int)Keybinds.Inputs.action6).key))
+                        if (Input.GetKeyDown(Binds.GetKeyByAction((int)Keybinds.Inputs.action6).key))
                         {
                             Physics.Raycast(mainscript.M.player.Cam.transform.position, mainscript.M.player.Cam.transform.forward, out var raycastHit, float.PositiveInfinity, mainscript.M.player.useLayer);
                             if (raycastHit.collider != null && raycastHit.collider.gameObject != null)
@@ -255,9 +206,9 @@ namespace MultiTool
 							Vector3 scale = GUIRenderer.selectedObject.transform.localScale;
 							float scaleValue = GUIRenderer.scaleValue;
 							// Scale up.
-							bool scaleUp = Input.GetKey(binds.GetKeyByAction((int)Keybinds.Inputs.up).key);
+							bool scaleUp = Input.GetKey(Binds.GetKeyByAction((int)Keybinds.Inputs.up).key);
 							if (!GUIRenderer.scaleHold)
-								scaleUp = Input.GetKeyDown(binds.GetKeyByAction((int)Keybinds.Inputs.up).key);
+								scaleUp = Input.GetKeyDown(Binds.GetKeyByAction((int)Keybinds.Inputs.up).key);
 							if (scaleUp)
 							{
 								switch (GUIRenderer.axis)
@@ -282,9 +233,9 @@ namespace MultiTool
 							}
 
 							// Scale down.
-							bool scaleDown = Input.GetKey(binds.GetKeyByAction((int)Keybinds.Inputs.down).key);
+							bool scaleDown = Input.GetKey(Binds.GetKeyByAction((int)Keybinds.Inputs.down).key);
 							if (!GUIRenderer.scaleHold)
-								scaleDown = Input.GetKeyDown(binds.GetKeyByAction((int)Keybinds.Inputs.down).key);
+								scaleDown = Input.GetKeyDown(Binds.GetKeyByAction((int)Keybinds.Inputs.down).key);
 							if (scaleDown)
 							{
 								switch (GUIRenderer.axis)
@@ -309,7 +260,7 @@ namespace MultiTool
 							}
 
 							// Reset scale to default.
-							if (Input.GetKeyDown(binds.GetKeyByAction((int)Keybinds.Inputs.action4).key))
+							if (Input.GetKeyDown(Binds.GetKeyByAction((int)Keybinds.Inputs.action4).key))
 							{
 								// No easy way to store default, just assume it's 1.
 								switch (GUIRenderer.axis)
@@ -346,7 +297,7 @@ namespace MultiTool
 						}
 
 						// Axis selection control.
-						if (Input.GetKeyDown(binds.GetKeyByAction((int)Keybinds.Inputs.action3).key))
+						if (Input.GetKeyDown(Binds.GetKeyByAction((int)Keybinds.Inputs.action3).key))
 						{
 							int currentIndex = Array.FindIndex(GUIRenderer.axisOptions, a => a == GUIRenderer.axis);
 							if (currentIndex == -1 || currentIndex == GUIRenderer.axisOptions.Length - 1)
@@ -356,7 +307,7 @@ namespace MultiTool
 						}
 
 						// Scale value selection control.
-						if (Input.GetKeyDown(binds.GetKeyByAction((int)Keybinds.Inputs.action5).key))
+						if (Input.GetKeyDown(Binds.GetKeyByAction((int)Keybinds.Inputs.action5).key))
 						{
 							int currentIndex = Array.FindIndex(GUIRenderer.scaleOptions, s => s == GUIRenderer.scaleValue);
 							if (currentIndex == -1 || currentIndex == GUIRenderer.scaleOptions.Length - 1)
@@ -365,7 +316,7 @@ namespace MultiTool
 								GUIRenderer.scaleValue = GUIRenderer.scaleOptions[currentIndex + 1];
 						}
 
-						if (Input.GetKeyDown(binds.GetKeyByAction((int)Keybinds.Inputs.select).key))
+						if (Input.GetKeyDown(Binds.GetKeyByAction((int)Keybinds.Inputs.select).key))
 						{
 							GUIRenderer.scaleHold = !GUIRenderer.scaleHold;
 						}
@@ -373,7 +324,7 @@ namespace MultiTool
 					break;
 				case "objectRegenerator":
 					// Select object.
-					if (Input.GetKeyDown(binds.GetKeyByAction((int)Keybinds.Inputs.action1).key))
+					if (Input.GetKeyDown(Binds.GetKeyByAction((int)Keybinds.Inputs.action1).key))
 					{
 						Physics.Raycast(mainscript.M.player.Cam.transform.position, mainscript.M.player.Cam.transform.forward, out var raycastHit, float.PositiveInfinity, mainscript.M.player.useLayer);
 						if (raycastHit.collider != null && raycastHit.collider.gameObject != null)
@@ -387,13 +338,13 @@ namespace MultiTool
 							if (save == null) return;
 
 							GUIRenderer.selectedObject = save;
-                            return;
+							return;
 						}
-                        GUIRenderer.selectedObject = null;
-                    }
+						GUIRenderer.selectedObject = null;
+					}
 
 					// Regenerate object.
-					if (Input.GetKeyDown(binds.GetKeyByAction((int)Keybinds.Inputs.action4).key))
+					if (Input.GetKeyDown(Binds.GetKeyByAction((int)Keybinds.Inputs.action4).key))
 					{
 						if (GUIRenderer.selectedObject != null)
 						{
@@ -460,59 +411,6 @@ namespace MultiTool
 					}
 					break;
 			}
-
-			// Fake the player being on a ladder to remove the gravity during noclip.
-			// This is needed because setting useGravity directly on the player RigidBody
-			// gets enabled again immediately by the fpscontroller.
-			if (settings.noclip)
-				mainscript.M.player.ladderV = 1;
-
-			// Apply player settings.
-			if (GUIRenderer.playerData != null)
-			{
-				PlayerData playerData = GUIRenderer.playerData;
-				fpscontroller player = mainscript.M.player;
-				if (player != null)
-				{
-					player.FdefMaxSpeed = playerData.walkSpeed;
-					player.FrunM = playerData.runSpeed;
-					player.FjumpForce = playerData.jumpForce;
-					mainscript.M.pushForce = playerData.pushForce;
-					player.maxWeight = playerData.carryWeight;
-					player.maxPickupForce = playerData.pickupForce;
-					if (player.mass != null && player.mass.Mass() != playerData.mass)
-						player.mass.SetMass(playerData.mass);
-
-					if (player.inHandP != null && player.inHandP.weapon != null)
-					{
-						tosaveitemscript save = player.inHandP.weapon.GetComponent<tosaveitemscript>();
-
-						if (playerData.weaponData == null)
-							playerData.weaponData = new List<WeaponData>();
-
-						WeaponData weaponData = playerData.weaponData.Where(d => d.id == save.idInSave).FirstOrDefault();
-						if (weaponData != null)
-							player.inHandP.weapon.minShootTime = weaponData.fireRate;
-						else
-							playerData.weaponData.Add(new WeaponData() { id = save.idInSave, fireRate = player.inHandP.weapon.minShootTime, defaultFireRate = player.inHandP.weapon.minShootTime });
-
-						player.inHandP.weapon.infinite = playerData.infiniteAmmo;
-					}
-				}
-			}
-		}
-
-        internal static void LateUpdate()
-        {
-            // This was here for something that didn't work, but it's worth keeping for the future.
-        }
-
-		public override void Config()
-		{
-			SettingAPI setting = new SettingAPI(this);
-			showDebugString = setting.GUICheckbox(showDebugString, "Show debug string", 10, 10);
-			if (showDebugString && loaded)
-				setting.GUIDescriptionText($"Debug string: {PlayerPrefs.GetString("game_settings", string.Empty)}", 60, 10, 40);
 		}
 	}
 }

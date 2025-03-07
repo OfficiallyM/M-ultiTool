@@ -10,18 +10,17 @@ using TLDLoader;
 
 namespace MultiTool.Modules
 {
-	public static class Translator
+	internal static class Translator
 	{
 		// Translation-related variables.
-		private static string language;
-		private static Dictionary<string, ConfigWrapper> translations = new Dictionary<string, ConfigWrapper>();
-		private static string translationDir;
+		private static string _language;
+		private static Dictionary<string, Translate> _translations = new Dictionary<string, Translate>();
+		private static string _translationDir;
 
 		public static void Init()
 		{
-			string configDir = Path.Combine(ModLoader.ModsFolder, "Config", "Mod Settings", Meta.ID);
-			DirectoryInfo dir = Directory.CreateDirectory(Path.Combine(configDir, "Translations"));
-			translationDir = dir.FullName;
+			DirectoryInfo dir = Directory.CreateDirectory(Path.Combine(ModLoader.GetModConfigFolder(MultiTool.mod), "Translations"));
+			_translationDir = dir.FullName;
 
 			LoadTranslationFiles();
 		}
@@ -30,9 +29,9 @@ namespace MultiTool.Modules
 		/// Set translator language
 		/// </summary>
 		/// <param name="_language">The language to set the translator to</param>
-		public static void SetLanguage(string _language)
+		public static void SetLanguage(string language)
 		{
-			language = _language;
+			_language = language;
 		}
 
 		/// <summary>
@@ -41,10 +40,10 @@ namespace MultiTool.Modules
 		private static void LoadTranslationFiles()
 		{
 			// Return early if translations are already loaded.
-			if (translations.Count > 0)
+			if (_translations.Count > 0)
 				return;
 
-			string[] files = Directory.GetFiles(translationDir, "*.json");
+			string[] files = Directory.GetFiles(_translationDir, "*.json");
 			foreach (string file in files)
 			{
 				if (!File.Exists(file))
@@ -56,11 +55,11 @@ namespace MultiTool.Modules
 				{
 					string json = File.ReadAllText(file);
 					MemoryStream ms = new MemoryStream(Encoding.UTF8.GetBytes(json));
-					DataContractJsonSerializer jsonSerializer = new DataContractJsonSerializer(typeof(ConfigWrapper));
-					var config = jsonSerializer.ReadObject(ms) as ConfigWrapper;
+					DataContractJsonSerializer jsonSerializer = new DataContractJsonSerializer(typeof(Translate));
+					var config = jsonSerializer.ReadObject(ms) as Translate;
 					ms.Close();
 
-					translations.Add(Path.GetFileNameWithoutExtension(file), config);
+					_translations.Add(Path.GetFileNameWithoutExtension(file), config);
 				}
 				catch (Exception ex)
 				{
@@ -77,57 +76,60 @@ namespace MultiTool.Modules
 		/// <returns>Translated object name or untranslated name if no translation is found</returns>
 		public static string T(string objectName, string type, int? variant = null)
 		{
+            string defaultObjectName = objectName;
+
 			// Fallback to English if the current language isn't supported.
-			if (!translations.ContainsKey(language))
+			if (!_translations.ContainsKey(_language))
 			{
-				language = "English";
+				_language = "English";
 			}
 
-			if (translations.ContainsKey(language))
+			if (_translations.ContainsKey(_language))
 			{
-				ConfigWrapper config = translations[language];
+                Translate config = _translations[_language];
+                List<Translatable> translate = null;
+
+                // Find translation list for type.
 				switch (type)
 				{
 					case "vehicle":
-						List<ConfigVehicle> vehicles = config.vehicles;
-						foreach (ConfigVehicle vehicle in vehicles)
-						{
-							if (vehicle.objectName == objectName)
-							{
-								if (variant != null && variant != -1)
-								{
-									if (vehicle.variant == variant)
-										return vehicle.name;
-								}
-								else
-									return vehicle.name;
-							}
-						}
+                        translate = config.vehicles;
 						break;
 					case "POI":
-						List<ConfigPOI> POIs = config.POIs;
-						foreach (ConfigPOI POI in POIs)
-						{
-							if (POI.objectName == objectName)
-							{
-								return POI.name;
-							}
-						}
+						translate = config.POIs;
 						break;
 					case "menuVehicles":
-						List<ConfigVehicle> menuVehicles = config.menuVehicles;
-						foreach (ConfigVehicle vehicle in menuVehicles)
-						{
-							if (vehicle.objectName == objectName)
-							{
-								return vehicle.name;
-							}
-						}
+						translate = config.menuVehicles;
 						break;
 				}
+
+                // Attempt to find the translation.
+                if (translate != null)
+                {
+                    foreach (Translatable translatable in translate)
+                    {
+                        if (translatable.objectName == objectName)
+                        {
+                            if (variant != null && variant != -1)
+                            {
+                                if (translatable.variant == variant)
+                                {
+                                    objectName = translatable.name;
+                                    break;
+                                }
+                            }
+                            else
+                            {
+                                objectName = translatable.name;
+                                break;
+                            }
+                        }
+                    }
+                }
 			}
 
-			if (variant != null && variant != -1)
+            // No translation and has a variant, just append the variant number.
+            if (defaultObjectName == objectName && variant != null && variant != -1)
 			{
 				objectName += $" (Variant {variant.GetValueOrDefault()})";
 			}

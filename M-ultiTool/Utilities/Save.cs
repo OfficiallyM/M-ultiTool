@@ -1,11 +1,13 @@
 ﻿using MultiTool.Core;
 using MultiTool.Extensions;
+using MultiTool.Modules;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Runtime.Serialization.Json;
 using System.Text;
+using TLDLoader;
 using UnityEngine;
 using Logger = MultiTool.Modules.Logger;
 
@@ -14,30 +16,26 @@ namespace MultiTool.Utilities
 	/// <summary>
 	/// Save data utilities.
 	/// </summary>
-	public static class SaveUtilities
+	internal static class SaveUtilities
 	{
+        private static GlobalSave _globalData;
+
 		/// <summary>
 		/// Read/write data to game save
 		/// <para>Originally from RundensWheelPositionEditor</para>
 		/// </summary>
 		/// <param name="input">The string to write to the save</param>
 		/// <returns>The read/written string</returns>
-		public static string ReadWriteToGameSave(string input = null)
+		private static string ReadWriteToGameSave(string input = null)
 		{
 			try
 			{
 				save_rendszam saveRendszam = null;
 				save_prefab savePrefab1;
 
-				save_rendszam spawnerSaveRendszam = null;
-
 				// Attempt to find existing plate.
-				if ((savedatascript.d.data.farStuff.TryGetValue(Mathf.Abs(Meta.ID.GetHashCode()), out savePrefab1) || savedatascript.d.data.nearStuff.TryGetValue(Mathf.Abs(Meta.ID.GetHashCode()), out savePrefab1)) && savePrefab1.rendszam != null)
+				if ((savedatascript.d.data.farStuff.TryGetValue(Mathf.Abs(MultiTool.mod.ID.GetHashCode()), out savePrefab1) || savedatascript.d.data.nearStuff.TryGetValue(Mathf.Abs(MultiTool.mod.ID.GetHashCode()), out savePrefab1)) && savePrefab1.rendszam != null)
 					saveRendszam = savePrefab1.rendszam;
-
-				// Attempt to find old SpawnerTLD plate.
-				if ((savedatascript.d.data.farStuff.TryGetValue(Mathf.Abs("SpawnerTLD".GetHashCode()), out savePrefab1) || savedatascript.d.data.nearStuff.TryGetValue(Mathf.Abs("SpawnerTLD".GetHashCode()), out savePrefab1)) && savePrefab1.rendszam != null)
-					spawnerSaveRendszam = savePrefab1.rendszam;
 
 				// Plate doesn't exist.
 				if (saveRendszam == null)
@@ -48,15 +46,7 @@ namespace MultiTool.Utilities
 					savePrefab2.rendszam = new save_rendszam();
 					saveRendszam = savePrefab2.rendszam;
 					saveRendszam.S = string.Empty;
-					savedatascript.d.data.farStuff.Add(Mathf.Abs(Meta.ID.GetHashCode()), savePrefab2);
-				}
-
-				// Copy old spawner data to new plate.
-				if (spawnerSaveRendszam != null)
-				{
-					saveRendszam.S = spawnerSaveRendszam.S;
-					// Delete old spawner plate.
-					savedatascript.d.data.farStuff.Remove(Mathf.Abs("SpawnerTLD".GetHashCode()));
+					savedatascript.d.data.farStuff.Add(Mathf.Abs(MultiTool.mod.ID.GetHashCode()), savePrefab2);
 				}
 
 				// Write the input to the plate.
@@ -77,7 +67,7 @@ namespace MultiTool.Utilities
 		/// Unserialize existing save data
 		/// </summary>
 		/// <returns>Unserialized save data</returns>
-		internal static Save UnserializeSaveData()
+		private static Save UnserializeSaveData()
 		{
 			string existingString = ReadWriteToGameSave();
 			if (existingString == null || existingString == string.Empty)
@@ -92,7 +82,7 @@ namespace MultiTool.Utilities
 		/// Serialize save data and write to save
 		/// </summary>
 		/// <param name="data">The data to serialize</param>
-		internal static void SerializeSaveData(Save data)
+		private static void SerializeSaveData(Save data)
 		{
 			MemoryStream ms = new MemoryStream();
 			DataContractJsonSerializer jsonSerializer = new DataContractJsonSerializer(typeof(Save));
@@ -114,7 +104,7 @@ namespace MultiTool.Utilities
 		/// <param name="poi">The POI to update</param>
 		/// <param name="type">Update type, either "insert" or "delete"</param>
 		/// <returns>POI ID</returns>
-		internal static int UpdatePOISaveData(POIData poi, string type = "insert")
+		public static int UpdatePOISaveData(POIData poi, string type = "insert")
 		{
 			Save data = UnserializeSaveData();
 
@@ -156,11 +146,11 @@ namespace MultiTool.Utilities
 			return ID;
 		}
 
-		/// <summary>
-		/// Update glass data in save
-		/// </summary>
-		/// <param name="glass">Glass data</param>
-		internal static void UpdateGlass(GlassData glass)
+        /// <summary>
+        /// Update glass data in save
+        /// </summary>
+        /// <param name="glass">Glass data</param>
+        public static void UpdateGlass(GlassData glass)
 		{
 			Save data = UnserializeSaveData();
 
@@ -183,11 +173,11 @@ namespace MultiTool.Utilities
 			SerializeSaveData(data);
 		}
 
-		/// <summary>
-		/// Update material data in save.
-		/// </summary>
-		/// <param name="material">Material data</param>
-		internal static void UpdateMaterials(MaterialData material)
+        /// <summary>
+        /// Update material data in save.
+        /// </summary>
+        /// <param name="material">Material data</param>
+        public static void UpdateMaterials(MaterialData material)
 		{
 			Save data = UnserializeSaveData();
 
@@ -218,11 +208,11 @@ namespace MultiTool.Utilities
 			SerializeSaveData(data);
 		}
 
-		/// <summary>
-		/// Update scale data in save.
-		/// </summary>
-		/// <param name="scale">Scale data</param>
-		internal static void UpdateScale(ScaleData scale)
+        /// <summary>
+        /// Update scale data in save.
+        /// </summary>
+        /// <param name="scale">Scale data</param>
+        public static void UpdateScale(ScaleData scale)
 		{
 			Save data = UnserializeSaveData();
 
@@ -245,11 +235,11 @@ namespace MultiTool.Utilities
 			SerializeSaveData(data);
 		}
 
-		/// <summary>
-		/// Update slot data in save.
-		/// </summary>
-		/// <param name="slot">Slot data</param>
-		internal static void UpdateSlot(SlotData slot)
+        /// <summary>
+        /// Update slot data in save.
+        /// </summary>
+        /// <param name="slot">Slot data</param>
+        public static void UpdateSlot(SlotData slot)
 		{
 			Save data = UnserializeSaveData();
 
@@ -275,38 +265,38 @@ namespace MultiTool.Utilities
 			SerializeSaveData(data);
 		}
 
-        /// <summary>
-        /// Update light data in save.
-        /// </summary>
-        /// <param name="light">Light data</param>
-        internal static void UpdateLight(LightData light)
-        {
-            Save data = UnserializeSaveData();
+		/// <summary>
+		/// Update light data in save.
+		/// </summary>
+		/// <param name="light">Light data</param>
+		internal static void UpdateLight(LightData light)
+		{
+			Save data = UnserializeSaveData();
 
-            try
-            {
-                if (data.lights == null)
-                    data.lights = new List<LightData>();
+			try
+			{
+				if (data.lights == null)
+					data.lights = new List<LightData>();
 
-                LightData existing = data.lights.Where(l => l.ID == light.ID && l.name == light.name).FirstOrDefault();
-                if (existing != null)
-                    existing.color = light.color;
-                else
-                    data.lights.Add(light);
-            }
-            catch (Exception ex)
-            {
-                Logger.Log($"Light update error - {ex}", Logger.LogLevel.Error);
-            }
+				LightData existing = data.lights.Where(l => l.ID == light.ID && l.name == light.name).FirstOrDefault();
+				if (existing != null)
+					existing.color = light.color;
+				else
+					data.lights.Add(light);
+			}
+			catch (Exception ex)
+			{
+				Logger.Log($"Light update error - {ex}", Logger.LogLevel.Error);
+			}
 
-            SerializeSaveData(data);
-        }
+			SerializeSaveData(data);
+		}
 
-        /// <summary>
-        /// Update engine tuning data in save.
-        /// </summary>
-        /// <param name="engineTuning">Engine tuning data</param>
-        internal static void UpdateEngineTuning(EngineTuningData engineTuning)
+		/// <summary>
+		/// Update engine tuning data in save.
+		/// </summary>
+		/// <param name="engineTuning">Engine tuning data</param>
+		public static void UpdateEngineTuning(EngineTuningData engineTuning)
         {
             Save data = UnserializeSaveData();
 
@@ -333,7 +323,7 @@ namespace MultiTool.Utilities
         /// Update transmission tuning data in save.
         /// </summary>
         /// <param name="engineTuning">Engine tuning data</param>
-        internal static void UpdateTransmissionTuning(TransmissionTuningData transmissionTuning)
+        public static void UpdateTransmissionTuning(TransmissionTuningData transmissionTuning)
         {
             Save data = UnserializeSaveData();
 
@@ -360,7 +350,7 @@ namespace MultiTool.Utilities
         /// Update transmission tuning data in save.
         /// </summary>
         /// <param name="engineTuning">Engine tuning data</param>
-        internal static void UpdateVehicleTuning(VehicleTuningData vehicleTuning)
+        public static void UpdateVehicleTuning(VehicleTuningData vehicleTuning)
         {
             Save data = UnserializeSaveData();
 
@@ -384,17 +374,43 @@ namespace MultiTool.Utilities
         }
 
         /// <summary>
-        /// Load POIs from save.
+        /// Update player data in save.
         /// </summary>
-        /// <returns>List of newly spawned POIs</returns>
-        internal static List<SpawnedPOI> LoadPOIs()
+        /// <param name="playerData">New player data</param>
+        public static void UpdatePlayerData(PlayerData playerData)
+        {
+            Save data = UnserializeSaveData();
+
+            data.playerData = playerData;
+
+            SerializeSaveData(data);
+        }
+
+        /// <summary>
+        /// Update if player data is per save or global.
+        /// </summary>
+        /// <param name="perSave">True for per save, false for global</param>
+        public static void UpdateIsPlayerDataPerSave(bool perSave)
+        {
+            Save data = UnserializeSaveData();
+
+            data.isPlayerDataPerSave = perSave;
+
+            SerializeSaveData(data);
+        }
+
+		/// <summary>
+		/// Load POIs from save.
+		/// </summary>
+		/// <returns>List of newly spawned POIs</returns>
+		public static List<SpawnedPOI> LoadPOIs()
 		{
 			List<POI> POIs = DatabaseUtilities.LoadPOIs();
 			List<SpawnedPOI> spawnedPOIs = new List<SpawnedPOI>();
 			// Load and spawn saved POIs.
 			try
 			{
-				Save data = SaveUtilities.UnserializeSaveData();
+				Save data = UnserializeSaveData();
 				if (data.pois != null)
 				{
 					foreach (POIData poi in data.pois)
@@ -416,10 +432,10 @@ namespace MultiTool.Utilities
 			return spawnedPOIs;
 		}
 
-        /// <summary>
-        /// Load all save data.
-        /// </summary>
-        internal static void LoadSaveData()
+		/// <summary>
+		/// Load all save data.
+		/// </summary>
+		public static void LoadSaveData()
         {
             Save data = UnserializeSaveData();
 
@@ -431,7 +447,7 @@ namespace MultiTool.Utilities
                 LoadMaterials(save, data);
                 LoadScale(save, data);
                 LoadSlots(save, data);
-                LoadLights(save, data);
+				LoadLights(save, data);
                 LoadEngineTuning(save, data);
                 LoadTransmissionTuning(save, data);
                 LoadVehicleTuning(save, data);
@@ -443,7 +459,7 @@ namespace MultiTool.Utilities
         /// </summary>
         /// <param name="save">Savable object to check</param>
         /// <param name="data">Save data</param>
-        private static void LoadGlass(tosaveitemscript save, Save data)
+        public static void LoadGlass(tosaveitemscript save, Save data)
 		{
             // Return early if no glass data is set.
             if (data.glass == null) return;
@@ -653,58 +669,58 @@ namespace MultiTool.Utilities
 			}
 		}
 
-        /// <summary>
-        /// Load light data
-        /// </summary>
-        /// <param name="save">Savable object to check</param>
-        /// <param name="data">Save data</param>
-        private static void LoadLights(tosaveitemscript save, Save data)
-        {
-            // Return early if no light data is set.
-            if (data.lights == null) return;
+		/// <summary>
+		/// Load light data
+		/// </summary>
+		/// <param name="save">Savable object to check</param>
+		/// <param name="data">Save data</param>
+		private static void LoadLights(tosaveitemscript save, Save data)
+		{
+			// Return early if no light data is set.
+			if (data.lights == null) return;
 
-            foreach (LightData light in data.lights)
-            {
-                try
-                {
-                    if (save.idInSave == light.ID)
-                    {
-                        headlightscript headlight = null;
-                        bool isInteriorLight = false;
-                        if (light.name != null && light.name != string.Empty)
-                        {
-                            headlightscript[] lights = save.GetComponentsInChildren<headlightscript>();
-                            foreach (headlightscript childLight in lights)
-                            {
-                                if (childLight.name.ToLower().Contains(light.name.ToLower()))
-                                    headlight = childLight;
-                            }
-                            isInteriorLight = true;
-                        }
-                        else
-                        {
-                            headlight = save.GetComponent<headlightscript>();
-                        }
+			foreach (LightData light in data.lights)
+			{
+				try
+				{
+					if (save.idInSave == light.ID)
+					{
+						headlightscript headlight = null;
+						bool isInteriorLight = false;
+						if (light.name != null && light.name != string.Empty)
+						{
+							headlightscript[] lights = save.GetComponentsInChildren<headlightscript>();
+							foreach (headlightscript childLight in lights)
+							{
+								if (childLight.name.ToLower().Contains(light.name.ToLower()))
+									headlight = childLight;
+							}
+							isInteriorLight = true;
+						}
+						else
+						{
+							headlight = save.GetComponent<headlightscript>();
+						}
 
-                        // Unable to find headlight, skip.
-                        if (headlight == null) continue;
+						// Unable to find headlight, skip.
+						if (headlight == null) continue;
 
-                        GameUtilities.SetHeadlightColor(headlight, light.color, isInteriorLight);
-                    }
-                }
-                catch (Exception ex)
-                {
-                    Logger.Log($"Light data load error - {ex}", Logger.LogLevel.Error);
-                }
-            }
-        }
+						GameUtilities.SetHeadlightColor(headlight, light.color, isInteriorLight);
+					}
+				}
+				catch (Exception ex)
+				{
+					Logger.Log($"Light data load error - {ex}", Logger.LogLevel.Error);
+				}
+			}
+		}
 
-        /// <summary>
-        /// Load engine tuning data
-        /// </summary>
-        /// <param name="save">Savable object to check</param>
-        /// <param name="data">Save data</param>
-        private static void LoadEngineTuning(tosaveitemscript save, Save data)
+		/// <summary>
+		/// Load engine tuning data
+		/// </summary>
+		/// <param name="save">Savable object to check</param>
+		/// <param name="data">Save data</param>
+		private static void LoadEngineTuning(tosaveitemscript save, Save data)
         {
             // Return early if no engine tuning data is set.
             if (data.engineTuning == null) return;
@@ -774,12 +790,40 @@ namespace MultiTool.Utilities
         }
 
         /// <summary>
+        /// Load player data.
+        /// </summary>
+        /// <param name="defaultPlayerData">Default player data to set if saved is null </param>
+        /// <returns>Loaded player data or default if it isn't saved</returns>
+        public static PlayerData LoadPlayerData(PlayerData defaultPlayerData)
+        {
+            Save data = UnserializeSaveData();
+
+            if (data.playerData == null)
+            {
+                data.playerData = defaultPlayerData;
+                SerializeSaveData(data);
+            }
+
+            return data.playerData;
+        }
+
+        /// <summary>
+        /// Load if player data is per save or global.
+        /// </summary>
+        /// <returns>True if player data is per save, false if global</returns>
+        public static bool LoadIsPlayerDataPerSave()
+        {
+            Save data = UnserializeSaveData();
+            return data.isPlayerDataPerSave;
+        }
+
+        /// <summary>
         /// Get slot data by ID and slot name.
         /// </summary>
         /// <param name="ID">Car save ID</param>
         /// <param name="slot">Slot name</param>
         /// <returns>SlotData if exists, otherwise null</returns>
-        internal static SlotData GetSlotData(int ID, string slot)
+        public static SlotData GetSlotData(int ID, string slot)
 		{
 			Save data = UnserializeSaveData();
 
@@ -794,7 +838,7 @@ namespace MultiTool.Utilities
         /// </summary>
         /// <param name="ID">Engine save ID</param>
         /// <returns>EngineTuning if exists, otherwise null</returns>
-        internal static EngineTuning GetEngineTuning(int ID)
+        public static EngineTuning GetEngineTuning(int ID)
         {
             Save data = UnserializeSaveData();
 
@@ -806,7 +850,7 @@ namespace MultiTool.Utilities
         /// </summary>
         /// <param name="ID">Vehicle save ID</param>
         /// <returns>TransmissionTuning if exists, otherwise null</returns>
-        internal static TransmissionTuning GetTransmissionTuning(int ID)
+        public static TransmissionTuning GetTransmissionTuning(int ID)
         {
             Save data = UnserializeSaveData();
 
@@ -818,11 +862,91 @@ namespace MultiTool.Utilities
         /// </summary>
         /// <param name="ID">Vehicle save ID</param>
         /// <returns>VehicleTuning if exists, otherwise null</returns>
-        internal static VehicleTuning GetVehicleTuning(int ID)
+        public static VehicleTuning GetVehicleTuning(int ID)
         {
             Save data = UnserializeSaveData();
 
             return data.vehicleTuning?.Where(e => e.ID == ID).FirstOrDefault()?.tuning;
+        }
+
+        /// <summary>
+        /// Write the global save data to the JSON file.
+        /// </summary>
+        private static void WriteGlobalData()
+        {
+            try
+            {
+                MemoryStream ms = new MemoryStream();
+                DataContractJsonSerializer jsonSerializer = new DataContractJsonSerializer(typeof(GlobalSave));
+                jsonSerializer.WriteObject(ms, _globalData);
+                using (FileStream file = new FileStream(Path.Combine(ModLoader.GetModConfigFolder(MultiTool.mod), "globalData.json"), FileMode.Create, FileAccess.Write))
+                {
+                    ms.WriteTo(file);
+                    ms.Dispose();
+                }
+
+            }
+            catch (Exception ex)
+            {
+                Logger.Log($"Config write error: {ex}", Logger.LogLevel.Error);
+            }
+        }
+
+        /// <summary>
+        /// Read the global save data from the JSON file.
+        /// </summary>
+        private static void ReadGlobalData()
+        {
+            // Attempt to load the config file.
+            try
+            {
+                // Config already loaded, return early.
+                if (_globalData == new GlobalSave()) return;
+                if (_globalData == null)
+                    _globalData = new GlobalSave();
+
+                string dataPath = Path.Combine(ModLoader.GetModConfigFolder(MultiTool.mod), "GlobalData.json");
+                if (File.Exists(dataPath))
+                {
+                    string json = File.ReadAllText(dataPath);
+                    MemoryStream ms = new MemoryStream(Encoding.UTF8.GetBytes(json));
+                    DataContractJsonSerializer jsonSerializer = new DataContractJsonSerializer(typeof(GlobalSave));
+                    _globalData = jsonSerializer.ReadObject(ms) as GlobalSave;
+                    ms.Close();
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.Log($"Error loading config file: {ex}", Logger.LogLevel.Error);
+            }
+        }
+
+        /// <summary>
+        /// Update global player data. 
+        /// </summary>
+        /// <param name="playerData">New global player data.</param>
+        public static void UpdateGlobalPlayerData(PlayerData playerData)
+        {
+            _globalData.playerData = playerData;
+            WriteGlobalData();
+        }
+
+        /// <summary>
+        /// Load global player data.
+        /// </summary>
+        /// <param name="defaultPlayerData">Default player data to set if saved is null </param>
+        /// <returns>Loaded global player data or default if it isn't saved</returns>
+        public static PlayerData LoadGlobalPlayerData(PlayerData defaultPlayerData)
+        {
+            ReadGlobalData();
+
+            if (_globalData.playerData == null)
+            {
+                _globalData.playerData = defaultPlayerData;
+                WriteGlobalData();
+            }
+
+            return _globalData.playerData;
         }
     }
 }

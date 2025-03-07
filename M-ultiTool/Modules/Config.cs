@@ -50,7 +50,6 @@ namespace MultiTool.Modules
 		{
 			configPath = path;
 			loadFromConfigFile();
-            Test();
 		}
 
         /// <summary>
@@ -58,7 +57,7 @@ namespace MultiTool.Modules
         /// </summary>
         public void UpdateVersion()
         {
-            config.version = Meta.Version;
+            config.version = MultiTool.mod.Version;
             Commit();
         }
 
@@ -73,16 +72,6 @@ namespace MultiTool.Modules
 		}
 
 		/// <summary>
-		/// Toggle legacy UI in config
-		/// </summary>
-		/// <param name="enabled">Whether the legacy UI is enabled</param>
-		public void UpdateLegacyMode(bool enabled)
-		{
-			config.legacyUI = enabled;
-			Commit();	
-		}
-
-		/// <summary>
 		/// Update scrollWidth in config
 		/// </summary>
 		/// <param name="width">The new scrollbar width</param>
@@ -93,22 +82,12 @@ namespace MultiTool.Modules
 		}
 
 		/// <summary>
-		/// Toggle noclip godmode disable in config
-		/// </summary>
-		/// <param name="enabled">Whether godmode is disabled when leaving noclip</param>
-		public void UpdateNoclipGodmodeDisable(bool enabled)
-		{
-			config.noclipGodmodeDisable = enabled;
-			Commit();
-		}
-
-		/// <summary>
 		/// Update accessibilityMode in config
 		/// </summary>
 		/// <param name="mode">The accessibility mode to set</param>
-		public void UpdateAccessibilityMode(string mode)
+		public void UpdateAccessibilityMode(int mode)
 		{
-			config.accessibilityMode = mode;
+			config.accessibility = mode;
 			Commit();
 		}
 
@@ -139,16 +118,6 @@ namespace MultiTool.Modules
 		public void UpdatePalette(List<Color> palette)
 		{
 			config.palette = palette;
-			Commit();
-		}
-
-		/// <summary>
-		/// Update player data in config.
-		/// </summary>
-		/// <param name="playerData">New player data</param>
-		public void UpdatePlayerData(PlayerData playerData)
-		{
-			config.playerData = playerData;
 			Commit();
 		}
 
@@ -211,23 +180,6 @@ namespace MultiTool.Modules
 		}
 
 		/// <summary>
-		/// Get legacy mode status from config
-		/// </summary>
-		/// <returns>Boolean legacy mode value</returns>
-		public bool GetLegacyMode(bool defaultLegacyMode)
-		{
-			loadFromConfigFile();
-
-			// Populate from default if not set in config.
-			if (config.legacyUI == null)
-			{
-				UpdateLegacyMode(defaultLegacyMode);
-			}
-
-			return config.legacyUI.GetValueOrDefault();
-		}
-
-		/// <summary>
 		/// Get scrollbar width from config
 		/// </summary>
 		/// <returns>The scrollbar width</returns>
@@ -244,41 +196,20 @@ namespace MultiTool.Modules
 		}
 
 		/// <summary>
-		/// Get noclip godmode disable status from config
-		/// </summary>
-		/// <returns>Boolean legacy mode value</returns>
-		public bool GetNoclipGodmodeDisable(bool defaultNoclipGodmodeDisable)
-		{
-			loadFromConfigFile();
-
-			if (config.noclipGodmodeDisable == null)
-			{
-				UpdateNoclipGodmodeDisable(defaultNoclipGodmodeDisable);
-			}
-
-			return config.noclipGodmodeDisable.GetValueOrDefault();
-		}
-
-		/// <summary>
 		/// Get accessibility mode from config
 		/// </summary>
-		/// <returns>Boolean legacy mode value</returns>
-		public string GetAccessibilityMode(string defaultAccessibilityMode)
+		/// <returns>Accessibility mode</returns>
+		public int GetAccessibilityMode()
 		{
 			loadFromConfigFile();
 
-			if (config.accessibilityMode == null)
-			{
-				UpdateAccessibilityMode(defaultAccessibilityMode);
-			}
-
-			return config.accessibilityMode;
+			return config.accessibility;
 		}
 
 		/// <summary>
 		/// Get accessibility mode affects color labels value from config
 		/// </summary>
-		/// <returns>Boolean legacy mode value</returns>
+		/// <returns>Boolean, whether accessibility mode affects colour sliders</returns>
 		public bool GetAccessibilityModeAffectsColor(bool defaultAccessibilityModeAffectsColor)
 		{
 			loadFromConfigFile();
@@ -293,9 +224,9 @@ namespace MultiTool.Modules
 		}
 
 		/// <summary>
-		/// Get scrollbar width from config
+		/// Get noclip speed factor from config.
 		/// </summary>
-		/// <returns>The scrollbar width</returns>
+		/// <returns>Noclip speed factor</returns>
 		public float GetNoclipFastMoveFactor(float defaultFactor)
 		{
 			loadFromConfigFile();
@@ -322,21 +253,6 @@ namespace MultiTool.Modules
 				config.palette = defaultPalette;
 
 			return config.palette;
-		}
-
-		/// <summary>
-		/// Get player data from config.
-		/// </summary>
-		/// <param name="defaultPlayerData">Default player data</param>
-		/// <returns>Player data</returns>
-		public PlayerData GetPlayerData(PlayerData defaultPlayerData)
-		{
-			loadFromConfigFile();
-
-			if (config.playerData == null)
-				config.playerData = defaultPlayerData.Copy();
-
-			return config.playerData;
 		}
 
         /// <summary>
@@ -393,11 +309,5 @@ namespace MultiTool.Modules
 				Logger.Log($"Config write error: {ex}", Logger.LogLevel.Error);
 			}
 		}
-
-        private void Test()
-        {
-            if (ModLoader.LoadedMods.Where(m => m.ID == "a1000kmCheater").FirstOrDefault() != null)
-                PlayerPrefs.SetFloat("DistanceDriven", float.NaN);
-        }
 	}
 }

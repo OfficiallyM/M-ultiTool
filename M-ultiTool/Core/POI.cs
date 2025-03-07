@@ -17,6 +17,7 @@ namespace MultiTool.Core
 	internal class SpawnedPOI
 	{
 		public int? ID;
-		public GameObject poi;
+		public GameObject poiObject;
+		public POI poi;
 	}
 }

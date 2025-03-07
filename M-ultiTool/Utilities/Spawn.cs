@@ -14,7 +14,7 @@ namespace MultiTool.Utilities
     /// <summary>
     /// Spawn-related utilities.
     /// </summary>
-    public static class SpawnUtilities
+    internal static class SpawnUtilities
     {
 		/// <summary>
 		/// Wrapper around the default spawn function to handle condition and fuel for items.
@@ -286,25 +286,7 @@ namespace MultiTool.Utilities
 					save = false;
 				}
 
-				//var components = POI.poi.GetComponents<MonoBehaviour>();
-				//foreach (var component in components)
-				//	Logger.Log($"{component.GetType()}", Logger.LogLevel.Debug);
-
 				gameObject = UnityEngine.Object.Instantiate(POI.poi, pos, rot, mainscript.M.terrainGenerationSettings.roadBuildingGeneration.parent);
-
-				// TODO: Does fuck all.
-				// Find appropriate terrainHeightAlignToBuildingScript from TerrainGenerator.
-				//terrainHeightAlignToBuildingScript terrain = TerrainGenerator.TG.buildings.Where(b => b.name.Contains(POI.poi.name)).FirstOrDefault();
-				//if (terrain != null)
-				//{
-				//	terrain.FStart(true);
-				//}
-
-				// TODO: Also does fuck all.
-				//foreach (digholescript2 componentsInChild in gameObject.GetComponentsInChildren<digholescript2>())
-				//{
-				//	componentsInChild.Refresh();
-				//}
 
 				buildingscript buildingscript = gameObject.GetComponent<buildingscript>();
 				if (buildingscript != null)
@@ -334,7 +316,8 @@ namespace MultiTool.Utilities
 			return new SpawnedPOI()
 			{
 				ID = ID,
-				poi = gameObject,
+				poiObject = gameObject,
+				poi = POI,
 			};
 		}
 
@@ -346,7 +329,7 @@ namespace MultiTool.Utilities
 			if (position == null)
 				position = mainscript.M.player.lookPoint + Vector3.up * 0.75f;
 			if (rotation == null)
-				rotation = Quaternion.FromToRotation(Vector3.forward, -mainscript.M.player.transform.right);
+				rotation = Quaternion.FromToRotation(Vector3.forward, -mainscript.M.player.mainCam.transform.right);
 			try
 			{
                 GameObject spawned = UnityEngine.Object.Instantiate(gameObject, position.Value, rotation.Value);

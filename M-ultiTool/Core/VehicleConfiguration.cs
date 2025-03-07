@@ -48,29 +48,29 @@ namespace MultiTool.Core
         }
     }
 
-    internal class LightGroup
-    {
-        internal string name;
-        internal List<headlightscript> headlights;
-        internal bool isInteriorLight;
+	internal class LightGroup
+	{
+		internal string name;
+		internal List<headlightscript> headlights;
+		internal bool isInteriorLight;
 
-        internal static LightGroup Create(string _name, List<headlightscript> _headlights = null, bool _isInteriorLight = false)
-        {
-            return new LightGroup()
-            {
-                name = _name,
-                headlights = _headlights,
-                isInteriorLight = _isInteriorLight
-            };
-        }
+		internal static LightGroup Create(string _name, List<headlightscript> _headlights = null, bool _isInteriorLight = false)
+		{
+			return new LightGroup()
+			{
+				name = _name,
+				headlights = _headlights,
+				isInteriorLight = _isInteriorLight
+			};
+		}
 
-        internal static LightGroup Create(string _name, headlightscript _headlight, bool _isInteriorLight = false)
-        {
-            return Create(_name, new List<headlightscript>() { _headlight }, _isInteriorLight);
-        }
-    }
+		internal static LightGroup Create(string _name, headlightscript _headlight, bool _isInteriorLight = false)
+		{
+			return Create(_name, new List<headlightscript>() { _headlight }, _isInteriorLight);
+		}
+	}
 
-    [DataContract]
+	[DataContract]
     internal class TorqueCurve
     {
         [DataMember] internal float torque;

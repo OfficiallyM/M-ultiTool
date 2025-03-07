@@ -4,8 +4,6 @@ using MultiTool.Modules;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using UnityEngine;
 using Logger = MultiTool.Modules.Logger;
 
@@ -14,7 +12,7 @@ namespace MultiTool.Utilities
 	/// <summary>
 	/// Game interaction utilities.
 	/// </summary>
-	public static class GameUtilities
+	internal static class GameUtilities
 	{
 		/// <summary>
 		/// Check if an object is a vehicle.
@@ -102,9 +100,12 @@ namespace MultiTool.Utilities
 
 			foreach (partconditionscript part in parts)
 			{
-				if (!part.IsPaintable()) continue;
+                if (!part.IsPaintable())
+                {
+                    continue;
+                }
 
-				part.Refresh(part.state, c);
+                part.Refresh(part.state, c);
 			}
 		}
 
@@ -189,7 +190,7 @@ namespace MultiTool.Utilities
 		}
 
 		/// <summary>
-		/// Find all child parts recursively with tosaveitemscript.
+		/// Find all child parts recursively with partconditionscript.childs.
 		/// </summary>
 		/// <param name="root">Root part</param>
 		/// <param name="children">Child partconditionscript passed by reference</param>
@@ -197,17 +198,16 @@ namespace MultiTool.Utilities
 		{
 			if (!children.Contains(root)) children.Add(root);
 
-			tosaveitemscript tosave = root.GetComponent<tosaveitemscript>();
-			if (tosave == null || tosave.partslotscripts == null) return;
+            foreach (var child in root.childs)
+            {
+                if (!child.CanPaint()) continue;
 
-			foreach (partslotscript slot in tosave.partslotscripts)
-			{
-				if (slot.part == null || slot.part.condition == null)
-					continue;
-
-				children.Add(slot.part.condition);
-				FindPartChildren(slot.part.condition, ref children);
-			}
+                if (!children.Contains(child))
+                {
+                    children.Add(child);
+                    FindPartChildren(child, ref children);
+                }
+            }
 		}
 
 		/// <summary>
@@ -344,78 +344,78 @@ namespace MultiTool.Utilities
             }
         }
 
-        /// <summary>
-        /// Set headlight color.
-        /// </summary>
-        /// <param name="headlight">Headlight to set color of</param>
-        /// <param name="color">Color to set</param>
-        /// <param name="isInteriorLight">True if light is an interior light, false if it's a standard headlight</param>
-        public static void SetHeadlightColor(headlightscript headlight, Color color, bool isInteriorLight = false)
-        {
-            Color offColor = color.ChangeBrightness(-0.1f);
-            Color brightColor = color.ChangeBrightness(0.1f);
+		/// <summary>
+		/// Set headlight color.
+		/// </summary>
+		/// <param name="headlight">Headlight to set color of</param>
+		/// <param name="color">Color to set</param>
+		/// <param name="isInteriorLight">True if light is an interior light, false if it's a standard headlight</param>
+		public static void SetHeadlightColor(headlightscript headlight, Color color, bool isInteriorLight = false)
+		{
+			Color offColor = color.ChangeBrightness(-0.1f);
+			Color brightColor = color.ChangeBrightness(0.1f);
 
-            headlight.MOFF = new Material(headlight.MOFF)
-            {
-                color = offColor
-            };
-            for (int stateIndex = 0; stateIndex < headlight.states.Count; stateIndex++)
-            {
-                headlightscript.lightState state = headlight.states[stateIndex];
-                if (isInteriorLight)
-                {
-                    SetHeadlightStateColor(state, color);
-                }
-                else
-                {
-                    switch (stateIndex)
-                    {
-                        case 0:
-                            SetHeadlightStateColor(state, offColor);
-                            break;
-                        case 2:
-                            SetHeadlightStateColor(state, brightColor);
-                            break;
-                        default:
-                            SetHeadlightStateColor(state, color);
-                            break;
-                    }
-                }
-            }
-            headlight.RefreshLights();
-        }
+			headlight.MOFF = new Material(headlight.MOFF)
+			{
+				color = offColor
+			};
+			for (int stateIndex = 0; stateIndex < headlight.states.Count; stateIndex++)
+			{
+				headlightscript.lightState state = headlight.states[stateIndex];
+				if (isInteriorLight)
+				{
+					SetHeadlightStateColor(state, color);
+				}
+				else
+				{
+					switch (stateIndex)
+					{
+						case 0:
+							SetHeadlightStateColor(state, offColor);
+							break;
+						case 2:
+							SetHeadlightStateColor(state, brightColor);
+							break;
+						default:
+							SetHeadlightStateColor(state, color);
+							break;
+					}
+				}
+			}
+			headlight.RefreshLights();
+		}
 
-        /// <summary>
-        /// Set headlight state color.
-        /// </summary>
-        /// <param name="state">Headlight state to update</param>
-        /// <param name="color">Color to set</param>
-        public static void SetHeadlightStateColor(headlightscript.lightState state, Color color)
-        {
-            if (state.L != null)
-                state.L.color = color;
+		/// <summary>
+		/// Set headlight state color.
+		/// </summary>
+		/// <param name="state">Headlight state to update</param>
+		/// <param name="color">Color to set</param>
+		public static void SetHeadlightStateColor(headlightscript.lightState state, Color color)
+		{
+			if (state.L != null)
+				state.L.color = color;
 
-            if (state.M != null)
-            {
-                state.M = new Material(state.M)
-                {
-                    color = color
-                };
-                state.M.SetColor("_EmissionColor", color);
-            }
+			if (state.M != null)
+			{
+				state.M = new Material(state.M)
+				{
+					color = color
+				};
+				state.M.SetColor("_EmissionColor", color);
+			}
 
-            foreach (Light l in state.Ls)
-            {
-                l.color = color;
-            }
-        }
+			foreach (Light l in state.Ls)
+			{
+				l.color = color;
+			}
+		}
 
-        /// <summary>
-        /// Apply engine tuning.
-        /// </summary>
-        /// <param name="engine">Engine to tune</param>
-        /// <param name="engineTuning">Tuning settings</param>
-        internal static void ApplyEngineTuning(enginescript engine, EngineTuning engineTuning)
+		/// <summary>
+		/// Apply engine tuning.
+		/// </summary>
+		/// <param name="engine">Engine to tune</param>
+		/// <param name="engineTuning">Tuning settings</param>
+		internal static void ApplyEngineTuning(enginescript engine, EngineTuning engineTuning)
         {
             engine.rpmChangeModifier = engineTuning.rpmChangeModifier;
             engine.startChance = engineTuning.startChance;
@@ -437,20 +437,61 @@ namespace MultiTool.Utilities
             foreach (Fluid fluid in engineTuning.consumption)
                 engine.FuelConsumption.fluids.Add(new mainscript.fluid() { type = fluid.type, amount = fluid.amount });
 
-            // Remove existing torque curve.
-            for (int torqueKey = 0; torqueKey < engine.torqueCurve.length; torqueKey++)
-                engine.torqueCurve.RemoveKey(torqueKey);
-
-            // Apply new torque curve, find new maxRpm and maxNm.
-            engineTuning.torqueCurve = engineTuning.torqueCurve.OrderBy(t => t.rpm).ToList();
-            engine.maxRpm = engineTuning.torqueCurve.Last().rpm;
-            float maxNm = 0;
-            foreach (TorqueCurve torqueCurve in engineTuning.torqueCurve)
+            // Ensure engine torque curve count matches the new count.
+            List<Keyframe> curve = engine.torqueCurve.keys.ToList();
+            if (engineTuning.torqueCurve.Count > curve.Count)
             {
+                int diff = engineTuning.torqueCurve.Count - curve.Count;
+
+                // Copy the second key as the first and last will often have different internal values.
+                Keyframe copy = curve[1];
+
+                // Add new keyframes to reach the desired count.
+                for (int i = 0; i < diff; i++)
+                    curve.Insert(curve.Count - 2, copy);
+            }
+            else if (engineTuning.torqueCurve.Count < curve.Count)
+            {
+                int diff = curve.Count - engineTuning.torqueCurve.Count;
+
+                // Store and remove the last key to add it back on later.
+                Keyframe last = curve[curve.Count - 1];
+                curve.Remove(last);
+
+                // Remove keyframes to reach the desired count.
+                for (int i = 0; i < diff; i++)
+                    curve.RemoveAt(curve.Count - 1);
+
+                // Add the last keyframe back to the end.
+                curve.Add(last);
+                engine.torqueCurve.keys = curve.ToArray();
+            }
+
+            // Set new torque curve, find new maxRpm and maxNm.
+            float maxRpm = 0;
+            float maxNm = 0;
+            for (int i = 0; i < curve.Count; i++)
+            {
+                TorqueCurve torqueCurve = engineTuning.torqueCurve[i];
+                Keyframe frame = curve[i];
+
+                // Find new maxNm.
                 if (torqueCurve.torque > maxNm)
                     maxNm = torqueCurve.torque;
-                engine.torqueCurve.AddKey(torqueCurve.torque, torqueCurve.rpm);
+
+                // Find new maxRpm.
+                if (torqueCurve.rpm > maxRpm)
+                    maxRpm = torqueCurve.rpm;
+
+                // Set the new curve values.
+                frame.value = torqueCurve.torque;
+                frame.time = torqueCurve.rpm;
+                curve[i] = frame;
             }
+
+            // Apply the new values.
+            engine.torqueCurve = new AnimationCurve(curve.ToArray());
+            engine.maxRpm = maxRpm;
             engine.maxNm = maxNm;
         }
 
@@ -507,5 +548,58 @@ namespace MultiTool.Utilities
 		{
 			return new Vector3((float)-(-mainscript.M.mainWorld.coord.x - globalPos.x), (float)-(-mainscript.M.mainWorld.coord.y - globalPos.y), (float)-(-mainscript.M.mainWorld.coord.z - globalPos.z));
 		}
+
+		// The following teleport methods are shamelessly stolen from beta v2024.11.26b_test.
+		public static void TeleportPlayer(Vector3 _upos) => TeleportPlayer(_upos, mainscript.M.player.Tb.eulerAngles);
+		public static void TeleportPlayer(Vector3 _upos, Vector3 _rot)
+		{
+			mainscript.M.player.transform.position = _upos;
+			mainscript.M.player.Tb.eulerAngles = new Vector3(0.0f, _rot.y, 0.0f);
+		}
+		public static void TeleportPlayerWithParent(Vector3 _upos) => mainscript.M.player.transform.root.position += _upos - mainscript.M.player.transform.position;
+
+		// TODO: Rewrite for stable.
+		//public static poiGenScript.poiClass FindNearestBuilding(Vector3 position, int skip = 0)
+		//{
+		//	// Find all generated buildings.
+		//	List<poiGenScript.poiClass> buildings = new List<poiGenScript.poiClass>();
+
+		//	for (int index = 0; index < menuhandler.s.currentMainMap.poiGens.Count; index++)
+		//	{
+		//		foreach (KeyValuePair<Vector3d, poiGenScript.chunkClass> chunk in menuhandler.s.currentMainMap.poiGens[index].chunks)
+		//		{
+		//			foreach (KeyValuePair<Vector3d, poiGenScript.poiClass> poi in chunk.Value.pois)
+		//			{
+		//				buildings.Add(poi.Value);
+		//			}
+		//		}
+		//	}
+
+		//	// Have 100 attempts to find the closest valid building.
+		//	poiGenScript.poiClass closestBuilding = null;
+		//	for (int attempt = 0; attempt < 100; attempt++)
+		//	{
+		//		closestBuilding = poiGenScript.NearestPoi(mainscript.GlobalFromUnityPos(position), buildings);
+		//		bool valid = closestBuilding != null && closestBuilding.pobj != null && !closestBuilding.poiName.ToLower().Contains("haz02");
+		//		if (valid && skip > 0)
+		//		{
+		//			// Building valid but skip is set, ignore.
+		//			skip--;
+		//			buildings.Remove(closestBuilding);
+		//		}
+		//		else if (valid)
+		//		{
+		//			// Found a valid building, no skip needed, break.
+		//			break;
+		//		}
+		//		else
+		//		{
+		//			// Continue the loop but remove the invalid building we've just checked.
+		//			buildings.Remove(closestBuilding);
+		//		}
+		//	}
+
+		//	return closestBuilding;
+		//}
 	}
 }

@@ -1,10 +1,13 @@
 ﻿using MultiTool.Core;
+using MultiTool.Extensions;
 using MultiTool.Modules;
 using MultiTool.Utilities;
+using MultiTool.Utilities.UI;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using static MultiTool.Core.Item;
 using Logger = MultiTool.Modules.Logger;
 
 namespace MultiTool.Tabs
@@ -12,90 +15,147 @@ namespace MultiTool.Tabs
 	internal class POIsTab : Tab
 	{
 		public override string Name => "POIs";
+		public override bool HasConfigPane => true;
+		public override string ConfigTitle => "POI spawn history";
 
-		private Vector2 poiScrollPosition;
-		private bool poiSpawnItems = true;
-		public override void RenderTab(Dimensions dimensions)
+		private Vector2 _poiScrollPosition;
+		private Vector2 _configScrollPosition;
+		private bool _poiSpawnItems = true;
+
+		private List<SpawnedPOI> _spawnedPOIs = new List<SpawnedPOI>();
+
+		// Main tab variables.
+		private Rect _dimensions;
+		private string _search = string.Empty;
+		private string _lastSearch = string.Empty;
+		private float _lastWidth = 0;
+		private List<List<POI>> _poisChunked = new List<List<POI>>();
+		private bool _rechunk = false;
+
+		public override void OnRegister()
 		{
-			GUI.skin.button.wordWrap = true;
+			_spawnedPOIs = SaveUtilities.LoadPOIs();
+		}
 
-			float itemWidth = 140f;
-			float thumbnailHeight = 90f;
-			float textHeight = 40f;
-			float itemHeight = thumbnailHeight + textHeight;
-			float initialRowX = dimensions.x + 10f;
-			float itemX = initialRowX;
-			float itemY = 0f;
-
-			float searchHeight = 20f;
-
-			int maxRowItems = Mathf.FloorToInt(dimensions.width / (itemWidth + 10f));
-			int columnCount = (int)Math.Ceiling((double)GUIRenderer.POIs.Count / maxRowItems);
-			float scrollHeight = (itemHeight + 10f) * (columnCount + 1);
-
-			// Search field.
-			GUI.Label(new Rect(dimensions.x + 10f, dimensions.y + 10f, 60f, searchHeight), "Search:", GUIRenderer.labelStyle);
-			GUIRenderer.search = GUI.TextField(new Rect(dimensions.x + 70f, dimensions.y + 10f, dimensions.width * 0.25f, searchHeight), GUIRenderer.search, GUIRenderer.labelStyle);
-			if (GUI.Button(new Rect(dimensions.x + 60f + dimensions.width * 0.25f + 10f, dimensions.y + 10f, 100f, searchHeight), "Reset"))
-				GUIRenderer.search = String.Empty;
-
-
-			if (GUI.Button(new Rect(dimensions.x + dimensions.width - 320f, dimensions.y + 10f, 200f, searchHeight), "Delete last building"))
+		public override void Update()
+		{
+			List<POI> pois = GUIRenderer.POIs;
+			if (_search != _lastSearch)
 			{
-				if (GUIRenderer.spawnedPOIs.Count > 0)
-				{
-					try
-					{
-						SpawnedPOI poi = GUIRenderer.spawnedPOIs.Last();
-
-						// Remove POI from save.
-						if (poi.ID != null)
-							SaveUtilities.UpdatePOISaveData(new POIData()
-							{
-								ID = poi.ID.Value,
-							}, "delete");
-
-						GUIRenderer.spawnedPOIs.Remove(poi);
-						GameObject.Destroy(poi.poi);
-					}
-					catch (Exception ex)
-					{
-						Logger.Log($"Error deleting POI - {ex}", Logger.LogLevel.Error);
-					}
-				}
+				pois = GUIRenderer.POIs.Where(v => v.name.ToLower().Contains(_search.ToLower()) || v.poi.name.ToLower().Contains(_search.ToLower())).ToList();
+				_rechunk = true;
+				_lastSearch = _search;
+				_poiScrollPosition = new Vector2(0, 0);
 			}
 
-			if (GUI.Button(new Rect(dimensions.x + dimensions.width - 100f - 10f, dimensions.y + 10f, 100f, searchHeight), GUIRenderer.GetAccessibleString("Spawn items", poiSpawnItems)))
-				poiSpawnItems = !poiSpawnItems;
-
-			// Filter POI list by search term.
-			List<POI> searchPOIs = GUIRenderer.POIs;
-			if (GUIRenderer.search != String.Empty)
-				searchPOIs = GUIRenderer.POIs.Where(p => p.name.ToLower().Contains(GUIRenderer.search.ToLower()) || p.poi.name.ToLower().Contains(GUIRenderer.search.ToLower())).ToList();
-
-			columnCount = (int)Math.Ceiling((double)GUIRenderer.POIs.Count / maxRowItems);
-
-			scrollHeight = (itemHeight + 10f) * (columnCount + 1);
-			poiScrollPosition = GUI.BeginScrollView(new Rect(dimensions.x, dimensions.y + 10f + searchHeight, dimensions.width, dimensions.height - 10f - searchHeight), poiScrollPosition, new Rect(dimensions.x, dimensions.y, dimensions.width, scrollHeight - 10f - searchHeight), new GUIStyle(), GUI.skin.verticalScrollbar);
-			for (int i = 0; i < searchPOIs.Count(); i++)
+			if (_lastWidth != _dimensions.width || _rechunk)
 			{
-				POI currentPOI = searchPOIs[i];
-				itemX += itemWidth + 10f;
-				if (i % maxRowItems == 0)
-				{
-					itemX = initialRowX;
-					itemY += itemHeight + 10f;
-				}
-				if (GUI.Button(new Rect(itemX, itemY, itemWidth, itemHeight), String.Empty) ||
-				GUI.Button(new Rect(itemX, itemY, itemWidth, thumbnailHeight), currentPOI.thumbnail) ||
-				GUI.Button(new Rect(itemX, itemY + thumbnailHeight, itemWidth, textHeight), currentPOI.name))
-				{
-					SpawnedPOI spawnedPOI = SpawnUtilities.Spawn(currentPOI, poiSpawnItems);
-					if (spawnedPOI != null)
-						GUIRenderer.spawnedPOIs.Add(spawnedPOI);
-				}
+				int rowLength = Mathf.FloorToInt(_dimensions.width / 150f);
+				_poisChunked = pois.ChunkBy(rowLength);
+				_lastWidth = _dimensions.width;
+
+				_rechunk = false;
 			}
-			GUI.EndScrollView();
+		}
+
+		public override void RenderTab(Rect dimensions)
+		{
+			_dimensions = dimensions;
+
+			GUILayout.BeginArea(dimensions);
+			GUILayout.BeginVertical();
+			GUILayout.BeginHorizontal();
+			GUILayout.Label("Search:", GUILayout.MaxWidth(50));
+			GUILayout.Space(5);
+			_search = GUILayout.TextField(_search, GUILayout.MaxWidth(500));
+			GUILayout.Space(5);
+			if (GUILayout.Button("Reset", GUILayout.MaxWidth(70)))
+			{
+				_search = string.Empty;
+				_lastSearch = string.Empty;
+				_rechunk = true;
+			}
+
+			GUILayout.FlexibleSpace();
+
+			if (GUILayout.Button(Accessibility.GetAccessibleString("Spawn items", _poiSpawnItems), GUILayout.MaxWidth(100)))
+				_poiSpawnItems = !_poiSpawnItems;
+			GUILayout.EndHorizontal();
+			GUILayout.Space(10);
+
+			_poiScrollPosition = GUILayout.BeginScrollView(_poiScrollPosition);
+			foreach (List<POI> poisRow in _poisChunked)
+			{
+				GUILayout.BeginHorizontal();
+				foreach (POI poi in poisRow)
+				{
+					GUILayout.Box("", "button", GUILayout.Width(140), GUILayout.Height(140));
+					Rect boxRect = GUILayoutUtility.GetLastRect();
+					bool buttonImage = GUI.Button(new Rect(boxRect.x + 10f, boxRect.y - 10f, boxRect.width - 20f, boxRect.height - 20f), poi.thumbnail, "ButtonTransparent");
+					bool buttonText = GUI.Button(new Rect(boxRect.x, boxRect.y + (boxRect.height / 2), boxRect.width, boxRect.height / 2), poi.name, "ButtonTransparent");
+					if (buttonImage || buttonText)
+					{
+						SpawnedPOI spawnedPOI = SpawnUtilities.Spawn(poi, _poiSpawnItems);
+						if (spawnedPOI != null)
+							_spawnedPOIs.Add(spawnedPOI);
+					}
+					GUILayout.Space(5);
+				}
+				GUILayout.EndHorizontal();
+				GUILayout.Space(5);
+			}
+			GUILayout.EndScrollView();
+			GUILayout.EndVertical();
+			GUILayout.EndArea();
+		}
+
+		public override void RenderConfigPane(Rect dimensions)
+		{
+			GUILayout.BeginArea(dimensions);
+			GUILayout.BeginVertical();
+			_configScrollPosition = GUILayout.BeginScrollView(_configScrollPosition);
+
+			if (_spawnedPOIs.Count == 0)
+			{
+				GUILayout.BeginHorizontal();
+				GUILayout.FlexibleSpace();
+				GUILayout.Label("Nothing has been spawned yet");
+				GUILayout.FlexibleSpace();
+				GUILayout.EndHorizontal();
+			}
+
+
+			foreach (SpawnedPOI poi in _spawnedPOIs)
+			{
+				GUILayout.Label(poi.poi.name);
+				GUILayout.Space(2);
+				GUILayout.BeginHorizontal();
+				if (GUILayout.Button("Teleport to", GUILayout.MaxWidth(100)))
+					GameUtilities.TeleportPlayerWithParent(poi.poiObject.transform.position + Vector3.up * 2f);
+
+				GUILayout.Space(5);
+
+				if (GUILayout.Button("Delete POI", GUILayout.MaxWidth(100)))
+				{
+					// Remove POI from save.
+					if (poi.ID != null)
+						SaveUtilities.UpdatePOISaveData(new POIData()
+						{
+							ID = poi.ID.Value,
+						}, "delete");
+
+					_spawnedPOIs.Remove(poi);
+					GameObject.Destroy(poi.poiObject);
+					break;
+				}
+
+				GUILayout.EndHorizontal();
+				GUILayout.Space(10);
+			}
+
+			GUILayout.EndScrollView();
+			GUILayout.EndVertical();
+			GUILayout.EndArea();
 		}
 	}
 }

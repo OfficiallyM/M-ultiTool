@@ -12,7 +12,7 @@ namespace MultiTool.Utilities
 	/// <summary>
 	/// Object interaction utilities.
 	/// </summary>
-	public static class ObjectUtilities
+	internal static class ObjectUtilities
 	{
 		/// <summary>
 		/// Show colliders for a given GameObject.
