@@ -195,8 +195,8 @@ namespace MultiTool.Modules
 
 		internal void OnGUI()
 		{
-            Styling.CreateStyling();
-            GUI.skin = Styling.Skin;
+            Styling.Bootstrap();
+            GUI.skin = Styling.GetActiveSkin();
 
             // Find screen resolution.
             resolutionX = Screen.width;

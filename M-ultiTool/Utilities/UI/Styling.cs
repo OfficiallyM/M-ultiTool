@@ -1,5 +1,6 @@
 ﻿using MultiTool.Extensions;
 using MultiTool.Modules;
+using System.Runtime.Remoting.Messaging;
 using UnityEngine;
 
 namespace MultiTool.Utilities.UI
@@ -7,8 +8,7 @@ namespace MultiTool.Utilities.UI
     internal static class Styling
     {
         private static bool _hasInitialised = false;
-
-        public static GUISkin Skin;
+        private static GUISkin _skin;
 
         // GUI styles.
         private static GUIStyle _buttonStyle;
@@ -28,35 +28,35 @@ namespace MultiTool.Utilities.UI
         private static Texture2D _blackTranslucentHover;
         private static Texture2D _transparent;
 
-        public static void CreateStyling()
+        public static void Bootstrap()
         {
             if (!_hasInitialised)
             {
-                // Create skin off default to save setting all GUIStyles individually.
-                // Unity doesn't offer a way of doing this so build it manually.
-                Skin = ScriptableObject.CreateInstance<GUISkin>();
-                Skin.name = "M-ultiTool";
-                Skin.box = new GUIStyle(GUI.skin.box);
-                Skin.button = new GUIStyle(GUI.skin.button);
-                Skin.horizontalScrollbar = new GUIStyle(GUI.skin.horizontalScrollbar);
-                Skin.horizontalScrollbarLeftButton = new GUIStyle(GUI.skin.horizontalScrollbarLeftButton);
-                Skin.horizontalScrollbarRightButton = new GUIStyle(GUI.skin.horizontalScrollbarRightButton);
-                Skin.horizontalScrollbarThumb = new GUIStyle(GUI.skin.horizontalScrollbarThumb);
-                Skin.horizontalSlider = new GUIStyle(GUI.skin.horizontalSlider);
-                Skin.horizontalSliderThumb = new GUIStyle(GUI.skin.horizontalSliderThumb);
-                Skin.label = new GUIStyle(GUI.skin.label);
-                Skin.scrollView = new GUIStyle(GUI.skin.scrollView);
-                Skin.textArea = new GUIStyle(GUI.skin.textArea);
-                Skin.textField = new GUIStyle(GUI.skin.textField);
-                Skin.toggle = new GUIStyle(GUI.skin.toggle);
-                Skin.verticalScrollbar = new GUIStyle(GUI.skin.verticalScrollbar);
-                Skin.verticalScrollbarDownButton = new GUIStyle(GUI.skin.verticalScrollbarDownButton);
-                Skin.verticalScrollbarThumb = new GUIStyle(GUI.skin.verticalScrollbarThumb);
-                Skin.verticalScrollbarUpButton = new GUIStyle(GUI.skin.verticalScrollbarUpButton);
-                Skin.verticalSlider = new GUIStyle(GUI.skin.verticalSlider);
-                Skin.verticalSliderThumb = new GUIStyle(GUI.skin.verticalSliderThumb);
-                Skin.window = new GUIStyle(GUI.skin.window);
-                Skin.font = GUI.skin.font;
+				// Create skin off default to save setting all GUIStyles individually.
+				// Unity doesn't offer a way of doing this so build it manually.
+				_skin = ScriptableObject.CreateInstance<GUISkin>();
+				_skin.name = "M-ultiTool";
+				_skin.box = new GUIStyle(GUI.skin.box);
+				_skin.button = new GUIStyle(GUI.skin.button);
+				_skin.horizontalScrollbar = new GUIStyle(GUI.skin.horizontalScrollbar);
+                _skin.horizontalScrollbarLeftButton = new GUIStyle(GUI.skin.horizontalScrollbarLeftButton);
+                _skin.horizontalScrollbarRightButton = new GUIStyle(GUI.skin.horizontalScrollbarRightButton);
+                _skin.horizontalScrollbarThumb = new GUIStyle(GUI.skin.horizontalScrollbarThumb);
+                _skin.horizontalSlider = new GUIStyle(GUI.skin.horizontalSlider);
+                _skin.horizontalSliderThumb = new GUIStyle(GUI.skin.horizontalSliderThumb);
+                _skin.label = new GUIStyle(GUI.skin.label);
+                _skin.scrollView = new GUIStyle(GUI.skin.scrollView);
+                _skin.textArea = new GUIStyle(GUI.skin.textArea);
+                _skin.textField = new GUIStyle(GUI.skin.textField);
+                _skin.toggle = new GUIStyle(GUI.skin.toggle);
+                _skin.verticalScrollbar = new GUIStyle(GUI.skin.verticalScrollbar);
+                _skin.verticalScrollbarDownButton = new GUIStyle(GUI.skin.verticalScrollbarDownButton);
+                _skin.verticalScrollbarThumb = new GUIStyle(GUI.skin.verticalScrollbarThumb);
+                _skin.verticalScrollbarUpButton = new GUIStyle(GUI.skin.verticalScrollbarUpButton);
+                _skin.verticalSlider = new GUIStyle(GUI.skin.verticalSlider);
+                _skin.verticalSliderThumb = new GUIStyle(GUI.skin.verticalSliderThumb);
+                _skin.window = new GUIStyle(GUI.skin.window);
+                _skin.font = GUI.skin.font;
 
                 // Create any required textures.
                 _black = GUIExtensions.ColorTexture(1, 1, new Color(0f, 0f, 0f));
@@ -74,13 +74,13 @@ namespace MultiTool.Utilities.UI
                 _transparent = GUIExtensions.ColorTexture(1, 1, new Color(0, 0, 0, 0));
 
                 // Override scrollbar width and height.
-                Skin.verticalScrollbar.fixedWidth = GUIRenderer.scrollWidth;
-                Skin.verticalScrollbarThumb.fixedWidth = GUIRenderer.scrollWidth;
-                Skin.horizontalScrollbar.fixedHeight = GUIRenderer.scrollWidth;
-                Skin.horizontalScrollbarThumb.fixedHeight = GUIRenderer.scrollWidth;
+                _skin.verticalScrollbar.fixedWidth = GUIRenderer.scrollWidth;
+                _skin.verticalScrollbarThumb.fixedWidth = GUIRenderer.scrollWidth;
+                _skin.horizontalScrollbar.fixedHeight = GUIRenderer.scrollWidth;
+                _skin.horizontalScrollbarThumb.fixedHeight = GUIRenderer.scrollWidth;
 
                 // Button styling.
-                _buttonStyle = new GUIStyle(Skin.button);
+                _buttonStyle = new GUIStyle(_skin.button);
                 _buttonStyle.padding = new RectOffset(10, 10, 5, 5);
 
                 GUIStyle buttonPrimary = new GUIStyle(_buttonStyle);
@@ -91,7 +91,7 @@ namespace MultiTool.Utilities.UI
                 buttonPrimary.focused.background = _greyHover;
 
                 // Default to use primary button.
-                Skin.button = buttonPrimary;
+                _skin.button = buttonPrimary;
 
 				GUIStyle buttonPrimaryWrap = new GUIStyle(buttonPrimary);
 				buttonPrimaryWrap.name = "ButtonPrimaryWrap";
@@ -157,11 +157,11 @@ namespace MultiTool.Utilities.UI
                 buttonTransparent.wordWrap = true;
                 buttonTransparent.alignment = TextAnchor.LowerCenter;
 
-                // Box styling.
-                Skin.box.normal.background = _blackTranslucent;
+				// Box styling.
+				_skin.box.normal.background = _blackTranslucent;
 
                 // Label styling.
-                GUIStyle labelHeader = new GUIStyle(Skin.label);
+                GUIStyle labelHeader = new GUIStyle(_skin.label);
                 labelHeader.name = "LabelHeader";
                 labelHeader.alignment = TextAnchor.MiddleLeft;
                 labelHeader.fontSize = 24;
@@ -172,7 +172,7 @@ namespace MultiTool.Utilities.UI
                 labelHeader.focused.textColor = Color.white;
                 labelHeader.wordWrap = true;
 
-				GUIStyle labelMessage = new GUIStyle(Skin.label);
+				GUIStyle labelMessage = new GUIStyle(_skin.label);
 				labelMessage.name = "LabelMessage";
 				labelMessage.alignment = TextAnchor.MiddleCenter;
 				labelMessage.fontSize = 40;
@@ -184,7 +184,7 @@ namespace MultiTool.Utilities.UI
 				labelMessage.wordWrap = true;
 
 				// Add custom styles.
-				Skin.customStyles = new GUIStyle[]
+				_skin.customStyles = new GUIStyle[]
                 {
                     // Buttons.
                     buttonPrimary,
@@ -208,6 +208,8 @@ namespace MultiTool.Utilities.UI
 
                 _hasInitialised = true;
             }
-        }
-    }
+		}
+
+		public static GUISkin GetActiveSkin() => _skin;
+	}
 }
