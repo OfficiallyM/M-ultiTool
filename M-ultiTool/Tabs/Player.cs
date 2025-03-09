@@ -380,7 +380,10 @@ namespace MultiTool.Tabs
 				{
 					GameUtilities.TeleportPlayerWithParent(closestBuilding.transform.position + Vector3.up * 2f);
 					_previousBuildingTeleports.Add(closestBuilding);
+					Notifications.Send("Teleport", $"Teleported to {Translator.T(closestBuilding.name.Replace("(Clone)", string.Empty), "POI")}");
 				}
+				else
+					Notifications.Send("Teleport", "No valid building found to teleport to", Notification.NotificationType.Warning);
 			}
 			GUILayout.Space(10);
 

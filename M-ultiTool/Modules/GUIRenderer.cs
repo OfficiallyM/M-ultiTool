@@ -316,6 +316,7 @@ namespace MultiTool.Modules
 			catch (Exception ex)
 			{
 				Logger.Log($"Error during OnLoad() - {ex}", Logger.LogLevel.Critical);
+				Notifications.Send(MultiTool.mod.Name, "Critical error occurred. Please report to M-.");
 			}
 
 			loaded = true;

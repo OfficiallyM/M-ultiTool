@@ -191,6 +191,15 @@ namespace MultiTool.Utilities.UI
 				labelMessage.focused.textColor = Color.white;
 				labelMessage.wordWrap = true;
 
+				GUIStyle labelCenter = new GUIStyle(_skin.label);
+				labelCenter.name = "LabelCenter";
+				labelCenter.alignment = TextAnchor.MiddleCenter;
+				labelMessage.normal.textColor = Color.white;
+				labelMessage.hover.textColor = Color.white;
+				labelMessage.active.textColor = Color.white;
+				labelMessage.focused.textColor = Color.white;
+				labelMessage.wordWrap = true;
+
 				// Notification box styling.
 				GUIStyle boxGrey = new GUIStyle(_skin.box);
 				boxGrey.name = "BoxGrey";
@@ -228,6 +237,7 @@ namespace MultiTool.Utilities.UI
                     // Labels.
                     labelHeader,
 					labelMessage,
+					labelCenter,
 
 					// Notification boxes.
 					boxGrey,

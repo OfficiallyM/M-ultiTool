@@ -152,8 +152,8 @@ namespace MultiTool.Modules
 				boxRect.width -= 4f;
 				boxRect.height -= 4f;
 				GUI.Box(boxRect, string.Empty, "BoxGrey");
-				GUI.Label(new Rect(boxRect.x + 5f, boxRect.y + 5f, boxRect.width - 10f, boxRect.height - 10f), $"<b>{notification.Title}</b>");
-				GUI.Label(new Rect(boxRect.x + 5f, boxRect.y + 30f, boxRect.width - 10f, boxRect.height - 10f), notification.Message);
+				GUI.Label(new Rect(boxRect.x + 5f, boxRect.y + 5f, boxRect.width - 10f, 20), $"<b>{notification.Title}</b>", "LabelCenter");
+				GUI.Label(new Rect(boxRect.x + 5f, boxRect.y + 30f, boxRect.width - 10f, boxRect.height - 30f), notification.Message, "LabelCenter");
 				GUILayout.EndVertical();
 
 				GUILayout.Space(5);
