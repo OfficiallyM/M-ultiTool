@@ -558,48 +558,50 @@ namespace MultiTool.Utilities
 		}
 		public static void TeleportPlayerWithParent(Vector3 _upos) => mainscript.M.player.transform.root.position += _upos - mainscript.M.player.transform.position;
 
-		// TODO: Rewrite for stable.
-		//public static poiGenScript.poiClass FindNearestBuilding(Vector3 position, int skip = 0)
-		//{
-		//	// Find all generated buildings.
-		//	List<poiGenScript.poiClass> buildings = new List<poiGenScript.poiClass>();
+		/// <summary>
+		/// Find the nearest building to a given position.
+		/// </summary>
+		/// <param name="position">Position to check from</param>
+		/// <param name="ignoreList">List of buildscripts to ignore from the search</param>
+		/// <returns>Buildscript if a valid building was found, otherwise null</returns>
+		public static buildingscript FindNearestBuilding(Vector3 position, List<buildingscript> ignoreList = null)
+		{
+			// Convert position to global position for more reliable distance checking.
+			position = GetGlobalObjectPosition(position);
 
-		//	for (int index = 0; index < menuhandler.s.currentMainMap.poiGens.Count; index++)
-		//	{
-		//		foreach (KeyValuePair<Vector3d, poiGenScript.chunkClass> chunk in menuhandler.s.currentMainMap.poiGens[index].chunks)
-		//		{
-		//			foreach (KeyValuePair<Vector3d, poiGenScript.poiClass> poi in chunk.Value.pois)
-		//			{
-		//				buildings.Add(poi.Value);
-		//			}
-		//		}
-		//	}
+			// Find all valid generated buildings
+			List<buildingscript> buildings = new List<buildingscript>();
+			foreach (buildingscript building in savedatascript.d.buildings)
+			{
+				string[] blacklistBuildings = new string[] { "haz02", "kut", "post", "kertibudi" };
+				bool isBlackListed = blacklistBuildings.Any(building.name.ToLower().Contains);
+				bool isIgnored = ignoreList != null && ignoreList.Count > 0 && ignoreList.Contains(building);
+				if (isBlackListed || isIgnored || building.transform == null) 
+					continue;
 
-		//	// Have 100 attempts to find the closest valid building.
-		//	poiGenScript.poiClass closestBuilding = null;
-		//	for (int attempt = 0; attempt < 100; attempt++)
-		//	{
-		//		closestBuilding = poiGenScript.NearestPoi(mainscript.GlobalFromUnityPos(position), buildings);
-		//		bool valid = closestBuilding != null && closestBuilding.pobj != null && !closestBuilding.poiName.ToLower().Contains("haz02");
-		//		if (valid && skip > 0)
-		//		{
-		//			// Building valid but skip is set, ignore.
-		//			skip--;
-		//			buildings.Remove(closestBuilding);
-		//		}
-		//		else if (valid)
-		//		{
-		//			// Found a valid building, no skip needed, break.
-		//			break;
-		//		}
-		//		else
-		//		{
-		//			// Continue the loop but remove the invalid building we've just checked.
-		//			buildings.Remove(closestBuilding);
-		//		}
-		//	}
+				buildings.Add(building);
+			}
 
-		//	return closestBuilding;
-		//}
+			// Find the closest valid building.
+			float closestDistance = float.MaxValue;
+			buildingscript closestBuilding = null;
+			foreach (buildingscript building in buildings)
+			{
+				Vector3 buildingPos = GetGlobalObjectPosition(building.transform.position);
+				float dist = Vector3.Distance(position, buildingPos);
+
+				// Convert distance to positive if needed.
+				if (dist < 0)
+					dist *= -1f;
+
+                if (dist < closestDistance)
+                {
+					closestDistance = dist;
+					closestBuilding = building;
+				}
+			}
+
+			return closestBuilding;
+		}
 	}
 }

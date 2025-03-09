@@ -2,15 +2,10 @@
 using MultiTool.Modules;
 using MultiTool.Utilities;
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using UnityEngine;
 using Settings = MultiTool.Core.Settings;
 using Logger = MultiTool.Modules.Logger;
 using MultiTool.Utilities.UI;
-using static ScottPlot.Plottable.PopulationPlot;
-using ScottPlot.Palettes;
-using ScottPlot.Drawing.Colormaps;
 
 namespace MultiTool.Tabs
 {
@@ -96,19 +91,18 @@ namespace MultiTool.Tabs
 			}
 			GUILayout.Space(10);
 
-			// TODO: Rewrite to support stable.
-			//if (GUILayout.Button("Respawn nearest building items", GUILayout.MaxWidth(250)))
-			//{
-			//	poiGenScript.poiClass closestBuilding = GameUtilities.FindNearestBuilding(mainscript.M.player.transform.position);
+			if (GUILayout.Button("Respawn nearest building items", GUILayout.MaxWidth(250)))
+			{
+				buildingscript closestBuilding = GameUtilities.FindNearestBuilding(mainscript.M.player.transform.position);
 
-			//	if (closestBuilding != null)
-			//	{
-			//		// Trigger item respawn.
-			//		closestBuilding.spawnedItems = false;
-			//		closestBuilding.pobj.SpawnStuff(closestBuilding);
-			//	}
-			//}
-			//GUILayout.Space(10);
+				if (closestBuilding != null)
+				{
+					// Trigger item respawn.
+					closestBuilding.itemsSpawned = false;
+					closestBuilding.SpawnStuff(0);
+				}
+			}
+			GUILayout.Space(10);
 
 			if (GUILayout.Button(Accessibility.GetAccessibleString("Toggle color picker", _settings.mode == "colorPicker"), GUILayout.MaxWidth(250)))
 			{

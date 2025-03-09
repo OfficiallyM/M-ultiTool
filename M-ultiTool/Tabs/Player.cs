@@ -25,7 +25,7 @@ namespace MultiTool.Tabs
 
         private bool _isPerSave = false;
 
-		private List<Vector3> _previousBuildingTeleports = new List<Vector3>();
+		private List<buildingscript> _previousBuildingTeleports = new List<buildingscript>();
 
         public override void OnRegister()
         {
@@ -372,59 +372,43 @@ namespace MultiTool.Tabs
 			}
 			GUILayout.Space(10);
 
-			// TODO: Rewrite to support stable.
-			//if (GUILayout.Button("Teleport to next building", GUILayout.MaxWidth(200)))
-			//{
-			//	poiGenScript.poiClass closestBuilding = GameUtilities.FindNearestBuilding(mainscript.M.player.transform.position, _previousBuildingTeleports.Count > 0 ? 1 : 0);
+			if (GUILayout.Button("Teleport to next building", GUILayout.MaxWidth(200)))
+			{
+				buildingscript closestBuilding = GameUtilities.FindNearestBuilding(mainscript.M.player.transform.position, _previousBuildingTeleports);
 
-			//	if (closestBuilding != null)
-			//	{
-			//		mainscript.M.player.TeleportWithParent(mainscript.UnityPosFromGlobal(closestBuilding.pos) + Vector3.up * 2f);
-			//		_previousBuildingTeleports.Add(closestBuilding.pos);
-			//	}
-			//}
-			//GUILayout.Space(10);
+				if (closestBuilding != null)
+				{
+					GameUtilities.TeleportPlayerWithParent(closestBuilding.transform.position + Vector3.up * 2f);
+					_previousBuildingTeleports.Add(closestBuilding);
+				}
+			}
+			GUILayout.Space(10);
 
-			//if (_previousBuildingTeleports.Count > 1)
-			//{
-			//	if (GUILayout.Button("Teleport to previous building", GUILayout.MaxWidth(200)))
-			//	{
-			//		int highestIndex = _previousBuildingTeleports.Count - 1;
-			//		Vector3 previousBuilding = _previousBuildingTeleports[highestIndex - 1];
-			//		mainscript.M.player.TeleportWithParent(mainscript.UnityPosFromGlobal(previousBuilding) + Vector3.up * 2f);
-			//		_previousBuildingTeleports.RemoveAt(highestIndex);
-			//		_previousBuildingTeleports.Remove(previousBuilding);
-			//	}
-			//	GUILayout.Space(10);
-			//}
+			if (_previousBuildingTeleports.Count > 1)
+			{
+				if (GUILayout.Button("Return to previous teleport", GUILayout.MaxWidth(200)))
+				{
+					int highestIndex = _previousBuildingTeleports.Count - 1;
+					buildingscript previousBuilding = _previousBuildingTeleports[highestIndex - 1];
+					GameUtilities.TeleportPlayerWithParent(previousBuilding.transform.position + Vector3.up * 2f);
+					_previousBuildingTeleports.RemoveAt(highestIndex);
+					_previousBuildingTeleports.Remove(previousBuilding);
+				}
+				GUILayout.Space(10);
+			}
 
-			//if (GUILayout.Button("Teleport to starter house", GUILayout.MaxWidth(200)))
-			//{
-			//	// Find all generated buildings.
-			//	List<poiGenScript.poiClass> buildings = new List<poiGenScript.poiClass>();
-
-			//	for (int index = 0; index < menuhandler.s.currentMainMap.poiGens.Count; index++)
-			//	{
-			//		foreach (KeyValuePair<Vector3d, poiGenScript.chunkClass> chunk in menuhandler.s.currentMainMap.poiGens[index].chunks)
-			//		{
-			//			foreach (KeyValuePair<Vector3d, poiGenScript.poiClass> poi in chunk.Value.pois)
-			//			{
-			//				buildings.Add(poi.Value);
-			//			}
-			//		}
-			//	}
-
-			//	foreach (poiGenScript.poiClass building in buildings)
-			//	{
-			//		if (building.poiName.ToLower().Contains("haz02"))
-			//		{
-			//			Transform transform = building.pobj.transform.Find("PlayerStart");
-			//			if (transform != null)
-			//				mainscript.M.player.Teleport(transform.position, transform.eulerAngles);
-			//			break;
-			//		}
-			//	}
-			//}
+			if (GUILayout.Button("Teleport to starter house", GUILayout.MaxWidth(200)))
+			{
+				foreach (buildingscript building in savedatascript.d.buildings)
+				{
+					if (building.name.ToLower().Contains("haz02"))
+					{
+						Transform transform = building.transform.Find("interiorKitchen");
+						if (transform != null)
+							GameUtilities.TeleportPlayer(transform.position + Vector3.down * 1f, transform.eulerAngles);
+					}
+				}
+			}
 
 			GUILayout.EndVertical();
             GUILayout.EndScrollView();
