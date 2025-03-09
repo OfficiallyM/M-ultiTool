@@ -30,8 +30,8 @@ namespace MultiTool.Modules
 		private bool creditsShow = false;
         private string creditsTabId = null;
 
-		private int resolutionX;
-		private int resolutionY;
+		internal int resolutionX;
+		internal int resolutionY;
 
 		internal float mainMenuWidth;
         internal float mainMenuHeight;
@@ -234,6 +234,9 @@ namespace MultiTool.Modules
 			{
 				GameMainMenuUI();
 			}
+
+			// Render notifications last to ensure they show above anything else.
+			Notifications.Render();
             
             // Reset back to default Unity skin to avoid styling bleeding to other UI mods.
             GUI.skin = null;
@@ -320,8 +323,9 @@ namespace MultiTool.Modules
 
 		internal void Update()
 		{
-            // Trigger update for tabs.
+            // Trigger update for tabs and notifications.
             Tabs.Update();
+			Notifications.Update();
 
 			if (MultiTool.isOnMainMenu)
 			{

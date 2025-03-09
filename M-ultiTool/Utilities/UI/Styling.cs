@@ -27,6 +27,10 @@ namespace MultiTool.Utilities.UI
         private static Texture2D _blackTranslucent;
         private static Texture2D _blackTranslucentHover;
         private static Texture2D _transparent;
+		private static Texture2D _green;
+		private static Texture2D _orange;
+		private static Texture2D _red;
+		private static Texture2D _blue;
 
         public static void Bootstrap()
         {
@@ -72,9 +76,13 @@ namespace MultiTool.Utilities.UI
                 _blackTranslucent = GUIExtensions.ColorTexture(1, 1, new Color(0, 0, 0, 0.4f));
                 _blackTranslucentHover = GUIExtensions.ColorTexture(1, 1, new Color(0, 0, 0, 0.5f));
                 _transparent = GUIExtensions.ColorTexture(1, 1, new Color(0, 0, 0, 0));
+				_green = GUIExtensions.ColorTexture(1, 1, new Color(0.16f, 0.61f, 0));
+				_orange = GUIExtensions.ColorTexture(1, 1, new Color(0.84f, 0.52f, 0));
+				_red = GUIExtensions.ColorTexture(1, 1, new Color(1, 0, 0));
+				_blue = GUIExtensions.ColorTexture(1, 1, new Color(0, 0.38f, 0.77f));
 
-                // Override scrollbar width and height.
-                _skin.verticalScrollbar.fixedWidth = GUIRenderer.scrollWidth;
+				// Override scrollbar width and height.
+				_skin.verticalScrollbar.fixedWidth = GUIRenderer.scrollWidth;
                 _skin.verticalScrollbarThumb.fixedWidth = GUIRenderer.scrollWidth;
                 _skin.horizontalScrollbar.fixedHeight = GUIRenderer.scrollWidth;
                 _skin.horizontalScrollbarThumb.fixedHeight = GUIRenderer.scrollWidth;
@@ -183,6 +191,27 @@ namespace MultiTool.Utilities.UI
 				labelMessage.focused.textColor = Color.white;
 				labelMessage.wordWrap = true;
 
+				// Notification box styling.
+				GUIStyle boxGrey = new GUIStyle(_skin.box);
+				boxGrey.name = "BoxGrey";
+				boxGrey.normal.background = _grey;
+
+				GUIStyle boxGreen = new GUIStyle(_skin.box);
+				boxGreen.name = "BoxGreen";
+				boxGreen.normal.background = _green;
+
+				GUIStyle boxOrange = new GUIStyle(_skin.box);
+				boxOrange.name = "BoxOrange";
+				boxOrange.normal.background = _orange;
+
+				GUIStyle boxRed = new GUIStyle(_skin.box);
+				boxRed.name = "BoxRed";
+				boxRed.normal.background = _red;
+
+				GUIStyle boxBlue = new GUIStyle(_skin.box);
+				boxBlue.name = "BoxBlue";
+				boxBlue.normal.background = _blue;
+
 				// Add custom styles.
 				_skin.customStyles = new GUIStyle[]
                 {
@@ -199,6 +228,13 @@ namespace MultiTool.Utilities.UI
                     // Labels.
                     labelHeader,
 					labelMessage,
+
+					// Notification boxes.
+					boxGrey,
+					boxGreen,
+					boxOrange,
+					boxRed,
+					boxBlue,
 
                     // These are just here to prevent log errors, idk where they're coming from.
                     new GUIStyle() { name = "thumb" },

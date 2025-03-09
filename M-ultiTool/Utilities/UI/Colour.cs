@@ -238,7 +238,7 @@ namespace MultiTool.Utilities.UI
             // Colour preview.
             Color previewColour = sliderColour;
             previewColour.a = 1;
-            GUIStyle previewStyle = new GUIStyle(Styling.Skin.button);
+            GUIStyle previewStyle = new GUIStyle(Styling.GetActiveSkin().button);
             Texture2D previewTexture = new Texture2D(1, 1);
             Color[] pixels = new Color[] { previewColour };
             previewTexture.SetPixels(pixels);
