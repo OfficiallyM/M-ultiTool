@@ -177,38 +177,47 @@ namespace MultiTool.Tabs
 
 					GUILayout.Label(name);
 					GUILayout.BeginHorizontal();
-					if (GUILayout.Button("Teleport to", GUILayout.MaxWidth(100)))
-						GameUtilities.TeleportPlayerWithParent(obj.transform.position + Vector3.up * 2f);
 
-					GUILayout.Space(5);
-
-					if (GUILayout.Button("Teleport here", GUILayout.MaxWidth(100)))
+					if (mainscript.M.player.Car != null && mainscript.M.player.Car.gameObject == obj)
 					{
-						Vector3 position = mainscript.M.player.lookPoint + Vector3.up * 0.75f;
-						Quaternion rotation = Quaternion.FromToRotation(Vector3.forward, -mainscript.M.player.mainCam.transform.right);
-
-						obj.transform.position = position;
-						obj.transform.rotation = rotation;
+						GUILayout.Label("Cannot manipulate vehicle you're sitting in");
 					}
-
-					GUILayout.Space(5);
-
-					if (GUILayout.Button("Delete", GUILayout.MaxWidth(100)))
+					else
 					{
-						tosaveitemscript save = obj.GetComponent<tosaveitemscript>();
-						if (save != null)
-						{
-							save.removeFromMemory = true;
+						if (GUILayout.Button("Teleport to", GUILayout.MaxWidth(100)))
+							GameUtilities.TeleportPlayerWithParent(obj.transform.position + Vector3.up * 2f);
 
-							foreach (tosaveitemscript component in obj.transform.root.GetComponentsInChildren<tosaveitemscript>())
+						GUILayout.Space(5);
+
+						if (GUILayout.Button("Teleport here", GUILayout.MaxWidth(100)))
+						{
+							Vector3 position = mainscript.M.player.lookPoint + Vector3.up * 0.75f;
+							Quaternion rotation = Quaternion.FromToRotation(Vector3.forward, -mainscript.M.player.mainCam.transform.right);
+
+							obj.transform.position = position;
+							obj.transform.rotation = rotation;
+						}
+
+						GUILayout.Space(5);
+
+						if (GUILayout.Button("Delete", GUILayout.MaxWidth(100)))
+						{
+							tosaveitemscript save = obj.GetComponent<tosaveitemscript>();
+							if (save != null)
 							{
-								component.removeFromMemory = true;
+								save.removeFromMemory = true;
+
+								foreach (tosaveitemscript component in obj.transform.root.GetComponentsInChildren<tosaveitemscript>())
+								{
+									component.removeFromMemory = true;
+								}
+								UnityEngine.Object.Destroy(obj);
+								GUIRenderer.spawnedObjects.Remove(obj);
+								break;
 							}
-							UnityEngine.Object.Destroy(obj);
-							GUIRenderer.spawnedObjects.Remove(obj);
-							break;
 						}
 					}
+
 					GUILayout.EndHorizontal();
 					GUILayout.Space(10);
 				}
