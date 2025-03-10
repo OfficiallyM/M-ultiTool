@@ -78,6 +78,19 @@ namespace MultiTool.Tabs
 
 			GUILayout.FlexibleSpace();
 
+			if (GUILayout.Button("Respawn nearest building items", GUILayout.MaxWidth(250)))
+			{
+				buildingscript closestBuilding = GameUtilities.FindNearestBuilding(mainscript.M.player.transform.position);
+
+				if (closestBuilding != null)
+				{
+					// Trigger item respawn.
+					closestBuilding.itemsSpawned = false;
+					closestBuilding.SpawnStuff(0);
+				}
+			}
+			GUILayout.Space(10);
+
 			if (GUILayout.Button(Accessibility.GetAccessibleString("Spawn items", _poiSpawnItems), GUILayout.MaxWidth(100)))
 				_poiSpawnItems = !_poiSpawnItems;
 			GUILayout.EndHorizontal();

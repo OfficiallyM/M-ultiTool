@@ -266,7 +266,7 @@ namespace MultiTool.Modules
 				Tabs.AddTab(new Tabs.ShapesTab());
                 Tabs.AddTab(new Tabs.PlayerTab());
 				Tabs.AddTab(new Tabs.VehicleConfigurationTab());
-				Tabs.AddTab(new Tabs.MiscellaneousTab());
+				Tabs.AddTab(new Tabs.SandboxTab());
 				Tabs.AddTab(new Tabs.DeveloperTab());
 
                 // Add default hidden tabs.

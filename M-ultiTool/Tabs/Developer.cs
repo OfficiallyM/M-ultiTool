@@ -2,6 +2,7 @@
 using UnityEngine;
 using Settings = MultiTool.Core.Settings;
 using MultiTool.Utilities.UI;
+using MultiTool.Modules;
 
 namespace MultiTool.Tabs
 {
@@ -71,6 +72,9 @@ namespace MultiTool.Tabs
 			{
 				_settings.showColliderHelp = !_settings.showColliderHelp;
 			}
+
+			if (GUILayout.Button("Rebuild thumbnail cache (this will lag)", "ButtonPrimaryWrap", GUILayout.MaxWidth(200)))
+				ThumbnailGenerator.RebuildCache();
 
 			GUILayout.EndScrollView();
 			GUILayout.EndVertical();

@@ -9,9 +9,9 @@ using MultiTool.Utilities.UI;
 
 namespace MultiTool.Tabs
 {
-	internal class MiscellaneousTab : Tab
+	internal class SandboxTab : Tab
 	{
-		public override string Name => "Miscellaneous";
+		public override string Name => "Sandbox";
 
 		private Settings _settings = new Settings();
 		private Vector2 _position;
@@ -27,13 +27,6 @@ namespace MultiTool.Tabs
 			GUILayout.BeginArea(dimensions);
 			GUILayout.BeginVertical();
 			_position = GUILayout.BeginScrollView(_position);
-
-			// Delete mode.
-			if (GUILayout.Button(Accessibility.GetAccessibleString("Delete mode", _settings.deleteMode) + $" (Press {MultiTool.Binds.GetKeyByAction((int)Keybinds.Inputs.deleteMode).key})", GUILayout.MaxWidth(250)))
-			{
-				_settings.deleteMode = !_settings.deleteMode;
-			}
-			GUILayout.Space(10);
 
 			// Time setting.
 			napszakvaltakozas timescript = mainscript.M.napszak;
@@ -61,6 +54,7 @@ namespace MultiTool.Tabs
 			GUILayout.Space(10);
 
 			GUILayout.Label("UFO spawning (doesn't save):");
+			GUILayout.BeginHorizontal();
 			if (GUILayout.Button("Spawn", GUILayout.MaxWidth(250)))
 			{
 				try
@@ -89,19 +83,7 @@ namespace MultiTool.Tabs
 						UnityEngine.Object.Destroy(GUIRenderer.ufo);
 				}
 			}
-			GUILayout.Space(10);
-
-			if (GUILayout.Button("Respawn nearest building items", GUILayout.MaxWidth(250)))
-			{
-				buildingscript closestBuilding = GameUtilities.FindNearestBuilding(mainscript.M.player.transform.position);
-
-				if (closestBuilding != null)
-				{
-					// Trigger item respawn.
-					closestBuilding.itemsSpawned = false;
-					closestBuilding.SpawnStuff(0);
-				}
-			}
+			GUILayout.EndHorizontal();
 			GUILayout.Space(10);
 
 			if (GUILayout.Button(Accessibility.GetAccessibleString("Toggle color picker", _settings.mode == "colorPicker"), GUILayout.MaxWidth(250)))
@@ -132,10 +114,6 @@ namespace MultiTool.Tabs
 				else
 					_settings.mode = "objectRegenerator";
 			}
-			GUILayout.Space(10);
-
-			if (GUILayout.Button("Rebuild thumbnail cache (this will lag)", "ButtonPrimaryWrap", GUILayout.MaxWidth(250)))
-				ThumbnailGenerator.RebuildCache();
 
 			GUILayout.EndScrollView();
 			GUILayout.EndVertical();

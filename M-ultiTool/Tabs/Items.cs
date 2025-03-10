@@ -108,7 +108,18 @@ namespace MultiTool.Tabs
                 _rechunk = true;
             }
             GUILayout.FlexibleSpace();
-            if (GUILayout.Button("Filters", GUILayout.Width(200)))
+
+			GUILayout.FlexibleSpace();
+
+			// Delete mode.
+			if (GUILayout.Button(Accessibility.GetAccessibleString("Delete mode", _settings.deleteMode) + $" (Press {MultiTool.Binds.GetKeyByAction((int)Keybinds.Inputs.deleteMode).key})", GUILayout.MaxWidth(250)))
+			{
+				_settings.deleteMode = !_settings.deleteMode;
+			}
+
+			GUILayout.Space(10);
+
+			if (GUILayout.Button("Filters", GUILayout.Width(200)))
             {
                 _filterShow = !_filterShow;
                 _rechunk = true;

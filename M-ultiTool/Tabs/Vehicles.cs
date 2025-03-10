@@ -96,7 +96,16 @@ namespace MultiTool.Tabs
                 _lastSearch = string.Empty;
                 _rechunk = true;
             }
-            GUILayout.EndHorizontal();
+
+			GUILayout.FlexibleSpace();
+
+			// Delete mode.
+			if (GUILayout.Button(Accessibility.GetAccessibleString("Delete mode", _settings.deleteMode) + $" (Press {MultiTool.Binds.GetKeyByAction((int)Keybinds.Inputs.deleteMode).key})", GUILayout.MaxWidth(250)))
+			{
+				_settings.deleteMode = !_settings.deleteMode;
+			}
+
+			GUILayout.EndHorizontal();
             GUILayout.Space(10);
 
             _vehicleScrollPosition = GUILayout.BeginScrollView(_vehicleScrollPosition);
