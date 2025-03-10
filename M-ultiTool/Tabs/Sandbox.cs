@@ -15,7 +15,12 @@ namespace MultiTool.Tabs
 
 		private Settings _settings = new Settings();
 		private Vector2 _position;
+
+		private float _selectedTime;
+		private bool _isTimeLocked = false;
+
 		private temporaryTurnOffGeneration _temp;
+		private GameObject _ufo;
 
 		public override void OnRegister()
 		{
@@ -30,25 +35,25 @@ namespace MultiTool.Tabs
 
 			// Time setting.
 			napszakvaltakozas timescript = mainscript.M.napszak;
-			float currentTime = Mathf.InverseLerp(0f, timescript.dt + timescript.nt, timescript.time + GUIRenderer.selectedTime - timescript.startTime);
+			float currentTime = Mathf.InverseLerp(0f, timescript.dt + timescript.nt, timescript.time + _selectedTime - timescript.startTime);
 			int totalSeconds = (int)(currentTime * 24 * 60 * 60);
 			int hours = totalSeconds / 3600;
 			int minutes = (totalSeconds % 3600) / 60;
 			int seconds = totalSeconds % 60;
 			GUILayout.Label($"Time: {hours}:{minutes}:{seconds}");
-			float time = GUILayout.HorizontalSlider(GUIRenderer.selectedTime, 0f, timescript.dt + timescript.nt, GUILayout.MaxWidth(dimensions.width / 2));
-			GUIRenderer.selectedTime = Mathf.Round(time);
+			float time = GUILayout.HorizontalSlider(_selectedTime, 0f, timescript.dt + timescript.nt, GUILayout.MaxWidth(dimensions.width / 2));
+			_selectedTime = Mathf.Round(time);
 			GUILayout.BeginHorizontal();
 			if (GUILayout.Button("Set", GUILayout.MaxWidth(250)))
 			{
-				timescript.tekeres = GUIRenderer.selectedTime;
+				timescript.tekeres = _selectedTime;
 			}
 
-			if (GUILayout.Button(Accessibility.GetAccessibleString("Unlock", "Lock", GUIRenderer.isTimeLocked), GUILayout.MaxWidth(250)))
+			if (GUILayout.Button(Accessibility.GetAccessibleString("Unlock", "Lock", _isTimeLocked), GUILayout.MaxWidth(250)))
 			{
-				GUIRenderer.isTimeLocked = !GUIRenderer.isTimeLocked;
+				_isTimeLocked = !_isTimeLocked;
 
-				timescript.enabled = !GUIRenderer.isTimeLocked;
+				timescript.enabled = !_isTimeLocked;
 			}
 			GUILayout.EndHorizontal();
 			GUILayout.Space(10);
@@ -60,11 +65,11 @@ namespace MultiTool.Tabs
 				try
 				{
 					// Destory existing UFO.
-					if (GUIRenderer.ufo != null)
-						UnityEngine.Object.Destroy(GUIRenderer.ufo);
+					if (_ufo != null)
+						UnityEngine.Object.Destroy(_ufo);
 
-					GUIRenderer.ufo = UnityEngine.Object.Instantiate(_temp.FEDOSPAWN.prefab, mainscript.M.player.transform.position + (mainscript.M.player.transform.forward * 5f) + (Vector3.up * 2f), Quaternion.FromToRotation(Vector3.forward, -mainscript.M.player.transform.right));
-					fedoscript ufoScript = GUIRenderer.ufo.GetComponent<fedoscript>();
+					_ufo = UnityEngine.Object.Instantiate(_temp.FEDOSPAWN.prefab, mainscript.M.player.transform.position + (mainscript.M.player.transform.forward * 5f) + (Vector3.up * 2f), Quaternion.FromToRotation(Vector3.forward, -mainscript.M.player.transform.right));
+					fedoscript ufoScript = _ufo.GetComponent<fedoscript>();
 					ufoScript.ai = false;
 					ufoScript.followRoad = false;
 				}
@@ -76,11 +81,11 @@ namespace MultiTool.Tabs
 
 			if (GUILayout.Button("Delete", GUILayout.MaxWidth(200)))
 			{
-				if (GUIRenderer.ufo != null)
+				if (_ufo != null)
 				{
-					fedoscript ufoScript = GUIRenderer.ufo.GetComponent<fedoscript>();
+					fedoscript ufoScript = _ufo.GetComponent<fedoscript>();
 					if (!ufoScript.seat.inUse)
-						UnityEngine.Object.Destroy(GUIRenderer.ufo);
+						UnityEngine.Object.Destroy(_ufo);
 				}
 			}
 			GUILayout.EndHorizontal();

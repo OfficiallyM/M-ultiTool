@@ -147,9 +147,6 @@ namespace MultiTool.Modules
 		internal static tosaveitemscript selectedObject;
 
 		// Settings.
-		internal static float selectedTime;
-		internal static bool isTimeLocked;
-		internal static GameObject ufo;
 		internal static float settingsScrollWidth;
         internal static bool accessibilityShow = false;
         internal static float noclipFastMoveFactor = 10f;
