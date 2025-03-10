@@ -41,7 +41,8 @@ namespace MultiTool.Tabs
                     pushForce = mainscript.M.pushForce,
                     carryWeight = player.maxWeight,
                     pickupForce = player.maxPickupForce,
-                    mass = player != null && player.mass != null ? player.mass.Mass() : 0,
+					throwForce = player.throwForceM,
+					mass = player != null && player.mass != null ? player.mass.Mass() : 0,
                     infiniteAmmo = false,
                 };
             }
@@ -169,7 +170,7 @@ namespace MultiTool.Tabs
 			}
 			else
 			{
-				jumpForce = Mathf.Round(jumpForce * 100);
+				jumpForce = Mathf.Round(jumpForce) * 100;
 				if (jumpForce != activePlayerData.jumpForce)
 				{
                     activePlayerData.jumpForce = jumpForce;
@@ -190,7 +191,7 @@ namespace MultiTool.Tabs
 			}
 			else
 			{
-				pushForce = Mathf.Round(pushForce * 10);
+				pushForce = Mathf.Round(pushForce) * 10;
 				if (pushForce != activePlayerData.pushForce)
 				{
                     activePlayerData.pushForce = pushForce;
@@ -242,37 +243,58 @@ namespace MultiTool.Tabs
             GUILayout.EndHorizontal();
             GUILayout.Space(10);
 
-            // Fire speed.
-            // TODO: Rewrite saving.
-            //if (mainscript.M.player.inHandP != null && mainscript.M.player.inHandP.weapon != null)
-            //{
-            //	tosaveitemscript save = mainscript.M.player.inHandP.weapon.GetComponent<tosaveitemscript>();
+			// Throw force.
+			GUILayout.Label($"Throw force: {activePlayerData.throwForce / 1000} (Default: {_defaultPlayerData.throwForce / 1000})");
+			GUILayout.BeginHorizontal();
+			float throwForce = GUILayout.HorizontalSlider(activePlayerData.throwForce / 1000, 1f, 1000f);
+			if (GUILayout.Button("Reset", GUILayout.MaxWidth(200)))
+			{
+				activePlayerData.throwForce = _defaultPlayerData.throwForce;
+				update = true;
+			}
+			else
+			{
+				throwForce = Mathf.Round(throwForce) * 1000;
+				if (throwForce != activePlayerData.throwForce)
+				{
+					activePlayerData.throwForce = throwForce;
+					update = true;
+				}
+			}
+			GUILayout.EndHorizontal();
+			GUILayout.Space(10);
 
-            //	if (weaponData != null)
-            //	{
-            //		GUILayout.Label($"Fire rate: {weaponData.fireRate} (Default: {weaponData.defaultFireRate})");
-            //		GUILayout.BeginHorizontal();
-            //		float fireRate = GUILayout.HorizontalSlider(weaponData.fireRate, 0.001f, 0.5f);
-            //		if (GUILayout.Button("Reset", GUILayout.MaxWidth(200)))
-            //		{
-            //			weaponData.fireRate = weaponData.defaultFireRate;
-            //			update = true;
-            //		}
-            //		else
-            //		{
-            //			fireRate = (float)Math.Round(fireRate, 3);
-            //			if (fireRate != weaponData.fireRate)
-            //			{
-            //				weaponData.fireRate = fireRate;
-            //				update = true;
-            //			}
-            //		}
-            //      GUILayout.EndHorizontal();
-            //	}
-            //}
+			// Fire speed.
+			// TODO: Rewrite saving.
+			//if (mainscript.M.player.inHandP != null && mainscript.M.player.inHandP.weapon != null)
+			//{
+			//	tosaveitemscript save = mainscript.M.player.inHandP.weapon.GetComponent<tosaveitemscript>();
 
-            // Mass.
-            GUILayout.Label($"Mass: {activePlayerData.mass} (Default: {_defaultPlayerData.mass})");
+			//	if (weaponData != null)
+			//	{
+			//		GUILayout.Label($"Fire rate: {weaponData.fireRate} (Default: {weaponData.defaultFireRate})");
+			//		GUILayout.BeginHorizontal();
+			//		float fireRate = GUILayout.HorizontalSlider(weaponData.fireRate, 0.001f, 0.5f);
+			//		if (GUILayout.Button("Reset", GUILayout.MaxWidth(200)))
+			//		{
+			//			weaponData.fireRate = weaponData.defaultFireRate;
+			//			update = true;
+			//		}
+			//		else
+			//		{
+			//			fireRate = (float)Math.Round(fireRate, 3);
+			//			if (fireRate != weaponData.fireRate)
+			//			{
+			//				weaponData.fireRate = fireRate;
+			//				update = true;
+			//			}
+			//		}
+			//      GUILayout.EndHorizontal();
+			//	}
+			//}
+
+			// Mass.
+			GUILayout.Label($"Mass: {activePlayerData.mass} (Default: {_defaultPlayerData.mass})");
             GUILayout.BeginHorizontal();
             float mass = GUILayout.HorizontalSlider(activePlayerData.mass, 1f, 1000f);
 			if (GUILayout.Button("Reset", GUILayout.MaxWidth(200)))
@@ -467,6 +489,7 @@ namespace MultiTool.Tabs
 				mainscript.M.pushForce = data.pushForce;
 				player.maxWeight = data.carryWeight;
 				player.maxPickupForce = data.pickupForce;
+				player.throwForceM = data.throwForce;
 				if (player.mass != null && player.mass.Mass() != data.mass)
 					player.mass.SetMass(data.mass);
 			}
