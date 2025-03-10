@@ -171,7 +171,7 @@ namespace MultiTool
 					if (!Renderer.show)
 					{
                         // Select object.
-                        if (Input.GetKeyDown(Binds.GetKeyByAction((int)Keybinds.Inputs.action6).key))
+                        if (Input.GetKeyDown(Binds.GetKeyByAction((int)Keybinds.Inputs.action1).key))
                         {
                             Physics.Raycast(mainscript.M.player.Cam.transform.position, mainscript.M.player.Cam.transform.forward, out var raycastHit, float.PositiveInfinity, mainscript.M.player.useLayer);
                             if (raycastHit.collider != null && raycastHit.collider.gameObject != null)
@@ -407,6 +407,112 @@ namespace MultiTool
 									part.tosaveitem.Claim(false);
 								}
 							}
+						}
+					}
+					break;
+				case "weightChanger":
+					// Select object.
+					if (Input.GetKeyDown(Binds.GetKeyByAction((int)Keybinds.Inputs.action1).key))
+					{
+						Physics.Raycast(mainscript.M.player.Cam.transform.position, mainscript.M.player.Cam.transform.forward, out var raycastHit, float.PositiveInfinity, mainscript.M.player.useLayer);
+						if (raycastHit.collider != null && raycastHit.collider.gameObject != null)
+						{
+							GameObject hitGameObject = raycastHit.collider.transform.gameObject;
+
+							// Recurse upwards to find a tosaveitemscript.
+							tosaveitemscript save = hitGameObject.GetComponentInParent<tosaveitemscript>();
+
+							// Can't find the tosaveitemscript, return early.
+							if (save == null)
+							{
+								GUIRenderer.selectedObject = null;
+								return;
+							}
+
+							// Object doesn't have mass, return early.
+							if (save.GetComponent<massScript>() == null)
+							{
+								GUIRenderer.selectedObject = null;
+								return;
+							}
+
+							GUIRenderer.selectedObject = save;
+							return;
+						}
+						GUIRenderer.selectedObject = null;
+					}
+
+					// Weight value selection control.
+					if (Input.GetKeyDown(Binds.GetKeyByAction((int)Keybinds.Inputs.action5).key))
+					{
+						int currentIndex = Array.FindIndex(GUIRenderer.weightOptions, s => s == GUIRenderer.weightValue);
+						if (currentIndex == -1 || currentIndex == GUIRenderer.weightOptions.Length - 1)
+							GUIRenderer.weightValue = GUIRenderer.weightOptions[0];
+						else
+							GUIRenderer.weightValue = GUIRenderer.weightOptions[currentIndex + 1];
+					}
+
+					if (Input.GetKeyDown(Binds.GetKeyByAction((int)Keybinds.Inputs.select).key))
+					{
+						GUIRenderer.weightHold = !GUIRenderer.weightHold;
+					}
+
+					if (GUIRenderer.selectedObject != null)
+					{
+						tosaveitemscript save = GUIRenderer.selectedObject.GetComponent<tosaveitemscript>();
+						massScript mass = GUIRenderer.selectedObject.GetComponent<massScript>();
+						bool update = false;
+
+						float currentMass = mass.OwnMass();
+
+						// Mass increase.
+						bool massUp = Input.GetKey(Binds.GetKeyByAction((int)Keybinds.Inputs.up).key);
+						if (!GUIRenderer.weightHold)
+							massUp = Input.GetKeyDown(Binds.GetKeyByAction((int)Keybinds.Inputs.up).key);
+						if (massUp)
+						{
+							mass.SetMass(currentMass + GUIRenderer.weightValue);
+
+							update = true;
+						}
+
+						// Mass decrease.
+						bool massDown = Input.GetKey(Binds.GetKeyByAction((int)Keybinds.Inputs.down).key);
+						if (!GUIRenderer.weightHold)
+							massDown = Input.GetKeyDown(Binds.GetKeyByAction((int)Keybinds.Inputs.down).key);
+						if (massDown)
+						{
+							mass.SetMass(currentMass - GUIRenderer.weightValue);
+
+							update = true;
+						}
+
+						// Reset weight to default.
+						if (Input.GetKeyDown(Binds.GetKeyByAction((int)Keybinds.Inputs.action4).key))
+						{
+							WeightData weight = SaveUtilities.GetWeight(save.idInSave);
+
+							if (weight == null)
+							{
+								Notifications.SendWarning("Weight Changer", "Unable to reset - no default available");
+								return;
+							}
+							else
+							{
+								mass.SetMass(weight.defaultMass);
+								update = true;
+							}
+						}
+
+						// Trigger mass save if available.
+						if (save != null && update)
+						{
+							SaveUtilities.UpdateWeight(new WeightData()
+							{
+								ID = save.idInSave,
+								mass = mass.OwnMass(),
+								defaultMass = currentMass,
+							});
 						}
 					}
 					break;

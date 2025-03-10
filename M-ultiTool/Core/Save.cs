@@ -79,6 +79,14 @@ namespace MultiTool.Core
         [DataMember] public VehicleTuning tuning { get; set; }
     }
 
+	[DataContract]
+	internal class WeightData
+	{
+		[DataMember] public int ID { get; set; }
+		[DataMember] public float mass { get; set; }
+		[DataMember] public float defaultMass { get; set; }
+	}
+
     [DataContract]
     internal class PlayerData
     {
@@ -105,6 +113,8 @@ namespace MultiTool.Core
         [DataMember] public List<EngineTuningData> engineTuning { get; set; }
         [DataMember] public List<TransmissionTuningData> transmissionTuning { get; set; }
         [DataMember] public List<VehicleTuningData> vehicleTuning { get; set; }
+		[DataMember] public List<WeightData> weight { get; set; }
+
         [DataMember] public PlayerData playerData { get; set; }
         [DataMember] public bool isPlayerDataPerSave { get; set; } = false;
     }

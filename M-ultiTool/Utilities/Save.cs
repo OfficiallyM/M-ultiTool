@@ -373,11 +373,44 @@ namespace MultiTool.Utilities
             SerializeSaveData(data);
         }
 
-        /// <summary>
-        /// Update player data in save.
-        /// </summary>
-        /// <param name="playerData">New player data</param>
-        public static void UpdatePlayerData(PlayerData playerData)
+		/// <summary>
+		/// Update weight data in save.
+		/// </summary>
+		/// <param name="weigh">Weight data</param>
+		public static void UpdateWeight(WeightData weight)
+		{
+			Save data = UnserializeSaveData();
+
+			try
+			{
+				if (data.weight == null)
+					data.weight = new List<WeightData>();
+
+				WeightData existing = data.weight.Where(s => s.ID == weight.ID).FirstOrDefault();
+				if (existing != null)
+				{
+					// Only set default if we don't already have one set.
+					if (existing.defaultMass == 0)
+						existing.defaultMass = weight.defaultMass;
+
+					existing.mass = weight.mass;
+				}
+				else
+					data.weight.Add(weight);
+			}
+			catch (Exception ex)
+			{
+				Logger.Log($"Weight update error - {ex}", Logger.LogLevel.Error);
+			}
+
+			SerializeSaveData(data);
+		}
+
+		/// <summary>
+		/// Update player data in save.
+		/// </summary>
+		/// <param name="playerData">New player data</param>
+		public static void UpdatePlayerData(PlayerData playerData)
         {
             Save data = UnserializeSaveData();
 
@@ -451,7 +484,8 @@ namespace MultiTool.Utilities
                 LoadEngineTuning(save, data);
                 LoadTransmissionTuning(save, data);
                 LoadVehicleTuning(save, data);
-            }
+				LoadWeight(save, data);
+			}
         }
 
         /// <summary>
@@ -789,12 +823,40 @@ namespace MultiTool.Utilities
             }
         }
 
-        /// <summary>
-        /// Load player data.
-        /// </summary>
-        /// <param name="defaultPlayerData">Default player data to set if saved is null </param>
-        /// <returns>Loaded player data or default if it isn't saved</returns>
-        public static PlayerData LoadPlayerData(PlayerData defaultPlayerData)
+		/// <summary>
+		/// Load weight data.
+		/// </summary>
+		/// <param name="save">Savable object to check</param>
+		/// <param name="data">Save data</param>
+		private static void LoadWeight(tosaveitemscript save, Save data)
+		{
+			// Return early if no weight data is set.
+			if (data.weight == null) return;
+
+			foreach (WeightData weight in data.weight)
+			{
+				try
+				{
+					// Check ID matches.
+					if (save.idInSave == weight.ID)
+					{
+						massScript mass = save.GetComponent<massScript>();
+						mass.SetMass(weight.mass);
+					}
+				}
+				catch (Exception ex)
+				{
+					Logger.Log($"Weight data load error - {ex}", Logger.LogLevel.Error);
+				}
+			}
+		}
+
+		/// <summary>
+		/// Load player data.
+		/// </summary>
+		/// <param name="defaultPlayerData">Default player data to set if saved is null</param>
+		/// <returns>Loaded player data or default if it isn't saved</returns>
+		public static PlayerData LoadPlayerData(PlayerData defaultPlayerData)
         {
             Save data = UnserializeSaveData();
 
@@ -869,10 +931,22 @@ namespace MultiTool.Utilities
             return data.vehicleTuning?.Where(e => e.ID == ID).FirstOrDefault()?.tuning;
         }
 
-        /// <summary>
-        /// Write the global save data to the JSON file.
-        /// </summary>
-        private static void WriteGlobalData()
+		/// <summary>
+		/// Get weight data by ID.
+		/// </summary>
+		/// <param name="ID">Object save ID</param>
+		/// <returns>WeightData if exists, otherwise null</returns>
+		public static WeightData GetWeight(int ID)
+		{
+			Save data = UnserializeSaveData();
+
+			return data.weight?.Where(e => e.ID == ID).FirstOrDefault();
+		}
+
+		/// <summary>
+		/// Write the global save data to the JSON file.
+		/// </summary>
+		private static void WriteGlobalData()
         {
             try
             {

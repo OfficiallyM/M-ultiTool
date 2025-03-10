@@ -119,6 +119,18 @@ namespace MultiTool.Tabs
 				else
 					_settings.mode = "objectRegenerator";
 			}
+			GUILayout.Space(10);
+
+			if (GUILayout.Button(Accessibility.GetAccessibleString("Toggle weight changer", _settings.mode == "weightChanger"), GUILayout.MaxWidth(250)))
+			{
+				if (_settings.mode == "weightChanger")
+				{
+					_settings.mode = null;
+					GUIRenderer.selectedObject = null;
+				}
+				else
+					_settings.mode = "weightChanger";
+			}
 
 			GUILayout.EndScrollView();
 			GUILayout.EndVertical();

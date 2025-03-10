@@ -159,6 +159,10 @@ namespace MultiTool.Modules
 		internal static float[] scaleOptions = new float[] { 10f, 1f, 0.1f, 0.01f, 0.001f };
 		internal static bool scaleHold = true;
 
+		internal static float weightValue = 0.1f;
+		internal static float[] weightOptions = new float[] { 100f, 10f, 1f, 0.1f, 0.01f};
+		internal static bool weightHold = true;
+
 		// Colour palettes.
 		internal static List<Color> palette = new List<Color>();
 		private static Dictionary<int, GUIStyle> paletteCache = new Dictionary<int, GUIStyle>();
@@ -1137,6 +1141,9 @@ namespace MultiTool.Modules
 		/// </summary>
 		private void RenderHUD()
 		{
+			GUILayout.BeginArea(new Rect(0, 0, resolutionX, resolutionY));
+
+			// TODO: Convert to GUILayout.
 			float width = 400f;
 			float height = 40f;
 			float x = resolutionX / 2 - 200f;
@@ -1144,7 +1151,7 @@ namespace MultiTool.Modules
 			switch (settings.mode)
 			{
 				case "colorPicker":
-					GUI.Box(new Rect(x, y, width, height), String.Empty);
+					GUI.Box(new Rect(x, y, width, height), string.Empty);
 					GUI.Button(new Rect(x, y, width / 2, height / 2), "Copy");
 					GUI.Button(new Rect(x + width / 2, y, width / 2, height / 2), "Paste");
 
@@ -1167,7 +1174,7 @@ namespace MultiTool.Modules
 					GUI.skin.button = defaultStyle;
 					break;
 				case "scale":
-                    GUI.Button(new Rect(resolutionX / 2 - 250f, 10f, 500f, 30f), $"Selected object: {(selectedObject != null ? selectedObject.name: "None")} ({MultiTool.Binds.GetPrettyName((int)Keybinds.Inputs.action6)} to {(selectedObject != null ? "deselect" : "select")})");
+                    GUI.Button(new Rect(resolutionX / 2 - 250f, 10f, 500f, 30f), $"Selected object: {(selectedObject != null ? selectedObject.name: "None")} ({MultiTool.Binds.GetPrettyName((int)Keybinds.Inputs.action1)} to {(selectedObject != null ? "deselect" : "select")})");
                     if (selectedObject != null)
                     {
                         width = 400f;
@@ -1175,7 +1182,7 @@ namespace MultiTool.Modules
                         x = 0;
                         y = resolutionY / 2 - (height + 20f) / 2;
 
-                        GUI.Box(new Rect(x, y, width, height + 20f), String.Empty);
+                        GUI.Box(new Rect(x, y, width, height + 20f), string.Empty);
                         int rows = 6;
                         GUI.Button(new Rect(x, y, width / 2, height / rows), "Scale up");
                         GUI.Button(new Rect(x, y + height / rows, width / 2, height / rows), "Scale down");
@@ -1320,7 +1327,7 @@ namespace MultiTool.Modules
 					height = 40f;
 					x = resolutionX / 2 - 200f;
 					y = resolutionY * 0.90f;
-					GUI.Box(new Rect(x, y, width, height), String.Empty);
+					GUI.Box(new Rect(x, y, width, height), string.Empty);
 					GUI.Button(new Rect(x, y, width / 2, height / 2), "Select object");
 					GUI.Button(new Rect(x + width / 2, y, width / 2, height / 2), "Regenerate object");
 
@@ -1329,6 +1336,64 @@ namespace MultiTool.Modules
 
 					if (selectedObject != null)
 						GUI.Button(new Rect(resolutionX / 2 - 250f, 10f, 500f, 30f), $"Selected object: {selectedObject.name} (ID: {selectedObject.idInSave})");
+					break;
+				case "weightChanger":
+					GUILayout.BeginVertical();
+					GUILayout.Space(10);
+					GUILayout.BeginHorizontal();
+					GUILayout.FlexibleSpace();
+					GUILayout.BeginVertical("box");
+					GUILayout.Button($"Selected object: {(selectedObject != null ? selectedObject.name : "None")} ({MultiTool.Binds.GetPrettyName((int)Keybinds.Inputs.action1)} to {(selectedObject != null ? "deselect" : "select")})", GUILayout.MaxHeight(30));
+					if (selectedObject != null)
+					{
+						GUILayout.Space(5);
+						GUILayout.Button($"Base weight: {selectedObject.GetComponent<massScript>()?.OwnMass().ToString("F2")} kg", GUILayout.MaxHeight(30));
+						GUILayout.Button($"Total weight: {selectedObject.GetComponent<massScript>()?.Mass().ToString("F2")} kg", GUILayout.MaxHeight(30));
+					}
+					GUILayout.EndVertical();
+					GUILayout.FlexibleSpace();
+					GUILayout.EndHorizontal();
+					GUILayout.EndVertical();
+
+					if (selectedObject != null)
+					{
+						float boxWidth = resolutionX / 5;
+						float buttonWidth = boxWidth / 2f;
+						GUILayout.BeginVertical(GUILayout.MinWidth(boxWidth));
+						GUILayout.FlexibleSpace();
+						GUILayout.BeginVertical("box");
+						GUILayout.BeginHorizontal();
+						GUILayout.Button("Weight up", "ButtonPrimaryWrap", GUILayout.Width(buttonWidth));
+						GUILayout.Button(MultiTool.Binds.GetPrettyName((int)Keybinds.Inputs.up), "ButtonPrimaryWrap", GUILayout.Width(buttonWidth));
+						GUILayout.EndHorizontal();
+						GUILayout.Space(5);
+
+						GUILayout.BeginHorizontal();
+						GUILayout.Button($"Weight down", "ButtonPrimaryWrap", GUILayout.Width(buttonWidth));
+						GUILayout.Button(MultiTool.Binds.GetPrettyName((int)Keybinds.Inputs.down), "ButtonPrimaryWrap", GUILayout.Width(buttonWidth));
+						GUILayout.EndHorizontal();
+						GUILayout.Space(5);
+
+						GUILayout.BeginHorizontal();
+						GUILayout.Button($"Change amount: {weightValue} kg", "ButtonPrimaryWrap", GUILayout.Width(buttonWidth));
+						GUILayout.Button(MultiTool.Binds.GetPrettyName((int)Keybinds.Inputs.action5), "ButtonPrimaryWrap", GUILayout.Width(buttonWidth));
+						GUILayout.EndHorizontal();
+						GUILayout.Space(5);
+
+						GUILayout.BeginHorizontal();
+						GUILayout.Button($"Toggle hold to change ({(weightHold ? "Hold" : "Click")})", "ButtonPrimaryWrap", GUILayout.Width(buttonWidth));
+						GUILayout.Button(MultiTool.Binds.GetPrettyName((int)Keybinds.Inputs.select), "ButtonPrimaryWrap", GUILayout.Width(buttonWidth));
+						GUILayout.EndHorizontal();
+						GUILayout.Space(5);
+
+						GUILayout.BeginHorizontal();
+						GUILayout.Button("Reset", "ButtonPrimaryWrap", GUILayout.Width(buttonWidth));
+						GUILayout.Button(MultiTool.Binds.GetPrettyName((int)Keybinds.Inputs.action4), "ButtonPrimaryWrap", GUILayout.Width(buttonWidth));
+						GUILayout.EndHorizontal();
+						GUILayout.EndVertical();
+						GUILayout.FlexibleSpace();
+						GUILayout.EndVertical();
+					}
 					break;
 			}
 
@@ -1415,6 +1480,8 @@ namespace MultiTool.Modules
 				y += 25f;
 				GUI.Label(new Rect(x, y, contentWidth, 20f), "Blue: Interior zone");
 			}
+
+			GUILayout.EndArea();
 		}
 
         /// <summary>
