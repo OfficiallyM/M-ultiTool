@@ -16,8 +16,10 @@ namespace MultiTool.Tabs
 	{
 		public override string Name => "Vehicles";
 		public override bool HasConfigPane => true;
+		private string _configTitle = "Configuration";
+		public override string ConfigTitle => _configTitle;
 
-        private Settings _settings = new Settings();
+		private Settings _settings = new Settings();
 
         // Scroll vectors.
 		private Vector2 _vehicleScrollPosition;
@@ -39,6 +41,8 @@ namespace MultiTool.Tabs
         private List<float> _fuelValues = new List<float> { -1f };
         private List<int> _fuelTypes = new List<int> { -1 };
         private string _plate = string.Empty;
+
+		private bool _showSpawnHistory = false;
 
         public override void OnRegister()
         {
@@ -71,6 +75,8 @@ namespace MultiTool.Tabs
 
                 _rechunk = false;
             }
+
+			_configTitle = _showSpawnHistory ? "Spawn history" : "Configuration";
         }
 
         public override void RenderTab(Rect dimensions)
@@ -105,7 +111,7 @@ namespace MultiTool.Tabs
                     bool buttonText = GUI.Button(new Rect(boxRect.x, boxRect.y + (boxRect.height / 2), boxRect.width, boxRect.height / 2), vehicle.name, "ButtonTransparent");
                     if (buttonImage || buttonText)
                     {
-                        SpawnUtilities.Spawn(new Vehicle()
+						GUIRenderer.spawnedObjects.Add(SpawnUtilities.Spawn(new Vehicle()
                         {
                             gameObject = vehicle.gameObject,
                             variant = vehicle.variant,
@@ -116,7 +122,7 @@ namespace MultiTool.Tabs
                             color = Colour.GetColour(),
                             plate = _plate,
                             amt = vehicle.amt,
-                        });
+                        }));
                     }
                     GUILayout.Space(5);
                 }
@@ -132,73 +138,156 @@ namespace MultiTool.Tabs
         {
             GUILayout.BeginArea(dimensions);
             GUILayout.BeginVertical();
+			GUILayout.Space(10);
             _configScrollPosition = GUILayout.BeginScrollView(_configScrollPosition);
 
-            // Condition.
-            GUILayout.Label($"Condition: {(Item.Condition)_condition}");
-            _condition = Mathf.RoundToInt(GUILayout.HorizontalSlider(_condition, -1, _maxCondition));
-            GUILayout.Space(10);
+			if (_showSpawnHistory)
+			{
+				if (GUILayout.Button("Switch to configuration"))
+				{
+					_showSpawnHistory = !_showSpawnHistory;
+					_configScrollPosition = Vector2.zero;
+				}
+				GUILayout.Space(10);
 
-            // Plate.
-            GUILayout.Label("Plate (blank for random):");
-            _plate = GUILayout.TextField(_plate);
-            GUILayout.Space(10);
+				if (GUIRenderer.spawnedObjects.Count == 0)
+				{
+					GUILayout.BeginHorizontal();
+					GUILayout.FlexibleSpace();
+					GUILayout.Label("Nothing has been spawned yet");
+					GUILayout.FlexibleSpace();
+					GUILayout.EndHorizontal();
+				}
 
-            // Spawn with fuel.
-            if (GUILayout.Button(Accessibility.GetAccessibleString("Spawn with fuel", _settings.spawnWithFuel)))
-                _settings.spawnWithFuel = !_settings.spawnWithFuel;
-            GUILayout.Space(10);
+				foreach (GameObject obj in GUIRenderer.spawnedObjects)
+				{
+					// Check for anything that has been deleted and remove it.
+					if (obj == null)
+					{
+						GUIRenderer.spawnedObjects.Remove(obj);
+						break;
+					}
 
-            // Fuel mixes.
-            for (int i = 0; i < _fuelMixes; i++)
-            {
-                GUILayout.BeginVertical($"Fluid {i + 1}", "box");
-                GUILayout.Space(10);
+					bool isVehicle = GameUtilities.IsVehicleOrTrailer(obj);
 
-                // Fluid type.
-                string fuelType = ((mainscript.fluidenum)_fuelTypes[i]).ToString();
-                if (_fuelTypes[i] == -1)
-                    fuelType = "Default";
-                else
-                    fuelType = fuelType[0].ToString().ToUpper() + fuelType.Substring(1);
-                GUILayout.Label($"Fluid type: {fuelType}");
-                _fuelTypes[i] = Mathf.RoundToInt(GUILayout.HorizontalSlider(_fuelTypes[i], -1, _maxFuelType));
+					if (!isVehicle) continue;
 
-                GUILayout.Space(10);
+					string name = obj.name.Replace("(Clone)", string.Empty);
+					name = Translator.T(name, "vehicle");
 
-                // Fluid amount.
-                GUILayout.Label($"Fuel amount: {_fuelValues[i]}");
-                _fuelValues[i] = GUILayout.HorizontalSlider(_fuelValues[i], -1f, 1000f);
+					GUILayout.Label(name);
+					GUILayout.BeginHorizontal();
+					if (GUILayout.Button("Teleport to", GUILayout.MaxWidth(100)))
+						GameUtilities.TeleportPlayerWithParent(obj.transform.position + Vector3.up * 2f);
 
-                bool fuelValueParse = float.TryParse(GUILayout.TextField(_fuelValues[i].ToString()), out float tempFuelValue);
-                if (fuelValueParse)
-                    _fuelValues[i] = tempFuelValue;
+					GUILayout.Space(5);
 
-                GUILayout.EndVertical();
-                GUILayout.Space(5);
-            }
-            GUILayout.Space(5);
+					if (GUILayout.Button("Teleport here", GUILayout.MaxWidth(100)))
+					{
+						Vector3 position = mainscript.M.player.lookPoint + Vector3.up * 0.75f;
+						Quaternion rotation = Quaternion.FromToRotation(Vector3.forward, -mainscript.M.player.mainCam.transform.right);
 
-            GUILayout.BeginHorizontal();
-            if (_fuelMixes <= _maxFuelType && GUILayout.Button("Add fluid"))
-            {
-                _fuelMixes++;
-                _fuelTypes.Add(0);
-                _fuelValues.Add(0);
-            }
-            GUILayout.Space(10);
+						obj.transform.position = position;
+						obj.transform.rotation = rotation;
+					}
 
-            if (_fuelMixes > 1 && GUILayout.Button("Remove last fluid"))
-            {
-                _fuelMixes--;
-                _fuelTypes.RemoveAt(_fuelTypes.Count - 1);
-                _fuelValues.RemoveAt(_fuelValues.Count - 1);
-            }
-            GUILayout.EndHorizontal();
-            GUILayout.Space(10);
+					GUILayout.Space(5);
 
-            Colour.RenderColourSliders(dimensions.width);
-            GUILayout.Space(10);
+					if (GUILayout.Button("Delete", GUILayout.MaxWidth(100)))
+					{
+						tosaveitemscript save = obj.GetComponent<tosaveitemscript>();
+						if (save != null)
+						{
+							save.removeFromMemory = true;
+
+							foreach (tosaveitemscript component in obj.transform.root.GetComponentsInChildren<tosaveitemscript>())
+							{
+								component.removeFromMemory = true;
+							}
+							UnityEngine.Object.Destroy(obj);
+							GUIRenderer.spawnedObjects.Remove(obj);
+							break;
+						}
+					}
+					GUILayout.EndHorizontal();
+					GUILayout.Space(10);
+				}
+			}
+			else
+			{
+				if (GUILayout.Button("Switch to spawn history"))
+				{
+					_showSpawnHistory = !_showSpawnHistory;
+					_configScrollPosition = Vector2.zero;
+				}
+				GUILayout.Space(10);
+
+				// Condition.
+				GUILayout.Label($"Condition: {(Item.Condition)_condition}");
+				_condition = Mathf.RoundToInt(GUILayout.HorizontalSlider(_condition, -1, _maxCondition));
+				GUILayout.Space(10);
+
+				// Plate.
+				GUILayout.Label("Plate (blank for random):");
+				_plate = GUILayout.TextField(_plate);
+				GUILayout.Space(10);
+
+				// Spawn with fuel.
+				if (GUILayout.Button(Accessibility.GetAccessibleString("Spawn with fuel", _settings.spawnWithFuel)))
+					_settings.spawnWithFuel = !_settings.spawnWithFuel;
+				GUILayout.Space(10);
+
+				// Fuel mixes.
+				for (int i = 0; i < _fuelMixes; i++)
+				{
+					GUILayout.BeginVertical($"Fluid {i + 1}", "box");
+					GUILayout.Space(10);
+
+					// Fluid type.
+					string fuelType = ((mainscript.fluidenum)_fuelTypes[i]).ToString();
+					if (_fuelTypes[i] == -1)
+						fuelType = "Default";
+					else
+						fuelType = fuelType[0].ToString().ToUpper() + fuelType.Substring(1);
+					GUILayout.Label($"Fluid type: {fuelType}");
+					_fuelTypes[i] = Mathf.RoundToInt(GUILayout.HorizontalSlider(_fuelTypes[i], -1, _maxFuelType));
+
+					GUILayout.Space(10);
+
+					// Fluid amount.
+					GUILayout.Label($"Fuel amount: {_fuelValues[i]}");
+					_fuelValues[i] = GUILayout.HorizontalSlider(_fuelValues[i], -1f, 1000f);
+
+					bool fuelValueParse = float.TryParse(GUILayout.TextField(_fuelValues[i].ToString()), out float tempFuelValue);
+					if (fuelValueParse)
+						_fuelValues[i] = tempFuelValue;
+
+					GUILayout.EndVertical();
+					GUILayout.Space(5);
+				}
+				GUILayout.Space(5);
+
+				GUILayout.BeginHorizontal();
+				if (_fuelMixes <= _maxFuelType && GUILayout.Button("Add fluid"))
+				{
+					_fuelMixes++;
+					_fuelTypes.Add(0);
+					_fuelValues.Add(0);
+				}
+				GUILayout.Space(10);
+
+				if (_fuelMixes > 1 && GUILayout.Button("Remove last fluid"))
+				{
+					_fuelMixes--;
+					_fuelTypes.RemoveAt(_fuelTypes.Count - 1);
+					_fuelValues.RemoveAt(_fuelValues.Count - 1);
+				}
+				GUILayout.EndHorizontal();
+				GUILayout.Space(10);
+
+				Colour.RenderColourSliders(dimensions.width);
+				GUILayout.Space(10);
+			}
 
             GUILayout.EndScrollView();
             GUILayout.EndVertical();

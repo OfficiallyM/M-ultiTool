@@ -115,6 +115,8 @@ namespace MultiTool.Modules
 			{ "Other", new List<Type>() { typeof(MonoBehaviour) } },
 		};
 
+		internal static List<GameObject> spawnedObjects = new List<GameObject>();
+
 		// POI variables.
 		internal static List<POI> POIs = new List<POI>();
 

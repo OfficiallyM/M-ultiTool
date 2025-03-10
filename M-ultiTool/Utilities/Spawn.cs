@@ -129,7 +129,7 @@ namespace MultiTool.Utilities
 		/// Wrapper around the default spawn function to extend vehicle functionality
 		/// </summary>
 		/// <param name="vehicle">The vehicle to spawn</param>
-		internal static void Spawn(Vehicle vehicle)
+		internal static GameObject Spawn(Vehicle vehicle)
 		{
             int selectedCondition = vehicle.conditionInt;
 			if (selectedCondition == -1)
@@ -168,7 +168,7 @@ namespace MultiTool.Utilities
 			    spawnedVehicle = Spawn(vehicle.gameObject, vehicle.color, selectedCondition, vehicle.variant);
 
 			// Error occurred during vehicle spawn, return early.
-			if (spawnedVehicle == null) return;
+			if (spawnedVehicle == null) return null;
 
 			// Reset prefab plate so it doesn't persist between spawns when unset.
 			if (vehicle.plate != String.Empty)
@@ -247,6 +247,8 @@ namespace MultiTool.Utilities
                     }
                 }
             }
+
+			return spawnedVehicle;
 		}
 
 		/// <summary>

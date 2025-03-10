@@ -124,7 +124,6 @@ namespace MultiTool.Tabs
 				GUILayout.EndHorizontal();
 			}
 
-
 			foreach (SpawnedPOI poi in _spawnedPOIs)
 			{
 				GUILayout.Label(poi.poi.name);
