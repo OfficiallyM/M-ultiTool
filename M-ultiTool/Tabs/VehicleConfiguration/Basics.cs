@@ -70,10 +70,24 @@ namespace MultiTool.Tabs.VehicleConfiguration
 			GUILayout.Label("Vehicle Colour", "LabelHeader");
 			Colour.RenderColourSliders(dimensions.width / 2);
 
+			GUILayout.BeginHorizontal();
+			if (GUILayout.Button("Randomise colour", GUILayout.MaxWidth(200)))
+			{
+				Color color = Colour.GetColour();
+				color.r = UnityEngine.Random.Range(0f, 255f) / 255f;
+				color.g = UnityEngine.Random.Range(0f, 255f) / 255f;
+				color.b = UnityEngine.Random.Range(0f, 255f) / 255f;
+				Colour.SetColour(color);
+			}
+
+			GUILayout.Space(10);
+
 			if (GUILayout.Button("Apply", GUILayout.MaxWidth(200)))
 			{
 				GameUtilities.Paint(Colour.GetColour(), partconditionscript);
 			}
+			GUILayout.EndHorizontal();
+
 
 			GUILayout.EndScrollView();
             GUILayout.EndVertical();

@@ -15,7 +15,7 @@ namespace MultiTool.Tabs.VehicleConfiguration
 {
     internal sealed class MaterialChanger : Core.VehicleConfigurationTab
 	{
-        public override string Name => "MaterialChanger";
+        public override string Name => "Material Changer";
 
 		private Vector2 _position;
 		private carscript _car;
@@ -132,6 +132,8 @@ namespace MultiTool.Tabs.VehicleConfiguration
 				}
 			}
 
+			GUILayout.Space(10);
+
 			if (_selectedPart != null)
 			{
 				// Material selector.
@@ -159,6 +161,8 @@ namespace MultiTool.Tabs.VehicleConfiguration
 					}
 				}
 
+				GUILayout.Space(10);
+
 				Color? materialColor = null;
 
 				// Colour selector.
@@ -169,7 +173,7 @@ namespace MultiTool.Tabs.VehicleConfiguration
 				}
 
 				if (_colorSelectorOpen)
-					materialColor = Colour.RenderColourSliders(dimensions.width / 2, GUIRenderer.materialColor);
+					materialColor = Colour.RenderColourSliders(dimensions.width / 2);
 
 				if (_selectedMaterial != null && GUILayout.Button("Apply", GUILayout.MaxWidth(400)))
 				{

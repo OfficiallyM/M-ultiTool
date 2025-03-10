@@ -15,7 +15,6 @@ namespace MultiTool.Tabs.VehicleConfiguration
 	{
         public override string Name => "Light Changer";
 
-        private Settings _settings = new Settings();
         private Vector2 _position;
 
 		private bool _lightSelectorOpen = false;

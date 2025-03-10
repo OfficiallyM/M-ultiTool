@@ -18,6 +18,7 @@ namespace MultiTool.Tabs.VehicleConfiguration
         public override string Name => "Glass";
 
 		private Vector2 _position;
+		private Color _color;
 
 		public override void RenderTab(Rect dimensions)
 		{
@@ -32,15 +33,17 @@ namespace MultiTool.Tabs.VehicleConfiguration
 
 			GUILayout.Label("Window settings", "LabelHeader");
 
-			GUIRenderer.windowColor = Colour.RenderColourSliders(dimensions.width / 2, GUIRenderer.windowColor, true);
+			_color = Colour.RenderColourSliders(dimensions.width / 2, _color, true);
 
 			GUILayout.BeginHorizontal();
 			if (GUILayout.Button("Randomise colour", GUILayout.MaxWidth(200)))
 			{
-				GUIRenderer.windowColor.r = UnityEngine.Random.Range(0f, 255f) / 255f;
-				GUIRenderer.windowColor.g = UnityEngine.Random.Range(0f, 255f) / 255f;
-				GUIRenderer.windowColor.b = UnityEngine.Random.Range(0f, 255f) / 255f;
+				_color.r = UnityEngine.Random.Range(0f, 255f) / 255f;
+				_color.g = UnityEngine.Random.Range(0f, 255f) / 255f;
+				_color.b = UnityEngine.Random.Range(0f, 255f) / 255f;
 			}
+
+			GUILayout.Space(10);
 
 			if (GUILayout.Button("Apply", GUILayout.MaxWidth(200)))
 			{
@@ -53,14 +56,14 @@ namespace MultiTool.Tabs.VehicleConfiguration
 						// Outer glass.
 						case "Glass":
 							// Use selected colour.
-							meshRenderer.material.color = GUIRenderer.windowColor;
+							meshRenderer.material.color = _color;
 							break;
 
 						// Inner glass.
 						case "GlassNoReflection":
 							// Use a more transparent version of the selected colour
 							// for the inner glass to ensure it's still see-through.
-							Color innerColor = GUIRenderer.windowColor;
+							Color innerColor = _color;
 							if (innerColor.a > 0.2f)
 								innerColor.a = 0.2f;
 							meshRenderer.material.color = innerColor;
@@ -68,7 +71,7 @@ namespace MultiTool.Tabs.VehicleConfiguration
 					}
 				}
 
-				SaveUtilities.UpdateGlass(new GlassData() { ID = save.idInSave, color = GUIRenderer.windowColor, type = "windows" });
+				SaveUtilities.UpdateGlass(new GlassData() { ID = save.idInSave, color = _color, type = "windows" });
 			}
 			GUILayout.EndHorizontal();
 
@@ -84,21 +87,23 @@ namespace MultiTool.Tabs.VehicleConfiguration
 				{
 					MeshRenderer meshRenderer = outerGlass.GetComponent<MeshRenderer>();
 
-					GUIRenderer.sunRoofColor = Colour.RenderColourSliders(dimensions.width / 2, GUIRenderer.sunRoofColor, true);
+					_color = Colour.RenderColourSliders(dimensions.width / 2, _color, true);
 
 					GUILayout.BeginHorizontal();
 					if (GUILayout.Button("Randomise colour", GUILayout.MaxWidth(200)))
 					{
-						GUIRenderer.sunRoofColor.r = UnityEngine.Random.Range(0f, 255f) / 255f;
-						GUIRenderer.sunRoofColor.g = UnityEngine.Random.Range(0f, 255f) / 255f;
-						GUIRenderer.sunRoofColor.b = UnityEngine.Random.Range(0f, 255f) / 255f;
+						_color.r = UnityEngine.Random.Range(0f, 255f) / 255f;
+						_color.g = UnityEngine.Random.Range(0f, 255f) / 255f;
+						_color.b = UnityEngine.Random.Range(0f, 255f) / 255f;
 					}
+
+					GUILayout.Space(10);
 
 					if (GUILayout.Button("Apply", GUILayout.MaxWidth(200)))
 					{
-						meshRenderer.material.color = GUIRenderer.sunRoofColor;
+						meshRenderer.material.color = _color;
 
-						SaveUtilities.UpdateGlass(new GlassData() { ID = save.idInSave, color = GUIRenderer.sunRoofColor, type = "sunroof" });
+						SaveUtilities.UpdateGlass(new GlassData() { ID = save.idInSave, color = _color, type = "sunroof" });
 					}
 					GUILayout.EndHorizontal();
 				}

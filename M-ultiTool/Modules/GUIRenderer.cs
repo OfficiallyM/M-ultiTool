@@ -130,10 +130,6 @@ namespace MultiTool.Modules
 		internal static Dictionary<mainscript.fluidenum, int> coolants = new Dictionary<mainscript.fluidenum, int>();
 		internal static Dictionary<mainscript.fluidenum, int> oils = new Dictionary<mainscript.fluidenum, int>();
 		internal static Dictionary<mainscript.fluidenum, int> fuels = new Dictionary<mainscript.fluidenum, int>();
-		internal static Color sunRoofColor = new Color(255f / 255f, 255f / 255f, 255f / 255f, 0.5f);
-		internal static Color windowColor = new Color(255f / 255f, 255f / 255f, 255f / 255f, 0.5f);
-		internal static Color materialColor = new Color(0f, 0f, 0f);
-        internal static Color lightColor = new Color(1f, 1f, 1f);
 
 		// Slot mover variables.
 		internal static GameObject selectedSlot;

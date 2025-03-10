@@ -70,6 +70,8 @@ namespace MultiTool.Tabs.VehicleConfiguration
 				}
 			}
 
+			GUILayout.Space(10);
+
 			if (_selectedRandom != null)
 			{
 				for (int i = 0; i < _selectedRandom.tipusok.Length; i++)
