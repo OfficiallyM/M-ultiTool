@@ -57,10 +57,10 @@ namespace MultiTool.Tabs.VehicleConfiguration
 			{ "car07csik", "Fury stripe white" },
 			{ "car07csik2", "Fury stripe gold" },
 		};
-		private List<PartGroup> _materialParts = new List<PartGroup>();
+		private List<PartGroupParent> _materialParts = new List<PartGroupParent>();
 		private bool _partSelectorOpen = false;
 		private bool _materialSelectorOpen = false;
-		private PartGroup _selectedPart = null;
+		private List<PartGroup> _selectedParts = new List<PartGroup>();
 		private string _selectedMaterial = null;
 		private bool _colorSelectorOpen = false;
 
@@ -72,22 +72,64 @@ namespace MultiTool.Tabs.VehicleConfiguration
 			_materialParts.Clear();
 			GameObject carObject = _car.gameObject;
 
+			string mainParent = null;
+			PartGroupParent mainParentGroup = null;
+
 			// Add all parts with a condition.
+			int index = 1;
 			foreach (partconditionscript part in _car.GetComponentsInChildren<partconditionscript>())
-				_materialParts.Add(PartGroup.Create(part.name, part));
+			{
+				if (mainParent == null)
+					mainParent = part.gameObject.name;
+
+				string parent = part.transform.parent?.name ?? mainParent;
+
+				PartGroupParent parentGroup = null;
+				foreach (PartGroupParent partParent in _materialParts)
+				{
+                    if (partParent.name == parent)
+                    {
+						parentGroup = partParent;
+						break;
+                    }
+                }
+
+				if (parentGroup == null) 
+				{
+					_materialParts.Add(PartGroupParent.Create(parent));
+					parentGroup = _materialParts[_materialParts.Count - 1];
+					if (parent == mainParent)
+						mainParentGroup = parentGroup;
+				}
+
+				parentGroup.parts.Add(PartGroup.Create(part.name, part, index));
+
+				index++;
+			}
 
 			// Add any extra conditionless parts.
 			MeshRenderer floor = GameUtilities.GetConditionlessVehiclePartByName(carObject, "Interior");
 			if (floor != null)
-				_materialParts.Add(PartGroup.Create("Interior", floor));
+				mainParentGroup.parts.Add(PartGroup.Create("Interior", floor, index + 1));
 			MeshRenderer floor2 = GameUtilities.GetConditionlessVehiclePartByName(carObject, "Floor");
 			if (floor2 != null)
-				_materialParts.Add(PartGroup.Create("Floor", floor2));
+				mainParentGroup.parts.Add(PartGroup.Create("Floor", floor2, index + 2));
+
+			// Reindex by group.
+			index = 1;
+			foreach (PartGroupParent parent in _materialParts)
+			{
+				foreach (PartGroup group in parent.parts)
+				{
+					group.index = index;
+					index++;
+				}
+			}
 		}
 
 		public override void OnVehicleChange()
 		{
-			_selectedPart = null;
+			_selectedParts.Clear();
 		}
 
 		public override void RenderTab(Rect dimensions)
@@ -103,39 +145,45 @@ namespace MultiTool.Tabs.VehicleConfiguration
 			GUILayout.Label("Material changer", "LabelHeader");
 
 			// Part selector.
-			string partSelectString = "Select part";
-			if (_selectedPart != null)
-				partSelectString = $"Part: {GetPrettyPartName(_selectedPart.name)}";
-			if (GUILayout.Button(partSelectString, GUILayout.MaxWidth(400)))
+			if (GUILayout.Button("Select parts", GUILayout.MaxWidth(400)))
 				_partSelectorOpen = !_partSelectorOpen;
 
 			if (_partSelectorOpen)
 			{
-				if (GUILayout.Button("None", GUILayout.MaxWidth(400)))
+				foreach (PartGroupParent parent in _materialParts)
 				{
-					_selectedPart = null;
-					_partSelectorOpen = false;
-				}
-				foreach (PartGroup group in _materialParts)
-				{
-					string parent = group.parts?[0]?.transform.parent?.name;
-					// Hide parent if name matches part name.
-					if (parent != null && GetPrettyPartName(parent) == GetPrettyPartName(group.name))
-						parent = null;
-					if (parent != null)
-						parent = $"(Parent: {GetPrettyPartName(parent)})";
-					if (GUILayout.Button($"{GetPrettyPartName(group.name)} {(parent != null ? parent : "")}", GUILayout.MaxWidth(400)))
+					GUILayout.Button($"Parent: {GetPrettyPartName(parent.name)}", "ButtonPrimaryTextLeft", GUILayout.MaxWidth(400));
+
+					foreach (PartGroup group in parent.parts)
 					{
-						_selectedPart = group;
-						_partSelectorOpen = false;
+						if (GUILayout.Button($" ({group.index}) {GetPrettyPartName(group.name)}", "ButtonPrimaryTextLeft", GUILayout.MaxWidth(400)))
+						{
+							Notifications.SendInformation("Material changer", $"Selected {GetPrettyPartName(group.name)}.", Notification.NotificationLength.VeryShort);
+							_selectedParts.Add(group);
+						}
 					}
+
+					GUILayout.Space(2);
 				}
 			}
 
 			GUILayout.Space(10);
 
-			if (_selectedPart != null)
+			if (_selectedParts.Count > 0)
 			{
+				// Selected parts list.
+				GUILayout.Label("Selected parts", "LabelSubHeader");
+				foreach (PartGroup selectedPart in _selectedParts)
+				{
+					if (GUILayout.Button($" ({selectedPart.index}) {GetPrettyPartName(selectedPart.name)}", GUILayout.MaxWidth(400)))
+					{
+						_selectedParts.Remove(selectedPart);
+						break;
+					}
+				}
+
+				GUILayout.Space(10);
+
 				// Material selector.
 				string materialSelectString = "Select material";
 				if (_selectedMaterial != null)
@@ -177,43 +225,46 @@ namespace MultiTool.Tabs.VehicleConfiguration
 
 				if (_selectedMaterial != null && GUILayout.Button("Apply", GUILayout.MaxWidth(400)))
 				{
-					if (_selectedPart.IsConditionless())
+					foreach (PartGroup selectedPart in _selectedParts)
 					{
-						foreach (MeshRenderer mesh in _selectedPart.meshes)
+						if (selectedPart.IsConditionless())
 						{
-							Thread thread = new Thread(() =>
+							foreach (MeshRenderer mesh in selectedPart.meshes)
 							{
-								GameUtilities.SetConditionlessPartMaterial(mesh, _selectedMaterial, materialColor);
-								SaveUtilities.UpdateMaterials(new MaterialData()
+								Thread thread = new Thread(() =>
 								{
-									ID = save.idInSave,
-									part = _selectedPart.name,
-									isConditionless = true,
-									exact = IsExact(_selectedPart.name),
-									type = _selectedMaterial,
-									color = materialColor
+									GameUtilities.SetConditionlessPartMaterial(mesh, _selectedMaterial, materialColor);
+									SaveUtilities.UpdateMaterials(new MaterialData()
+									{
+										ID = save.idInSave,
+										part = selectedPart.name,
+										isConditionless = true,
+										exact = IsExact(selectedPart.name),
+										type = _selectedMaterial,
+										color = materialColor
+									});
 								});
-							});
-							thread.Start();
+								thread.Start();
+							}
 						}
-					}
-					else
-					{
-						foreach (partconditionscript part in _selectedPart.parts)
+						else
 						{
-							Thread thread = new Thread(() =>
+							foreach (partconditionscript part in selectedPart.parts)
 							{
-								GameUtilities.SetPartMaterial(part, _selectedMaterial, materialColor);
-								SaveUtilities.UpdateMaterials(new MaterialData()
+								Thread thread = new Thread(() =>
 								{
-									ID = save.idInSave,
-									part = _selectedPart.name,
-									exact = IsExact(_selectedPart.name),
-									type = _selectedMaterial,
-									color = materialColor
+									GameUtilities.SetPartMaterial(part, _selectedMaterial, materialColor);
+									SaveUtilities.UpdateMaterials(new MaterialData()
+									{
+										ID = save.idInSave,
+										part = selectedPart.name,
+										exact = IsExact(selectedPart.name),
+										type = _selectedMaterial,
+										color = materialColor
+									});
 								});
-							});
-							thread.Start();
+								thread.Start();
+							}
 						}
 					}
 				}

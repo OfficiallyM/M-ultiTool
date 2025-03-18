@@ -105,6 +105,10 @@ namespace MultiTool.Utilities.UI
 				buttonPrimaryWrap.name = "ButtonPrimaryWrap";
 				buttonPrimaryWrap.wordWrap = true;
 
+				GUIStyle buttonPrimaryTextLeft = new GUIStyle(buttonPrimary);
+				buttonPrimaryTextLeft.name = "ButtonPrimaryTextLeft";
+				buttonPrimaryTextLeft.alignment = TextAnchor.MiddleLeft;
+
 				GUIStyle buttonSecondary = new GUIStyle(_buttonStyle);
                 buttonSecondary.name = "ButtonSecondary";
                 buttonSecondary.normal.background = _darkGrey;
@@ -180,6 +184,10 @@ namespace MultiTool.Utilities.UI
                 labelHeader.focused.textColor = Color.white;
                 labelHeader.wordWrap = true;
 
+				GUIStyle labelSubHeader = new GUIStyle(labelHeader);
+				labelSubHeader.name = "LabelSubHeader";
+				labelSubHeader.fontSize = 18;
+
 				GUIStyle labelMessage = new GUIStyle(_skin.label);
 				labelMessage.name = "LabelMessage";
 				labelMessage.alignment = TextAnchor.MiddleCenter;
@@ -227,6 +235,7 @@ namespace MultiTool.Utilities.UI
                     // Buttons.
                     buttonPrimary,
 					buttonPrimaryWrap,
+					buttonPrimaryTextLeft,
 					buttonSecondary,
                     buttonBlack,
                     buttonBlackTranslucent,
@@ -236,6 +245,7 @@ namespace MultiTool.Utilities.UI
 
                     // Labels.
                     labelHeader,
+					labelSubHeader,
 					labelMessage,
 					labelCenter,
 

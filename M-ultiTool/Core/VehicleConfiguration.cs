@@ -8,38 +8,56 @@ using UnityEngine;
 
 namespace MultiTool.Core
 {
+	internal class PartGroupParent
+	{
+		internal string name;
+		internal List<PartGroup> parts;
+
+		internal static PartGroupParent Create(string _name)
+		{
+			return new PartGroupParent()
+			{
+				name = _name, 
+				parts = new List<PartGroup>(),
+			};
+		}
+	}
+
 	internal class PartGroup
 	{
 		internal string name;
+		internal int index;
 		internal List<partconditionscript> parts;
         internal List<MeshRenderer> meshes;
 
-		internal static PartGroup Create(string _name, List<partconditionscript> _parts)
+		internal static PartGroup Create(string _name, List<partconditionscript> _parts, int _index)
 		{
 			return new PartGroup()
 			{
 				name = _name,
 				parts = _parts,
+				index = _index
 			};
 		}
 
-		internal static PartGroup Create(string _name, partconditionscript _part)
+		internal static PartGroup Create(string _name, partconditionscript _part, int _index)
 		{
-            return Create(_name, new List<partconditionscript>() { _part });
+            return Create(_name, new List<partconditionscript>() { _part }, _index);
 		}
 
-        internal static PartGroup Create(string _name, List<MeshRenderer> _meshes)
+        internal static PartGroup Create(string _name, List<MeshRenderer> _meshes, int _index)
         {
             return new PartGroup()
             {
                 name = _name,
                 meshes = _meshes,
-            };
+				index = _index
+			};
         }
 
-        internal static PartGroup Create(string _name, MeshRenderer _mesh)
+        internal static PartGroup Create(string _name, MeshRenderer _mesh, int _index)
         {
-            return Create(_name, new List<MeshRenderer>() { _mesh });
+            return Create(_name, new List<MeshRenderer>() { _mesh }, _index);
         }
 
         internal bool IsConditionless()
