@@ -54,7 +54,9 @@ namespace MultiTool.Tabs.VehicleConfiguration
 			carscript car = mainscript.M.player.Car;
 			tosaveitemscript save = car.GetComponent<tosaveitemscript>();
 
-			GUILayout.Label("Choose lights to alter", "LabelHeader");
+			GUILayout.Label("Light changer", "LabelHeader");
+
+			GUILayout.Label("Choose lights to alter", "LabelSubHeader");
 
 			if (GUILayout.Button("Select", GUILayout.MaxWidth(200)))
 				_lightSelectorOpen = !_lightSelectorOpen;
@@ -75,7 +77,7 @@ namespace MultiTool.Tabs.VehicleConfiguration
 				GUILayout.Space(10);
 			}
 
-			GUILayout.Label("Selected lights", "LabelHeader");
+			GUILayout.Label("Selected lights", "LabelSubHeader");
 
 			if (_selectedLights.Count == 0)
 			{
