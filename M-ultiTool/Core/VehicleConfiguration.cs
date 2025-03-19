@@ -109,6 +109,27 @@ namespace MultiTool.Core
         [DataMember] public float amount;
     }
 
+	internal class FluidPercentage
+	{
+		public mainscript.fluidenum type;
+		public float percentage;
+
+		public FluidPercentage Clone()
+		{
+			return new FluidPercentage()
+			{
+				type = type,
+				percentage = percentage
+			};
+		}
+	}
+
+	internal class FluidMix
+	{
+		public tankscript tank;
+		public List<FluidPercentage> fluids;
+	}
+
     internal class EngineStats
     {
         internal float maxTorque;
@@ -117,6 +138,7 @@ namespace MultiTool.Core
         internal Texture2D torqueGraph;
     }
 
+	// TODO: Refactor everything below to remove default values and store those in a separate object instance.
     [DataContract]
     internal class EngineTuning
     {

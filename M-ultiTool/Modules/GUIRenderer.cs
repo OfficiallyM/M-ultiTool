@@ -127,6 +127,7 @@ namespace MultiTool.Modules
 		internal static Dictionary<mainscript.fluidenum, int> piss = new Dictionary<mainscript.fluidenum, int>();
 
 		// Vehicle configuration variables.
+		internal static List<FluidPercentage> fluidDefaults = new List<FluidPercentage>();
 		internal static Dictionary<mainscript.fluidenum, int> coolants = new Dictionary<mainscript.fluidenum, int>();
 		internal static Dictionary<mainscript.fluidenum, int> oils = new Dictionary<mainscript.fluidenum, int>();
 		internal static Dictionary<mainscript.fluidenum, int> fuels = new Dictionary<mainscript.fluidenum, int>();
@@ -283,6 +284,7 @@ namespace MultiTool.Modules
 				SaveUtilities.LoadSaveData();
 
 				// Clear any existing static values.
+				fluidDefaults.Clear();
 				coolants.Clear();
 				oils.Clear();
 				fuels.Clear();
@@ -292,6 +294,7 @@ namespace MultiTool.Modules
 				int maxFuelType = (int)Enum.GetValues(typeof(mainscript.fluidenum)).Cast<mainscript.fluidenum>().Max();
 				for (int i = 0; i <= maxFuelType; i++)
 				{
+					fluidDefaults.Add(new FluidPercentage() { type = (mainscript.fluidenum)i, percentage = 0 });
 					coolants.Add((mainscript.fluidenum)i, 0);
 					oils.Add((mainscript.fluidenum)i, 0);
 					fuels.Add((mainscript.fluidenum)i, 0);
