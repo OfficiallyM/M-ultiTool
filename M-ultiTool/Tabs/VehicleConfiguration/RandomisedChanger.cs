@@ -37,7 +37,6 @@ namespace MultiTool.Tabs.VehicleConfiguration
 
 		public override void RenderTab(Rect dimensions)
 		{
-			dimensions.width /= 2;
 			GUILayout.BeginArea(dimensions);
 			GUILayout.BeginVertical();
 			_position = GUILayout.BeginScrollView(_position);
