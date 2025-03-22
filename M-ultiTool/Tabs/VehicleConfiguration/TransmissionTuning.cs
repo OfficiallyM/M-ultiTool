@@ -17,6 +17,7 @@ namespace MultiTool.Tabs.VehicleConfiguration
 
 		private Vector2 _position;
 		private Core.TransmissionTuning _transmissionTuning = null;
+		private Core.TransmissionTuning _defaultTuning = null;
 
 		public override void OnVehicleChange()
 		{
@@ -30,15 +31,21 @@ namespace MultiTool.Tabs.VehicleConfiguration
 
 			int gearIndex = 1;
 			// Populate default tuning values if missing.
-			if (_transmissionTuning == null)
+			if (_transmissionTuning == null || _defaultTuning == null)
 			{
 				// Attempt to load data from save.
 				_transmissionTuning = SaveUtilities.GetTransmissionTuning(save.idInSave);
+				_defaultTuning = SaveUtilities.GetDefaultTransmissionTuning(save.idInSave);
 
 				// Save has no data for this transmission, load defaults.
-				if (_transmissionTuning == null)
+				if (_transmissionTuning == null || _defaultTuning == null)
 				{
 					_transmissionTuning = new Core.TransmissionTuning()
+					{
+						gears = new List<Gear>(),
+					};
+
+					_defaultTuning = new Core.TransmissionTuning()
 					{
 						gears = new List<Gear>(),
 					};
@@ -48,7 +55,7 @@ namespace MultiTool.Tabs.VehicleConfiguration
 					foreach (carscript.gearc gear in car.gears)
 					{
 						_transmissionTuning.gears.Add(new Gear(gearIndex, gear.ratio, gear.freeRun) { });
-						_transmissionTuning.defaultGears.Add(new Gear(gearIndex, gear.ratio, gear.freeRun) { });
+						_defaultTuning.gears.Add(new Gear(gearIndex, gear.ratio, gear.freeRun) { });
 						gearIndex++;
 					}
 				}
@@ -100,9 +107,9 @@ namespace MultiTool.Tabs.VehicleConfiguration
 				}
 				if (GUILayout.Button("Reset", GUILayout.MaxWidth(200)))
 				{
-					if (_transmissionTuning.gears.Count > gearIndex && _transmissionTuning.defaultGears[gearIndex] != null)
+					if (_transmissionTuning.gears.Count > gearIndex && _defaultTuning.gears[gearIndex] != null)
 					{
-						Gear defaultGear = _transmissionTuning.defaultGears[gearIndex];
+						Gear defaultGear = _defaultTuning.gears[gearIndex];
 						_transmissionTuning.gears[gearIndex] = defaultGear;
 						break;
 					}
@@ -122,7 +129,7 @@ namespace MultiTool.Tabs.VehicleConfiguration
 				_transmissionTuning.gears = _transmissionTuning.gears.OrderBy(t => t.gear).ToList();
 			GUILayout.Space(5);
 			if (GUILayout.Button("Reset gearing to stock", GUILayout.MaxWidth(200)))
-				_transmissionTuning.gears = _transmissionTuning.defaultGears.Copy();
+				_transmissionTuning.gears = _defaultTuning.gears.Copy();
 			GUILayout.EndHorizontal();
 			GUILayout.EndVertical();
 
@@ -140,7 +147,7 @@ namespace MultiTool.Tabs.VehicleConfiguration
 
 			if (GUILayout.Button("Reset tuning to stock", GUILayout.MaxWidth(200)))
 			{
-				_transmissionTuning.gears = _transmissionTuning.defaultGears.Copy();
+				_transmissionTuning.gears = _defaultTuning.gears.Copy();
 			}
 
 			GUILayout.EndHorizontal();

@@ -138,57 +138,25 @@ namespace MultiTool.Core
         internal Texture2D torqueGraph;
     }
 
-	// TODO: Refactor everything below to remove default values and store those in a separate object instance.
     [DataContract]
     internal class EngineTuning
     {
         [DataMember] internal float rpmChangeModifier;
-        [DataMember] internal float defaultRpmChangeModifier;
-
         [DataMember] internal float startChance;
-        [DataMember] internal float defaultStartChance;
-
         [DataMember] internal float motorBrakeModifier;
-        [DataMember] internal float defaultMotorBrakeModifier;
-
         [DataMember] internal float minOptimalTemp2;
-        [DataMember] internal float defaultMinOptimalTemp2;
-
         [DataMember] internal float maxOptimalTemp2;
-        [DataMember] internal float defaultMaxOptimalTemp2;
-
         [DataMember] internal float engineHeatGainMin;
-        [DataMember] internal float defaultEngineHeatGainMin;
-
         [DataMember] internal float engineHeatGainMax;
-        [DataMember] internal float defaultEngineHeatGainMax;
-
         [DataMember] internal bool noOverheat;
-        [DataMember] internal bool defaultNoOverheat;
-
         [DataMember] internal bool twoStroke;
-        [DataMember] internal bool defaultTwoStroke;
-
         [DataMember] internal mainscript.fluidenum oilFluid;
-        [DataMember] internal mainscript.fluidenum defaultOilFluid;
-
         [DataMember] internal float oilTolerationMin;
-        [DataMember] internal float defaultOilTolerationMin;
-
         [DataMember] internal float oilTolerationMax;
-        [DataMember] internal float defaultOilTolerationMax;
-
         [DataMember] internal float oilConsumptionModifier;
-        [DataMember] internal float defaultOilConsumptionModifier;
-
         [DataMember] internal float consumptionModifier;
-        [DataMember] internal float defaultConsumptionModifier;
-
         [DataMember] internal List<Fluid> consumption = new List<Fluid>();
-        [DataMember] internal List<Fluid> defaultConsumption = new List<Fluid>();
-
         [DataMember] internal List<TorqueCurve> torqueCurve = new List<TorqueCurve>();
-        [DataMember] internal List<TorqueCurve> defaultTorqueCurve = new List<TorqueCurve>();
     }
 
     [DataContract]
@@ -210,19 +178,13 @@ namespace MultiTool.Core
     internal class TransmissionTuning
     {
         [DataMember] internal List<Gear> gears = new List<Gear>();
-        [DataMember] internal List<Gear> defaultGears = new List<Gear>();
     }
 
     [DataContract]
     internal class VehicleTuning
     {
         [DataMember] internal float steerAngle;
-        [DataMember] internal float defaultSteerAngle;
-
         [DataMember] internal float brakePower;
-        [DataMember] internal float defaultBrakePower;
-
         [DataMember] internal float differentialRatio;
-        [DataMember] internal float defaultDifferentialRatio;
     }
 }

@@ -20,6 +20,7 @@ namespace MultiTool.Tabs.VehicleConfiguration
 		private Vector2 _tunerStatsPosition;
 
 		private Core.EngineTuning _engineTuning = null;
+		private Core.EngineTuning _defaultTuning = null;
 		private bool _isEngineTuningStatsOpen = false;
 		private Core.EngineStats _engineStats = null;
 		private bool _hideLastTorquePoint = false;
@@ -53,70 +54,60 @@ namespace MultiTool.Tabs.VehicleConfiguration
 			}
 
 			// Populate default tuning values if missing.
-			if (_engineTuning == null)
+			if (_engineTuning == null || _defaultTuning == null)
 			{
 				// Attempt to load data from save.
 				_engineTuning = SaveUtilities.GetEngineTuning(engineSave.idInSave);
+				_defaultTuning = SaveUtilities.GetDefaultEngineTuning(engineSave.idInSave);
 
 				// Save has no data for this engine, load defaults.
-				if (_engineTuning == null)
+				if (_engineTuning == null || _defaultTuning == null)
 				{
 					_engineTuning = new Core.EngineTuning()
 					{
 						rpmChangeModifier = engine.rpmChangeModifier,
-						defaultRpmChangeModifier = engine.rpmChangeModifier,
-
 						startChance = engine.startChance,
-						defaultStartChance = engine.startChance,
-
 						motorBrakeModifier = engine.motorBrakeModifier,
-						defaultMotorBrakeModifier = engine.motorBrakeModifier,
-
 						minOptimalTemp2 = engine.minOptimalTemp2,
-						defaultMinOptimalTemp2 = engine.minOptimalTemp2,
-
 						maxOptimalTemp2 = engine.maxOptimalTemp2,
-						defaultMaxOptimalTemp2 = engine.maxOptimalTemp2,
-
 						engineHeatGainMin = engine.engineHeatGainMin,
-						defaultEngineHeatGainMin = engine.engineHeatGainMin,
-
 						engineHeatGainMax = engine.engineHeatGainMax,
-						defaultEngineHeatGainMax = engine.engineHeatGainMax,
-
 						consumptionModifier = engine.consumptionM,
-						defaultConsumptionModifier = engine.consumptionM,
-
 						noOverheat = engine.noOverHeat,
-						defaultNoOverheat = engine.noOverHeat,
-
 						twoStroke = engine.twostroke,
-						defaultTwoStroke = engine.twostroke,
-
 						oilFluid = engine.Oilfluid,
-						defaultOilFluid = engine.Oilfluid,
-
 						oilTolerationMin = engine.oilTolerationMin,
-						defaultOilTolerationMin = engine.oilTolerationMin,
-
 						oilTolerationMax = engine.oilTolerationMax,
-						defaultOilTolerationMax = engine.oilTolerationMax,
-
 						oilConsumptionModifier = engine.OilConsumptionModifier,
-						defaultOilConsumptionModifier = engine.OilConsumptionModifier,
-
 						consumption = new List<Fluid>(),
-						defaultConsumption = new List<Fluid>(),
-
 						torqueCurve = new List<TorqueCurve>(),
-						defaultTorqueCurve = new List<TorqueCurve>(),
+					};
+
+					_defaultTuning = new Core.EngineTuning()
+					{
+						rpmChangeModifier = engine.rpmChangeModifier,
+						startChance = engine.startChance,
+						motorBrakeModifier = engine.motorBrakeModifier,
+						minOptimalTemp2 = engine.minOptimalTemp2,
+						maxOptimalTemp2 = engine.maxOptimalTemp2,
+						engineHeatGainMin = engine.engineHeatGainMin,
+						engineHeatGainMax = engine.engineHeatGainMax,
+						consumptionModifier = engine.consumptionM,
+						noOverheat = engine.noOverHeat,
+						twoStroke = engine.twostroke,
+						oilFluid = engine.Oilfluid,
+						oilTolerationMin = engine.oilTolerationMin,
+						oilTolerationMax = engine.oilTolerationMax,
+						oilConsumptionModifier = engine.OilConsumptionModifier,
+						consumption = new List<Fluid>(),
+						torqueCurve = new List<TorqueCurve>(),
 					};
 
 					// Populate fuel consumption fluids.
 					foreach (fluid fluid in engine.FuelConsumption.fluids)
 					{
 						_engineTuning.consumption.Add(new Fluid() { type = fluid.type, amount = fluid.amount });
-						_engineTuning.defaultConsumption.Add(new Fluid() { type = fluid.type, amount = fluid.amount });
+						_defaultTuning.consumption.Add(new Fluid() { type = fluid.type, amount = fluid.amount });
 					}
 
 					// Populate torque curve.
@@ -124,7 +115,7 @@ namespace MultiTool.Tabs.VehicleConfiguration
 					{
 						Keyframe torque = engine.torqueCurve.keys[torqueKey];
 						_engineTuning.torqueCurve.Add(new TorqueCurve(torque.value, torque.time));
-						_engineTuning.defaultTorqueCurve.Add(new TorqueCurve(torque.value, torque.time));
+						_defaultTuning.torqueCurve.Add(new TorqueCurve(torque.value, torque.time));
 					}
 				}
 
@@ -143,7 +134,7 @@ namespace MultiTool.Tabs.VehicleConfiguration
 			_engineTuning.rpmChangeModifier = GUILayout.HorizontalSlider(_engineTuning.rpmChangeModifier, 0f, 10f);
 			float.TryParse(GUILayout.TextField(_engineTuning.rpmChangeModifier.ToString("F2"), GUILayout.MaxWidth(200)), out _engineTuning.rpmChangeModifier);
 			if (GUILayout.Button("Reset", GUILayout.MaxWidth(200)))
-				_engineTuning.rpmChangeModifier = _engineTuning.defaultRpmChangeModifier;
+				_engineTuning.rpmChangeModifier = _defaultTuning.rpmChangeModifier;
 			GUILayout.EndVertical();
 
 			GUILayout.Space(10);
@@ -157,7 +148,7 @@ namespace MultiTool.Tabs.VehicleConfiguration
 			GUILayout.Label("%");
 			GUILayout.EndHorizontal();
 			if (GUILayout.Button("Reset", GUILayout.MaxWidth(200)))
-				_engineTuning.startChance = _engineTuning.defaultStartChance;
+				_engineTuning.startChance = _defaultTuning.startChance;
 			GUILayout.EndVertical();
 
 			GUILayout.Space(10);
@@ -167,7 +158,7 @@ namespace MultiTool.Tabs.VehicleConfiguration
 			_engineTuning.motorBrakeModifier = GUILayout.HorizontalSlider(_engineTuning.motorBrakeModifier, 0f, 10f);
 			float.TryParse(GUILayout.TextField(_engineTuning.motorBrakeModifier.ToString("F2"), GUILayout.MaxWidth(200)), out _engineTuning.motorBrakeModifier);
 			if (GUILayout.Button("Reset", GUILayout.MaxWidth(200)))
-				_engineTuning.motorBrakeModifier = _engineTuning.defaultMotorBrakeModifier;
+				_engineTuning.motorBrakeModifier = _defaultTuning.motorBrakeModifier;
 			GUILayout.EndVertical();
 
 			GUILayout.Space(10);
@@ -179,7 +170,7 @@ namespace MultiTool.Tabs.VehicleConfiguration
 			_engineTuning.minOptimalTemp2 = GUILayout.HorizontalSlider(_engineTuning.minOptimalTemp2, 0f, 300f);
 			float.TryParse(GUILayout.TextField(_engineTuning.minOptimalTemp2.ToString("F2"), GUILayout.MaxWidth(200)), out _engineTuning.minOptimalTemp2);
 			if (GUILayout.Button("Reset", GUILayout.MaxWidth(200)))
-				_engineTuning.minOptimalTemp2 = _engineTuning.defaultMinOptimalTemp2;
+				_engineTuning.minOptimalTemp2 = _defaultTuning.minOptimalTemp2;
 			GUILayout.EndVertical();
 
 			GUILayout.Space(10);
@@ -189,7 +180,7 @@ namespace MultiTool.Tabs.VehicleConfiguration
 			_engineTuning.maxOptimalTemp2 = GUILayout.HorizontalSlider(_engineTuning.maxOptimalTemp2, 0f, 300f);
 			float.TryParse(GUILayout.TextField(_engineTuning.maxOptimalTemp2.ToString("F2"), GUILayout.MaxWidth(200)), out _engineTuning.maxOptimalTemp2);
 			if (GUILayout.Button("Reset", GUILayout.MaxWidth(200)))
-				_engineTuning.maxOptimalTemp2 = _engineTuning.defaultMaxOptimalTemp2;
+				_engineTuning.maxOptimalTemp2 = _defaultTuning.maxOptimalTemp2;
 			GUILayout.EndVertical();
 
 			GUILayout.Space(10);
@@ -199,7 +190,7 @@ namespace MultiTool.Tabs.VehicleConfiguration
 			_engineTuning.engineHeatGainMin = GUILayout.HorizontalSlider(_engineTuning.engineHeatGainMin, 0f, 300f);
 			float.TryParse(GUILayout.TextField(_engineTuning.engineHeatGainMin.ToString("F2"), GUILayout.MaxWidth(200)), out _engineTuning.engineHeatGainMin);
 			if (GUILayout.Button("Reset", GUILayout.MaxWidth(200)))
-				_engineTuning.engineHeatGainMin = _engineTuning.defaultEngineHeatGainMin;
+				_engineTuning.engineHeatGainMin = _defaultTuning.engineHeatGainMin;
 			GUILayout.EndVertical();
 
 			GUILayout.Space(10);
@@ -209,7 +200,7 @@ namespace MultiTool.Tabs.VehicleConfiguration
 			_engineTuning.engineHeatGainMax = GUILayout.HorizontalSlider(_engineTuning.engineHeatGainMax, 0f, 300f);
 			float.TryParse(GUILayout.TextField(_engineTuning.engineHeatGainMax.ToString("F2"), GUILayout.MaxWidth(200)), out _engineTuning.engineHeatGainMax);
 			if (GUILayout.Button("Reset", GUILayout.MaxWidth(200)))
-				_engineTuning.engineHeatGainMax = _engineTuning.defaultEngineHeatGainMax;
+				_engineTuning.engineHeatGainMax = _defaultTuning.engineHeatGainMax;
 			GUILayout.EndVertical();
 
 			GUILayout.Space(10);
@@ -219,7 +210,7 @@ namespace MultiTool.Tabs.VehicleConfiguration
 			if (GUILayout.Button(Accessibility.GetAccessibleString("Yes", "No", _engineTuning.noOverheat), GUILayout.MaxWidth(200)))
 				_engineTuning.noOverheat = !_engineTuning.noOverheat;
 			if (GUILayout.Button("Reset", GUILayout.MaxWidth(200)))
-				_engineTuning.noOverheat = _engineTuning.defaultNoOverheat;
+				_engineTuning.noOverheat = _defaultTuning.noOverheat;
 			GUILayout.FlexibleSpace();
 			GUILayout.EndHorizontal();
 
@@ -227,14 +218,14 @@ namespace MultiTool.Tabs.VehicleConfiguration
 
 			GUILayout.Label("Oil", "LabelHeader");
 
-			if (!_engineTuning.defaultTwoStroke)
+			if (!_defaultTuning.twoStroke)
 			{
 				GUILayout.BeginHorizontal();
 				GUILayout.Label("Is two-stroke?");
 				if (GUILayout.Button(Accessibility.GetAccessibleString("Yes", "No", _engineTuning.twoStroke), GUILayout.MaxWidth(200)))
 					_engineTuning.twoStroke = !_engineTuning.twoStroke;
 				if (GUILayout.Button("Reset", GUILayout.MaxWidth(200)))
-					_engineTuning.twoStroke = _engineTuning.defaultTwoStroke;
+					_engineTuning.twoStroke = _defaultTuning.twoStroke;
 				GUILayout.FlexibleSpace();
 				GUILayout.EndHorizontal();
 
@@ -253,7 +244,7 @@ namespace MultiTool.Tabs.VehicleConfiguration
 			}
 			GUILayout.Space(5);
 			if (GUILayout.Button("Reset", GUILayout.MaxWidth(200)))
-				_engineTuning.oilFluid = _engineTuning.defaultOilFluid;
+				_engineTuning.oilFluid = _defaultTuning.oilFluid;
 			GUILayout.EndVertical();
 
 			if (_engineTuning.twoStroke)
@@ -269,7 +260,7 @@ namespace MultiTool.Tabs.VehicleConfiguration
 				GUILayout.Label("%");
 				GUILayout.EndHorizontal();
 				if (GUILayout.Button("Reset", GUILayout.MaxWidth(200)))
-					_engineTuning.oilTolerationMin = _engineTuning.defaultOilTolerationMin;
+					_engineTuning.oilTolerationMin = _defaultTuning.oilTolerationMin;
 				GUILayout.EndVertical();
 
 				GUILayout.Space(10);
@@ -283,7 +274,7 @@ namespace MultiTool.Tabs.VehicleConfiguration
 				GUILayout.Label("%");
 				GUILayout.EndHorizontal();
 				if (GUILayout.Button("Reset", GUILayout.MaxWidth(200)))
-					_engineTuning.oilTolerationMax = _engineTuning.defaultOilTolerationMax;
+					_engineTuning.oilTolerationMax = _defaultTuning.oilTolerationMax;
 				GUILayout.EndVertical();
 			}
 
@@ -294,7 +285,7 @@ namespace MultiTool.Tabs.VehicleConfiguration
 			_engineTuning.oilConsumptionModifier = GUILayout.HorizontalSlider(_engineTuning.oilConsumptionModifier, 0f, 10f);
 			float.TryParse(GUILayout.TextField(_engineTuning.oilConsumptionModifier.ToString("F2"), GUILayout.MaxWidth(200)), out _engineTuning.oilConsumptionModifier);
 			if (GUILayout.Button("Reset", GUILayout.MaxWidth(200)))
-				_engineTuning.oilConsumptionModifier = _engineTuning.defaultOilConsumptionModifier;
+				_engineTuning.oilConsumptionModifier = _defaultTuning.oilConsumptionModifier;
 			GUILayout.EndVertical();
 
 			GUILayout.Space(10);
@@ -306,7 +297,7 @@ namespace MultiTool.Tabs.VehicleConfiguration
 			_engineTuning.consumptionModifier = GUILayout.HorizontalSlider(_engineTuning.consumptionModifier, 0f, 10f);
 			float.TryParse(GUILayout.TextField(_engineTuning.consumptionModifier.ToString("F2"), GUILayout.MaxWidth(200)), out _engineTuning.consumptionModifier);
 			if (GUILayout.Button("Reset", GUILayout.MaxWidth(200)))
-				_engineTuning.consumptionModifier = _engineTuning.defaultConsumptionModifier;
+				_engineTuning.consumptionModifier = _defaultTuning.consumptionModifier;
 			GUILayout.EndVertical();
 
 			GUILayout.Space(10);
@@ -352,7 +343,7 @@ namespace MultiTool.Tabs.VehicleConfiguration
 			}
 			GUILayout.Space(5);
 			if (GUILayout.Button("Reset", GUILayout.MaxWidth(200)))
-				_engineTuning.consumption = _engineTuning.defaultConsumption;
+				_engineTuning.consumption = _defaultTuning.consumption;
 			GUILayout.EndVertical();
 
 			GUILayout.Space(10);
@@ -387,9 +378,9 @@ namespace MultiTool.Tabs.VehicleConfiguration
 				if (GUILayout.Button("Reset", GUILayout.MaxWidth(200)))
 				{
 					int key = _engineTuning.torqueCurve.IndexOf(torque);
-					if (_engineTuning.defaultTorqueCurve.Count > key && _engineTuning.defaultTorqueCurve[key] != null)
+					if (_defaultTuning.torqueCurve.Count > key && _defaultTuning.torqueCurve[key] != null)
 					{
-						TorqueCurve defaultTorque = _engineTuning.defaultTorqueCurve[key];
+						TorqueCurve defaultTorque = _defaultTuning.torqueCurve[key];
 						_engineTuning.torqueCurve[key] = defaultTorque;
 						updateEngineStats = true;
 						break;
@@ -419,7 +410,7 @@ namespace MultiTool.Tabs.VehicleConfiguration
 			GUILayout.Space(5);
 			if (GUILayout.Button("Reset torque curve to stock", GUILayout.MaxWidth(200)))
 			{
-				_engineTuning.torqueCurve = _engineTuning.defaultTorqueCurve.Copy();
+				_engineTuning.torqueCurve = _defaultTuning.torqueCurve.Copy();
 				updateEngineStats = true;
 			}
 			GUILayout.EndHorizontal();
@@ -461,21 +452,21 @@ namespace MultiTool.Tabs.VehicleConfiguration
 
 			if (GUILayout.Button("Reset tuning to stock", GUILayout.MaxWidth(200)))
 			{
-				_engineTuning.rpmChangeModifier = _engineTuning.defaultRpmChangeModifier;
-				_engineTuning.startChance = _engineTuning.defaultStartChance;
-				_engineTuning.motorBrakeModifier = _engineTuning.defaultMotorBrakeModifier;
-				_engineTuning.minOptimalTemp2 = _engineTuning.defaultMinOptimalTemp2;
-				_engineTuning.maxOptimalTemp2 = _engineTuning.defaultMaxOptimalTemp2;
-				_engineTuning.engineHeatGainMin = _engineTuning.defaultEngineHeatGainMin;
-				_engineTuning.engineHeatGainMax = _engineTuning.defaultEngineHeatGainMax;
-				_engineTuning.noOverheat = _engineTuning.defaultNoOverheat;
-				_engineTuning.twoStroke = _engineTuning.defaultTwoStroke;
-				_engineTuning.oilFluid = _engineTuning.defaultOilFluid;
-				_engineTuning.oilTolerationMin = _engineTuning.defaultOilTolerationMin;
-				_engineTuning.oilTolerationMax = _engineTuning.defaultOilTolerationMax;
-				_engineTuning.oilConsumptionModifier = _engineTuning.defaultOilConsumptionModifier;
-				_engineTuning.consumption = _engineTuning.defaultConsumption.Copy();
-				_engineTuning.torqueCurve = _engineTuning.defaultTorqueCurve.Copy();
+				_engineTuning.rpmChangeModifier = _defaultTuning.rpmChangeModifier;
+				_engineTuning.startChance = _defaultTuning.startChance;
+				_engineTuning.motorBrakeModifier = _defaultTuning.motorBrakeModifier;
+				_engineTuning.minOptimalTemp2 = _defaultTuning.minOptimalTemp2;
+				_engineTuning.maxOptimalTemp2 = _defaultTuning.maxOptimalTemp2;
+				_engineTuning.engineHeatGainMin = _defaultTuning.engineHeatGainMin;
+				_engineTuning.engineHeatGainMax = _defaultTuning.engineHeatGainMax;
+				_engineTuning.noOverheat = _defaultTuning.noOverheat;
+				_engineTuning.twoStroke = _defaultTuning.twoStroke;
+				_engineTuning.oilFluid = _defaultTuning.oilFluid;
+				_engineTuning.oilTolerationMin = _defaultTuning.oilTolerationMin;
+				_engineTuning.oilTolerationMax = _defaultTuning.oilTolerationMax;
+				_engineTuning.oilConsumptionModifier = _defaultTuning.oilConsumptionModifier;
+				_engineTuning.consumption = _defaultTuning.consumption.Copy();
+				_engineTuning.torqueCurve = _defaultTuning.torqueCurve.Copy();
 				UpdateEngineTunerStats();
 			}
 

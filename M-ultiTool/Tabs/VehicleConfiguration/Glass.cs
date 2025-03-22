@@ -59,6 +59,7 @@ namespace MultiTool.Tabs.VehicleConfiguration
 							break;
 
 						// Inner glass.
+						// TODO: Add setting for inner glass alpha.
 						case "GlassNoReflection":
 							// Use a more transparent version of the selected colour
 							// for the inner glass to ensure it's still see-through.

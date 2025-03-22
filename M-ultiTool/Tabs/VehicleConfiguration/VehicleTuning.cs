@@ -15,6 +15,7 @@ namespace MultiTool.Tabs.VehicleConfiguration
 
 		private Vector2 _position;
 		private Core.VehicleTuning _vehicleTuning = null;
+		private Core.VehicleTuning _defaultTuning = null;
 
 		public override void OnVehicleChange()
 		{
@@ -27,24 +28,27 @@ namespace MultiTool.Tabs.VehicleConfiguration
 			tosaveitemscript save = car.GetComponent<tosaveitemscript>();
 
 			// Populate default tuning values if missing.
-			if (_vehicleTuning == null)
+			if (_vehicleTuning == null || _defaultTuning == null)
 			{
 				// Attempt to load data from save.
-				//_vehicleTuning = SaveUtilities.GetVehicleTuning(save.idInSave);
+				_vehicleTuning = SaveUtilities.GetVehicleTuning(save.idInSave);
+				_defaultTuning = SaveUtilities.GetDefaultVehicleTuning(save.idInSave);
 
 				// Save has no data for this transmission, load defaults.
-				if (_vehicleTuning == null)
+				if (_vehicleTuning == null || _defaultTuning == null)
 				{
 					_vehicleTuning = new Core.VehicleTuning()
 					{
 						steerAngle = car.steerAngle,
-						defaultSteerAngle = car.steerAngle,
-
 						brakePower = car.brakePower,
-						defaultBrakePower = car.brakePower,
-
 						differentialRatio = car.differentialRatio,
-						defaultDifferentialRatio = car.differentialRatio,
+					};
+
+					_defaultTuning = new Core.VehicleTuning()
+					{
+						steerAngle = car.steerAngle,
+						brakePower = car.brakePower,
+						differentialRatio = car.differentialRatio,
 					};
 				}
 			}
@@ -58,7 +62,7 @@ namespace MultiTool.Tabs.VehicleConfiguration
 			_vehicleTuning.steerAngle = GUILayout.HorizontalSlider(_vehicleTuning.steerAngle, 0f, 90f);
 			float.TryParse(GUILayout.TextField(_vehicleTuning.steerAngle.ToString("F2"), GUILayout.MaxWidth(200)), out _vehicleTuning.steerAngle);
 			if (GUILayout.Button("Reset", GUILayout.MaxWidth(200)))
-				_vehicleTuning.steerAngle = _vehicleTuning.defaultSteerAngle;
+				_vehicleTuning.steerAngle = _defaultTuning.steerAngle;
 			GUILayout.EndVertical();
 
 			GUILayout.Space(10);
@@ -69,7 +73,7 @@ namespace MultiTool.Tabs.VehicleConfiguration
 			_vehicleTuning.brakePower = GUILayout.HorizontalSlider(_vehicleTuning.brakePower, 0f, 10000f);
 			float.TryParse(GUILayout.TextField(_vehicleTuning.brakePower.ToString("F2"), GUILayout.MaxWidth(200)), out _vehicleTuning.brakePower);
 			if (GUILayout.Button("Reset", GUILayout.MaxWidth(200)))
-				_vehicleTuning.brakePower = _vehicleTuning.defaultBrakePower;
+				_vehicleTuning.brakePower = _defaultTuning.brakePower;
 			GUILayout.EndVertical();
 
 			GUILayout.Space(10);
@@ -82,7 +86,7 @@ namespace MultiTool.Tabs.VehicleConfiguration
 			_vehicleTuning.differentialRatio = GUILayout.HorizontalSlider(_vehicleTuning.differentialRatio, 0f, 20f);
 			float.TryParse(GUILayout.TextField(_vehicleTuning.differentialRatio.ToString("F2"), GUILayout.MaxWidth(200)), out _vehicleTuning.differentialRatio);
 			if (GUILayout.Button("Reset", GUILayout.MaxWidth(200)))
-				_vehicleTuning.differentialRatio = _vehicleTuning.defaultDifferentialRatio;
+				_vehicleTuning.differentialRatio = _defaultTuning.differentialRatio;
 			GUILayout.EndVertical();
 
 			// TODO: Add pedal speed for ebatta. - bikepedalscript.ratio?
@@ -101,9 +105,9 @@ namespace MultiTool.Tabs.VehicleConfiguration
 
 			if (GUILayout.Button("Reset tuning to stock", GUILayout.MaxWidth(200)))
 			{
-				_vehicleTuning.steerAngle = _vehicleTuning.defaultSteerAngle;
-				_vehicleTuning.brakePower = _vehicleTuning.defaultBrakePower;
-				_vehicleTuning.differentialRatio = _vehicleTuning.defaultDifferentialRatio;
+				_vehicleTuning.steerAngle = _defaultTuning.steerAngle;
+				_vehicleTuning.brakePower = _defaultTuning.brakePower;
+				_vehicleTuning.differentialRatio = _defaultTuning.differentialRatio;
 			}
 
 			GUILayout.EndVertical();

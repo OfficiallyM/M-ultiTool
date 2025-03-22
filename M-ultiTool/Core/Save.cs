@@ -63,6 +63,7 @@ namespace MultiTool.Core
     {
         [DataMember] public int ID { get; set; }
         [DataMember] public EngineTuning tuning { get; set; }
+		[DataMember] public EngineTuning defaultTuning { get; set; }
     }
 
     [DataContract]
@@ -70,14 +71,16 @@ namespace MultiTool.Core
     {
         [DataMember] public int ID { get; set; }
         [DataMember] public TransmissionTuning tuning { get; set; }
-    }
+		[DataMember] public TransmissionTuning defaultTuning { get; set; }
+	}
 
     [DataContract]
     internal class VehicleTuningData
     {
         [DataMember] public int ID { get; set; }
         [DataMember] public VehicleTuning tuning { get; set; }
-    }
+		[DataMember] public VehicleTuning defaultTuning { get; set; }
+	}
 
 	[DataContract]
 	internal class WeightData
