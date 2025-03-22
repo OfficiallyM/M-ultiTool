@@ -187,6 +187,7 @@ namespace MultiTool.Modules
                     {
                         tab.IsDisabled = true;
                         Logger.Log($"Tab {tab.Name} threw too many errors and has been disabled.", Logger.LogLevel.Warning);
+						Notifications.SendError("Tab disabled", $"Tab {tab.Name} threw errors and has been disabled.");
                     }
                 }
             }
@@ -204,7 +205,8 @@ namespace MultiTool.Modules
                 {
                     tab.IsDisabled = true;
                     Logger.Log($"Tab {tab.Name} threw too many errors and has been disabled.", Logger.LogLevel.Warning);
-                }
+					Notifications.SendError("Tab disabled", $"Tab {tab.Name} threw errors and has been disabled.");
+				}
             }
         }
     }
