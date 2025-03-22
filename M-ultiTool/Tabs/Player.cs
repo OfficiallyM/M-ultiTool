@@ -120,8 +120,10 @@ namespace MultiTool.Tabs
 
             // Walk speed.
             GUILayout.Label($"Walk speed: {activePlayerData.walkSpeed} (Default: {_defaultPlayerData.walkSpeed})");
+			float.TryParse(GUILayout.TextField(activePlayerData.walkSpeed.ToString(), GUILayout.MaxWidth(200)), out float walkSpeed);
+			GUILayout.Space(2);
             GUILayout.BeginHorizontal();
-			float walkSpeed = GUILayout.HorizontalSlider(activePlayerData.walkSpeed, 1f, 10f);
+			walkSpeed = GUILayout.HorizontalSlider(walkSpeed, 1f, 10f);
 			if (GUILayout.Button("Reset", GUILayout.MaxWidth(200)))
 			{
                 activePlayerData.walkSpeed = _defaultPlayerData.walkSpeed;
@@ -141,8 +143,10 @@ namespace MultiTool.Tabs
 
             // Run speed.
             GUILayout.Label($"Run speed: {activePlayerData.runSpeed} (Default: {_defaultPlayerData.runSpeed})");
-            GUILayout.BeginHorizontal();
-            float runSpeed = GUILayout.HorizontalSlider(activePlayerData.runSpeed, 1f, 10f);
+			float.TryParse(GUILayout.TextField(activePlayerData.runSpeed.ToString(), GUILayout.MaxWidth(200)), out float runSpeed);
+			GUILayout.Space(2);
+			GUILayout.BeginHorizontal();
+            runSpeed = GUILayout.HorizontalSlider(runSpeed, 1f, 10f);
 			if (GUILayout.Button("Reset", GUILayout.MaxWidth(200)))
 			{
                 activePlayerData.runSpeed = _defaultPlayerData.runSpeed;
@@ -162,8 +166,10 @@ namespace MultiTool.Tabs
 
             // Jump force.
             GUILayout.Label($"Jump force: {activePlayerData.jumpForce / 100} (Default: {_defaultPlayerData.jumpForce / 100})");
-            GUILayout.BeginHorizontal();
-            float jumpForce = GUILayout.HorizontalSlider(activePlayerData.jumpForce / 100, 1f, 2000f);
+			float.TryParse(GUILayout.TextField((activePlayerData.jumpForce / 100).ToString(), GUILayout.MaxWidth(200)), out float jumpForce);
+			GUILayout.Space(2);
+			GUILayout.BeginHorizontal();
+            jumpForce = GUILayout.HorizontalSlider(jumpForce, 1f, 2000f);
 			if (GUILayout.Button("Reset", GUILayout.MaxWidth(200)))
 			{
                 activePlayerData.jumpForce = _defaultPlayerData.jumpForce;
@@ -183,8 +189,10 @@ namespace MultiTool.Tabs
 
             // Push force.
             GUILayout.Label($"Push force: {activePlayerData.pushForce / 10} (Default: {_defaultPlayerData.pushForce / 10})");
-            GUILayout.BeginHorizontal();
-            float pushForce = GUILayout.HorizontalSlider(activePlayerData.pushForce / 10, 1f, 2000f);
+			float.TryParse(GUILayout.TextField((activePlayerData.pushForce / 10).ToString(), GUILayout.MaxWidth(200)), out float pushForce);
+			GUILayout.Space(2);
+			GUILayout.BeginHorizontal();
+            pushForce = GUILayout.HorizontalSlider(pushForce, 1f, 2000f);
 			if (GUILayout.Button("Reset", GUILayout.MaxWidth(200)))
 			{
                 activePlayerData.pushForce = _defaultPlayerData.pushForce;
@@ -204,8 +212,10 @@ namespace MultiTool.Tabs
 
             // Carry weight.
             GUILayout.Label($"Carry weight: {activePlayerData.carryWeight} (Default: {_defaultPlayerData.carryWeight})");
-            GUILayout.BeginHorizontal();
-            float carryWeight = GUILayout.HorizontalSlider(activePlayerData.carryWeight, 1f, 1000f);
+			float.TryParse(GUILayout.TextField(activePlayerData.carryWeight.ToString(), GUILayout.MaxWidth(200)), out float carryWeight);
+			GUILayout.Space(2);
+			GUILayout.BeginHorizontal();
+            carryWeight = GUILayout.HorizontalSlider(carryWeight, 1f, 1000f);
 			if (GUILayout.Button("Reset", GUILayout.MaxWidth(200)))
 			{
                 activePlayerData.carryWeight = _defaultPlayerData.carryWeight;
@@ -225,8 +235,10 @@ namespace MultiTool.Tabs
 
             // Pickup force.
             GUILayout.Label($"Pickup force: {activePlayerData.pickupForce} (Default: {_defaultPlayerData.pickupForce})");
-            GUILayout.BeginHorizontal();
-            float pickupForce = GUILayout.HorizontalSlider(activePlayerData.pickupForce, 1f, 1000f);
+			float.TryParse(GUILayout.TextField(activePlayerData.pickupForce.ToString(), GUILayout.MaxWidth(200)), out float pickupForce);
+			GUILayout.Space(2);
+			GUILayout.BeginHorizontal();
+            pickupForce = GUILayout.HorizontalSlider(pickupForce, 1f, 1000f);
 			if (GUILayout.Button("Reset", GUILayout.MaxWidth(200)))
 			{
                 activePlayerData.pickupForce = _defaultPlayerData.pickupForce;
@@ -246,8 +258,10 @@ namespace MultiTool.Tabs
 
 			// Throw force.
 			GUILayout.Label($"Throw force: {activePlayerData.throwForce / 1000} (Default: {_defaultPlayerData.throwForce / 1000})");
+			float.TryParse(GUILayout.TextField((activePlayerData.throwForce / 1000).ToString(), GUILayout.MaxWidth(200)), out float throwForce);
+			GUILayout.Space(2);
 			GUILayout.BeginHorizontal();
-			float throwForce = GUILayout.HorizontalSlider(activePlayerData.throwForce / 1000, 1f, 1000f);
+			throwForce = GUILayout.HorizontalSlider(throwForce, 1f, 1000f);
 			if (GUILayout.Button("Reset", GUILayout.MaxWidth(200)))
 			{
 				activePlayerData.throwForce = _defaultPlayerData.throwForce;
@@ -267,8 +281,10 @@ namespace MultiTool.Tabs
 
 			// Pedal speed.
 			GUILayout.Label($"Bike pedal speed: {activePlayerData.pedalSpeed} (Default: {_defaultPlayerData.pedalSpeed})");
+			float.TryParse(GUILayout.TextField(activePlayerData.pedalSpeed.ToString(), GUILayout.MaxWidth(200)), out float pedalSpeed);
+			GUILayout.Space(2);
 			GUILayout.BeginHorizontal();
-			float pedalSpeed = GUILayout.HorizontalSlider(activePlayerData.pedalSpeed, 1f, 10000f);
+			pedalSpeed = GUILayout.HorizontalSlider(pedalSpeed, 1f, 10000f);
 			if (GUILayout.Button("Reset", GUILayout.MaxWidth(200)))
 			{
 				activePlayerData.pedalSpeed = _defaultPlayerData.pedalSpeed;
@@ -317,8 +333,10 @@ namespace MultiTool.Tabs
 
 			// Mass.
 			GUILayout.Label($"Mass: {activePlayerData.mass} (Default: {_defaultPlayerData.mass})");
-            GUILayout.BeginHorizontal();
-            float mass = GUILayout.HorizontalSlider(activePlayerData.mass, 1f, 1000f);
+			float.TryParse(GUILayout.TextField(activePlayerData.mass.ToString(), GUILayout.MaxWidth(200)), out float mass);
+			GUILayout.Space(2);
+			GUILayout.BeginHorizontal();
+            mass = GUILayout.HorizontalSlider(mass, 1f, 1000f);
 			if (GUILayout.Button("Reset", GUILayout.MaxWidth(200)))
 			{
                 activePlayerData.mass = _defaultPlayerData.mass;
