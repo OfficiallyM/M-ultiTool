@@ -89,8 +89,6 @@ namespace MultiTool.Tabs.VehicleConfiguration
 				_vehicleTuning.differentialRatio = _defaultTuning.differentialRatio;
 			GUILayout.EndVertical();
 
-			// TODO: Add pedal speed for ebatta. - bikepedalscript.ratio?
-
 			GUILayout.EndScrollView();
 
 			GUILayout.Space(10);

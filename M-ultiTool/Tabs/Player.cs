@@ -33,15 +33,16 @@ namespace MultiTool.Tabs
             if (_defaultPlayerData == null)
             {
                 fpscontroller player = mainscript.M.player;
-                _defaultPlayerData = new PlayerData()
-                {
-                    walkSpeed = player.FdefMaxSpeed,
-                    runSpeed = player.FrunM,
-                    jumpForce = player.FjumpForce,
-                    pushForce = mainscript.M.pushForce,
-                    carryWeight = player.maxWeight,
-                    pickupForce = player.maxPickupForce,
+				_defaultPlayerData = new PlayerData()
+				{
+					walkSpeed = player.FdefMaxSpeed,
+					runSpeed = player.FrunM,
+					jumpForce = player.FjumpForce,
+					pushForce = mainscript.M.pushForce,
+					carryWeight = player.maxWeight,
+					pickupForce = player.maxPickupForce,
 					throwForce = player.throwForceM,
+					pedalSpeed = player.PedalingRpm,
 					mass = player != null && player.mass != null ? player.mass.Mass() : 0,
                     infiniteAmmo = false,
                 };
@@ -258,6 +259,27 @@ namespace MultiTool.Tabs
 				if (throwForce != activePlayerData.throwForce)
 				{
 					activePlayerData.throwForce = throwForce;
+					update = true;
+				}
+			}
+			GUILayout.EndHorizontal();
+			GUILayout.Space(10);
+
+			// Pedal speed.
+			GUILayout.Label($"Bike pedal speed: {activePlayerData.pedalSpeed} (Default: {_defaultPlayerData.pedalSpeed})");
+			GUILayout.BeginHorizontal();
+			float pedalSpeed = GUILayout.HorizontalSlider(activePlayerData.pedalSpeed, 1f, 10000f);
+			if (GUILayout.Button("Reset", GUILayout.MaxWidth(200)))
+			{
+				activePlayerData.pedalSpeed = _defaultPlayerData.pedalSpeed;
+				update = true;
+			}
+			else
+			{
+				pedalSpeed = Mathf.Round(pedalSpeed);
+				if (pedalSpeed != activePlayerData.pedalSpeed)
+				{
+					activePlayerData.pedalSpeed = pedalSpeed;
 					update = true;
 				}
 			}
@@ -490,6 +512,7 @@ namespace MultiTool.Tabs
 				player.maxWeight = data.carryWeight;
 				player.maxPickupForce = data.pickupForce;
 				player.throwForceM = data.throwForce;
+				player.PedalingRpm = data.pedalSpeed;
 				if (player.mass != null && player.mass.Mass() != data.mass)
 					player.mass.SetMass(data.mass);
 			}

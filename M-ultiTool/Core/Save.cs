@@ -100,6 +100,7 @@ namespace MultiTool.Core
         [DataMember] public float carryWeight { get; set; }
         [DataMember] public float pickupForce { get; set; }
 		[DataMember] public float throwForce { get; set; }
+		[DataMember] public float pedalSpeed { get; set; }
         [DataMember] public bool infiniteAmmo { get; set; }
         [DataMember] public float mass { get; set; }
 		[DataMember] public bool clickTeleport { get; set; }
