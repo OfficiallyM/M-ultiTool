@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Reflection.Emit;
 using System.Runtime.Serialization.Json;
 using System.Text;
 using TLDLoader;
@@ -143,6 +144,16 @@ namespace MultiTool.Modules
             Commit();
         }
 
+		/// <summary>
+		/// Update active theme.
+		/// </summary>
+		/// <param name="theme">New active theme name</param>
+		public void UpdateTheme(string theme)
+		{
+			config.theme = theme;
+			Commit();
+		}
+
         /// <summary>
         /// Get config version.
         /// </summary>
@@ -280,6 +291,21 @@ namespace MultiTool.Modules
 
             return Color.white;
         }
+
+		/// <summary>
+		/// Get active theme name.
+		/// </summary>
+		/// <param name="name">Default theme name</param>
+		/// <returns>Active theme name</returns>
+		public string GetTheme(string name)
+		{
+			loadFromConfigFile();
+
+			if (config.theme == null)
+				config.theme = name;
+
+			return config.theme;
+		}
 
 		/// <summary>
 		/// Write the config to the file

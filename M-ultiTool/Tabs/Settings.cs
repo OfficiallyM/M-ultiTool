@@ -37,7 +37,17 @@ namespace MultiTool.Tabs
 
             GUILayout.Space(20);
 
-            GUILayout.Label($"Scroll bar width: {GUIRenderer.settingsScrollWidth.ToString()}", GUIRenderer.labelStyle);
+			GUILayout.Label("Theme select");
+			foreach (string theme in Styling.GetThemeNames())
+			{
+				if (GUILayout.Button(Accessibility.GetAccessibleString(theme, theme == Styling.GetActiveTheme().Name), GUILayout.MaxWidth(200)))
+					Styling.SetActiveTheme(theme);
+				GUILayout.Space(2);
+			}
+
+			GUILayout.Space(10);
+
+			GUILayout.Label($"Scroll bar width: {GUIRenderer.settingsScrollWidth.ToString()}", GUIRenderer.labelStyle);
             float tempScrollWidth = GUILayout.HorizontalSlider(GUIRenderer.settingsScrollWidth, 5f, 30f);
             GUIRenderer.settingsScrollWidth = Mathf.Round(tempScrollWidth);
 
