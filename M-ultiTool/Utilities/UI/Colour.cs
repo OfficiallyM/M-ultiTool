@@ -128,7 +128,8 @@ namespace MultiTool.Utilities.UI
 
             GUILayout.BeginVertical("box", GUILayout.MaxWidth(maxWidth));
             int index = 0;
-            foreach (List<Color> palette in _paletteChunked)
+			bool changed = false;
+			foreach (List<Color> palette in _paletteChunked)
             {
                 GUILayout.BeginHorizontal();
                 foreach (Color colour in palette)
@@ -156,15 +157,18 @@ namespace MultiTool.Utilities.UI
 
                                 // Re-chunk palette.
                                 _paletteChunked.Clear();
-                                break;
+								changed = true;
+								break;
                         }
                     }
                     GUILayout.Space(2);
                     index++;
-                }
+					if (changed) break;
+				}
                 GUILayout.EndHorizontal();
                 GUILayout.Space(2);
-            }
+				if (changed) break;
+			}
             GUILayout.EndVertical();
 
             return selectedColour;
