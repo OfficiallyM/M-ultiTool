@@ -56,7 +56,7 @@ namespace MultiTool.Tabs
 					Core.VehicleConfigurationTab tab = _tabs.GetByIndex<Core.VehicleConfigurationTab>(tabIndex);
 					tab.OnCacheRefresh();
 				}
-				_nextUpdateTime = 2;
+				_nextUpdateTime = 1;
 			}
 		}
 
