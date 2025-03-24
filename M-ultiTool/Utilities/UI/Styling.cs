@@ -64,8 +64,8 @@ namespace MultiTool.Utilities.UI
 					ButtonPrimaryHoverColour = new Color(80 / 255f, 0 / 255f, 155 / 255f),
 					ButtonSecondaryColour = new Color(132 / 255f, 0 / 255f, 130 / 255f),
 					ButtonSecondaryHoverColour = new Color(158 / 255f, 0 / 255f, 155 / 255f),
-					BoxColour = new Color(99 / 255f, 94 / 255f, 104 / 255f, 0.5f),
-					BoxHoverColour = new Color(99 / 255f, 94 / 255f, 104 / 255f, 0.4f),
+					BoxColour = new Color(0, 0, 0, 0.8f),
+					BoxHoverColour = new Color(0, 0, 0, 0.6f),
 
 					ButtonPrimaryTextColour = Color.white,
 					ButtonSecondaryTextColour = Color.white,
