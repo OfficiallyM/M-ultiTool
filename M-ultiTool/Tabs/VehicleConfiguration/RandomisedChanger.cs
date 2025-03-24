@@ -30,6 +30,7 @@ namespace MultiTool.Tabs.VehicleConfiguration
 			_randomParts.Clear();
 			_randomParts = _car.GetComponentsInChildren<randomTypeSelector>().ToList();
 		}
+
 		public override void OnVehicleChange()
 		{
 			_selectedRandom = null;
@@ -41,7 +42,7 @@ namespace MultiTool.Tabs.VehicleConfiguration
 			GUILayout.BeginVertical();
 			_position = GUILayout.BeginScrollView(_position);
 
-			carscript car = mainscript.M.player.Car;
+			_car = mainscript.M.player.Car;
 
 			GUILayout.Label("Randomiser changer", "LabelHeader");
 
