@@ -28,6 +28,7 @@ namespace MultiTool.Utilities.UI
 		private static Texture2D _blue;
 
 		public static GUISkin GetActiveSkin() => _skin;
+		public static Theme GetActiveTheme() => _activeTheme;
 
 		public static void Bootstrap()
         {
@@ -37,8 +38,6 @@ namespace MultiTool.Utilities.UI
 
 				_themes.Data = new List<Theme>();
 
-				// TODO: Hook accessibility into the theme.
-				
 				// Add default themes.
 				_themes.Add(new Theme()
 				{
@@ -54,6 +53,25 @@ namespace MultiTool.Utilities.UI
 					ButtonPrimaryTextColour = Color.white,
 					ButtonSecondaryTextColour = Color.white,
 					TextColour = Color.white,
+					AccessibilityOnColour = Color.green,
+					AccessibilityOffColour = Color.red,
+				});
+				_themes.Add(new Theme()
+				{
+					Name = "M- Purple",
+
+					ButtonPrimaryColour = new Color(68 / 255f, 0 / 255f, 132 / 255f),
+					ButtonPrimaryHoverColour = new Color(80 / 255f, 0 / 255f, 155 / 255f),
+					ButtonSecondaryColour = new Color(132 / 255f, 0 / 255f, 130 / 255f),
+					ButtonSecondaryHoverColour = new Color(158 / 255f, 0 / 255f, 155 / 255f),
+					BoxColour = new Color(99 / 255f, 94 / 255f, 104 / 255f, 0.5f),
+					BoxHoverColour = new Color(99 / 255f, 94 / 255f, 104 / 255f, 0.4f),
+
+					ButtonPrimaryTextColour = Color.white,
+					ButtonSecondaryTextColour = Color.white,
+					TextColour = Color.white,
+					AccessibilityOnColour = Color.green,
+					AccessibilityOffColour = Color.white,
 				});
 
 				// TODO: Load any custom themes.
@@ -90,15 +108,6 @@ namespace MultiTool.Utilities.UI
 		public static string[] GetThemeNames()
 		{
 			return _themes.GetThemeNames();
-		}
-
-		/// <summary>
-		/// Get the active theme.
-		/// </summary>
-		/// <returns>Active instance of Theme</returns>
-		public static Theme GetActiveTheme()
-		{
-			return _activeTheme;
 		}
 
 		private static GUISkin CreateSkin(GUISkin original, string name)

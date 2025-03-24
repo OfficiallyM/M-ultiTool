@@ -276,7 +276,7 @@ namespace MultiTool.Utilities
         /// </summary>
         /// <param name="vehicle">Vehicle to get part from</param>
         /// <param name="name">Name of part to find</param>
-        /// <returns>List of meshes if name matches anty, otherwise empty list</returns>
+        /// <returns>List of meshes if name matches any, otherwise empty list</returns>
         public static List<MeshRenderer> GetConditionlessVehiclePartsByName(GameObject vehicle, string name)
         {
             MeshRenderer[] meshes = vehicle.GetComponentsInChildren<MeshRenderer>();

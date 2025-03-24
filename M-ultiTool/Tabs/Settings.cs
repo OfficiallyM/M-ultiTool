@@ -82,7 +82,7 @@ namespace MultiTool.Tabs
             {
                 for (int i = 0; i <= Accessibility.GetAccessibilityModeCount(); i++)
                 {
-                    if (GUILayout.Button(Accessibility.GetAccessibleString(Accessibility.GetAccessibilityModeName(i), (int)Accessibility.GetAccessibilityMode() == i)))
+                    if (GUILayout.Button(Accessibility.GetAccessibleString(Accessibility.GetAccessibilityModeName(i), (int)Accessibility.GetAccessibilityMode() == i), GUILayout.MaxWidth(200)))
                     {
                         Accessibility.SetAccessibilityMode(i);
                         MultiTool.Configuration.UpdateAccessibilityMode(i);

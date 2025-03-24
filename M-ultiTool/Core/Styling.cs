@@ -24,6 +24,8 @@ namespace MultiTool.Core
 		[DataMember] public Color ButtonPrimaryTextColour { get; set; }
 		[DataMember] public Color ButtonSecondaryTextColour { get; set; }
 		[DataMember] public Color TextColour { get; set; }
+		[DataMember] public Color AccessibilityOnColour { get; set; }
+		[DataMember] public Color AccessibilityOffColour { get; set; }
 
 		public Texture2D ButtonPrimary { get; set; }
 		public Texture2D ButtonPrimaryHover { get; set; }

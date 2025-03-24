@@ -1,4 +1,5 @@
-﻿using System;
+﻿using MultiTool.Core;
+using System;
 using System.Linq;
 using UnityEngine;
 
@@ -93,15 +94,19 @@ namespace MultiTool.Utilities.UI
         {
             LoadFromConfig();
 
-            switch (_accessibilityMode)
+			Theme theme = Styling.GetActiveTheme();
+			string onColour = ColorUtility.ToHtmlStringRGB(theme.AccessibilityOnColour);
+			string offColour = ColorUtility.ToHtmlStringRGB(theme.AccessibilityOffColour);
+
+			switch (_accessibilityMode)
             {
                 case AccessibilityMode.Contrast:
-                    return state ? $"<color=#0D0>{str}</color>" : str;
+                    return state ? $"<color=#{onColour}>{str}</color>" : str;
                 case AccessibilityMode.Colourless:
                     return state ? $"{str} ✔" : $"{str} ✖";
             }
 
-            return state ? $"<color=#0F0>{str}</color>" : $"<color=#F00>{str}</color>";
+            return state ? $"<color=#{onColour}>{str}</color>" : $"<color=#{offColour}>{str}</color>";
         }
 
         /// <summary>
@@ -115,15 +120,19 @@ namespace MultiTool.Utilities.UI
         {
             LoadFromConfig();
 
-            switch (_accessibilityMode)
+			Theme theme = Styling.GetActiveTheme();
+			string onColour = ColorUtility.ToHtmlStringRGB(theme.AccessibilityOnColour);
+			string offColour = ColorUtility.ToHtmlStringRGB(theme.AccessibilityOffColour);
+
+			switch (_accessibilityMode)
             {
                 case AccessibilityMode.Contrast:
-                    return state ? $"<color=#0F0>{trueStr}</color>" : $"<color=#FFF>{falseStr}</color>";
+                    return state ? $"<color=#{onColour}>{trueStr}</color>" : falseStr;
                 case AccessibilityMode.Colourless:
                     return state ? $"{trueStr} ✔" : $"{falseStr} ✖";
             }
 
-            return state ? $"<color=#0F0>{trueStr}</color>" : $"<color=#F00>{falseStr}</color>";
+            return state ? $"<color=#{onColour}>{trueStr}</color>" : $"<color=#{offColour}>{falseStr}</color>";
         }
 
         /// <summary>
