@@ -2,13 +2,8 @@
 using MultiTool.Modules;
 using MultiTool.Utilities.UI;
 using MultiTool.Utilities;
-using ScottPlot;
-using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading;
-using System.Threading.Tasks;
 using UnityEngine;
 
 namespace MultiTool.Tabs.VehicleConfiguration
@@ -151,14 +146,23 @@ namespace MultiTool.Tabs.VehicleConfiguration
 			{
 				foreach (PartGroupParent parent in _materialParts)
 				{
-					GUILayout.Button($"Parent: {GetPrettyPartName(parent.name)}", "ButtonPrimaryTextLeft", GUILayout.MaxWidth(400));
+					GUILayout.Button($"Parent: {GetPrettyPartName(parent.name)}", "ButtonSecondaryTextLeft", GUILayout.MaxWidth(400));
 
 					foreach (PartGroup group in parent.parts)
 					{
-						if (GUILayout.Button($" ({group.index}) {GetPrettyPartName(group.name)}", "ButtonPrimaryTextLeft", GUILayout.MaxWidth(400)))
+						string partSelectText = $" ({group.index}) {GetPrettyPartName(group.name)}";
+						if (GUILayout.Button(Accessibility.GetAccessibleString(partSelectText, IsGroupSelected(group)), "ButtonPrimaryTextLeft", GUILayout.MaxWidth(400)))
 						{
-							Notifications.SendInformation("Material changer", $"Selected {GetPrettyPartName(group.name)}.", Notification.NotificationLength.VeryShort);
-							_selectedParts.Add(group);
+							if (!IsGroupSelected(group))
+							{
+								Notifications.SendInformation("Material changer", $"Selected {GetPrettyPartName(group.name)}.", Notification.NotificationLength.VeryShort);
+								_selectedParts.Add(group);
+							}
+							else
+							{
+								Notifications.SendInformation("Material changer", $"Deselected {GetPrettyPartName(group.name)}.", Notification.NotificationLength.VeryShort);
+								DeselectByIndex(group.index);
+							}
 						}
 					}
 
@@ -272,6 +276,35 @@ namespace MultiTool.Tabs.VehicleConfiguration
 			GUILayout.EndScrollView();
 			GUILayout.EndVertical();
 			GUILayout.EndArea();
+		}
+
+		/// <summary>
+		/// Checks if a group is selected.
+		/// </summary>
+		/// <param name="group">Group to check</param>
+		/// <returns>True if selected, otherwise false</returns>
+		private bool IsGroupSelected(PartGroup group)
+		{
+			foreach (PartGroup selected in _selectedParts)
+				if (selected.index == group.index) return true;
+
+			return false;
+		}
+
+		/// <summary>
+		/// Deselect a group by index.
+		/// </summary>
+		/// <param name="index">Group index to deselect</param>
+		private void DeselectByIndex(int index)
+		{
+			foreach (PartGroup selected in _selectedParts)
+			{
+				if (selected.index == index)
+				{
+					_selectedParts.Remove(selected);
+					return;
+				}
+			}
 		}
 
 		/// <summary>
