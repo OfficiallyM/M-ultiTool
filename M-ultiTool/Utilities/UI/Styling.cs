@@ -181,6 +181,76 @@ namespace MultiTool.Utilities.UI
 		/// <returns>Theme if exists, otherwise null</returns>
 		public static Theme GetThemeByName(string name) => _themes.GetByName(name);
 
+		/// <summary>
+		/// Export theme to a string.
+		/// </summary>
+		/// <returns>Exported theme string</returns>
+		public static string Export(Theme theme)
+		{
+			MemoryStream ms = new MemoryStream();
+			DataContractJsonSerializer jsonSerializer = new DataContractJsonSerializer(typeof(Theme));
+			jsonSerializer.WriteObject(ms, theme);
+
+			// Rewind stream.
+			ms.Seek(0, SeekOrigin.Begin);
+
+			// Convert stream to a string.
+			StreamReader reader = new StreamReader(ms);
+			string jsonString = reader.ReadToEnd();
+
+			// Convert JSON to base64.
+			byte[] bytes = Encoding.UTF8.GetBytes(jsonString);
+			return Convert.ToBase64String(bytes);
+		}
+
+		/// <summary>
+		/// Import an exported theme string.
+		/// </summary>
+		/// <param name="data">Theme string</param>
+		public static void Import(string data)
+		{
+			try
+			{
+				// Decode base64.
+				byte[] bytes = Convert.FromBase64String(data);
+				string json = Encoding.UTF8.GetString(bytes);
+
+				// Convert JSON string back to an object.
+				MemoryStream ms = new MemoryStream(Encoding.UTF8.GetBytes(json));
+				DataContractJsonSerializer jsonSerializer = new DataContractJsonSerializer(typeof(Theme));
+				Theme importTheme = jsonSerializer.ReadObject(ms) as Theme;
+
+				Theme existingTheme = null;
+				foreach (Theme theme in _themes.Data)
+				{
+					if (theme.Name == importTheme.Name)
+					{
+						existingTheme = theme;
+						break;
+					}
+				}
+
+				if (existingTheme != null)
+				{
+					existingTheme = importTheme;
+					Notifications.SendInformation("Theme import", $"Theme {importTheme.Name} already exists, overwriting.");
+				}
+				else
+				{
+					_themes.Add(importTheme);
+					Notifications.SendInformation("Theme import", $"Imported new theme {importTheme.Name}.");
+				}
+
+				CreateThemeTextures();
+				Commit();
+			}
+			catch (Exception ex)
+			{
+				Logger.Log($"Failed to import theme. Is it a valid import string?. Details {ex}", Logger.LogLevel.Error);
+				Notifications.SendError("Theme import", "Theme import failed, check the import string is valid.");
+			}
+		}
+
 		private static GUISkin CreateSkin(GUISkin original, string name)
 		{
 			// Create skin off default to save setting all GUIStyles individually.

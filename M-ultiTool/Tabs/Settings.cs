@@ -13,7 +13,10 @@ namespace MultiTool.Tabs
         public override bool ShowInNavigation => false;
         internal override bool IsFullScreen => true;
 
-		private Vector2 currentPosition;
+		private Vector2 _position;
+		private string _themeImport;
+		private string _themeExport;
+
 		public override void RenderTab(Rect dimensions)
 		{
             // Render the keybind pane.
@@ -32,7 +35,7 @@ namespace MultiTool.Tabs
             float settingsWidth = dimensions.width * 0.75f - 30f;
             float settingsHeight = dimensions.height - 20f;
             GUILayout.BeginArea(new Rect(settingsX, settingsY, settingsWidth, settingsHeight), "<size=16><b>Settings</b></size>", "box");
-            currentPosition = GUILayout.BeginScrollView(currentPosition);
+            _position = GUILayout.BeginScrollView(_position);
             GUILayout.BeginVertical(GUILayout.MaxWidth(settingsWidth * 0.85f));
 
             GUILayout.Space(20);
@@ -55,7 +58,12 @@ namespace MultiTool.Tabs
 						MultiTool.Renderer.settingsShow = false;
 						MultiTool.Renderer.themeShow = true;
 					}
+					GUILayout.Space(5);
 
+					if (GUILayout.Button("Export theme", GUILayout.MaxWidth(200)))
+					{
+						_themeExport = Styling.Export(theme);
+					}
 					GUILayout.Space(5);
 
 					if (GUILayout.Button("Delete theme", "ButtonSecondary", GUILayout.MaxWidth(200)))
@@ -76,6 +84,25 @@ namespace MultiTool.Tabs
 				MultiTool.Renderer.themeShow = true;
 			}
 
+			GUILayout.Space(10);
+
+			if (_themeExport != null && _themeExport != string.Empty)
+			{
+				GUILayout.Label("Exported theme:");
+				GUILayout.Label("Copy and paste the below to someone to share the theme with them.");
+				GUILayout.Label("To import a theme, use the \"Theme import\" section below");
+				GUILayout.TextArea(_themeExport);
+				GUILayout.Space(10);
+			}
+
+			GUILayout.Label("Theme import:");
+			GUILayout.Label("Paste an exported theme here");
+			_themeImport = GUILayout.TextArea(_themeImport);
+			if (GUILayout.Button("Import", GUILayout.MaxWidth(200)))
+			{
+				Styling.Import(_themeImport);
+				_themeImport = null;
+			}
 			GUILayout.Space(10);
 
 			GUILayout.Label($"Scroll bar width: {GUIRenderer.settingsScrollWidth.ToString()}", GUIRenderer.labelStyle);
