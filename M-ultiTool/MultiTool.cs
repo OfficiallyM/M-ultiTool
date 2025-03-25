@@ -63,6 +63,8 @@ namespace MultiTool
             configVersion = Configuration.GetVersion();
             Configuration.UpdateVersion();
 			isOnMainMenu = true;
+
+			Renderer.OnMenuLoad();
         }
 
 		public override void OnGUI()

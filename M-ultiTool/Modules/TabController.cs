@@ -67,6 +67,8 @@ namespace MultiTool.Modules
             }
 
             _tabs.Clear();
+			_tab = null;
+			_lastRenderedTab = null;
         }
 
         /// <summary>

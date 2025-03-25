@@ -247,6 +247,8 @@ namespace MultiTool.Modules
 		{
 			try
 			{
+				loaded = false;
+
                 // Unregister tabs so they re-register correctly if already loaded.
                 if (Tabs.GetCount() > 0)
                     Tabs.UnregisterAll();
@@ -326,10 +328,15 @@ namespace MultiTool.Modules
 			loaded = true;
 		}
 
+		internal void OnMenuLoad()
+		{
+			show = false;
+			loaded = false;
+			mainMenuLoaded = false;
+		}
+
 		internal void Update()
 		{
-            // Trigger update for tabs and notifications.
-            Tabs.Update();
 			Notifications.Update();
 
 			if (MultiTool.isOnMainMenu)
@@ -337,6 +344,11 @@ namespace MultiTool.Modules
 				MainMenuUpdate();
 				return;
 			}
+
+			if (!loaded) return;
+
+            // Trigger update for tabs and notifications.
+            Tabs.Update();
 
 			if (Input.GetKeyDown(MultiTool.Binds.GetKeyByAction((int)Keybinds.Inputs.menu).key) && !mainscript.M.menu.Menu.activeSelf && !mainscript.M.settingsOpen && !mainscript.M.menu.saveScreen.gameObject.activeSelf)
 			{

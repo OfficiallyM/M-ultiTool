@@ -137,10 +137,19 @@ namespace MultiTool.Tabs
                 GUILayout.BeginHorizontal();
                 foreach (Item item in itemsRow)
                 {
+					// An item is broken, remove it from the list and trigger a rechunk
+					// to avoid gaps in the layout.
+					if (item.gameObject == null)
+					{
+						GUIRenderer.items.Remove(item);
+						_rechunk = true;
+						break;
+					}
+
                     GUILayout.Box("", "button", GUILayout.Width(140), GUILayout.Height(140));
                     Rect boxRect = GUILayoutUtility.GetLastRect();
                     bool buttonImage = GUI.Button(new Rect(boxRect.x + 10f, boxRect.y - 10f, boxRect.width - 20f, boxRect.height - 20f), item.thumbnail, "ButtonTransparent");
-                    bool buttonText = GUI.Button(new Rect(boxRect.x, boxRect.y + (boxRect.height / 2), boxRect.width, boxRect.height / 2), item.gameObject.name, "ButtonTransparent");
+                    bool buttonText = GUI.Button(new Rect(boxRect.x, boxRect.y + (boxRect.height / 2), boxRect.width, boxRect.height / 2), item.gameObject?.name ?? "Unknown", "ButtonTransparent");
                     if (buttonImage || buttonText)
                     {
                         GUIRenderer.spawnedObjects.Add(SpawnUtilities.Spawn(new Item()
@@ -228,7 +237,8 @@ namespace MultiTool.Tabs
 
 						if (isVehicle) continue;
 
-						string name = obj.name.Replace("(Clone)", string.Empty);
+						string name = obj.name ?? "Unknown";
+						name = name.Replace("(Clone)", string.Empty);
 
 						GUILayout.Label(name);
 						GUILayout.BeginHorizontal();
