@@ -38,11 +38,42 @@ namespace MultiTool.Tabs
             GUILayout.Space(20);
 
 			GUILayout.Label("Theme select");
-			foreach (string theme in Styling.GetThemeNames())
+			foreach (string themeName in Styling.GetThemeNames())
 			{
-				if (GUILayout.Button(Accessibility.GetAccessibleString(theme, theme == Styling.GetActiveTheme().Name), GUILayout.MaxWidth(200)))
-					Styling.SetActiveTheme(theme);
+				Theme theme = Styling.GetThemeByName(themeName);
+				GUILayout.BeginHorizontal();
+				if (GUILayout.Button(Accessibility.GetAccessibleString(themeName, themeName == Styling.GetActiveTheme().Name), GUILayout.MaxWidth(200)))
+					Styling.SetActiveTheme(themeName);
+
+				GUILayout.Space(5);
+
+				if (!theme.IsCore)
+				{
+					if (GUILayout.Button("Edit theme", GUILayout.MaxWidth(200)))
+					{
+						Styling.SetEditingTheme(theme);
+						MultiTool.Renderer.settingsShow = false;
+						MultiTool.Renderer.themeShow = true;
+					}
+
+					GUILayout.Space(5);
+
+					if (GUILayout.Button("Delete theme", "ButtonSecondary", GUILayout.MaxWidth(200)))
+					{
+						Styling.DeleteTheme(theme);
+					}
+				}
+
+				GUILayout.EndHorizontal();
 				GUILayout.Space(2);
+			}
+
+			GUILayout.Space(5);
+
+			if (GUILayout.Button("Create new theme", "ButtonSecondary", GUILayout.MaxWidth(200)))
+			{
+				MultiTool.Renderer.settingsShow = false;
+				MultiTool.Renderer.themeShow = true;
 			}
 
 			GUILayout.Space(10);

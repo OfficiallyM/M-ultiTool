@@ -13,19 +13,20 @@ namespace MultiTool.Core
 	internal class Theme
 	{
 		[DataMember] public string Name { get; set; }
+		[DataMember] public bool IsCore { get; set; } = false;
 
-		[DataMember] public Color ButtonPrimaryColour { get; set; }
-		[DataMember] public Color ButtonPrimaryHoverColour { get; set; }
-		[DataMember] public Color ButtonSecondaryColour { get; set; }
-		[DataMember] public Color ButtonSecondaryHoverColour { get; set; }
-		[DataMember] public Color BoxColour { get; set; }
-		[DataMember] public Color BoxHoverColour { get; set; }
+		[DataMember] public Color ButtonPrimaryColour { get; set; } = Color.white;
+		[DataMember] public Color ButtonPrimaryHoverColour { get; set; } = Color.grey;
+		[DataMember] public Color ButtonSecondaryColour { get; set; } = Color.white;
+		[DataMember] public Color ButtonSecondaryHoverColour { get; set; } = Color.grey;
+		[DataMember] public Color BoxColour { get; set; } = new Color(0, 0, 0, 0.4f);
+		[DataMember] public Color BoxHoverColour { get; set; } = new Color(0, 0, 0, 0.5f);
 
-		[DataMember] public Color ButtonPrimaryTextColour { get; set; }
-		[DataMember] public Color ButtonSecondaryTextColour { get; set; }
-		[DataMember] public Color TextColour { get; set; }
-		[DataMember] public Color AccessibilityOnColour { get; set; }
-		[DataMember] public Color AccessibilityOffColour { get; set; }
+		[DataMember] public Color ButtonPrimaryTextColour { get; set; } = Color.black;
+		[DataMember] public Color ButtonSecondaryTextColour { get; set; } = Color.black;
+		[DataMember] public Color TextColour { get; set; } = Color.white;
+		[DataMember] public Color AccessibilityOnColour { get; set; } = Color.green;
+		[DataMember] public Color AccessibilityOffColour { get; set; } = Color.red;
 
 		public Texture2D ButtonPrimary { get; set; }
 		public Texture2D ButtonPrimaryHover { get; set; }
@@ -50,6 +51,11 @@ namespace MultiTool.Core
 	{
 		[DataMember] public List<Theme> Data { get; set; }
 
+		public Themes()
+		{
+			Data = new List<Theme>();
+		}
+
 		/// <summary>
 		/// Add a new theme.
 		/// </summary>
@@ -57,6 +63,15 @@ namespace MultiTool.Core
 		public void Add(Theme theme)
 		{
 			Data.Add(theme);
+		}
+
+		/// <summary>
+		/// Remove a theme.
+		/// </summary>
+		/// <param name="theme">Theme to remove</param>
+		public void Remove(Theme theme)
+		{
+			Data.Remove(theme);
 		}
 
 		/// <summary>

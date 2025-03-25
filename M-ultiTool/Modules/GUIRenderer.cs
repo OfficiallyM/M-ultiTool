@@ -10,7 +10,6 @@ using MultiTool.Utilities;
 using UnityEngine.Rendering;
 using System.Text.RegularExpressions;
 using MultiTool.Utilities.UI;
-using System.Reflection;
 
 namespace MultiTool.Modules
 {
@@ -25,10 +24,12 @@ namespace MultiTool.Modules
 		internal bool enabled = false;
 		internal bool show = false;
 		private bool loaded = false;
-		private bool settingsShow = false;
+		internal bool settingsShow = false;
         private string settingsTabId = null;
-		private bool creditsShow = false;
+		internal bool creditsShow = false;
         private string creditsTabId = null;
+		internal bool themeShow = false;
+		private string themeTabId = null;
 
 		internal int resolutionX;
 		internal int resolutionY;
@@ -274,6 +275,7 @@ namespace MultiTool.Modules
                 // Add default hidden tabs.
                 settingsTabId = Tabs.AddTab(new Tabs.SettingsTab());
                 creditsTabId = Tabs.AddTab(new Tabs.CreditsTab());
+				themeTabId = Tabs.AddTab(new Tabs.ThemeTab());
 
                 // Load data from database.
                 vehicles = DatabaseUtilities.LoadVehicles();
@@ -991,12 +993,16 @@ namespace MultiTool.Modules
 
             if (settingsShow)
             {
-                Tabs.RenderTab(settingsTabId);
+				Tabs.RenderTab(settingsTabId);
             }
             else if (creditsShow)
             {
                 Tabs.RenderTab(creditsTabId);
             }
+			else if (themeShow)
+			{
+				Tabs.RenderTab(themeTabId);
+			}
             else
             {
                 // Render navigation bar.

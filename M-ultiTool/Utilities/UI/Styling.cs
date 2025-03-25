@@ -1,8 +1,14 @@
 ﻿using MultiTool.Core;
 using MultiTool.Extensions;
 using MultiTool.Modules;
+using System;
 using System.Collections.Generic;
+using System.IO;
+using System.Runtime.Serialization.Json;
+using System.Text;
+using TLDLoader;
 using UnityEngine;
+using Logger = MultiTool.Modules.Logger;
 
 namespace MultiTool.Utilities.UI
 {
@@ -13,6 +19,9 @@ namespace MultiTool.Utilities.UI
         private static GUISkin _skin;
 		private static Themes _themes = new Themes();
 		private static Theme _activeTheme;
+		private static Theme _editingTheme;
+
+		private static string _path;
 
         // GUI styles.
         private static GUIStyle _buttonStyle;
@@ -20,7 +29,9 @@ namespace MultiTool.Utilities.UI
         // Core textures.
         private static Texture2D _black;
         private static Texture2D _blackHover;
-        private static Texture2D _grey;
+		private static Texture2D _white;
+		private static Texture2D _whiteHover;
+		private static Texture2D _grey;
         private static Texture2D _transparent;
 		private static Texture2D _green;
 		private static Texture2D _orange;
@@ -30,18 +41,25 @@ namespace MultiTool.Utilities.UI
 		public static GUISkin GetActiveSkin() => _skin;
 		public static Theme GetActiveTheme() => _activeTheme;
 
+		public static Theme GetEditingTheme() => _editingTheme;
+		public static void SetEditingTheme(Theme theme) => _editingTheme = theme;
+		public static GUISkin CreatePreviewForTheme(Theme theme)
+		{
+			theme.CreateTextures();
+			return CreateSkinForTheme(theme);
+		}
+
 		public static void Bootstrap()
         {
             if (!_hasInitialised)
             {
 				_baseSkin = CreateSkin(GUI.skin, null);
 
-				_themes.Data = new List<Theme>();
-
 				// Add default themes.
 				_themes.Add(new Theme()
 				{
 					Name = "Greyscale",
+					IsCore = true,
 
 					ButtonPrimaryColour = new Color(0.4f, 0.4f, 0.4f),
 					ButtonPrimaryHoverColour = new Color(0.5f, 0.5f, 0.5f),
@@ -59,13 +77,14 @@ namespace MultiTool.Utilities.UI
 				_themes.Add(new Theme()
 				{
 					Name = "M- Purple",
+					IsCore = true,
 
 					ButtonPrimaryColour = new Color(68 / 255f, 0 / 255f, 132 / 255f),
 					ButtonPrimaryHoverColour = new Color(80 / 255f, 0 / 255f, 155 / 255f),
 					ButtonSecondaryColour = new Color(132 / 255f, 0 / 255f, 130 / 255f),
 					ButtonSecondaryHoverColour = new Color(158 / 255f, 0 / 255f, 155 / 255f),
 					BoxColour = new Color(0, 0, 0, 0.8f),
-					BoxHoverColour = new Color(0, 0, 0, 0.6f),
+					BoxHoverColour = new Color(0, 0, 0, 0.9f),
 
 					ButtonPrimaryTextColour = Color.white,
 					ButtonSecondaryTextColour = Color.white,
@@ -74,9 +93,12 @@ namespace MultiTool.Utilities.UI
 					AccessibilityOffColour = Color.white,
 				});
 
-				// TODO: Load any custom themes.
-				// Also requires the UI for building and the ability to save.
-				// Thinking to store similar to config but in their own file.
+				// Load saved themes.
+				_path = Path.Combine(ModLoader.GetModConfigFolder(MultiTool.mod), "Themes.json");
+				foreach (Theme fileTheme in LoadFromFile().Data)
+				{
+					_themes.Add(fileTheme);
+				}
 
 				CreateThemeTextures();
 				LoadSelectedTheme();
@@ -109,6 +131,55 @@ namespace MultiTool.Utilities.UI
 		{
 			return _themes.GetThemeNames();
 		}
+
+		/// <summary>
+		/// Save the current editing theme.
+		/// </summary>
+		public static void SaveEditingTheme()
+		{
+			Theme existingTheme = null;
+			foreach (Theme theme in _themes.Data)
+			{
+				if (theme.Name == _editingTheme.Name)
+				{
+					existingTheme = theme;
+					break;
+				}
+			}
+
+			if (existingTheme != null)
+				existingTheme = _editingTheme;
+			else
+				_themes.Add(_editingTheme);
+
+			CreateThemeTextures();
+			if (_activeTheme == _editingTheme)
+				_skin = CreateSkinForTheme(_editingTheme);
+
+			SetEditingTheme(null);
+
+			Commit();
+		}
+
+		/// <summary>
+		/// Delete a theme by name.
+		/// </summary>
+		/// <param name="name">Theme name to delete</param>
+		public static void DeleteTheme(Theme theme)
+		{
+			if (theme == null || theme.IsCore) return;
+
+			_themes.Remove(theme);
+			LoadSelectedTheme();
+			Commit();
+		}
+
+		/// <summary>
+		/// Get a theme by name.
+		/// </summary>
+		/// <param name="name">Theme name</param>
+		/// <returns>Theme if exists, otherwise null</returns>
+		public static Theme GetThemeByName(string name) => _themes.GetByName(name);
 
 		private static GUISkin CreateSkin(GUISkin original, string name)
 		{
@@ -160,7 +231,9 @@ namespace MultiTool.Utilities.UI
 
 			// Create any required core textures.
 			_black = GUIExtensions.ColorTexture(1, 1, new Color(0f, 0f, 0f));
-			_blackHover = GUIExtensions.ColorTexture(1, 1, new Color(0.1f, 0.1f, 0.1f));;
+			_blackHover = GUIExtensions.ColorTexture(1, 1, new Color(0.1f, 0.1f, 0.1f));
+			_white = GUIExtensions.ColorTexture(1, 1, new Color(1f, 1f, 1f));
+			_whiteHover = GUIExtensions.ColorTexture(1, 1, new Color(0.9f, 0.9f, 0.9f));
 			_grey = GUIExtensions.ColorTexture(1, 1, new Color(0.4f, 0.4f, 0.4f));
 			_transparent = GUIExtensions.ColorTexture(1, 1, new Color(0, 0, 0, 0));
 			_green = GUIExtensions.ColorTexture(1, 1, new Color(0.16f, 0.61f, 0));
@@ -211,12 +284,23 @@ namespace MultiTool.Utilities.UI
 			buttonSecondary.active.textColor = theme.ButtonSecondaryTextColour;
 			buttonSecondary.focused.textColor = theme.ButtonSecondaryTextColour;
 
+			GUIStyle buttonSecondaryTextLeft = new GUIStyle(buttonSecondary);
+			buttonSecondaryTextLeft.name = "ButtonSecondaryTextLeft";
+			buttonSecondaryTextLeft.alignment = TextAnchor.MiddleLeft;
+
 			GUIStyle buttonBlack = new GUIStyle(_buttonStyle);
 			buttonBlack.name = "ButtonBlack";
 			buttonBlack.normal.background = _black;
 			buttonBlack.hover.background = _blackHover;
 			buttonBlack.active.background = _blackHover;
 			buttonBlack.focused.background = _blackHover;
+
+			GUIStyle buttonWhite = new GUIStyle(_buttonStyle);
+			buttonWhite.name = "ButtonWhite";
+			buttonWhite.normal.background = _white;
+			buttonWhite.hover.background = _whiteHover;
+			buttonWhite.active.background = _whiteHover;
+			buttonWhite.focused.background = _whiteHover;
 
 			GUIStyle buttonBlackTranslucent = new GUIStyle(_buttonStyle);
 			buttonBlackTranslucent.name = "ButtonBlackTranslucent";
@@ -310,7 +394,9 @@ namespace MultiTool.Utilities.UI
 				buttonPrimaryWrap,
 				buttonPrimaryTextLeft,
 				buttonSecondary,
+				buttonSecondaryTextLeft,
 				buttonBlack,
+				buttonWhite,
 				buttonBlackTranslucent,
 				buttonTransparent,
 
@@ -351,6 +437,58 @@ namespace MultiTool.Utilities.UI
 			}
 
 			SetActiveTheme(theme.Name);
+		}
+
+		/// <summary>
+		/// Load the theme from file.
+		/// </summary>
+		private static Themes LoadFromFile()
+		{
+			Themes fileThemes = new Themes();
+			// Attempt to load the config file.
+			try
+			{
+				if (File.Exists(_path))
+				{
+					string json = File.ReadAllText(_path);
+					MemoryStream ms = new MemoryStream(Encoding.UTF8.GetBytes(json));
+					DataContractJsonSerializer jsonSerializer = new DataContractJsonSerializer(typeof(Themes));
+					fileThemes = jsonSerializer.ReadObject(ms) as Themes;
+					ms.Close();
+				}
+			}
+			catch (Exception ex)
+			{
+				Logger.Log($"Error loading config file: {ex}", Logger.LogLevel.Error);
+			}
+
+			return fileThemes;
+		}
+
+		private static void Commit()
+		{
+			Themes fileThemes = new Themes();
+			foreach (Theme theme in _themes.Data)
+			{
+				if (!theme.IsCore)
+					fileThemes.Add(theme);
+			}
+
+			try
+			{
+				MemoryStream ms = new MemoryStream();
+				DataContractJsonSerializer jsonSerializer = new DataContractJsonSerializer(typeof(Themes));
+				jsonSerializer.WriteObject(ms, fileThemes);
+				using (FileStream file = new FileStream(_path, FileMode.Create, FileAccess.Write))
+				{
+					ms.WriteTo(file);
+					ms.Dispose();
+				}
+			}
+			catch (Exception ex)
+			{
+				Logger.Log($"Theme write error: {ex}", Logger.LogLevel.Error);
+			}
 		}
 	}
 }

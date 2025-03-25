@@ -128,7 +128,8 @@ namespace MultiTool.Modules
 		/// <summary>
 		/// Render a given tab
 		/// </summary>
-		/// <param name="tab">The tab index to render</param>
+		/// <param name="id">The tab index to render</param>
+		/// <param name="dimensions">The dimensions rect for the tab. Leave null to use menu default</param>
 		public void RenderTab(string id = null, Rect? dimensions = null)
         {
             if (_tab == null) _tab = GetByIndex(0).Id;
