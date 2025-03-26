@@ -351,6 +351,16 @@ namespace MultiTool.Modules
             // Trigger update for tabs and notifications.
             Tabs.Update();
 
+			// Remove any null objects from the spawn history.
+			foreach (GameObject spawned in spawnedObjects)
+			{
+				if (spawned == null)
+				{
+					spawnedObjects.Remove(spawned);
+					break;
+				}
+			}
+
 			if (Input.GetKeyDown(MultiTool.Binds.GetKeyByAction((int)Keybinds.Inputs.menu).key) && !mainscript.M.menu.Menu.activeSelf && !mainscript.M.settingsOpen && !mainscript.M.menu.saveScreen.gameObject.activeSelf)
 			{
 				show = !show;

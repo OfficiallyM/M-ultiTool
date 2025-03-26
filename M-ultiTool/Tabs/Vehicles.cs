@@ -120,18 +120,21 @@ namespace MultiTool.Tabs
                     bool buttonText = GUI.Button(new Rect(boxRect.x, boxRect.y + (boxRect.height / 2), boxRect.width, boxRect.height / 2), vehicle.name, "ButtonTransparent");
                     if (buttonImage || buttonText)
                     {
-						GUIRenderer.spawnedObjects.Add(SpawnUtilities.Spawn(new Vehicle()
-                        {
-                            gameObject = vehicle.gameObject,
-                            variant = vehicle.variant,
-                            conditionInt = _condition,
-                            fuelMixes = _fuelMixes,
-                            fuelValues = _fuelValues,
-                            fuelTypeInts = _fuelTypes,
-                            color = Colour.GetColour(),
-                            plate = _plate,
-                            amt = vehicle.amt,
-                        }));
+						GameObject spawned = SpawnUtilities.Spawn(new Vehicle()
+						{
+							gameObject = vehicle.gameObject,
+							variant = vehicle.variant,
+							conditionInt = _condition,
+							fuelMixes = _fuelMixes,
+							fuelValues = _fuelValues,
+							fuelTypeInts = _fuelTypes,
+							color = Colour.GetColour(),
+							plate = _plate,
+							amt = vehicle.amt,
+						});
+
+						if (spawned != null)
+							GUIRenderer.spawnedObjects.Add(spawned);
                     }
                     GUILayout.Space(5);
                 }
@@ -172,11 +175,9 @@ namespace MultiTool.Tabs
 				{
 					try
 					{
-						// Check for anything that has been deleted and remove it.
 						if (obj == null)
 						{
-							GUIRenderer.spawnedObjects.Remove(obj);
-							break;
+							continue;
 						}
 
 						bool isVehicle = GameUtilities.IsVehicleOrTrailer(obj);
