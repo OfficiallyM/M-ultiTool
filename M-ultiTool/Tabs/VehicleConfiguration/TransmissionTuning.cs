@@ -43,11 +43,13 @@ namespace MultiTool.Tabs.VehicleConfiguration
 					_transmissionTuning = new Core.TransmissionTuning()
 					{
 						gears = new List<Gear>(),
+						differentialRatio = car.differentialRatio,
 					};
 
 					_defaultTuning = new Core.TransmissionTuning()
 					{
 						gears = new List<Gear>(),
+						differentialRatio = car.differentialRatio,
 					};
 
 					// Populate gearing.
@@ -65,6 +67,20 @@ namespace MultiTool.Tabs.VehicleConfiguration
 			_position = GUILayout.BeginScrollView(_position);
 
 			GUILayout.BeginVertical();
+
+			GUILayout.Label("Differential", "LabelHeader");
+			GUILayout.BeginVertical();
+			GUILayout.Label("Differential ratio");
+			GUILayout.Label("Smaller number: less acceleration, higher top speed (Taller gearing)");
+			GUILayout.Label("Bigger number: more acceleration, lower top speed (Shorter gearing)");
+			_transmissionTuning.differentialRatio = GUILayout.HorizontalSlider(_transmissionTuning.differentialRatio, 0f, 20f);
+			float.TryParse(GUILayout.TextField(_transmissionTuning.differentialRatio.ToString("F2"), GUILayout.MaxWidth(200)), out _transmissionTuning.differentialRatio);
+			if (GUILayout.Button("Reset", GUILayout.MaxWidth(200)))
+				_transmissionTuning.differentialRatio = _defaultTuning.differentialRatio;
+			GUILayout.EndVertical();
+
+			GUILayout.Space(10);
+
 			GUILayout.Label("Gears and ratios", "LabelHeader");
 			gearIndex = 1;
 			foreach (Gear gear in _transmissionTuning.gears)
@@ -148,6 +164,7 @@ namespace MultiTool.Tabs.VehicleConfiguration
 			if (GUILayout.Button("Reset tuning to stock", GUILayout.MaxWidth(200)))
 			{
 				_transmissionTuning.gears = _defaultTuning.gears.Copy();
+				_transmissionTuning.differentialRatio = _defaultTuning.differentialRatio;
 			}
 
 			GUILayout.EndHorizontal();

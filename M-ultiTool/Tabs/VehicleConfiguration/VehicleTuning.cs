@@ -41,14 +41,12 @@ namespace MultiTool.Tabs.VehicleConfiguration
 					{
 						steerAngle = car.steerAngle,
 						brakePower = car.brakePower,
-						differentialRatio = car.differentialRatio,
 					};
 
 					_defaultTuning = new Core.VehicleTuning()
 					{
 						steerAngle = car.steerAngle,
 						brakePower = car.brakePower,
-						differentialRatio = car.differentialRatio,
 					};
 				}
 			}
@@ -76,19 +74,6 @@ namespace MultiTool.Tabs.VehicleConfiguration
 				_vehicleTuning.brakePower = _defaultTuning.brakePower;
 			GUILayout.EndVertical();
 
-			GUILayout.Space(10);
-
-			GUILayout.Label("Differential", "LabelHeader");
-			GUILayout.BeginVertical();
-			GUILayout.Label("Differential ratio");
-			GUILayout.Label("Smaller number: less acceleration, higher top speed (Taller gearing)");
-			GUILayout.Label("Bigger number: more acceleration, lower top speed (Shorter gearing)");
-			_vehicleTuning.differentialRatio = GUILayout.HorizontalSlider(_vehicleTuning.differentialRatio, 0f, 20f);
-			float.TryParse(GUILayout.TextField(_vehicleTuning.differentialRatio.ToString("F2"), GUILayout.MaxWidth(200)), out _vehicleTuning.differentialRatio);
-			if (GUILayout.Button("Reset", GUILayout.MaxWidth(200)))
-				_vehicleTuning.differentialRatio = _defaultTuning.differentialRatio;
-			GUILayout.EndVertical();
-
 			GUILayout.EndScrollView();
 
 			GUILayout.Space(10);
@@ -105,7 +90,6 @@ namespace MultiTool.Tabs.VehicleConfiguration
 			{
 				_vehicleTuning.steerAngle = _defaultTuning.steerAngle;
 				_vehicleTuning.brakePower = _defaultTuning.brakePower;
-				_vehicleTuning.differentialRatio = _defaultTuning.differentialRatio;
 			}
 
 			GUILayout.EndVertical();

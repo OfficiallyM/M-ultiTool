@@ -178,13 +178,13 @@ namespace MultiTool.Core
     internal class TransmissionTuning
     {
         [DataMember] internal List<Gear> gears = new List<Gear>();
-    }
+		[DataMember] internal float differentialRatio;
+	}
 
     [DataContract]
     internal class VehicleTuning
     {
         [DataMember] internal float steerAngle;
-        [DataMember] internal float brakePower;
-        [DataMember] internal float differentialRatio;
+        [DataMember] internal float brakePower;    
     }
 }

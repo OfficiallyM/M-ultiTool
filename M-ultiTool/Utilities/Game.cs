@@ -514,8 +514,11 @@ namespace MultiTool.Utilities
                 gears.Add(new carscript.gearc() { ratio = gear.ratio, freeRun = gear.freeRun, Pos = stockGear.Pos, Path = stockGear.Path });
                 gearIndex++;
             }
-            car.gears = gears.ToArray();
-        }
+			car.gears = gears.ToArray();
+
+			// Apply any other tuning.
+			car.differentialRatio = transmissionTuning.differentialRatio;
+		}
 
         /// <summary>
         /// Apply vehicle tuning.
@@ -526,7 +529,6 @@ namespace MultiTool.Utilities
         {
             car.steerAngle = vehicleTuning.steerAngle;
             car.brakePower = vehicleTuning.brakePower;
-            car.differentialRatio = vehicleTuning.differentialRatio;
         }
 
 		/// <summary>
