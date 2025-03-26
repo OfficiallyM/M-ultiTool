@@ -279,7 +279,8 @@ namespace MultiTool.Modules
                 creditsTabId = Tabs.AddTab(new Tabs.CreditsTab());
 				themeTabId = Tabs.AddTab(new Tabs.ThemeTab());
 
-                // Load data from database.
+				// Load data from database.
+				DatabaseUtilities.ClearCaches();
                 vehicles = DatabaseUtilities.LoadVehicles();
 				items = DatabaseUtilities.LoadItems();
 				POIs = DatabaseUtilities.LoadPOIs();
