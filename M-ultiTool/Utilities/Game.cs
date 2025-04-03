@@ -516,8 +516,56 @@ namespace MultiTool.Utilities
             }
 			car.gears = gears.ToArray();
 
-			// Apply any other tuning.
+			// Apply diff tuning.
 			car.differentialRatio = transmissionTuning.differentialRatio;
+
+			// Apply drivetrain.
+			car.WHDriven.Clear();
+			switch (transmissionTuning.driveTrain)
+			{
+				case Drivetrain.AWD:
+					foreach (WheelCollider wheel in car.GetComponentsInChildren<WheelCollider>())
+					{
+						car.WHDriven.Add(wheel);
+					}
+					break;
+				case Drivetrain.FWD:
+					foreach (WheelCollider wheel in car.GetComponentsInChildren<WheelCollider>())
+					{
+						if (wheel.transform.localPosition.z > 0)
+							car.WHDriven.Add(wheel);
+					}
+					break;
+				case Drivetrain.RWD:
+					foreach (WheelCollider wheel in car.GetComponentsInChildren<WheelCollider>())
+					{
+						if (wheel.transform.localPosition.z < 0)
+							car.WHDriven.Add(wheel);
+					}
+					break;
+			}
+		}
+
+		internal static Drivetrain GetDrivetrain(carscript car)
+		{
+			int frontWheels = 0;
+			int rearWheels = 0;
+
+			foreach (WheelCollider wheel in car.WHDriven)
+			{
+				if (wheel.transform.localPosition.z > 0)
+					frontWheels++;
+				else
+					rearWheels++;
+			}
+
+			Drivetrain drivetrain = Drivetrain.RWD;
+			if (frontWheels > 0 && rearWheels > 0)
+				drivetrain = Drivetrain.AWD;
+			else if (frontWheels > 0)
+				drivetrain = Drivetrain.FWD;
+
+			return drivetrain;
 		}
 
         /// <summary>
@@ -530,6 +578,76 @@ namespace MultiTool.Utilities
             car.steerAngle = vehicleTuning.steerAngle;
             car.brakePower = vehicleTuning.brakePower;
         }
+
+		/// <summary>
+		/// Apply wheel tuning.
+		/// </summary>
+		/// <param name="wheelTuning">Tuning settings</param>
+		internal static void ApplyWheelTuning(WheelTuning wheelTuning)
+		{
+			foreach (Wheel wheel in wheelTuning.wheels)
+			{
+				if (wheel.graphics == null) continue;
+
+				if (wheel.graphics?.slot?.part?.p?.wheel == null)
+				{
+					continue;
+				}
+
+				gumiscript tire = wheel.graphics?.slot?.part?.p?.wheel?.gumi?.part?.p?.gumi;
+				WheelCollider collider = wheel.graphics.W;
+
+				// Apply grip settings.
+				if (wheel.forwardSlip != null)
+					tire.slip1 = wheel.forwardSlip.Value;
+				if (wheel.sideSlip != null)
+					tire.slip2 = wheel.sideSlip.Value;
+				collider.wheelDampingRate = wheel.wheelDamping;
+
+				// Apply suspension settings.
+				collider.suspensionDistance = wheel.distance;
+				JointSpring spring = collider.suspensionSpring;
+				spring.spring = wheel.stiffness;
+				spring.damper = wheel.damper;
+				spring.targetPosition = wheel.targetPosition;
+				collider.suspensionSpring = spring;
+
+				collider.transform.localPosition = wheel.position;
+			}
+		}
+
+		/// <summary>
+		/// Remap wheel tuning data from vehicle.
+		/// </summary>
+		/// <param name="save">Vehicle tosaveitemscript</param>
+		/// <param name="tuning">Saved wheel tuning</param>
+		internal static void RemapWheelTuning(tosaveitemscript save, WheelTuning tuning)
+		{
+			if (tuning == null) return;
+
+            // Remap save data to individual wheels.
+            wheelgraphicsscript[] wheelGraphics = save.GetComponentsInChildren<wheelgraphicsscript>(true);
+			foreach (wheelgraphicsscript wheelgraphic in wheelGraphics)
+			{
+				// Ignore non mounted wheels.
+				if (wheelgraphic?.slot?.part?.p?.wheel == null)
+				{
+					continue;
+				}
+
+				tosaveitemscript wheelSave = wheelgraphic.slot.part.tosaveitem;
+
+				foreach (Wheel wheel in tuning.wheels)
+				{
+					if (wheel.ID == wheelSave.idInSave)
+					{
+						wheel.graphics = wheelgraphic;
+						wheel.save = wheelSave;
+						break;
+					}
+				}
+			}
+		}
 
 		/// <summary>
 		/// Get global position of an object.

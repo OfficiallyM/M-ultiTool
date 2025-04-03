@@ -446,7 +446,7 @@ namespace MultiTool.Tabs.VehicleConfiguration
 			GUILayout.BeginHorizontal();
 			if (GUILayout.Button("Apply", GUILayout.MaxWidth(200)))
 			{
-				SaveUtilities.UpdateEngineTuning(new EngineTuningData() { ID = engineSave.idInSave, tuning = _engineTuning });
+				SaveUtilities.UpdateEngineTuning(new EngineTuningData() { ID = engineSave.idInSave, tuning = _engineTuning, defaultTuning = _defaultTuning });
 				GameUtilities.ApplyEngineTuning(engine, _engineTuning);
 			}
 

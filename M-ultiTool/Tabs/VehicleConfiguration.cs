@@ -37,10 +37,13 @@ namespace MultiTool.Tabs
 			_tabs.AddTab(new VehicleConfiguration.EngineTuning());
 			_tabs.AddTab(new VehicleConfiguration.TransmissionTuning());
 			_tabs.AddTab(new VehicleConfiguration.VehicleTuning());
+			_tabs.AddTab(new VehicleConfiguration.WheelTuning());
 		}
 
 		public override void Update()
 		{
+			_tabs.Update();
+
 			// Edge case for player somehow not existing.
 			if (mainscript.M.player == null) return;
 

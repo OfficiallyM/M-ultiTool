@@ -179,6 +179,7 @@ namespace MultiTool.Core
     {
         [DataMember] internal List<Gear> gears = new List<Gear>();
 		[DataMember] internal float differentialRatio;
+		[DataMember] internal Drivetrain driveTrain;
 	}
 
     [DataContract]
@@ -187,4 +188,44 @@ namespace MultiTool.Core
         [DataMember] internal float steerAngle;
         [DataMember] internal float brakePower;    
     }
+
+	internal enum Drivetrain
+	{
+		FWD,
+		RWD,
+		AWD,
+	}
+
+	[DataContract]
+	internal class Wheel
+	{
+		internal tosaveitemscript save;
+		internal wheelgraphicsscript graphics;
+		internal string name;
+		[DataMember] internal int ID;
+
+		// Grip.
+		[DataMember] internal float? forwardSlip;
+		[DataMember] internal float? sideSlip;
+		[DataMember] internal float wheelDamping;
+
+		// Suspension.
+		[DataMember] internal float distance;
+		[DataMember] internal float stiffness;
+		[DataMember] internal float damper;
+		[DataMember] internal float targetPosition;
+
+		// Position.
+		[DataMember] internal Vector3 position;
+		[DataMember] internal float outwardOffset = 0;
+		[DataMember] internal float forwardOffset = 0;
+		[DataMember] internal float verticalOffset = 0;
+	}
+
+    [DataContract]
+    internal class WheelTuning
+    {
+		[DataMember] internal bool applyToAll = true;
+		[DataMember] internal List<Wheel> wheels = new List<Wheel>();
+	}
 }

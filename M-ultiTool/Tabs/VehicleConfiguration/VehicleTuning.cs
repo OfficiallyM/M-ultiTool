@@ -34,7 +34,7 @@ namespace MultiTool.Tabs.VehicleConfiguration
 				_vehicleTuning = SaveUtilities.GetVehicleTuning(save.idInSave);
 				_defaultTuning = SaveUtilities.GetDefaultVehicleTuning(save.idInSave);
 
-				// Save has no data for this transmission, load defaults.
+				// Save has no data for this vehicle, load defaults.
 				if (_vehicleTuning == null || _defaultTuning == null)
 				{
 					_vehicleTuning = new Core.VehicleTuning()
@@ -82,7 +82,7 @@ namespace MultiTool.Tabs.VehicleConfiguration
 			GUILayout.BeginHorizontal();
 			if (GUILayout.Button("Apply", GUILayout.MaxWidth(200)))
 			{
-				SaveUtilities.UpdateVehicleTuning(new VehicleTuningData() { ID = save.idInSave, tuning = _vehicleTuning });
+				SaveUtilities.UpdateVehicleTuning(new VehicleTuningData() { ID = save.idInSave, tuning = _vehicleTuning, defaultTuning = _defaultTuning });
 				GameUtilities.ApplyVehicleTuning(car, _vehicleTuning);
 			}
 

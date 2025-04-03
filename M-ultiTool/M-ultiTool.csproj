@@ -47,6 +47,9 @@
     <Reference Include="UnityEngine.UI">
       <HintPath>C:\Program Files (x86)\Steam\steamapps\common\The Long Drive\TheLongDrive_Data\Managed\UnityEngine.UI.dll</HintPath>
     </Reference>
+    <Reference Include="UnityEngine.VehiclesModule">
+      <HintPath>C:\Program Files (x86)\Steam\steamapps\common\The Long Drive\TheLongDrive_Data\Managed\UnityEngine.VehiclesModule.dll</HintPath>
+    </Reference>
   </ItemGroup>
 
   <ItemGroup>

@@ -23,6 +23,7 @@ namespace MultiTool.Modules
 		// Menu control.
 		internal bool enabled = false;
 		internal bool show = false;
+		private bool menuKeyConsumed = false;
 		private bool loaded = false;
 		internal bool settingsShow = false;
         private string settingsTabId = null;
@@ -227,7 +228,18 @@ namespace MultiTool.Modules
 					    RenderPauseMenu();
 
 				    else if (show)
-				        MainMenu();
+					{
+						// Override to allow menu to close with text input focused.
+						Event e = Event.current;
+						if (e.type == EventType.KeyDown && e.keyCode == MultiTool.Binds.GetKeyByAction((int)Keybinds.Inputs.menu).key)
+						{
+							ToggleMenu();
+							e.Use();
+							menuKeyConsumed = true;
+						}
+
+						MainMenu();
+					}
                 }
 			}
 			// Main menu.
@@ -361,21 +373,13 @@ namespace MultiTool.Modules
 				}
 			}
 
-			if (Input.GetKeyDown(MultiTool.Binds.GetKeyByAction((int)Keybinds.Inputs.menu).key) && !mainscript.M.menu.Menu.activeSelf && !mainscript.M.settingsOpen && !mainscript.M.menu.saveScreen.gameObject.activeSelf)
-			{
-				show = !show;
-				mainscript.M.crsrLocked = !show;
-				mainscript.M.SetCursorVisible(show);
-				mainscript.M.menu.gameObject.SetActive(!show);
-			}
+			if (!menuKeyConsumed && Input.GetKeyDown(MultiTool.Binds.GetKeyByAction((int)Keybinds.Inputs.menu).key) && !mainscript.M.menu.Menu.activeSelf && !mainscript.M.settingsOpen && !mainscript.M.menu.saveScreen.gameObject.activeSelf)
+				ToggleMenu();
 
 			if (show && !mainscript.M.menu.Menu.activeSelf && Input.GetButtonDown("Cancel"))
-			{
-				show = false;
-				mainscript.M.crsrLocked = !show;
-				mainscript.M.SetCursorVisible(show);
-				mainscript.M.menu.gameObject.SetActive(!show);
-			}
+				ToggleMenu(false);
+
+			menuKeyConsumed = false;
 
 			// Detect item when item debugging is enabled.
 			if (settings.objectDebug)
@@ -924,6 +928,20 @@ namespace MultiTool.Modules
 					appliedStartVehicleChanges = true;
 				}
 			}
+		}
+
+		private void ToggleMenu(bool? force = null)
+		{
+			if (force.HasValue)
+				show = force.Value;
+			else
+				show = !show;
+
+			mainscript.M.crsrLocked = !show;
+			mainscript.M.SetCursorVisible(show);
+			mainscript.M.menu.gameObject.SetActive(!show);
+			GUI.FocusControl(null);
+			menuKeyConsumed = false;
 		}
 
 		/// <summary>

@@ -44,12 +44,14 @@ namespace MultiTool.Tabs.VehicleConfiguration
 					{
 						gears = new List<Gear>(),
 						differentialRatio = car.differentialRatio,
+						driveTrain = GameUtilities.GetDrivetrain(car),
 					};
 
 					_defaultTuning = new Core.TransmissionTuning()
 					{
 						gears = new List<Gear>(),
 						differentialRatio = car.differentialRatio,
+						driveTrain = GameUtilities.GetDrivetrain(car),
 					};
 
 					// Populate gearing.
@@ -78,7 +80,16 @@ namespace MultiTool.Tabs.VehicleConfiguration
 			if (GUILayout.Button("Reset", GUILayout.MaxWidth(200)))
 				_transmissionTuning.differentialRatio = _defaultTuning.differentialRatio;
 			GUILayout.EndVertical();
+			GUILayout.Space(10);
 
+			GUILayout.Label($"Drivetrain", "LabelHeader");
+			GUILayout.BeginVertical();
+			foreach (int drivetrain in Enum.GetValues(typeof(Drivetrain)))
+			{
+				if (GUILayout.Button(Accessibility.GetAccessibleString(Enum.GetName(typeof(Drivetrain), drivetrain), drivetrain == (int)_transmissionTuning.driveTrain), GUILayout.MaxWidth(200)))
+					_transmissionTuning.driveTrain = (Drivetrain)drivetrain;
+			}
+			GUILayout.EndVertical();
 			GUILayout.Space(10);
 
 			GUILayout.Label("Gears and ratios", "LabelHeader");
@@ -157,7 +168,7 @@ namespace MultiTool.Tabs.VehicleConfiguration
 			GUILayout.BeginHorizontal();
 			if (GUILayout.Button("Apply", GUILayout.MaxWidth(200)))
 			{
-				SaveUtilities.UpdateTransmissionTuning(new TransmissionTuningData() { ID = save.idInSave, tuning = _transmissionTuning });
+				SaveUtilities.UpdateTransmissionTuning(new TransmissionTuningData() { ID = save.idInSave, tuning = _transmissionTuning, defaultTuning = _defaultTuning });
 				GameUtilities.ApplyTransmissionTuning(car, _transmissionTuning);
 			}
 

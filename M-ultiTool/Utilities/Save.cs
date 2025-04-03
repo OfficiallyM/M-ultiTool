@@ -386,6 +386,37 @@ namespace MultiTool.Utilities
         }
 
 		/// <summary>
+		/// Update wheel tuning data in save.
+		/// </summary>
+		/// <param name="wheelTuning">Wheel tuning data</param>
+		public static void UpdateWheelTuning(WheelTuningData wheelTuning)
+		{
+			Save data = UnserializeSaveData();
+
+			try
+			{
+				if (data.wheelTuning == null)
+					data.wheelTuning = new List<WheelTuningData>();
+
+				WheelTuningData existing = data.wheelTuning.Where(e => e.ID == wheelTuning.ID).FirstOrDefault();
+				if (existing != null)
+				{
+					existing.tuning = wheelTuning.tuning;
+					if (existing.defaultTuning == null)
+						existing.defaultTuning = wheelTuning.defaultTuning;
+				}
+				else
+					data.wheelTuning.Add(wheelTuning);
+			}
+			catch (Exception ex)
+			{
+				Logger.Log($"Wheel tuning update error - {ex}", Logger.LogLevel.Error);
+			}
+
+			SerializeSaveData(data);
+		}
+
+		/// <summary>
 		/// Update weight data in save.
 		/// </summary>
 		/// <param name="weigh">Weight data</param>
@@ -496,6 +527,7 @@ namespace MultiTool.Utilities
                 LoadEngineTuning(save, data);
                 LoadTransmissionTuning(save, data);
                 LoadVehicleTuning(save, data);
+				LoadWheelTuning(save, data);
 				LoadWeight(save, data);
 			}
         }
@@ -716,7 +748,7 @@ namespace MultiTool.Utilities
 		}
 
 		/// <summary>
-		/// Load light data
+		/// Load light data.
 		/// </summary>
 		/// <param name="save">Savable object to check</param>
 		/// <param name="data">Save data</param>
@@ -762,7 +794,7 @@ namespace MultiTool.Utilities
 		}
 
 		/// <summary>
-		/// Load engine tuning data
+		/// Load engine tuning data.
 		/// </summary>
 		/// <param name="save">Savable object to check</param>
 		/// <param name="data">Save data</param>
@@ -788,7 +820,7 @@ namespace MultiTool.Utilities
         }
 
         /// <summary>
-        /// Load engine tuning data
+        /// Load transmission tuning data.
         /// </summary>
         /// <param name="save">Savable object to check</param>
         /// <param name="data">Save data</param>
@@ -812,7 +844,7 @@ namespace MultiTool.Utilities
         }
 
         /// <summary>
-        /// Load vehicle tuning data
+        /// Load vehicle tuning data.
         /// </summary>
         /// <param name="save">Savable object to check</param>
         /// <param name="data">Save data</param>
@@ -834,6 +866,35 @@ namespace MultiTool.Utilities
                 }
             }
         }
+
+		/// <summary>
+		/// Load wheel tuning data.
+		/// </summary>
+		/// <param name="save">Savable object to check</param>
+		/// <param name="data">Save data</param>
+		private static void LoadWheelTuning(tosaveitemscript save, Save data)
+		{
+			// Return early if no vehicle tuning data is set.
+			if (data.wheelTuning == null) return;
+
+			foreach (WheelTuningData wheelTuning in data.wheelTuning)
+			{
+				try
+				{
+					if (save.idInSave == wheelTuning.ID)
+					{
+						if (wheelTuning.tuning.wheels == null || wheelTuning.tuning.wheels.Count == 0) continue;
+
+						GameUtilities.RemapWheelTuning(save, wheelTuning.tuning);
+						GameUtilities.ApplyWheelTuning(wheelTuning.tuning);
+					}
+				}
+				catch (Exception ex)
+				{
+					Logger.Log($"Wheel tuning data load error - {ex}", Logger.LogLevel.Error);
+				}
+			}
+		}
 
 		/// <summary>
 		/// Load weight data.
@@ -977,6 +1038,33 @@ namespace MultiTool.Utilities
 			Save data = UnserializeSaveData();
 
 			return data.vehicleTuning?.Where(e => e.ID == ID).FirstOrDefault()?.defaultTuning;
+		}
+
+		/// <summary>
+		/// Get wheel tuning by ID.
+		/// </summary>
+		/// <param name="save">Vehicle tosaveitemscript</param>
+		/// <returns>WheelTuning if exists, otherwise null</returns>
+		public static WheelTuning GetWheelTuning(tosaveitemscript save)
+		{
+			Save data = UnserializeSaveData();
+
+			WheelTuning tuning = data.wheelTuning?.Where(e => e.ID == save.idInSave).FirstOrDefault()?.tuning;
+			GameUtilities.RemapWheelTuning(save, tuning);
+			return tuning;
+		}
+
+		/// <summary>
+		/// Get default wheel tuning by ID.
+		/// </summary>
+		/// <param name="save">Vehicle tosaveitemscript</param>
+		/// <returns>WheelTuning if exists, otherwise null</returns>
+		public static WheelTuning GetDefaultWheelTuning(tosaveitemscript save)
+		{
+			Save data = UnserializeSaveData();
+
+			WheelTuning tuning = data.wheelTuning?.Where(e => e.ID == save.idInSave).FirstOrDefault()?.defaultTuning;
+			return tuning;
 		}
 
 		/// <summary>
