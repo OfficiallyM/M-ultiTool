@@ -1,4 +1,5 @@
 ﻿using MultiTool.Core;
+using MultiTool.Extensions;
 using MultiTool.Utilities;
 using System;
 using System.Collections.Generic;
@@ -16,10 +17,12 @@ namespace MultiTool.Tabs.VehicleConfiguration
 		private Vector2 _position;
 		private Core.VehicleTuning _vehicleTuning = null;
 		private Core.VehicleTuning _defaultTuning = null;
+		private Core.VehicleTuning _lastSavedTuning = null;
 
 		public override void OnVehicleChange()
 		{
 			_vehicleTuning = null;
+			_lastSavedTuning = null;
 		}
 
 		public override void RenderTab(Rect dimensions)
@@ -84,6 +87,13 @@ namespace MultiTool.Tabs.VehicleConfiguration
 			{
 				SaveUtilities.UpdateVehicleTuning(new VehicleTuningData() { ID = save.idInSave, tuning = _vehicleTuning, defaultTuning = _defaultTuning });
 				GameUtilities.ApplyVehicleTuning(car, _vehicleTuning);
+				_lastSavedTuning = _vehicleTuning.DeepCopy();
+			}
+
+			if (!ObjectExtensions.AreDataMembersEqual(_vehicleTuning, _lastSavedTuning))
+			{
+				GUILayout.Label("Unapplied changes detected!", GUILayout.ExpandWidth(false));
+				GUILayout.Space(2);
 			}
 
 			if (GUILayout.Button("Reset tuning to stock", GUILayout.MaxWidth(200)))
@@ -95,6 +105,10 @@ namespace MultiTool.Tabs.VehicleConfiguration
 			GUILayout.EndVertical();
 			GUILayout.EndVertical();
 			GUILayout.EndArea();
+
+			// Perform the deep copy last to ensure any defaults are set correctly first.
+			if (_lastSavedTuning == null)
+				_lastSavedTuning = _vehicleTuning.DeepCopy();
 		}
 	}
 }

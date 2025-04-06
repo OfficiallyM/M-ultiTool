@@ -16,10 +16,12 @@ namespace MultiTool.Tabs.VehicleConfiguration
 		private Vector2 _position;
 		private Core.WheelTuning _tuning = null;
 		private Core.WheelTuning _defaultTuning = null;
+		private Core.WheelTuning _lastSavedTuning = null;
 
 		public override void OnVehicleChange()
 		{
 			_tuning = null;
+			_lastSavedTuning = null;
 		}
 
 		public override void OnCacheRefresh()
@@ -124,8 +126,6 @@ namespace MultiTool.Tabs.VehicleConfiguration
 				_tuning.applyToAll = !_tuning.applyToAll;
 			GUILayout.Space(10);
 
-			// TODO: Track if changed, alert user for unapplied changes. Do for all tuning tabs.
-
 			if (_tuning.applyToAll)
 			{
 				GUILayout.BeginVertical("box");
@@ -188,6 +188,13 @@ namespace MultiTool.Tabs.VehicleConfiguration
 			{
 				SaveUtilities.UpdateWheelTuning(new WheelTuningData() { ID = save.idInSave, tuning = _tuning, defaultTuning = _defaultTuning });
 				GameUtilities.ApplyWheelTuning(_tuning);
+				_lastSavedTuning = _tuning.DeepCopy();
+			}
+
+			if (!ObjectExtensions.AreDataMembersEqual(_tuning, _lastSavedTuning))
+			{
+				GUILayout.Label("Unapplied changes detected!", GUILayout.ExpandWidth(false));
+				GUILayout.Space(2);
 			}
 
 			if (GUILayout.Button("Reset tuning to stock", GUILayout.MaxWidth(200)))
@@ -215,6 +222,10 @@ namespace MultiTool.Tabs.VehicleConfiguration
 			GUILayout.EndVertical();
 
 			GUILayout.EndArea();
+
+			// Perform the deep copy last to ensure any defaults are set correctly first.
+			if (_lastSavedTuning == null)
+				_lastSavedTuning = _tuning.DeepCopy();
 		}
 
 		private void RenderWheelSliders(Wheel wheel, Wheel defaultWheel, bool perWheel = false)

@@ -18,10 +18,12 @@ namespace MultiTool.Tabs.VehicleConfiguration
 		private Vector2 _position;
 		private Core.TransmissionTuning _transmissionTuning = null;
 		private Core.TransmissionTuning _defaultTuning = null;
+		private Core.TransmissionTuning _lastSavedTuning = null;
 
 		public override void OnVehicleChange()
 		{
 			_transmissionTuning = null;
+			_lastSavedTuning = null;
 		}
 
 		public override void RenderTab(Rect dimensions)
@@ -170,6 +172,13 @@ namespace MultiTool.Tabs.VehicleConfiguration
 			{
 				SaveUtilities.UpdateTransmissionTuning(new TransmissionTuningData() { ID = save.idInSave, tuning = _transmissionTuning, defaultTuning = _defaultTuning });
 				GameUtilities.ApplyTransmissionTuning(car, _transmissionTuning);
+				_lastSavedTuning = _transmissionTuning.DeepCopy();
+			}
+
+			if (!ObjectExtensions.AreDataMembersEqual(_transmissionTuning, _lastSavedTuning))
+			{
+				GUILayout.Label("Unapplied changes detected!", GUILayout.ExpandWidth(false));
+				GUILayout.Space(2);
 			}
 
 			if (GUILayout.Button("Reset tuning to stock", GUILayout.MaxWidth(200)))
@@ -181,6 +190,10 @@ namespace MultiTool.Tabs.VehicleConfiguration
 			GUILayout.EndHorizontal();
 			GUILayout.EndVertical();
 			GUILayout.EndArea();
+
+			// Perform the deep copy last to ensure any defaults are set correctly first.
+			if (_lastSavedTuning == null)
+				_lastSavedTuning = _transmissionTuning.DeepCopy();
 		}
 	}
 }

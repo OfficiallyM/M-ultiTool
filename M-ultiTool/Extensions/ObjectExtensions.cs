@@ -1,7 +1,11 @@
-﻿using System;
+﻿using MultiTool.Modules;
+using System;
+using System.Collections;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.Serialization;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -68,6 +72,79 @@ namespace MultiTool.Extensions
 		public static T Copy<T>(this T original)
 		{
 			return (T)Copy((Object)original);
+		}
+
+		/// <summary>
+		/// Deep copy a DataContract object.
+		/// </summary>
+		/// <typeparam name="T">Object type</typeparam>
+		/// <param name="obj">Object to copy</param>
+		/// <returns>Deep copy of object</returns>
+		public static T DeepCopy<T>(this T obj)
+		{
+			if (obj == null) return default;
+
+			var serializer = new DataContractSerializer(typeof(T));
+
+			using (var memoryStream = new MemoryStream())
+			{
+				serializer.WriteObject(memoryStream, obj);
+				memoryStream.Seek(0, SeekOrigin.Begin);
+				return (T)serializer.ReadObject(memoryStream);
+			}
+		}
+
+		public static bool AreDataMembersEqual<T>(T obj1, T obj2)
+		{
+			if (obj1 == null || obj2 == null)
+				return obj1 == null && obj2 == null;
+
+			var type = obj1.GetType();
+			if (type != obj2.GetType()) return false;
+
+			var dataMembers = type.GetFields(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic)
+								  .Where(p => p.GetCustomAttribute<DataMemberAttribute>() != null);
+
+			foreach (var field in dataMembers)
+			{
+				var value1 = field.GetValue(obj1);
+				var value2 = field.GetValue(obj2);
+
+				// Handle nulls.
+				if (value1 == null || value2 == null)
+				{
+					if (value1 != value2)
+						return false;
+					continue;
+				}
+
+				// Check if it's a list or collection.
+				else if (value1 is IEnumerable enumerable1 && value2 is IEnumerable enumerable2 && value1.GetType() != typeof(string))
+				{
+					var enum1 = enumerable1.Cast<object>().ToList();
+					var enum2 = enumerable2.Cast<object>().ToList();
+
+					if (enum1.Count != enum2.Count)
+						return false;
+
+					for (int i = 0; i < enum1.Count; i++)
+					{
+						var item1 = enum1[i];
+						var item2 = enum2[i];
+
+						if (!AreDataMembersEqual(item1, item2))
+							return false;
+					}
+
+					continue;
+				}
+
+				// Basic equality check for primitives, strings, etc.
+				else if (!Equals(value1, value2))
+					return false;
+			}
+
+			return true;
 		}
 	}
 

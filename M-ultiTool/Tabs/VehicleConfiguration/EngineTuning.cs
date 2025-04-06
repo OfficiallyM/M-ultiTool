@@ -21,6 +21,7 @@ namespace MultiTool.Tabs.VehicleConfiguration
 
 		private Core.EngineTuning _engineTuning = null;
 		private Core.EngineTuning _defaultTuning = null;
+		private Core.EngineTuning _lastSavedTuning = null;
 		private bool _isEngineTuningStatsOpen = false;
 		private Core.EngineStats _engineStats = null;
 		private bool _hideLastTorquePoint = false;
@@ -34,6 +35,7 @@ namespace MultiTool.Tabs.VehicleConfiguration
 		public override void OnVehicleChange()
 		{
 			_engineTuning = null;
+			_lastSavedTuning = null;
 		}
 
 		public override void RenderTab(Rect dimensions)
@@ -448,6 +450,13 @@ namespace MultiTool.Tabs.VehicleConfiguration
 			{
 				SaveUtilities.UpdateEngineTuning(new EngineTuningData() { ID = engineSave.idInSave, tuning = _engineTuning, defaultTuning = _defaultTuning });
 				GameUtilities.ApplyEngineTuning(engine, _engineTuning);
+				_lastSavedTuning = _engineTuning.DeepCopy();
+			}
+
+			if (!ObjectExtensions.AreDataMembersEqual(_engineTuning, _lastSavedTuning))
+			{
+				GUILayout.Label("Unapplied changes detected!", GUILayout.ExpandWidth(false));
+				GUILayout.Space(2);
 			}
 
 			if (GUILayout.Button("Reset tuning to stock", GUILayout.MaxWidth(200)))
@@ -477,6 +486,10 @@ namespace MultiTool.Tabs.VehicleConfiguration
 			GUILayout.EndVertical();
 
 			GUILayout.EndArea();
+
+			// Perform the deep copy last to ensure any defaults are set correctly first.
+			if (_lastSavedTuning == null)
+				_lastSavedTuning = _engineTuning.DeepCopy();
 		}
 
 		/// <summary>
