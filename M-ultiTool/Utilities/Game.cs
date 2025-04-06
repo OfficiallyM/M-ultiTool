@@ -100,10 +100,7 @@ namespace MultiTool.Utilities
 
 			foreach (partconditionscript part in parts)
 			{
-                if (!part.IsPaintable())
-                {
-                    continue;
-                }
+                if (!part.IsPaintable()) continue;
 
                 part.Refresh(part.state, c);
 			}
@@ -190,7 +187,7 @@ namespace MultiTool.Utilities
 		}
 
 		/// <summary>
-		/// Find all child parts recursively with partconditionscript.childs.
+		/// Find all child parts recursively with tosaveitemscript.
 		/// </summary>
 		/// <param name="root">Root part</param>
 		/// <param name="children">Child partconditionscript passed by reference</param>
@@ -198,16 +195,17 @@ namespace MultiTool.Utilities
 		{
 			if (!children.Contains(root)) children.Add(root);
 
-            foreach (var child in root.childs)
-            {
-                if (!child.CanPaint()) continue;
+			tosaveitemscript tosave = root.GetComponent<tosaveitemscript>();
+			if (tosave == null || tosave.partslotscripts == null) return;
 
-                if (!children.Contains(child))
-                {
-                    children.Add(child);
-                    FindPartChildren(child, ref children);
-                }
-            }
+			foreach (partslotscript slot in tosave.partslotscripts)
+			{
+				if (slot.part == null || slot.part.condition == null)
+					continue;
+
+				children.Add(slot.part.condition);
+				FindPartChildren(slot.part.condition, ref children);
+			}
 		}
 
 		/// <summary>
