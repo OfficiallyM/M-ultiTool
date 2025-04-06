@@ -112,7 +112,19 @@ namespace MultiTool.Utilities
                     }
                 }
 
-                if (amt)
+				// Set plate text.
+				rendszamscript[] plateScripts = item.gameObject.GetComponentsInChildren<rendszamscript>();
+				foreach (rendszamscript plateScript in plateScripts)
+				{
+					if (plateScript == null)
+						continue;
+					if (item.plate != string.Empty)
+						plateScript.Same(item.plate);
+					else
+						plateScript.same = false;
+				}
+
+				if (amt)
                     return item.gameObject;
                 else
                     return Spawn(item.gameObject, item.color, selectedCondition, -1, position, rotation);

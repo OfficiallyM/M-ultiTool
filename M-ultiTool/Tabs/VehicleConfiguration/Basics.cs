@@ -87,7 +87,6 @@ namespace MultiTool.Tabs.VehicleConfiguration
 			}
 			GUILayout.EndHorizontal();
 
-
 			GUILayout.EndScrollView();
             GUILayout.EndVertical();
             GUILayout.EndArea();

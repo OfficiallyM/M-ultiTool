@@ -160,6 +160,7 @@ namespace MultiTool.Tabs
 							fuelValues = _fuelValues,
 							fuelTypeInts = _fuelTypes,
 							color = Colour.GetColour(),
+							plate = _plate,
 							amt = item.amt,
 						});
 
@@ -301,10 +302,9 @@ namespace MultiTool.Tabs
 				GUILayout.Space(10);
 
 				// Plate.
-				// TODO: Add support for setting item plate text.
-				//GUILayout.Label("Plate (blank for random):");
-				//_plate = GUILayout.TextField(_plate);
-				//GUILayout.Space(10);
+				GUILayout.Label("Plate (blank for random):");
+				_plate = GUILayout.TextField(_plate);
+				GUILayout.Space(10);
 
 				// Spawn with fuel.
 				if (GUILayout.Button(Accessibility.GetAccessibleString("Spawn with fuel", _settings.spawnWithFuel)))

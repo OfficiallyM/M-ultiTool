@@ -18,7 +18,8 @@ namespace MultiTool.Core
 		public List<float> fuelValues = new List<float> { -1f };
 		public List<int> fuelTypeInts = new List<int> { -1 };
 		public Color color = new Color(255f / 255f, 255f / 255f, 255f / 255f);
-        public AMTData amt = null;
+		public string plate = String.Empty;
+		public AMTData amt = null;
 
 		public enum Condition
 		{
