@@ -314,6 +314,14 @@ namespace MultiTool.Tabs
 				GUILayout.Space(10);
 
 				Colour.RenderColourSliders(dimensions.width);
+				if (GUILayout.Button("Randomise colour", GUILayout.MaxWidth(200)))
+				{
+					Color color = Colour.GetColour();
+					color.r = UnityEngine.Random.Range(0f, 255f) / 255f;
+					color.g = UnityEngine.Random.Range(0f, 255f) / 255f;
+					color.b = UnityEngine.Random.Range(0f, 255f) / 255f;
+					Colour.SetColour(color);
+				}
 				GUILayout.Space(10);
 			}
 
