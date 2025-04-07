@@ -194,8 +194,12 @@ namespace MultiTool.Tabs
                 interiorCollider = new Color(0f, 0f, 1f, 0.8f);
                 MultiTool.Configuration.UpdateColliderColour(interiorCollider, "interior");
             }
+			GUILayout.Space(10);
+			
+			if (GUILayout.Button("Go to mod debug", GUILayout.MaxWidth(200)))
+				GUIRenderer.Tabs.SetActive(MultiTool.Renderer.debugTabId, false);
 
-            GUILayout.EndVertical();
+			GUILayout.EndVertical();
             GUILayout.EndScrollView();
             GUILayout.EndArea();
         }

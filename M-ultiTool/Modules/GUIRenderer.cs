@@ -29,6 +29,7 @@ namespace MultiTool.Modules
         internal string settingsTabId = null;
         internal string creditsTabId = null;
 		internal string themeTabId = null;
+		internal string debugTabId = null;
 
 		internal int resolutionX;
 		internal int resolutionY;
@@ -288,6 +289,7 @@ namespace MultiTool.Modules
                 settingsTabId = Tabs.AddTab(new Tabs.SettingsTab());
                 creditsTabId = Tabs.AddTab(new Tabs.CreditsTab());
 				themeTabId = Tabs.AddTab(new Tabs.ThemeTab());
+				debugTabId = Tabs.AddTab(new Tabs.DebugTab());
 
 				// Load data from database.
 				DatabaseUtilities.ClearCaches();

@@ -234,39 +234,31 @@ namespace MultiTool.Tabs.VehicleConfiguration
 						{
 							foreach (MeshRenderer mesh in selectedPart.meshes)
 							{
-								Thread thread = new Thread(() =>
+								GameUtilities.SetConditionlessPartMaterial(mesh, _selectedMaterial, materialColor);
+								SaveUtilities.UpdateMaterials(new MaterialData()
 								{
-									GameUtilities.SetConditionlessPartMaterial(mesh, _selectedMaterial, materialColor);
-									SaveUtilities.UpdateMaterials(new MaterialData()
-									{
-										ID = save.idInSave,
-										part = selectedPart.name,
-										isConditionless = true,
-										exact = IsExact(selectedPart.name),
-										type = _selectedMaterial,
-										color = materialColor
-									});
+									ID = save.idInSave,
+									part = selectedPart.name,
+									isConditionless = true,
+									exact = IsExact(selectedPart.name),
+									type = _selectedMaterial,
+									color = materialColor
 								});
-								thread.Start();
 							}
 						}
 						else
 						{
 							foreach (partconditionscript part in selectedPart.parts)
 							{
-								Thread thread = new Thread(() =>
+								GameUtilities.SetPartMaterial(part, _selectedMaterial, materialColor);
+								SaveUtilities.UpdateMaterials(new MaterialData()
 								{
-									GameUtilities.SetPartMaterial(part, _selectedMaterial, materialColor);
-									SaveUtilities.UpdateMaterials(new MaterialData()
-									{
-										ID = save.idInSave,
-										part = selectedPart.name,
-										exact = IsExact(selectedPart.name),
-										type = _selectedMaterial,
-										color = materialColor
-									});
+									ID = save.idInSave,
+									part = selectedPart.name,
+									exact = IsExact(selectedPart.name),
+									type = _selectedMaterial,
+									color = materialColor
 								});
-								thread.Start();
 							}
 						}
 					}

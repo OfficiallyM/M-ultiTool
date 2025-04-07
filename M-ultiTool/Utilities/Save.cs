@@ -64,6 +64,11 @@ namespace MultiTool.Utilities
 			return string.Empty;
 		}
 
+		internal static string GetRawSaveData()
+		{
+			return ReadWriteToGameSave();
+		}
+
 		/// <summary>
 		/// Unserialize existing save data
 		/// </summary>
