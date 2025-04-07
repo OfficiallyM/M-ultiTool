@@ -18,7 +18,8 @@ namespace MultiTool.Utilities
 	/// </summary>
 	internal static class SaveUtilities
 	{
-        private static GlobalSave _globalData;
+		private static GlobalSave _globalData;
+		private static Save _cachedData;
 
 		/// <summary>
 		/// Read/write data to game save
@@ -75,7 +76,9 @@ namespace MultiTool.Utilities
 
 			MemoryStream ms = new MemoryStream(Encoding.UTF8.GetBytes(existingString));
 			DataContractJsonSerializer jsonSerializer = new DataContractJsonSerializer(typeof(Save));
-			return jsonSerializer.ReadObject(ms) as Save;
+			Save data = jsonSerializer.ReadObject(ms) as Save;
+			_cachedData = data;
+			return data;
 		}
 
 		/// <summary>
@@ -84,6 +87,7 @@ namespace MultiTool.Utilities
 		/// <param name="data">The data to serialize</param>
 		private static void SerializeSaveData(Save data)
 		{
+			_cachedData = data;
 			MemoryStream ms = new MemoryStream();
 			DataContractJsonSerializer jsonSerializer = new DataContractJsonSerializer(typeof(Save));
 			jsonSerializer.WriteObject(ms, data);
@@ -527,9 +531,12 @@ namespace MultiTool.Utilities
 		/// Trigger the actual loading of the save data for a given tosaveitemscript.
 		/// </summary>
 		/// <param name="save">tosaveitemscript of the object</param>
-		/// <param name="data">Fully loaded save data</param>
-		public static void TriggerSaveLoad(tosaveitemscript save, Save data)
+		/// <param name="data">Fully loaded save data or null to use cached data</param>
+		public static void TriggerSaveLoad(tosaveitemscript save, Save data = null)
 		{
+			if (data == null)
+				data = _cachedData;
+
 			LoadGlass(save, data);
 			LoadMaterials(save, data);
 			LoadScale(save, data);

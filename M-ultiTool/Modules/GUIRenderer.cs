@@ -10,6 +10,7 @@ using MultiTool.Utilities;
 using UnityEngine.Rendering;
 using System.Text.RegularExpressions;
 using MultiTool.Utilities.UI;
+using MultiTool.Components;
 
 namespace MultiTool.Modules
 {
@@ -299,6 +300,13 @@ namespace MultiTool.Modules
 
 				// Load save data.
 				SaveUtilities.LoadSaveData();
+
+				// Attach any components to database objects.
+				foreach (GameObject obj in itemdatabase.d.items)
+				{
+					if (obj.GetComponent<SaveDataLoader>() == null)
+						obj.AddComponent<SaveDataLoader>();
+				}
 
 				// Clear any existing static values.
 				fluidDefaults.Clear();
