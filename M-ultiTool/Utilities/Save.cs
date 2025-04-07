@@ -519,18 +519,28 @@ namespace MultiTool.Utilities
             List<tosaveitemscript> saves = UnityEngine.Object.FindObjectsOfType<tosaveitemscript>().ToList();
             foreach (tosaveitemscript save in saves)
             {
-                LoadGlass(save, data);
-                LoadMaterials(save, data);
-                LoadScale(save, data);
-                LoadSlots(save, data);
-				LoadLights(save, data);
-                LoadEngineTuning(save, data);
-                LoadTransmissionTuning(save, data);
-                LoadVehicleTuning(save, data);
-				LoadWheelTuning(save, data);
-				LoadWeight(save, data);
+				TriggerSaveLoad(save, data);
 			}
         }
+
+		/// <summary>
+		/// Trigger the actual loading of the save data for a given tosaveitemscript.
+		/// </summary>
+		/// <param name="save">tosaveitemscript of the object</param>
+		/// <param name="data">Fully loaded save data</param>
+		public static void TriggerSaveLoad(tosaveitemscript save, Save data)
+		{
+			LoadGlass(save, data);
+			LoadMaterials(save, data);
+			LoadScale(save, data);
+			LoadSlots(save, data);
+			LoadLights(save, data);
+			LoadEngineTuning(save, data);
+			LoadTransmissionTuning(save, data);
+			LoadVehicleTuning(save, data);
+			LoadWheelTuning(save, data);
+			LoadWeight(save, data);
+		}
 
         /// <summary>
         /// Load glass saved data.

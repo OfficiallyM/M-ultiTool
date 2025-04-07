@@ -197,8 +197,7 @@ namespace MultiTool.Core
 	{
 		public tosaveitemscript save;
 		public wheelgraphicsscript graphics;
-		public string name;
-		[DataMember] public int ID;
+		[DataMember] public string slot;
 
 		// Grip.
 		[DataMember] public float? forwardSlip;

@@ -20,13 +20,18 @@ namespace MultiTool.Tabs.VehicleConfiguration
 
 		public override void OnVehicleChange()
 		{
+			carscript car = mainscript.M.player.Car;
 			_tuning = null;
+			LoadData(car);
 			_lastSavedTuning = null;
 		}
 
 		public override void OnCacheRefresh()
 		{
-			if (_tuning == null) return;
+			carscript car = mainscript.M.player.Car;
+
+			if (_tuning == null)
+				LoadData(car);
 
 			// Check for tire mounting if required.
 			foreach (Wheel wheel in _tuning.wheels)
@@ -41,9 +46,8 @@ namespace MultiTool.Tabs.VehicleConfiguration
 			}
 		}
 
-		public override void RenderTab(Rect dimensions)
+		private void LoadData(carscript car)
 		{
-			carscript car = mainscript.M.player.Car;
 			tosaveitemscript save = car.GetComponent<tosaveitemscript>();
 
 			// Populate default tuning values if missing.
@@ -52,6 +56,10 @@ namespace MultiTool.Tabs.VehicleConfiguration
 				// Attempt to load data from save.
 				_tuning = SaveUtilities.GetWheelTuning(save);
 				_defaultTuning = SaveUtilities.GetDefaultWheelTuning(save);
+
+				// Reset any invalid tuning data.
+				if (_tuning != null && _tuning.wheels[0].slot == null)
+					_tuning = null;
 
 				// Save has no data for wheels, load defaults.
 				if (_tuning == null || _defaultTuning == null)
@@ -63,10 +71,10 @@ namespace MultiTool.Tabs.VehicleConfiguration
 					foreach (wheelgraphicsscript wheelgraphic in wheelGraphics)
 					{
 						// Ignore non mounted wheels.
-                        if (wheelgraphic?.slot?.part?.p?.wheel == null)
-                        {
+						if (wheelgraphic?.slot?.part?.p?.wheel == null)
+						{
 							continue;
-                        }
+						}
 
 						gumiscript tire = wheelgraphic?.slot?.part?.p?.wheel?.gumi?.part?.p?.gumi;
 						WheelCollider collider = wheelgraphic.W;
@@ -75,8 +83,7 @@ namespace MultiTool.Tabs.VehicleConfiguration
 						{
 							save = wheelSave,
 							graphics = wheelgraphic,
-							name = PrettifyWheelName(wheelSave.transform.parent.name),
-							ID = wheelSave.idInSave,
+							slot = wheelgraphic.name,
 							forwardSlip = tire?.slip1,
 							sideSlip = tire?.slip2,
 							wheelDamping = collider.wheelDampingRate,
@@ -89,8 +96,7 @@ namespace MultiTool.Tabs.VehicleConfiguration
 
 						defaultWheels.Add(new Wheel()
 						{
-							name = PrettifyWheelName(wheelSave.transform.parent.name),
-							ID = wheelSave.idInSave,
+							slot = wheelgraphic.name,
 							forwardSlip = tire?.slip1,
 							sideSlip = tire?.slip2,
 							wheelDamping = collider.wheelDampingRate,
@@ -113,10 +119,17 @@ namespace MultiTool.Tabs.VehicleConfiguration
 					};
 				}
 
-				// Reorder wheel list by name.
-				_tuning.wheels = _tuning.wheels.OrderBy(w => w.name).ToList();
-				_defaultTuning.wheels = _defaultTuning.wheels.OrderBy(w => w.name).ToList();
+				// Reorder wheel list by slot name.
+				_tuning.wheels = _tuning.wheels.OrderBy(w => w.slot).ToList();
+				_defaultTuning.wheels = _defaultTuning.wheels.OrderBy(w => w.slot).ToList();
 			}
+		}
+
+		public override void RenderTab(Rect dimensions)
+		{
+			carscript car = mainscript.M.player.Car;
+			tosaveitemscript save = car.GetComponent<tosaveitemscript>();
+			LoadData(car);
 
 			GUILayout.BeginArea(dimensions);
 			_position = GUILayout.BeginScrollView(_position);
@@ -166,7 +179,7 @@ namespace MultiTool.Tabs.VehicleConfiguration
 				foreach (Wheel wheel in _tuning.wheels)
 				{
 					GUILayout.BeginVertical("box");
-					GUILayout.Label($"Wheel {wheel.name}", "LabelHeader");
+					GUILayout.Label($"Wheel {wheel.slot}", "LabelHeader");
 					GUILayout.Space(5);
 
 					RenderWheelSliders(wheel, _defaultTuning.wheels[index] ,true);
@@ -358,16 +371,6 @@ namespace MultiTool.Tabs.VehicleConfiguration
 					index++;
 				}
 			}
-		}
-
-		private string PrettifyWheelName(string name)
-		{
-			if (name == null || name == string.Empty) return "Unknown";
-
-			if (name[0] == 'T')
-				name = name.Substring(1);
-
-			return name;
 		}
 
 		private bool IsRightSide(Wheel wheel)

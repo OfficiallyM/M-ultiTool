@@ -637,7 +637,7 @@ namespace MultiTool.Utilities
 
 				foreach (Wheel wheel in tuning.wheels)
 				{
-					if (wheel.ID == wheelSave.idInSave)
+					if (wheel.slot == wheelgraphic.name)
 					{
 						wheel.graphics = wheelgraphic;
 						wheel.save = wheelSave;
