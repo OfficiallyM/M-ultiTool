@@ -11,6 +11,7 @@ namespace MultiTool.Modules
     public sealed class TabController
     {
         private string _tab = null;
+		private string _lastTab = null;
         private Tab _lastRenderedTab = null;
 
         private List<Tab> _tabs = new List<Tab>();
@@ -75,10 +76,21 @@ namespace MultiTool.Modules
         /// Set the active tab.
         /// </summary>
         /// <param name="id">Identifier of the tab to set</param>
-        internal void SetActive(string id)
+        internal void SetActive(string id, bool setLast = true)
         {
             _tab = id;
-        }
+			if (setLast)
+				_lastTab = _tab;
+		}
+
+		/// <summary>
+		/// Toggle the active tab.
+		/// </summary>
+		/// <param name="id">Identifier of the tab to toggle</param>
+		internal void ToggleActive(string id)
+		{
+			_tab = _tab == id ? _lastTab : id;
+		}
 
         /// <summary>
         /// Get the currently active tab index.

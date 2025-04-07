@@ -17,7 +17,7 @@ namespace MultiTool.Modules
 	internal class GUIRenderer
 	{
         // Modules.
-        private static TabController Tabs = new TabController();
+        internal static TabController Tabs = new TabController();
 
 		private Settings settings = new Settings();
 
@@ -26,12 +26,9 @@ namespace MultiTool.Modules
 		internal bool show = false;
 		private bool menuKeyConsumed = false;
 		private bool loaded = false;
-		internal bool settingsShow = false;
-        private string settingsTabId = null;
-		internal bool creditsShow = false;
-        private string creditsTabId = null;
-		internal bool themeShow = false;
-		private string themeTabId = null;
+        internal string settingsTabId = null;
+        internal string creditsTabId = null;
+		internal string themeTabId = null;
 
 		internal int resolutionX;
 		internal int resolutionY;
@@ -1024,62 +1021,48 @@ namespace MultiTool.Modules
             GUILayout.BeginVertical();
             GUILayout.BeginHorizontal();
             GUILayout.FlexibleSpace();
-            if (GUILayout.Button(Accessibility.GetAccessibleString("Settings", settingsShow), "ButtonSecondary", GUILayout.MinHeight(30)))
+            if (GUILayout.Button(Accessibility.GetAccessibleString("Settings", Tabs.GetActive() == settingsTabId), "ButtonSecondary", GUILayout.MinHeight(30)))
             {
-                settingsShow = !settingsShow;
-                creditsShow = false;
-            }
+				Tabs.ToggleActive(settingsTabId);
+			}
 
             GUILayout.Space(10);
 
-            if (GUILayout.Button(Accessibility.GetAccessibleString("Credits", creditsShow), "ButtonSecondary", GUILayout.MinHeight(30)))
+            if (GUILayout.Button(Accessibility.GetAccessibleString("Credits", Tabs.GetActive() == creditsTabId), "ButtonSecondary", GUILayout.MinHeight(30)))
             {
-                creditsShow = !creditsShow;
-                settingsShow = false;
-            }
+				Tabs.ToggleActive(creditsTabId);
+			}
             GUILayout.EndHorizontal();
             GUILayout.Space(20);
 
-            if (settingsShow)
-            {
-				Tabs.RenderTab(settingsTabId);
-            }
-            else if (creditsShow)
-            {
-                Tabs.RenderTab(creditsTabId);
-            }
-			else if (themeShow)
+			// Render navigation bar.
+			if (Tabs.GetActive() == null || !Tabs.GetById(Tabs.GetActive()).IsFullScreen)
 			{
-				Tabs.RenderTab(themeTabId);
+				GUILayout.BeginHorizontal();
+				for (int tabIndex = 0; tabIndex < Tabs.GetCount(); tabIndex++)
+				{
+					Tab tab = Tabs.GetByIndex(tabIndex);
+
+					// Ignore any tabs excluded from navigation.
+					if (!tab.ShowInNavigation) continue;
+
+					// Render disabled tabs as unclickable.
+					if (tab.IsDisabled)
+						GUI.enabled = false;
+
+					if (GUILayout.Button(Tabs.GetActive() == tab.Id ? $"<color=#0F0>{tab.Name}</color>" : tab.Name, GUILayout.MinWidth(60), GUILayout.MaxHeight(30)))
+					{
+						Tabs.SetActive(tab.Id);
+					}
+
+					GUI.enabled = true;
+				}
+				GUILayout.EndHorizontal();
 			}
-            else
-            {
-                // Render navigation bar.
-                GUILayout.BeginHorizontal();
 
-                for (int tabIndex = 0; tabIndex < Tabs.GetCount(); tabIndex++)
-                {
-                    Tab tab = Tabs.GetByIndex(tabIndex);
+            // Render the active tab.
+            Tabs.RenderTab();
 
-                    // Ignore any tabs excluded from navigation.
-                    if (!tab.ShowInNavigation) continue;
-
-                    // Render disabled tabs as unclickable.
-                    if (tab.IsDisabled)
-                        GUI.enabled = false;
-
-                    if (GUILayout.Button(Tabs.GetActive() == tab.Id ? $"<color=#0F0>{tab.Name}</color>" : tab.Name, GUILayout.MinWidth(60), GUILayout.MaxHeight(30)))
-                    {
-                        Tabs.SetActive(tab.Id);
-                    }
-
-                    GUI.enabled = true;
-                }
-                GUILayout.EndHorizontal();
-
-                // Render the active tab.
-                Tabs.RenderTab();
-            }
             GUILayout.EndVertical();
             GUILayout.EndArea();
 		}

@@ -55,8 +55,7 @@ namespace MultiTool.Tabs
 					if (GUILayout.Button("Edit theme", GUILayout.MaxWidth(200)))
 					{
 						Styling.SetEditingTheme(theme);
-						MultiTool.Renderer.settingsShow = false;
-						MultiTool.Renderer.themeShow = true;
+						GUIRenderer.Tabs.SetActive(MultiTool.Renderer.themeTabId, false);
 					}
 					GUILayout.Space(5);
 
@@ -80,8 +79,7 @@ namespace MultiTool.Tabs
 
 			if (GUILayout.Button("Create new theme", "ButtonSecondary", GUILayout.MaxWidth(200)))
 			{
-				MultiTool.Renderer.settingsShow = false;
-				MultiTool.Renderer.themeShow = true;
+				GUIRenderer.Tabs.SetActive(MultiTool.Renderer.themeTabId);
 			}
 
 			GUILayout.Space(10);
