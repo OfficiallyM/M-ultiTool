@@ -204,6 +204,13 @@ namespace MultiTool.Tabs.VehicleConfiguration
 				// Skip any mixes we've already rendered.
 				if (mix == fuelMix || mix == engineMix || mix == coolantMix) continue;
 
+				// Tank no longer exists, remove it and skip rendering this frame.
+				if (mix.tank == null)
+				{
+					_fluids.Remove(mix);
+					break;
+				}
+
 				GUILayout.Label($"{mix.tank.name.ToSentenceCase()} settings", "LabelSubHeader");
 				RenderMixSliders(mix);
 				GUILayout.Space(10);
@@ -216,8 +223,9 @@ namespace MultiTool.Tabs.VehicleConfiguration
 
 		private FluidMix FindMixByTank(tankscript tank)
 		{
-			foreach (FluidMix mix in _fluids)
-				if (mix.tank == tank) return mix;
+			if (tank != null)
+				foreach (FluidMix mix in _fluids)
+					if (mix.tank == tank) return mix;
 			return null;
 		}
 
@@ -236,24 +244,24 @@ namespace MultiTool.Tabs.VehicleConfiguration
 
 		private void RenderMixSliders(FluidMix mix)
 		{
-			tankscript fuelTank = mix.tank;
-			float fuelMax = fuelTank.F.maxC;
-			float fuelPercentage = 0;
+			if (mix.tank == null) return;
+
+			float fluidPercentage = 0;
 
 			foreach (FluidPercentage fluid in mix.fluids)
 			{
-				fuelPercentage += fluid.percentage;
+				fluidPercentage += fluid.percentage;
 			}
 
-			if (fuelPercentage > 100)
-				fuelPercentage = 100;
+			if (fluidPercentage > 100)
+				fluidPercentage = 100;
 
 			foreach (FluidPercentage fluid in mix.fluids)
 			{
 				GUILayout.BeginHorizontal();
 				GUILayout.Label(fluid.type.ToString().ToSentenceCase(), GUILayout.MaxWidth(100));
 				int percentage = Mathf.RoundToInt(GUILayout.HorizontalSlider(fluid.percentage, 0, 100));
-				if (percentage + (fuelPercentage - fluid.percentage) <= 100)
+				if (percentage + (fluidPercentage - fluid.percentage) <= 100)
 					fluid.percentage = percentage;
 				GUILayout.Label($"{percentage}%");
 				GUILayout.EndHorizontal();
