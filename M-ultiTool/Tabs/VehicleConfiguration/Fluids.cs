@@ -144,7 +144,7 @@ namespace MultiTool.Tabs.VehicleConfiguration
 						if (fluids.Count > 0)
 						{
 							fuelTank.F.fluids.Clear();
-							// Two stoke.
+							// Two stroke.
 							if (fluids.Contains(mainscript.fluidenum.oil) && fluids.Contains(mainscript.fluidenum.gas))
 							{
 								fuelTank.F.ChangeOne(fuelMax * 0.97f, mainscript.fluidenum.gas);
