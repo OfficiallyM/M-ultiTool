@@ -19,7 +19,7 @@ namespace MultiTool
 		public override string ID => "M-ultiTool";
 		public override string Name => "M-ultiTool";
 		public override string Author => "M-";
-		public override string Version => "4.0.0-dev";
+		public override string Version => "4.0.1-DEV";
         public override bool LoadInMenu => true;
 
         // Modules.
