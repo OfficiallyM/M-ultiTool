@@ -2,7 +2,7 @@
 ## The Long Drive (TLD) spawner, with tools to customise vehicles and gameplay
 
 ### Features
-- ~~1000km distance minimum to enable~~ As off V4, this has been removed
+- ~~1000km distance minimum to enable~~ As of V4, this has been removed
 - Translation system using JSON config files
   - Currently only translates vehicle names
 - Theme system with the ability to create, export and import your own themes
