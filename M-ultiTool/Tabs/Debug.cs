@@ -58,11 +58,9 @@ namespace MultiTool.Tabs
 
 			try
 			{
-				// Read (deserialize)
 				msRead = new MemoryStream(Encoding.UTF8.GetBytes(json));
 				T obj = (T)serializer.ReadObject(msRead);
 
-				// Write (prettified)
 				msWrite = new MemoryStream();
 				writer = JsonReaderWriterFactory.CreateJsonWriter(msWrite, Encoding.UTF8, ownsStream: false, indent: true, indentChars: "  ");
 				serializer.WriteObject(writer, obj);
