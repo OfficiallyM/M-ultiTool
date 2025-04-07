@@ -9,6 +9,7 @@ using MultiTool.Extensions;
 using static mainscript;
 using Logger = MultiTool.Modules.Logger;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace MultiTool.Tabs.VehicleConfiguration
 {
@@ -142,11 +143,12 @@ namespace MultiTool.Tabs.VehicleConfiguration
 
 						if (fluids.Count > 0)
 						{
+							fuelTank.F.fluids.Clear();
 							// Two stoke.
 							if (fluids.Contains(mainscript.fluidenum.oil) && fluids.Contains(mainscript.fluidenum.gas))
 							{
-								fuelTank.F.ChangeOne(Mathf.RoundToInt(fuelMax / 100 * 97), mainscript.fluidenum.gas);
-								fuelTank.F.ChangeOne(Mathf.RoundToInt(fuelMax / 100 * 3), mainscript.fluidenum.oil);
+								fuelTank.F.ChangeOne(fuelMax * 0.97f, mainscript.fluidenum.gas);
+								fuelTank.F.ChangeOne(fuelMax, mainscript.fluidenum.oil);
 							}
 							else
 							{
