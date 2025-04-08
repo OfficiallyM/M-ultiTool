@@ -195,7 +195,7 @@ namespace MultiTool.Utilities
 				if (data.materials == null)
 					data.materials = new List<MaterialData>();
 
-				MaterialData existing = data.materials.Where(m => m.ID == material.ID && m.part == material.part).FirstOrDefault();
+				MaterialData existing = data.materials.Where(m => m.ID == material.ID && m.part == material.part && m.parent == material.parent).FirstOrDefault();
 				if (existing != null)
 				{
 					// Update existing saved part.
@@ -639,33 +639,9 @@ namespace MultiTool.Utilities
                     {
                         if (material.isConditionless.HasValue && material.isConditionless.Value)
                         {
-                            // Conditionless part.
-                            List<MeshRenderer> meshes = new List<MeshRenderer>();
-
-                            if (material.exact)
-                            {
-                                MeshRenderer mesh = GameUtilities.GetConditionlessVehiclePartByName(save.gameObject, material.part);
-                                if (mesh != null)
-                                    meshes.Add(mesh);
-                                // Match by partial name as a failover.
-                                else
-                                {
-                                    List<MeshRenderer> matchedMeshes = GameUtilities.GetConditionlessVehiclePartsByName(save.gameObject, material.part);
-                                    if (matchedMeshes.Count > 0)
-                                        meshes.AddRange(matchedMeshes);
-                                }
-                            }
-                            else
-                            {
-                                List<MeshRenderer> matchedMeshes = GameUtilities.GetConditionlessVehiclePartsByName(save.gameObject, material.part);
-                                if (matchedMeshes.Count > 0)
-                                    meshes.AddRange(matchedMeshes);
-                            }
-
-                            foreach (MeshRenderer mesh in meshes)
-                            {
-                                GameUtilities.SetConditionlessPartMaterial(mesh, material.type, material.color);
-                            }
+                            // Conditionless parts are always matched by exact name.
+                            MeshRenderer mesh = GameUtilities.GetConditionlessVehiclePartByName(save.gameObject, material.part);
+							GameUtilities.SetConditionlessPartMaterial(mesh, material.type, material.color);
                         }
                         else
                         {
@@ -694,6 +670,10 @@ namespace MultiTool.Utilities
 
                             foreach (partconditionscript part in parts)
                             {
+								// Skip any parts where the parent doesn't match.
+								if (material.parent != null)
+									if (material.parent != SanitiseName(part.transform.parent?.name ?? part.name)) continue;
+
                                 GameUtilities.SetPartMaterial(part, material.type, material.color);
                             }
                         }
@@ -1166,7 +1146,7 @@ namespace MultiTool.Utilities
         /// <summary>
         /// Load global player data.
         /// </summary>
-        /// <param name="defaultPlayerData">Default player data to set if saved is null </param>
+        /// <param name="defaultPlayerData">Default player data to set if saved is null</param>
         /// <returns>Loaded global player data or default if it isn't saved</returns>
         public static PlayerData LoadGlobalPlayerData(PlayerData defaultPlayerData)
         {
@@ -1180,5 +1160,21 @@ namespace MultiTool.Utilities
 
             return _globalData.playerData;
         }
-    }
+
+		/// <summary>
+		/// Sanitise name for data storage.
+		/// </summary>
+		/// <param name="name">Name</param>
+		/// <returns>Sanitised name</returns>
+		public static string SanitiseName(string name)
+		{
+			name = name.Replace("(Clone)", string.Empty);
+			string last = name.ToLower().Substring(Math.Max(0, name.Length - 4));
+			if (last == "full")
+				name = name.Remove(name.Length - 4);
+			name = name.Trim();
+
+			return name;
+		}
+	}
 }

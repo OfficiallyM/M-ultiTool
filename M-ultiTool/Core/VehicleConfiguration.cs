@@ -22,38 +22,41 @@ namespace MultiTool.Core
 	internal class PartGroup
 	{
 		public string name;
+		public string parent;
 		public int index;
 		public List<partconditionscript> parts;
 		public List<MeshRenderer> meshes;
 
-		public static PartGroup Create(string _name, List<partconditionscript> _parts, int _index)
+		public static PartGroup Create(string _name, List<partconditionscript> _parts, int _index, string _parent)
 		{
 			return new PartGroup()
 			{
 				name = _name,
 				parts = _parts,
-				index = _index
+				index = _index,
+				parent = _parent,
 			};
 		}
 
-		public static PartGroup Create(string _name, partconditionscript _part, int _index)
+		public static PartGroup Create(string _name, partconditionscript _part, int _index, string _parent)
 		{
-            return Create(_name, new List<partconditionscript>() { _part }, _index);
+            return Create(_name, new List<partconditionscript>() { _part }, _index, _parent);
 		}
 
-		public static PartGroup Create(string _name, List<MeshRenderer> _meshes, int _index)
+		public static PartGroup Create(string _name, List<MeshRenderer> _meshes, int _index, string _parent)
         {
             return new PartGroup()
             {
                 name = _name,
                 meshes = _meshes,
-				index = _index
+				index = _index,
+				parent = _parent,
 			};
         }
 
-		public static PartGroup Create(string _name, MeshRenderer _mesh, int _index)
+		public static PartGroup Create(string _name, MeshRenderer _mesh, int _index, string _parent)
         {
-            return Create(_name, new List<MeshRenderer>() { _mesh }, _index);
+            return Create(_name, new List<MeshRenderer>() { _mesh }, _index, _parent);
         }
 
 		public bool IsConditionless()

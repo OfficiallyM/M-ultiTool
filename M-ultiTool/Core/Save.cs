@@ -26,6 +26,7 @@ namespace MultiTool.Core
 	{
 		[DataMember] public int ID { get; set; }
 		[DataMember] public string part { get; set; }
+		[DataMember] public string parent { get; set; }
         [DataMember] public bool? isConditionless { get; set; } = false;
 		[DataMember] public bool exact { get; set; }
 		[DataMember] public string type { get; set; }

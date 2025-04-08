@@ -5,6 +5,7 @@ using MultiTool.Utilities;
 using System.Collections.Generic;
 using System.Threading;
 using UnityEngine;
+using System;
 
 namespace MultiTool.Tabs.VehicleConfiguration
 {
@@ -75,9 +76,10 @@ namespace MultiTool.Tabs.VehicleConfiguration
 			foreach (partconditionscript part in _car.GetComponentsInChildren<partconditionscript>())
 			{
 				if (mainParent == null)
-					mainParent = part.gameObject.name;
+					mainParent = SaveUtilities.SanitiseName(part.gameObject.name);
 
 				string parent = part.transform.parent?.name ?? mainParent;
+				parent = SaveUtilities.SanitiseName(parent);
 
 				PartGroupParent parentGroup = null;
 				foreach (PartGroupParent partParent in _materialParts)
@@ -97,7 +99,7 @@ namespace MultiTool.Tabs.VehicleConfiguration
 						mainParentGroup = parentGroup;
 				}
 
-				parentGroup.parts.Add(PartGroup.Create(part.name, part, index));
+				parentGroup.parts.Add(PartGroup.Create(SaveUtilities.SanitiseName(part.name), part, index, parentGroup.name));
 
 				index++;
 			}
@@ -105,10 +107,10 @@ namespace MultiTool.Tabs.VehicleConfiguration
 			// Add any extra conditionless parts.
 			MeshRenderer floor = GameUtilities.GetConditionlessVehiclePartByName(carObject, "Interior");
 			if (floor != null)
-				mainParentGroup.parts.Add(PartGroup.Create("Interior", floor, index + 1));
+				mainParentGroup.parts.Add(PartGroup.Create("Interior", floor, index + 1, mainParentGroup.name));
 			MeshRenderer floor2 = GameUtilities.GetConditionlessVehiclePartByName(carObject, "Floor");
 			if (floor2 != null)
-				mainParentGroup.parts.Add(PartGroup.Create("Floor", floor2, index + 2));
+				mainParentGroup.parts.Add(PartGroup.Create("Floor", floor2, index + 2, mainParentGroup.name));
 
 			// Reindex by group.
 			index = 1;
@@ -125,6 +127,7 @@ namespace MultiTool.Tabs.VehicleConfiguration
 		public override void OnVehicleChange()
 		{
 			_selectedParts.Clear();
+			OnCacheRefresh();
 		}
 
 		public override void RenderTab(Rect dimensions)
@@ -137,6 +140,8 @@ namespace MultiTool.Tabs.VehicleConfiguration
 			tosaveitemscript save = _car.GetComponent<tosaveitemscript>();
 
 			GUILayout.Label("Material changer", "LabelHeader");
+			GUILayout.Label("Getting issues with materials not saving on a spawned vehicle?\nSpawn the vehicle, make a save, load that save then edit the materials.\nThe game has a weird issue where it doesn't name things properly.", "LabelSubHeader");
+			GUILayout.Space(10);
 
 			// Part selector.
 			if (GUILayout.Button("Select parts", GUILayout.MaxWidth(400)))
@@ -194,7 +199,6 @@ namespace MultiTool.Tabs.VehicleConfiguration
 				if (GUILayout.Button(materialSelectString, GUILayout.MaxWidth(400)))
 					_materialSelectorOpen = !_materialSelectorOpen;
 
-
 				if (_materialSelectorOpen)
 				{
 					if (GUILayout.Button("None", GUILayout.MaxWidth(400)))
@@ -239,8 +243,9 @@ namespace MultiTool.Tabs.VehicleConfiguration
 								{
 									ID = save.idInSave,
 									part = selectedPart.name,
+									parent = selectedPart.parent,
 									isConditionless = true,
-									exact = IsExact(selectedPart.name),
+									exact = true,
 									type = _selectedMaterial,
 									color = materialColor
 								});
@@ -255,6 +260,7 @@ namespace MultiTool.Tabs.VehicleConfiguration
 								{
 									ID = save.idInSave,
 									part = selectedPart.name,
+									parent = selectedPart.parent,
 									exact = IsExact(selectedPart.name),
 									type = _selectedMaterial,
 									color = materialColor
@@ -302,7 +308,7 @@ namespace MultiTool.Tabs.VehicleConfiguration
 		/// <summary>
 		/// Make part name more user friendly.
 		/// </summary>
-		/// <param name="random">Part name to prettify</param>
+		/// <param name="name">Part name to prettify</param>
 		/// <returns>Prettified part name</returns>
 		private string PrettifyName(string name)
 		{
@@ -372,7 +378,7 @@ namespace MultiTool.Tabs.VehicleConfiguration
 				return "Glove box";
 
 			return part;
-		}
+		}		
 
 		/// <summary>
 		/// Whether the part matches by exact name.
