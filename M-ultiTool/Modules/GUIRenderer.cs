@@ -173,8 +173,8 @@ namespace MultiTool.Modules
 		private bool mainMenuLoaded = false;
 		private bool stateChanged = false;
 		private Vector2 currentMainMenuPosition;
-		private static string[] mainMenuStages = new string[] { "vehicle", "basics", "color" };
-		private string mainMenuStage = mainMenuStages[0];
+		private static string[] mainMenuStages = new string[] { "distance", "vehicle", "basics", "color" };
+		private string mainMenuStage = mainMenuStages[1];
 		private Color? startVehicleColor = null;
 		private int startVehicleCondition = -1;
 		private string startVehiclePlate = string.Empty;
@@ -193,6 +193,7 @@ namespace MultiTool.Modules
 			"bike01",
 			"bike03",
 		};
+		private float distanceDriven;
 
 		internal void OnGUI()
 		{
@@ -1084,7 +1085,7 @@ namespace MultiTool.Modules
 
 			if (!show) {
                 GUILayout.BeginArea(new Rect(resolutionX - 200f, resolutionY / 3 - 10f, 200f, 60f));
-                if (GUILayout.Button("New game settings", "ButtonBlackTranslucent", GUILayout.MinHeight(60)))
+                if (GUILayout.Button("M-ultiTool", "ButtonBlackTranslucent", GUILayout.MinHeight(60)))
                 {
                     show = true;
                     stateChanged = true;
@@ -1095,7 +1096,7 @@ namespace MultiTool.Modules
 			if (!show)
 				return;
 
-			GUILayout.BeginArea(new Rect(x, y, width, height), "<color=#f87ffa><size=18><b>New game settings</b></size></color>", "box");
+			GUILayout.BeginArea(new Rect(x, y, width, height), $"<color=#f87ffa><size=18><b>{(mainMenuStage == "distance" ? "Change distance driven" : "New game settings")}</b></size></color>", "box");
             GUILayout.BeginHorizontal();
             GUILayout.FlexibleSpace();
 			if (GUILayout.Button("<size=30><color=#F00>X</color></size>", "ButtonBlack", GUILayout.MinWidth(40f)))
@@ -1109,6 +1110,22 @@ namespace MultiTool.Modules
             currentMainMenuPosition = GUILayout.BeginScrollView(currentMainMenuPosition);
             switch (mainMenuStage)
             {
+				case "distance":
+					float.TryParse(GUILayout.TextField(distanceDriven.ToString()), out distanceDriven);
+					GUILayout.BeginHorizontal();
+					if (GUILayout.Button("Get distance", GUILayout.MaxWidth(200)))
+						distanceDriven = mainscript.DistanceRead();
+
+					GUILayout.Space(10);
+
+					if (GUILayout.Button("<color=#F00>Set distance</color>", "ButtonBlack", GUILayout.MaxWidth(200)))
+					{
+						PlayerPrefs.SetFloat("DistanceDriven", distanceDriven);
+						mainmenuscript.mainmenu.Refresh();
+					}
+					GUILayout.EndHorizontal();
+					break;
+
                 case "vehicle":
                     int optionCount = (int)Enum.GetValues(typeof(itemdatabase.CarType)).Cast<itemdatabase.CarType>().Max();
                     foreach (var car in Enum.GetValues(typeof(itemdatabase.CarType)))
