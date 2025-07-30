@@ -1,15 +1,11 @@
 ﻿using MultiTool.Core;
+using MultiTool.Extensions;
 using MultiTool.Modules;
-using MultiTool.Utilities.UI;
 using MultiTool.Utilities;
-using System;
 using System.Collections.Generic;
 using UnityEngine;
-using MultiTool.Extensions;
 using static mainscript;
 using Logger = MultiTool.Modules.Logger;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace MultiTool.Tabs.VehicleConfiguration
 {
@@ -19,6 +15,7 @@ namespace MultiTool.Tabs.VehicleConfiguration
 
 		private Vector2 _position;
 		private List<FluidMix> _fluids = new List<FluidMix>();
+		private List<TankCapacity> _tanks = new List<TankCapacity>();
 		private carscript _lastVehicle = null;
 
 		public override void OnCacheRefresh()
@@ -34,17 +31,19 @@ namespace MultiTool.Tabs.VehicleConfiguration
 				// Ignore any player tanks.
 				if (tank.gameObject.name.ToLower() == "player" || tank.transform.parent?.name.ToLower() == "head") continue;
 
-				bool create = true;
+				tosaveitemscript save = tank.GetComponentInParent<tosaveitemscript>();
+
+				bool createMix = true;
 				foreach (FluidMix mix in _fluids)
 				{
 					if (mix.tank == tank)
 					{
-						create = false;
+						createMix = false;
 						break;
 					}
 				}
 
-                if (create)
+                if (createMix)
                 {
 					List<FluidPercentage> defaults = new List<FluidPercentage>();
 					foreach (FluidPercentage fluidDefault in GUIRenderer.fluidDefaults) 
@@ -63,6 +62,27 @@ namespace MultiTool.Tabs.VehicleConfiguration
 
 					_fluids.Add(newMix);
                 }
+
+				bool createTank = true;
+				foreach (TankCapacity tankCapacity in _tanks)
+				{
+					if (tankCapacity.tank == tank)
+					{
+						createTank = false;
+						break;
+					}
+				}
+
+				if (createTank)
+				{
+					TankData tankData = SaveUtilities.GetTank(save.idInSave);
+					_tanks.Add(new TankCapacity()
+					{
+						tank = tank,
+						max = tank.F.maxC,
+						defaultMax = tankData?.defaultCapacity ?? tank.F.maxC,
+					});
+				}
 			}
 		}
 
@@ -78,6 +98,10 @@ namespace MultiTool.Tabs.VehicleConfiguration
 			FluidMix coolantMix = FindMixByTank(car.coolant?.coolant);
 			FluidMix engineMix = FindMixByTank(car.Engine?.T);
 			FluidMix fuelMix = FindMixByTank(car.Tank);
+
+			TankCapacity coolantCapacity = FindCapacityByTank(car.coolant?.coolant);
+			TankCapacity engineCapacity = FindCapacityByTank(car.Engine?.T);
+			TankCapacity fuelCapacity = FindCapacityByTank(car.Tank);
 
 			GUILayout.Label("Fluid settings", "LabelHeader");
 
@@ -175,9 +199,13 @@ namespace MultiTool.Tabs.VehicleConfiguration
 					}
 				}
 				GUILayout.EndHorizontal();
+
+				if (fuelCapacity != null)
+					RenderCapcity(fuelCapacity);
 			}
 			else
 				GUILayout.Label("No fuel tank found.");
+
 
 			GUILayout.Space(10);
 
@@ -185,9 +213,12 @@ namespace MultiTool.Tabs.VehicleConfiguration
 			if (engineMix != null)
 			{
 				RenderMixSliders(engineMix);
+				if (engineCapacity != null)
+					RenderCapcity(engineCapacity);
 			}
 			else
 				GUILayout.Label("No engine mounted.");
+
 
 			GUILayout.Space(10);
 
@@ -195,9 +226,12 @@ namespace MultiTool.Tabs.VehicleConfiguration
 			if (coolantMix != null)
 			{
 				RenderMixSliders(coolantMix);
+				if (coolantCapacity != null)
+					RenderCapcity(coolantCapacity);
 			}
 			else
 				GUILayout.Label("No radiator mounted.");
+
 
 			GUILayout.Space(10);
 
@@ -215,6 +249,9 @@ namespace MultiTool.Tabs.VehicleConfiguration
 
 				GUILayout.Label($"{mix.tank.name.ToSentenceCase()} settings", "LabelSubHeader");
 				RenderMixSliders(mix);
+				TankCapacity fluidTankCapacity = FindCapacityByTank(mix.tank);
+				if (fluidTankCapacity != null)
+					RenderCapcity(fluidTankCapacity);
 				GUILayout.Space(10);
 			}
 
@@ -238,8 +275,11 @@ namespace MultiTool.Tabs.VehicleConfiguration
 			{
 				foreach (FluidPercentage mixFluid in mix.fluids)
 				{
-					float percent = mix.tank.F.GetPercent(mixFluid.type);
-					mixFluid.percentage = percent;
+					foreach (fluid fluid in mix.tank.F.fluids)
+					{
+						if (fluid.type == mixFluid.type)
+							mixFluid.percentage = fluid.amount / mix.tank.F.maxC * 100;
+					}
 				}
 			}
 		}
@@ -288,6 +328,54 @@ namespace MultiTool.Tabs.VehicleConfiguration
 				}
 			}
 			GUILayout.EndHorizontal();
+		}
+
+		private TankCapacity FindCapacityByTank(tankscript tank)
+		{
+			if (tank != null)
+				foreach (TankCapacity capacity in _tanks)
+					if (capacity.tank == tank) return capacity;
+			return null;
+		}
+
+		private void RenderCapcity(TankCapacity capacity)
+		{
+			if (capacity.tank == null) return;
+
+			GUILayout.BeginVertical();
+			GUILayout.Label("Capacity", GUILayout.MaxWidth(100));
+			capacity.max = Mathf.RoundToInt(GUILayout.HorizontalSlider(capacity.max, 1, 1000));
+			float.TryParse(GUILayout.TextField(capacity.max.ToString("F0"), GUILayout.MaxWidth(200)), out capacity.max);
+			GUILayout.EndVertical();
+
+			GUILayout.BeginHorizontal();
+			if (GUILayout.Button("Apply", GUILayout.MaxWidth(200)))
+			{
+				tankscript tank = capacity.tank;
+				ApplyCapacity(tank, capacity);
+			}
+
+			if (GUILayout.Button("Reset", GUILayout.MaxWidth(200)))
+			{
+				tankscript tank = capacity.tank;
+				capacity.max = capacity.defaultMax;
+				ApplyCapacity(tank, capacity);
+			}
+
+			GUILayout.EndHorizontal();
+		}
+
+		private void ApplyCapacity(tankscript tank, TankCapacity capacity)
+		{
+			tank.F.maxC = capacity.max;
+			tosaveitemscript save = tank.GetComponentInParent<tosaveitemscript>();
+			if (save == null) return;
+			SaveUtilities.UpdateTank(new TankData()
+			{
+				ID = save.idInSave,
+				capacity = capacity.max,
+				defaultCapacity = capacity.defaultMax,
+			});
 		}
 	}
 }

@@ -129,6 +129,13 @@ namespace MultiTool.Core
 		public List<FluidPercentage> fluids;
 	}
 
+	internal class TankCapacity
+	{
+		public tankscript tank;
+		public float max;
+		public float defaultMax;
+	}
+
 	internal class EngineStats
     {
 		public float maxTorque;

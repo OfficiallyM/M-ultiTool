@@ -428,7 +428,7 @@ namespace MultiTool.Utilities
 		/// <summary>
 		/// Update weight data in save.
 		/// </summary>
-		/// <param name="weigh">Weight data</param>
+		/// <param name="weight">Weight data</param>
 		public static void UpdateWeight(WeightData weight)
 		{
 			Save data = UnserializeSaveData();
@@ -453,6 +453,39 @@ namespace MultiTool.Utilities
 			catch (Exception ex)
 			{
 				Logger.Log($"Weight update error - {ex}", Logger.LogLevel.Error);
+			}
+
+			SerializeSaveData(data);
+		}
+
+		/// <summary>
+		/// Update tank data in save.
+		/// </summary>
+		/// <param name="tank">Tank data</param>
+		public static void UpdateTank(TankData tank)
+		{
+			Save data = UnserializeSaveData();
+
+			try
+			{
+				if (data.tank == null)
+					data.tank = new List<TankData>();
+
+				TankData existing = data.tank.Where(s => s.ID == tank.ID).FirstOrDefault();
+				if (existing != null)
+				{
+					// Only set default if we don't already have one set.
+					if (existing.defaultCapacity == 0)
+						existing.defaultCapacity = tank.defaultCapacity;
+
+					existing.capacity = tank.capacity;
+				}
+				else
+					data.tank.Add(tank);
+			}
+			catch (Exception ex)
+			{
+				Logger.Log($"Tank update error - {ex}", Logger.LogLevel.Error);
 			}
 
 			SerializeSaveData(data);
@@ -552,6 +585,7 @@ namespace MultiTool.Utilities
 			LoadVehicleTuning(save, data);
 			LoadWheelTuning(save, data);
 			LoadWeight(save, data);
+			LoadTank(save, data);
 		}
 
         /// <summary>
@@ -927,6 +961,51 @@ namespace MultiTool.Utilities
 		}
 
 		/// <summary>
+		/// Load tank data.
+		/// </summary>
+		/// <param name="save">Savable object to check</param>
+		/// <param name="data">Save data</param>
+		private static void LoadTank(tosaveitemscript save, Save data)
+		{
+			// Return early if no tank data is set.
+			if (data.tank == null) return;
+
+			foreach (TankData tankData in data.tank)
+			{
+				try
+				{
+					// Check ID matches.
+					if (save.idInSave == tankData.ID)
+					{
+						Logger.Log($"Found saved tank obj {save.name}");
+						tankscript tank = null;
+						carscript car = save.GetComponent<carscript>();
+						// Support for car fuel tanks.
+						if (car != null)
+						{
+							tank = car.Tank;
+							Logger.Log("Car tank");
+						}
+						else
+						{
+							tank = save.GetComponentInChildren<tankscript>();
+							Logger.Log("Other tank");
+						}
+
+						Logger.Log($"Tank {(tank != null ? "not null" : "null")}");
+
+						if (tank != null)
+							tank.F.maxC = tankData.capacity;
+					}
+				}
+				catch (Exception ex)
+				{
+					Logger.Log($"Tank data load error - {ex}", Logger.LogLevel.Error);
+				}
+			}
+		}
+
+		/// <summary>
 		/// Load player data.
 		/// </summary>
 		/// <param name="defaultPlayerData">Default player data to set if saved is null</param>
@@ -1079,6 +1158,18 @@ namespace MultiTool.Utilities
 			Save data = UnserializeSaveData();
 
 			return data.weight?.Where(e => e.ID == ID).FirstOrDefault();
+		}
+
+		/// <summary>
+		/// Get tank data by ID.
+		/// </summary>
+		/// <param name="ID">Object save ID</param>
+		/// <returns>TankData if exists, otherwise null</returns>
+		public static TankData GetTank(int ID)
+		{
+			Save data = UnserializeSaveData();
+
+			return data.tank?.Where(e => e.ID == ID).FirstOrDefault();
 		}
 
 		/// <summary>
