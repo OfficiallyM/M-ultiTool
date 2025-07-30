@@ -977,22 +977,13 @@ namespace MultiTool.Utilities
 					// Check ID matches.
 					if (save.idInSave == tankData.ID)
 					{
-						Logger.Log($"Found saved tank obj {save.name}");
 						tankscript tank = null;
 						carscript car = save.GetComponent<carscript>();
 						// Support for car fuel tanks.
 						if (car != null)
-						{
 							tank = car.Tank;
-							Logger.Log("Car tank");
-						}
 						else
-						{
 							tank = save.GetComponentInChildren<tankscript>();
-							Logger.Log("Other tank");
-						}
-
-						Logger.Log($"Tank {(tank != null ? "not null" : "null")}");
 
 						if (tank != null)
 							tank.F.maxC = tankData.capacity;
