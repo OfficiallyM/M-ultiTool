@@ -214,7 +214,10 @@ namespace MultiTool.Tabs.VehicleConfiguration
 			{
 				RenderMixSliders(engineMix);
 				if (engineCapacity != null)
+				{
 					RenderCapcity(engineCapacity);
+					GUILayout.Label("Note: Game uses oil capacity in the power calculation. Making it too large may reduce engine performance if it doesn't have enough oil in (about 30% minimum).");
+				}
 			}
 			else
 				GUILayout.Label("No engine mounted.");
@@ -227,7 +230,10 @@ namespace MultiTool.Tabs.VehicleConfiguration
 			{
 				RenderMixSliders(coolantMix);
 				if (coolantCapacity != null)
+				{
 					RenderCapcity(coolantCapacity);
+					GUILayout.Label("Note: Game uses radiator capacity in the power calculation. Making it too large may reduce engine performance due to overheating if it doesn't have enough water in (about 50% minimum).");
+				}
 			}
 			else
 				GUILayout.Label("No radiator mounted.");
