@@ -19,7 +19,7 @@ namespace MultiTool
 		public override string ID => "M-ultiTool";
 		public override string Name => "M-ultiTool";
 		public override string Author => "M-";
-		public override string Version => "4.0.1";
+		public override string Version => "4.1.0-DEV";
         public override bool LoadInMenu => true;
 
         // Modules.
@@ -40,7 +40,7 @@ namespace MultiTool
 			// Initialise modules.
 			try
 			{
-				Logger.Init();
+				Modules.Logger.Init();
 				Translator.Init();
 				ThumbnailGenerator.Init();
 
@@ -50,7 +50,7 @@ namespace MultiTool
 			}
 			catch (Exception ex)
 			{
-				Logger.Log($"Module initialisation failed - {ex}", Logger.LogLevel.Critical);
+				Modules.Logger.Log($"Module initialisation failed - {ex}", Modules.Logger.LogLevel.Critical);
 			}
 		}
 
@@ -112,7 +112,7 @@ namespace MultiTool
 				}
 				catch (Exception ex)
 				{
-					Logger.Log($"Failed to delete entity - {ex}", Logger.LogLevel.Warning);
+					Modules.Logger.Log($"Failed to delete entity - {ex}", Modules.Logger.LogLevel.Warning);
 				}
 			}
 
