@@ -12,6 +12,7 @@ namespace MultiTool.Tabs.VehicleConfiguration
     internal sealed class Fluids : Core.VehicleConfigurationTab
 	{
         public override string Name => "Fluids";
+		public override bool HasCache => true;
 
 		private Vector2 _position;
 		private List<FluidMix> _fluids = new List<FluidMix>();
@@ -20,6 +21,8 @@ namespace MultiTool.Tabs.VehicleConfiguration
 
 		public override void OnCacheRefresh()
 		{
+			if (mainscript.M.player == null || mainscript.M.player.Car == null) return;
+
 			carscript car = mainscript.M.player.Car;
 
 			if (_lastVehicle != car)

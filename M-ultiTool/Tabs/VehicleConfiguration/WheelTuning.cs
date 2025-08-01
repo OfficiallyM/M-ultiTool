@@ -12,6 +12,7 @@ namespace MultiTool.Tabs.VehicleConfiguration
     internal sealed class WheelTuning : Core.VehicleConfigurationTab
 	{
         public override string Name => "Wheel Tuning";
+		public override bool HasCache => true;
 
 		private Vector2 _position;
 		private Core.WheelTuning _tuning = null;
@@ -28,6 +29,8 @@ namespace MultiTool.Tabs.VehicleConfiguration
 
 		public override void OnCacheRefresh()
 		{
+			if (mainscript.M.player == null || mainscript.M.player.Car == null) return;
+
 			carscript car = mainscript.M.player.Car;
 
 			if (_tuning == null)
