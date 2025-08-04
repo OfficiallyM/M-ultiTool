@@ -103,10 +103,6 @@ namespace MultiTool.Tabs
 				var match = FilterAndBuildTree(root, query, searchExpandedPaths, 0);
 				if (match != null)
 					results.Add(match);
-				//if (TreeMatchesAndExpand(root, query, searchExpandedPaths, 0))
-				//{
-				//	results.Add(root);
-				//}
 			}
 
 			_searchExpandedPaths = searchExpandedPaths;
