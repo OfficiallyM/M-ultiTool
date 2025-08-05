@@ -25,11 +25,13 @@ namespace MultiTool.Tabs
 		private Settings _settings = new Settings();
 		private Vector2 _position;
 		private Vector2 _configPosition;
+		private float _viewportHeight;
 
 		// Objects.
 		private List<SceneObject> _cachedObjects;
 		private List<SceneObject> _objects;
 		private SceneObject _selected;
+		private int? _selectedInstanceId;
 		
 		// Pathing.
 		private HashSet<string> _expandedPaths = new HashSet<string>();
@@ -59,6 +61,9 @@ namespace MultiTool.Tabs
 			FetchData();
 		}
 
+		/// <summary>
+		/// Check for and refresh hierarchy data.
+		/// </summary>
 		private void FetchData()
 		{
 			if (_objects != null) return;
@@ -68,6 +73,10 @@ namespace MultiTool.Tabs
 			_cachedObjects = _objects.ToList();
 		}
 
+		/// <summary>
+		/// Trigger a search, cancelling any existing searches.
+		/// </summary>
+		/// <param name="query">Query string</param>
 		private async void SearchAsync(string query)
 		{
 			_searchCts?.Cancel();
@@ -84,6 +93,8 @@ namespace MultiTool.Tabs
 					var result = await Task.Run(() => Search(_cachedObjects, query), token);
 					_cachedObjects = result;
 				}
+				RefreshSelected();
+				_position = Vector2.zero;
 			}
 			catch (OperationCanceledException)
 			{
@@ -92,6 +103,12 @@ namespace MultiTool.Tabs
 			_isSearching = false;
 		}
 
+		/// <summary>
+		/// Search hierarchy for a query string.
+		/// </summary>
+		/// <param name="roots">Hierarchy</param>
+		/// <param name="query">Query string</param>
+		/// <returns>List of SceneObject results</returns>
 		private List<SceneObject> Search(List<SceneObject> roots, string query)
 		{
 			var results = new List<SceneObject>();
@@ -109,6 +126,14 @@ namespace MultiTool.Tabs
 			return results;
 		}
 
+		/// <summary>
+		/// Recursively search hierarchy by query string.
+		/// </summary>
+		/// <param name="obj">Root object</param>
+		/// <param name="query">Query string</param>
+		/// <param name="expandedPaths">Current paths to expand</param>
+		/// <param name="depth">Current search depth</param>
+		/// <returns>SceneObject if found, otherwise null</returns>
 		private SceneObject FilterAndBuildTree(SceneObject obj, string query, HashSet<string> expandedPaths, int depth)
 		{
 			try
@@ -166,8 +191,54 @@ namespace MultiTool.Tabs
 			return null;
 		}
 
+		/// <summary>
+		/// Refresh selected object from instance ID.
+		/// </summary>
+		private void RefreshSelected()
+		{
+			_selected = null;
+
+			if (_selectedInstanceId == null)
+				return;
+
+			foreach (var root in _cachedObjects)
+			{
+				var found = FindByInstanceId(root, _selectedInstanceId.Value);
+				if (found != null)
+				{
+					_selected = found;
+					break;
+				}
+			}
+		}
+
+		/// <summary>
+		/// Recursively attempt to find object in hierarchy by instance ID.
+		/// </summary>
+		/// <param name="obj">Root object</param>
+		/// <param name="instanceId">Instance ID</param>
+		/// <returns>SceneObject if exists, otherwise null</returns>
+		private SceneObject FindByInstanceId(SceneObject obj, int instanceId)
+		{
+			if (obj?.gameObject == null)
+				return null;
+
+			if (obj.gameObject.GetInstanceID() == instanceId)
+				return obj;
+
+			foreach (var child in obj.children)
+			{
+				var found = FindByInstanceId(child, instanceId);
+				if (found != null)
+					return found;
+			}
+
+			return null;
+		}
+
 		public override void RenderTab(Rect dimensions)
 		{
+			_viewportHeight = dimensions.height - 20f;
 			GUILayout.BeginArea(dimensions);
 			GUILayout.BeginVertical();
 
@@ -194,7 +265,7 @@ namespace MultiTool.Tabs
 				GUILayout.FlexibleSpace();
 				GUILayout.BeginVertical();
 				GUILayout.BeginHorizontal();
-				GUILayout.Label("Search");
+				GUILayout.Label("Search", GUILayout.MaxWidth(50));
 				string newSearch = GUILayout.TextField(_search, GUILayout.MaxWidth(300));
 				if (newSearch != _search)
 				{
@@ -202,7 +273,7 @@ namespace MultiTool.Tabs
 					SearchAsync(_search);
 				}
 				GUILayout.Space(5);
-				if (GUILayout.Button($"{(_showSearchSettings ? "-" : "+")} Search settings"))
+				if (GUILayout.Button($"{(_showSearchSettings ? "-" : "+")} Search settings", GUILayout.MaxWidth(200)))
 					_showSearchSettings = !_showSearchSettings;
 				GUILayout.EndHorizontal();
 				if (_showSearchSettings)
@@ -210,19 +281,20 @@ namespace MultiTool.Tabs
 					GUILayout.Label("Search settings", "LabelSubHeader");
 
 					GUILayout.BeginHorizontal();
-					GUILayout.Label("Search depth (Depth of child objects to search, -1 for unlimited depth)");
+					GUILayout.Label("Search depth", GUILayout.MaxWidth(100));
 					int.TryParse(GUILayout.TextField(_searchDepth.ToString(), GUILayout.MaxWidth(100)), out int searchDepth);
 					if (searchDepth != _searchDepth)
 					{
 						_searchDepth = searchDepth;
 						SearchAsync(_search);
 					}
-					if (GUILayout.Button("Set to infinite"))
+					if (GUILayout.Button("Set to infinite", GUILayout.MaxWidth(100)))
 					{
 						_searchDepth = -1;
 						SearchAsync(_search);
 					}
 					GUILayout.EndHorizontal();
+					GUILayout.Label("Depth of child objects to search, -1 for unlimited depth", GUILayout.MaxWidth(500));
 
 					bool shouldSearchInactive = GUILayout.Toggle(_searchInactive, "Search inactive objects");
 					if (shouldSearchInactive != _searchInactive)
@@ -244,10 +316,18 @@ namespace MultiTool.Tabs
 						_onlyShowMatchingObjects = onlyShowMatchingObjects;
 						SearchAsync(_search);
 					}
-					GUILayout.Label("With this unchecked, all children of a matching parent will show regardless of whether the child matches");
+					GUILayout.Label("With this unchecked, all children of a matching parent will show regardless of whether the child matches", GUILayout.MaxWidth(550));
 				}
 				GUILayout.EndVertical();
 				GUILayout.EndHorizontal();
+
+				if (_selected != null)
+				{
+					GUILayout.BeginHorizontal("box");
+					if (GUILayout.Button("Scroll to selected", GUILayout.MaxWidth(200)))
+						ScrollToObject();
+					GUILayout.EndHorizontal();
+				}
 
 				if (_isSearching)
 				{
@@ -267,6 +347,11 @@ namespace MultiTool.Tabs
 			GUILayout.EndArea();
 		}
 
+		/// <summary>
+		/// Recursively render hierarchy.
+		/// </summary>
+		/// <param name="objects">List of objects to render</param>
+		/// <param name="indent">Object indentation in hierarchy</param>
 		private void DrawHierarchy(List<SceneObject> objects, int indent = 0)
 		{
 			if (objects == null) return;
@@ -306,9 +391,15 @@ namespace MultiTool.Tabs
 				if (GUILayout.Button(name, "ButtonPrimaryTextLeft"))
 				{
 					if (_selected == obj)
+					{
 						_selected = null;
+						_selectedInstanceId = null;
+					}
 					else
+					{
 						_selected = obj;
+						_selectedInstanceId = obj.gameObject.GetInstanceID();
+					}
 				}
 				GUILayout.EndHorizontal();
 
@@ -317,6 +408,10 @@ namespace MultiTool.Tabs
 			}
 		}
 
+		/// <summary>
+		/// Expand a given object in the hierarchy.
+		/// </summary>
+		/// <param name="obj">Object to expand</param>
 		private void ToggleExpand(GameObject obj)
 		{
 			if (obj?.transform == null) return;
@@ -335,11 +430,62 @@ namespace MultiTool.Tabs
 				_expandedPaths.Add(path);
 		}
 
+		/// <summary>
+		/// Check if object is expanded in hierarchy.
+		/// </summary>
+		/// <param name="obj">GameObject to check</param>
+		/// <returns>True if object is expanded, otherwise false</returns>
 		private bool IsExpanded(GameObject obj)
 		{
 			if (obj?.transform == null) return false;
 			string path = obj.transform.GetPath();
 			return _expandedPaths.Contains(path) || _searchExpandedPaths.Contains(path);
+		}
+
+		/// <summary>
+		/// Scroll viewport to object.
+		/// </summary>
+		/// <param name="obj">Object to scroll to, or selected object if not set</param>
+		private void ScrollToObject(SceneObject obj = null)
+		{
+			if (obj == null) obj = _selected;
+			if (obj == null) return;
+
+			float offset = 0f;
+			if (TryGetScrollOffset(_cachedObjects, obj, ref offset))
+			{
+				_position.y = Mathf.Max(0, offset - _viewportHeight / 2);
+			}
+		}
+
+		/// <summary>
+		/// Recursively loop through objects to calculate height to scroll to.
+		/// </summary>
+		/// <param name="objects">Objects list</param>
+		/// <param name="target">Target object to scroll to</param>
+		/// <param name="offset">Current offset</param>
+		/// <returns></returns>
+		private bool TryGetScrollOffset(List<SceneObject> objects, SceneObject target, ref float offset)
+		{
+			foreach (var obj in objects)
+			{
+				if (obj.gameObject == null) continue;
+				bool isExpanded = _expandedPaths.Contains(obj.gameObject.transform.GetPath());
+
+				if (obj == target)
+					return true;
+
+				// Offset by row height.
+				offset += 37.5f;
+
+				if (isExpanded && obj.children.Count > 0)
+				{
+					if (TryGetScrollOffset(obj.children, target, ref offset))
+						return true;
+				}
+			}
+
+			return false;
 		}
 
 		public override void RenderConfigPane(Rect dimensions)
