@@ -42,4 +42,36 @@ namespace MultiTool.Core
 			return null;
 		}
 	}
+
+	internal enum SearchScope
+	{
+		Self,
+		Parent,
+		Root,
+	}
+
+	internal enum ConditionType
+	{
+		Name,
+		Tag,
+		Type,
+		Layer
+	}
+
+	internal class SearchCondition
+	{
+		public ConditionType Type;
+		public string Value;
+		public bool Negate;
+	}
+
+	internal class SearchFilter
+	{
+		public Dictionary<SearchScope, List<SearchCondition>> Conditions = new Dictionary<SearchScope, List<SearchCondition>>
+		{
+			{ SearchScope.Self, new List<SearchCondition>() },
+			{ SearchScope.Parent, new List<SearchCondition>() },
+			{ SearchScope.Root, new List<SearchCondition>() },
+		};
+	}
 }

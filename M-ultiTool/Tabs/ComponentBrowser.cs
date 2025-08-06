@@ -26,6 +26,7 @@ namespace MultiTool.Tabs
 		private Vector2 _position;
 		private Vector2 _configPosition;
 		private Vector2 _bookmarksPosition;
+		private Vector2 _helpModalPosition;
 		private float _viewportHeight;
 
 		// Objects.
@@ -50,6 +51,10 @@ namespace MultiTool.Tabs
 		// Bookmarks.
 		private List<TrackedSceneObject> _bookmarks = new List<TrackedSceneObject>();
 		private bool _isBookmarksExpanded = false;
+
+		// Help modal.
+		private bool _showHelpModal = false;
+		private Rect _helpModalRect = new Rect(100, 100, MultiTool.Renderer.resolutionX / 3, MultiTool.Renderer.resolutionY / 3);
 
 		public override void OnRegister()
 		{
@@ -94,8 +99,9 @@ namespace MultiTool.Tabs
 				_cachedObjects = _objects.ToList();
 				if (query != string.Empty)
 				{
-					var result = await Task.Run(() => Search(_cachedObjects, query), token);
-					_cachedObjects = result;
+					var result = await Task.Run(() => Search(_cachedObjects, query, token), token);
+					if (!token.IsCancellationRequested)
+						_cachedObjects = result;
 				}
 				RefreshTracked();
 				_position = Vector2.zero;
@@ -112,16 +118,19 @@ namespace MultiTool.Tabs
 		/// </summary>
 		/// <param name="roots">Hierarchy</param>
 		/// <param name="query">Query string</param>
+		/// <param name="token">CancellationToken</param>
 		/// <returns>List of SceneObject results</returns>
-		private List<SceneObject> Search(List<SceneObject> roots, string query)
+		private List<SceneObject> Search(List<SceneObject> roots, string query, CancellationToken token)
 		{
 			var results = new List<SceneObject>();
 			HashSet<string> searchExpandedPaths = new HashSet<string>();
-			query = query.ToLowerInvariant();
+			var filter = ParseQuery(query);
 
 			foreach (var root in roots)
 			{
-				var match = FilterAndBuildTree(root, query, searchExpandedPaths, 0);
+				token.ThrowIfCancellationRequested();
+
+				var match = FilterAndBuildTree(root, filter, searchExpandedPaths, 0, token);
 				if (match != null)
 					results.Add(match);
 			}
@@ -131,50 +140,129 @@ namespace MultiTool.Tabs
 		}
 
 		/// <summary>
+		/// Parse query for tags.
+		/// </summary>
+		/// <param name="query">Query string</param>
+		/// <returns>Built search filter</returns>
+		private SearchFilter ParseQuery(string query)
+		{
+			var filter = new SearchFilter();
+			var tokens = query.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+
+			foreach (var rawToken in tokens)
+			{
+				string token = rawToken.Trim();
+				bool negate = token.StartsWith("!");
+				if (negate) token = token.Substring(1);
+
+				SearchScope scope = SearchScope.Self;
+				if (token.StartsWith("parent:")) { scope = SearchScope.Parent; token = token.Substring(7); }
+				else if (token.StartsWith("root:")) { scope = SearchScope.Root; token = token.Substring(5); }
+
+				ConditionType type = ConditionType.Name;
+				if (token.StartsWith("tag:")) { type = ConditionType.Tag; token = token.Substring(4); }
+				else if (token.StartsWith("type:")) { type = ConditionType.Type; token = token.Substring(5); }
+				else if (token.StartsWith("component:")) { type = ConditionType.Type; token = token.Substring(10); }
+				else if (token.StartsWith("layer:")) { type = ConditionType.Layer; token = token.Substring(6); }
+
+				if (token.StartsWith("\"") && token.EndsWith("\""))
+					token = token.Substring(1, token.Length - 2);
+
+				filter.Conditions[scope].Add(new SearchCondition
+				{
+					Type = type,
+					Value = token,
+					Negate = negate
+				});
+			}
+
+			return filter;
+		}
+
+		/// <summary>
+		/// Check if a GameObject matches a given list of query conditions.
+		/// </summary>
+		/// <param name="obj">GameObject</param>
+		/// <param name="conditions">Query conditions</param>
+		/// <returns>True if GameObject matches the query conditions, otherwise false</returns>
+		private bool MatchesConditions(GameObject obj, List<SearchCondition> conditions)
+		{
+			if (obj == null) return false;
+
+			foreach (var cond in conditions)
+			{
+				bool match = false;
+
+				switch (cond.Type)
+				{
+					case ConditionType.Name:
+						match = obj.name.ToLowerInvariant().Contains(cond.Value.ToLowerInvariant());
+						break;
+					case ConditionType.Tag:
+						match = obj.CompareTag(cond.Value);
+						break;
+					case ConditionType.Type:
+						match = obj.GetComponent(cond.Value) != null;
+						break;
+					case ConditionType.Layer:
+						match = LayerMask.LayerToName(obj.layer).Equals(cond.Value, StringComparison.OrdinalIgnoreCase);
+						break;
+				}
+
+				if (cond.Negate) match = !match;
+				if (!match) return false;
+			}
+			return true;
+		}
+
+		/// <summary>
 		/// Recursively search hierarchy by query string.
 		/// </summary>
 		/// <param name="obj">Root object</param>
-		/// <param name="query">Query string</param>
+		/// <param name="filter">Search filter</param>
 		/// <param name="expandedPaths">Current paths to expand</param>
 		/// <param name="depth">Current search depth</param>
+		/// <param name="token">CancellationToken</param>
 		/// <returns>SceneObject if found, otherwise null</returns>
-		private SceneObject FilterAndBuildTree(SceneObject obj, string query, HashSet<string> expandedPaths, int depth)
+		private SceneObject FilterAndBuildTree(SceneObject obj, SearchFilter filter, HashSet<string> expandedPaths, int depth, CancellationToken token)
 		{
+			token.ThrowIfCancellationRequested();
+
 			try
 			{
-				if (obj.gameObject == null)
-				return null;
+				if (obj.gameObject == null) return null;
+				if (_searchDepth > -1 && depth > _searchDepth) return null;
+				if (!_searchInactive && !obj.gameObject.activeInHierarchy) return null;
 
-				if (_searchDepth > -1 && depth > _searchDepth)
-					return null;
-
-				if (!_searchInactive && !obj.gameObject.activeInHierarchy)
-					return null;
-
-				bool selfMatch = false;
-				try
-				{
-					selfMatch = obj.gameObject.name.ToLowerInvariant().Contains(query);
-				}
-				catch { }
+				bool selfMatch = MatchesConditions(obj.gameObject, filter.Conditions[SearchScope.Self]);
 
 				var matchedChildren = new List<SceneObject>();
 				foreach (var child in obj.children)
 				{
-					var match = FilterAndBuildTree(child, query, expandedPaths, depth + 1);
+					var match = FilterAndBuildTree(child, filter, expandedPaths, depth + 1, token);
 					if (match != null)
 						matchedChildren.Add(match);
 				}
 
+				// Evaluate root and parent conditions.
+				if (filter.Conditions[SearchScope.Parent].Count > 0 && obj.gameObject.transform.parent != null)
+				{
+					var parentObj = obj.gameObject.transform.parent.gameObject;
+					if (!MatchesConditions(parentObj, filter.Conditions[SearchScope.Parent])) return null;
+				}
+				if (filter.Conditions[SearchScope.Root].Count > 0)
+				{
+					var rootObj = obj.gameObject.transform.root.gameObject;
+					if (!MatchesConditions(rootObj, filter.Conditions[SearchScope.Root])) return null;
+				}
+
 				if (_onlyShowMatchingObjects)
 				{
-					if (!selfMatch && matchedChildren.Count == 0)
-						return null;
+					if (!selfMatch && matchedChildren.Count == 0) return null;
 				}
 				else
 				{
-					if (!selfMatch)
-						return null;
+					if (!selfMatch) return null;
 					matchedChildren = obj.children;
 				}
 
@@ -186,6 +274,10 @@ namespace MultiTool.Tabs
 					gameObject = obj.gameObject,
 					children = matchedChildren
 				};
+			}
+			catch (OperationCanceledException)
+			{
+				// Search was cancelled, ignore.
 			}
 			catch (Exception ex)
 			{
@@ -217,6 +309,11 @@ namespace MultiTool.Tabs
 
 		public override void RenderTab(Rect dimensions)
 		{
+			if (_showHelpModal)
+			{
+				_helpModalRect = GUILayout.Window(0, _helpModalRect, RenderHelpWindow, "<size=24>Help</size>", "box");
+			}
+
 			_viewportHeight = dimensions.height - 20f;
 			GUILayout.BeginArea(dimensions);
 			GUILayout.BeginVertical();
@@ -254,6 +351,9 @@ namespace MultiTool.Tabs
 				GUILayout.Space(5);
 				if (GUILayout.Button($"{(_showSearchSettings ? "-" : "+")} Search settings", GUILayout.MaxWidth(200)))
 					_showSearchSettings = !_showSearchSettings;
+				GUILayout.Space(10);
+				if (GUILayout.Button("Help", GUILayout.MaxWidth(50)))
+					_showHelpModal = !_showHelpModal;
 				GUILayout.EndHorizontal();
 				if (_showSearchSettings)
 				{
@@ -282,14 +382,14 @@ namespace MultiTool.Tabs
 						SearchAsync(_search);
 					}
 
-					bool expandChildren = GUILayout.Toggle(_expandChildren, "Automatically expand to show matching child objects");
+					bool expandChildren = GUILayout.Toggle(_expandChildren, "Expand to show matching child objects");
 					if (expandChildren != _expandChildren)
 					{
 						_expandChildren = expandChildren;
 						SearchAsync(_search);
 					}
 
-					bool onlyShowMatchingObjects = GUILayout.Toggle(_onlyShowMatchingObjects, "Only show matching objects");
+					bool onlyShowMatchingObjects = GUILayout.Toggle(_onlyShowMatchingObjects, "Only show matching children");
 					if (onlyShowMatchingObjects != _onlyShowMatchingObjects)
 					{
 						_onlyShowMatchingObjects = onlyShowMatchingObjects;
@@ -324,7 +424,7 @@ namespace MultiTool.Tabs
 					GUILayout.BeginHorizontal();
 					GUILayout.BeginVertical();
 					_position = GUILayout.BeginScrollView(_position);
-					DrawHierarchy(_cachedObjects);
+					RenderHierarchy(_cachedObjects);
 					GUILayout.EndScrollView();
 					GUILayout.EndVertical();
 
@@ -375,12 +475,64 @@ namespace MultiTool.Tabs
 			GUILayout.EndArea();
 		}
 
+		private void RenderHelpWindow(int windowID)
+		{
+			if (GUI.Button(new Rect(_helpModalRect.width - 40, 10, 30, 30), "X"))
+				_showHelpModal = false;
+
+			GUILayout.BeginVertical();
+			GUILayout.Space(40);
+			_helpModalPosition = GUILayout.BeginScrollView(_helpModalPosition);
+			GUILayout.Label("Search help", "LabelHeader");
+			GUILayout.Space(10);
+			GUILayout.Label("All searches are case sensitive unless otherwise specified");
+
+			GUILayout.Label("Basic", "LabelSubHeader");
+			GUILayout.Label("Name search (default):");
+			GUILayout.Label("Just type part of an object's name\nExample: 'car' finds all objects with \"car\" in their name\nNOTE: This search is case insensitive");
+			GUILayout.Space(20);
+
+			GUILayout.Label("Tags (Filters)", "LabelSubHeader");
+			GUILayout.Label("'type:' or 'component:'");
+			GUILayout.Label("Match components attached to the object\nExample: 'type:Rigidbody' or 'component:Rigidbody' finds any objects containing a Rigidbody");
+			GUILayout.Space(5);
+			GUILayout.Label("'tag:'");
+			GUILayout.Label("Match objects with a tag\nExample: 'tag:Player' would find any objects tagged \"Player\"");
+			GUILayout.Space(5);
+			GUILayout.Label("'layer:'");
+			GUILayout.Label("Match objects on a layer\nExample: TODO: Add example");
+			GUILayout.Space(5);
+			GUILayout.Label("'name:'");
+			GUILayout.Label("Same as the basic name search");
+			GUILayout.Space(20);
+
+			GUILayout.Label("Hierarchy filters", "LabelSubHeader");
+			GUILayout.Label("These let you search relative to a parent/root object\nThese also support chaining with any of the above tags, but will default to name searching if a tag isn't specified");
+			GUILayout.Space(5);
+			GUILayout.Label("'parent:'");
+			GUILayout.Label("Used to match on a parent\nExample: 'parent:car06' would find any where any parent name contains \"car06\"");
+			GUILayout.Space(5);
+			GUILayout.Label("'root:'");
+			GUILayout.Label("Used to match on the root object\nExample: 'parent:car06' would find any where the root object name contains \"car06\"");
+			GUILayout.Space(5);
+			GUILayout.Label("Example chained with other filters: 'root:car06 type:enginescript' would find any objects that have an enginescript where the root object name contains car06\nOr, 'parent:component:Rigidbody component:Light' would show any objects containing a Light where a parent object contains a Rigidbody");
+			GUILayout.Space(20);
+
+			GUILayout.Label("Negation", "LabelSubHeader");
+			GUILayout.Label("Prefix any filter with ! to exclude results that match\nFor example '!root:component:carscript component:enginescript' would show any objects that have an enginescript where the root object does not have a carscript");
+
+			GUILayout.EndScrollView();
+			GUILayout.EndVertical();
+
+			GUI.DragWindow(new Rect(0, 0, _helpModalRect.width, _helpModalRect.height));
+		}
+
 		/// <summary>
 		/// Recursively render hierarchy.
 		/// </summary>
 		/// <param name="objects">List of objects to render</param>
 		/// <param name="indent">Object indentation in hierarchy</param>
-		private void DrawHierarchy(List<SceneObject> objects, int indent = 0)
+		private void RenderHierarchy(List<SceneObject> objects, int indent = 0)
 		{
 			if (objects == null) return;
 			foreach (SceneObject obj in objects)
@@ -435,7 +587,7 @@ namespace MultiTool.Tabs
 				GUILayout.EndHorizontal();
 
 				if (expanded)
-					DrawHierarchy(obj.children, indent + 1);
+					RenderHierarchy(obj.children, indent + 1);
 			}
 		}
 
