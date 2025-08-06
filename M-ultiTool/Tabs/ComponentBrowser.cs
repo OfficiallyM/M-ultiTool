@@ -17,7 +17,7 @@ namespace MultiTool.Tabs
 	{
 		public override string Name => "Component Browser (Alpha)";
 		public override bool HasConfigPane => true;
-		public override string ConfigTitle => _selected?.gameObject.name ?? "Select object to show components";
+		public override string ConfigTitle => _selected?.sceneObject.gameObject.name ?? "Select object to show components";
 		public override bool HasCache => true;
 		public override int CacheRefreshTime => 2;
 
@@ -25,13 +25,13 @@ namespace MultiTool.Tabs
 		private Settings _settings = new Settings();
 		private Vector2 _position;
 		private Vector2 _configPosition;
+		private Vector2 _bookmarksPosition;
 		private float _viewportHeight;
 
 		// Objects.
 		private List<SceneObject> _cachedObjects;
 		private List<SceneObject> _objects;
-		private SceneObject _selected;
-		private int? _selectedInstanceId;
+		private TrackedSceneObject _selected;
 		
 		// Pathing.
 		private HashSet<string> _expandedPaths = new HashSet<string>();
@@ -46,6 +46,10 @@ namespace MultiTool.Tabs
 		private bool _onlyShowMatchingObjects = true;
 		private CancellationTokenSource _searchCts;
 		private bool _isSearching = false;
+
+		// Bookmarks.
+		private List<TrackedSceneObject> _bookmarks = new List<TrackedSceneObject>();
+		private bool _isBookmarksExpanded = false;
 
 		public override void OnRegister()
 		{
@@ -93,7 +97,7 @@ namespace MultiTool.Tabs
 					var result = await Task.Run(() => Search(_cachedObjects, query), token);
 					_cachedObjects = result;
 				}
-				RefreshSelected();
+				RefreshTracked();
 				_position = Vector2.zero;
 			}
 			catch (OperationCanceledException)
@@ -192,48 +196,23 @@ namespace MultiTool.Tabs
 		}
 
 		/// <summary>
-		/// Refresh selected object from instance ID.
+		/// Refresh any tracked scene objects from their instance IDs.
 		/// </summary>
-		private void RefreshSelected()
+		private void RefreshTracked()
 		{
-			_selected = null;
+			if (_selected != null && !_selected.Refresh(_cachedObjects))
+				_selected = null;
 
-			if (_selectedInstanceId == null)
-				return;
-
-			foreach (var root in _cachedObjects)
+			List<TrackedSceneObject> clear = new List<TrackedSceneObject>();
+			foreach (TrackedSceneObject bookmark in _bookmarks)
 			{
-				var found = FindByInstanceId(root, _selectedInstanceId.Value);
-				if (found != null)
-				{
-					_selected = found;
-					break;
-				}
+				if (!bookmark.Refresh(_cachedObjects))
+					clear.Add(bookmark);
 			}
-		}
-
-		/// <summary>
-		/// Recursively attempt to find object in hierarchy by instance ID.
-		/// </summary>
-		/// <param name="obj">Root object</param>
-		/// <param name="instanceId">Instance ID</param>
-		/// <returns>SceneObject if exists, otherwise null</returns>
-		private SceneObject FindByInstanceId(SceneObject obj, int instanceId)
-		{
-			if (obj?.gameObject == null)
-				return null;
-
-			if (obj.gameObject.GetInstanceID() == instanceId)
-				return obj;
-
-			foreach (var child in obj.children)
+			foreach (TrackedSceneObject c in clear)
 			{
-				var found = FindByInstanceId(child, instanceId);
-				if (found != null)
-					return found;
+				_bookmarks.Remove(c);
 			}
-
-			return null;
 		}
 
 		public override void RenderTab(Rect dimensions)
@@ -321,11 +300,16 @@ namespace MultiTool.Tabs
 				GUILayout.EndVertical();
 				GUILayout.EndHorizontal();
 
-				if (_selected != null)
+				if (_selected != null || _bookmarks.Count > 0)
 				{
 					GUILayout.BeginHorizontal("box");
-					if (GUILayout.Button("Scroll to selected", GUILayout.MaxWidth(200)))
+					if (_selected != null && GUILayout.Button("Scroll to selected", GUILayout.MaxWidth(200)))
 						ScrollToObject();
+
+					GUILayout.FlexibleSpace();
+
+					if (_bookmarks.Count > 0 && GUILayout.Button($"{(_isBookmarksExpanded ? "-" : "+")} Bookmarks", GUILayout.MaxWidth(200)))
+						_isBookmarksExpanded = !_isBookmarksExpanded;
 					GUILayout.EndHorizontal();
 				}
 
@@ -337,9 +321,53 @@ namespace MultiTool.Tabs
 				}
 				else
 				{
+					GUILayout.BeginHorizontal();
+					GUILayout.BeginVertical();
 					_position = GUILayout.BeginScrollView(_position);
 					DrawHierarchy(_cachedObjects);
 					GUILayout.EndScrollView();
+					GUILayout.EndVertical();
+
+					if (_isBookmarksExpanded)
+					{
+						GUILayout.BeginVertical(GUILayout.MaxWidth(350));
+						GUILayout.BeginHorizontal();
+						GUILayout.FlexibleSpace();
+						GUILayout.Label("Bookmarks", "LabelSubHeader");
+						GUILayout.FlexibleSpace();
+						GUILayout.EndHorizontal();
+
+						_bookmarksPosition = GUILayout.BeginScrollView(_bookmarksPosition);
+						foreach (TrackedSceneObject bookmark in _bookmarks)
+						{
+							if (bookmark.sceneObject == null || bookmark.sceneObject.gameObject == null) continue;
+
+							GUILayout.BeginHorizontal("box");
+							string name = "Unknown";
+							try
+							{
+								name = bookmark.sceneObject.gameObject.name;
+							}
+							catch { }
+							if (GUILayout.Button(name, "ButtonPrimaryTextLeft"))
+							{
+								_selected = new TrackedSceneObject(bookmark.sceneObject.gameObject.GetInstanceID(), bookmark.sceneObject);
+								ScrollToObject(bookmark.sceneObject);
+							}
+
+							if (GUILayout.Button("X", GUILayout.MaxWidth(30)))
+							{
+								_bookmarks.Remove(bookmark);
+								if (_bookmarks.Count == 0)
+									_isBookmarksExpanded = false;
+								break;
+							}
+							GUILayout.EndHorizontal();
+						}
+						GUILayout.EndScrollView();
+						GUILayout.EndVertical();
+					}
+					GUILayout.EndHorizontal();
 				}
 			}
 
@@ -359,7 +387,7 @@ namespace MultiTool.Tabs
 			{
 				if (obj.gameObject == null) continue;
 
-				GUILayout.BeginHorizontal(_selected == obj ? "BoxGrey" : "box");
+				GUILayout.BeginHorizontal(_selected?.sceneObject == obj ? "BoxGrey" : "box");
 				GUILayout.Space(indent * 34f);
 
 				bool expanded = IsExpanded(obj.gameObject);
@@ -390,17 +418,20 @@ namespace MultiTool.Tabs
 				catch { }
 				if (GUILayout.Button(name, "ButtonPrimaryTextLeft"))
 				{
-					if (_selected == obj)
-					{
+					if (_selected != null && _selected.sceneObject == obj)
 						_selected = null;
-						_selectedInstanceId = null;
-					}
 					else
-					{
-						_selected = obj;
-						_selectedInstanceId = obj.gameObject.GetInstanceID();
-					}
+						_selected = new TrackedSceneObject(obj.gameObject.GetInstanceID(), obj);
 				}
+
+				if (GUILayout.Button(IsInBookmarks(obj) ? "★" : "☆", "ButtonSecondary", GUILayout.Width(35)))
+				{
+					if (IsInBookmarks(obj))
+						RemoveBookmark(obj);
+					else
+						_bookmarks.Add(new TrackedSceneObject(obj.gameObject.GetInstanceID(), obj));
+				}
+
 				GUILayout.EndHorizontal();
 
 				if (expanded)
@@ -448,8 +479,13 @@ namespace MultiTool.Tabs
 		/// <param name="obj">Object to scroll to, or selected object if not set</param>
 		private void ScrollToObject(SceneObject obj = null)
 		{
-			if (obj == null) obj = _selected;
+			if (obj == null) obj = _selected?.sceneObject;
 			if (obj == null) return;
+
+			// Expand parent if collapsed to ensure we can scroll to it.
+			SceneObject parent = obj.parent;
+			if (parent != null && !IsExpanded(parent.gameObject))
+				ToggleExpand(parent.gameObject);
 
 			float offset = 0f;
 			if (TryGetScrollOffset(_cachedObjects, obj, ref offset))
@@ -488,6 +524,37 @@ namespace MultiTool.Tabs
 			return false;
 		}
 
+		/// <summary>
+		/// Check if a given object is bookmarked.
+		/// </summary>
+		/// <param name="obj">Object to check</param>
+		/// <returns>True if object is bookmarked, otherwise false</returns>
+		private bool IsInBookmarks(SceneObject obj)
+		{
+			foreach (TrackedSceneObject bookmark in _bookmarks)
+			{
+				if (bookmark.sceneObject == obj) return true;
+			}
+
+			return false;
+		}
+
+		/// <summary>
+		/// Remove an object from bookmarks.
+		/// </summary>
+		/// <param name="obj">Object to remove</param>
+		private void RemoveBookmark(SceneObject obj)
+		{
+			foreach (TrackedSceneObject bookmark in _bookmarks)
+			{
+				if (bookmark.sceneObject == obj)
+				{
+					_bookmarks.Remove(bookmark);
+					return;
+				}
+			}
+		}
+
 		public override void RenderConfigPane(Rect dimensions)
 		{
 			if (_selected == null) return;
@@ -499,12 +566,12 @@ namespace MultiTool.Tabs
 			GUILayout.Space(10);
 			_configPosition = GUILayout.BeginScrollView(_configPosition);
 
-			if (_selected.gameObject.activeSelf)
+			if (_selected.sceneObject.gameObject.activeSelf)
 			{
 				GUILayout.BeginHorizontal();
 				GUILayout.FlexibleSpace();
 				if (GUILayout.Button("Teleport to", GUILayout.MaxWidth(100)))
-					GameUtilities.TeleportPlayerWithParent(_selected.gameObject.transform.position + Vector3.up * 2f);
+					GameUtilities.TeleportPlayerWithParent(_selected.sceneObject.gameObject.transform.position + Vector3.up * 2f);
 
 				GUILayout.Space(5);
 
@@ -513,8 +580,8 @@ namespace MultiTool.Tabs
 					Vector3 position = mainscript.M.player.lookPoint + Vector3.up * 0.75f;
 					Quaternion rotation = Quaternion.FromToRotation(Vector3.forward, -mainscript.M.player.mainCam.transform.right);
 
-					_selected.gameObject.transform.position = position;
-					_selected.gameObject.transform.rotation = rotation;
+					_selected.sceneObject.gameObject.transform.position = position;
+					_selected.sceneObject.gameObject.transform.rotation = rotation;
 				}
 				GUILayout.FlexibleSpace();
 				GUILayout.EndHorizontal();

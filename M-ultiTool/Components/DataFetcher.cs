@@ -62,6 +62,7 @@ namespace MultiTool.Components
 				}
 				else if (transformToObject.TryGetValue(parent, out var parentNode))
 				{
+					node.parent = parentNode;
 					parentNode.children.Add(node);
 				}
 			}
