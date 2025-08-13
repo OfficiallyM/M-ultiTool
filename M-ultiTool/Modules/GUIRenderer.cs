@@ -285,6 +285,7 @@ namespace MultiTool.Modules
 				Tabs.AddTab(new Tabs.VehicleConfigurationTab());
 				Tabs.AddTab(new Tabs.SandboxTab());
 				Tabs.AddTab(new Tabs.DeveloperTab());
+				Tabs.AddTab(new Tabs.BrowserTab());
 
                 // Add default hidden tabs.
                 settingsTabId = Tabs.AddTab(new Tabs.SettingsTab());

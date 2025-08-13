@@ -125,6 +125,7 @@ namespace MultiTool.Modules
 
 			GUILayout.BeginArea(dimensions);
 			GUILayout.BeginVertical();
+
 			foreach (Notification notification in _notifications)
 			{
 				string borderStyle = "BoxGreen";
@@ -141,23 +142,32 @@ namespace MultiTool.Modules
 						break;
 				}
 
+				// Layout group for size.
 				GUILayout.BeginVertical(borderStyle, GUILayout.MaxWidth(300), GUILayout.MaxHeight(100));
-				// Create an invisible box to use as the rect for the background.
 				GUILayout.Box(string.Empty, "ButtonTransparent", GUILayout.MaxWidth(300), GUILayout.MaxHeight(100));
+
 				if (Event.current.type == EventType.Repaint)
 					notification.LastRenderRect = GUILayoutUtility.GetLastRect();
+
+				// Close layout group before doing manual drawing.
+				GUILayout.EndVertical(); 
+
+				// Can now draw the rest as absolute positioned.
 				Rect boxRect = notification.LastRenderRect;
 				boxRect.x += 2f;
 				boxRect.y += 2f;
 				boxRect.width -= 4f;
 				boxRect.height -= 4f;
+
 				GUI.Box(boxRect, string.Empty, "BoxGrey");
-				GUI.Label(new Rect(boxRect.x + 5f, boxRect.y + 5f, boxRect.width - 10f, 20), $"<b>{notification.Title}</b>", "LabelCenter");
-				GUI.Label(new Rect(boxRect.x + 5f, boxRect.y + 30f, boxRect.width - 10f, boxRect.height - 30f), notification.Message, "LabelCenter");
-				GUILayout.EndVertical();
+				GUI.Label(new Rect(boxRect.x + 5f, boxRect.y + 5f, boxRect.width - 10f, 20),
+						  $"<b>{notification.Title}</b>", "LabelCenter");
+				GUI.Label(new Rect(boxRect.x + 5f, boxRect.y + 30f, boxRect.width - 10f, boxRect.height - 30f),
+						  notification.Message, "LabelCenter");
 
 				GUILayout.Space(5);
 			}
+
 			GUILayout.EndVertical();
 			GUILayout.EndArea();
 		}
@@ -166,16 +176,21 @@ namespace MultiTool.Modules
 		{
 			if (_notifications.Count == 0) return;
 
+			float currentTime = Time.unscaledTime;
+			List<Notification> removals = new List<Notification>();
+
 			foreach (Notification notification in _notifications)
 			{
-				float currentTime = Time.unscaledTime;
 				int diff = Mathf.RoundToInt(currentTime - notification.StartTime);
-
 				if (diff >= (int)notification.Length)
 				{
-					_notifications.Remove(notification);
-					break;
+					removals.Add(notification);
 				}
+			}
+
+			foreach (var n in removals)
+			{
+				_notifications.Remove(n);
 			}
 		}
 	}

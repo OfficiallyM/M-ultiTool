@@ -23,9 +23,6 @@ namespace MultiTool.Tabs
         
         private int lastCarId = 0;
 
-        // Caching.
-		private float _nextUpdateTime = 0;
-
         public override void OnRegister()
 		{
             _tabs.AddTab(new VehicleConfiguration.Basics());
@@ -43,24 +40,6 @@ namespace MultiTool.Tabs
 		public override void Update()
 		{
 			_tabs.Update();
-
-			// Edge case for player somehow not existing.
-			if (mainscript.M.player == null) return;
-
-			// Player not in a vehicle, return early.
-			if (mainscript.M.player.Car == null) return;
-
-			// Handle releasing caches.
-			_nextUpdateTime -= Time.fixedDeltaTime;
-			if (_nextUpdateTime <= 0)
-			{
-				for (int tabIndex = 0; tabIndex < _tabs.GetCount(); tabIndex++)
-				{
-					Core.VehicleConfigurationTab tab = _tabs.GetByIndex<Core.VehicleConfigurationTab>(tabIndex);
-					tab.OnCacheRefresh();
-				}
-				_nextUpdateTime = 1;
-			}
 		}
 
 		public override void RenderTab(Rect dimensions)

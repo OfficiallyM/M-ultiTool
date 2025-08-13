@@ -19,7 +19,17 @@ namespace MultiTool.Modules
         internal void Update()
         {
             foreach (Tab tab in _tabs)
+			{
                 tab.Update();
+
+				if (!tab.HasCache) continue;
+				tab.NextCacheUpdate -= Time.unscaledDeltaTime;
+				if (tab.NextCacheUpdate <= 0)
+				{
+					tab.OnCacheRefresh();
+					tab.NextCacheUpdate = tab.CacheRefreshTime;
+				}
+			}
         }
 
         /// <summary>

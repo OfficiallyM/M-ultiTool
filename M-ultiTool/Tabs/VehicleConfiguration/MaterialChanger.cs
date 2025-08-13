@@ -12,6 +12,7 @@ namespace MultiTool.Tabs.VehicleConfiguration
     internal sealed class MaterialChanger : Core.VehicleConfigurationTab
 	{
         public override string Name => "Material Changer";
+		public override bool HasCache => true;
 
 		private Vector2 _position;
 		private carscript _car;
@@ -62,6 +63,8 @@ namespace MultiTool.Tabs.VehicleConfiguration
 
 		public override void OnCacheRefresh()
 		{
+			if (mainscript.M.player == null || mainscript.M.player.Car == null) return;
+
 			if (_car == null)
 				_car = mainscript.M.player.Car;
 

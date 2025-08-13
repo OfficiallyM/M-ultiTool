@@ -14,8 +14,9 @@ namespace MultiTool.Tabs.VehicleConfiguration
     internal sealed class LightChanger : Core.VehicleConfigurationTab
 	{
         public override string Name => "Light Changer";
+		public override bool HasCache => true;
 
-        private Vector2 _position;
+		private Vector2 _position;
 
 		private bool _lightSelectorOpen = false;
 		private List<LightGroup> _selectedLights = new List<LightGroup>();
@@ -23,6 +24,8 @@ namespace MultiTool.Tabs.VehicleConfiguration
 
 		public override void OnCacheRefresh()
 		{
+			if (mainscript.M.player == null || mainscript.M.player.Car == null) return;
+
 			lights.Clear();
 			GameObject carObject = mainscript.M.player.Car.gameObject;
 

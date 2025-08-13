@@ -50,5 +50,5 @@ namespace MultiTool.Extensions
             texture.Apply();
             return texture;
         }
-    }
+	}
 }

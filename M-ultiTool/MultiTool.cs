@@ -1,4 +1,5 @@
-﻿using MultiTool.Core;
+﻿using MultiTool.Components;
+using MultiTool.Core;
 using MultiTool.Modules;
 using MultiTool.Utilities;
 using MultiTool.Utilities.UI;
@@ -76,6 +77,9 @@ namespace MultiTool
 		{
 			Translator.SetLanguage(mainscript.M.menu.language.languageNames[mainscript.M.menu.language.selectedLanguage]);
 			isOnMainMenu = false;
+
+			GameObject controller = new GameObject("M-ultiTool");
+			controller.AddComponent<DataFetcher>();
 
 			// Load the GUI Renderer.
 			Renderer.OnLoad();

@@ -35,5 +35,17 @@ namespace MultiTool.Extensions
 			}
 			return null;
 		}
+
+		/// <summary>
+		/// Get the full path for a transform.
+		/// </summary>
+		/// <param name="current">The current transform</param>
+		/// <returns>Transform path</returns>
+		public static string GetPath(this Transform current)
+		{
+			if (current.parent == null)
+				return "/" + current.GetInstanceID();
+			return current.parent.GetPath() + "/" + current.GetInstanceID();
+		}
 	}
 }
