@@ -63,11 +63,15 @@ namespace MultiTool.Tabs
 		private bool _layersExpanded = false;
 		private float _transformStepSize = 0.1f;
 		private List<MemberInfo> _componentMembers = new List<MemberInfo>();
+		private List<MemberInfo> _cachedComponentMembers = new List<MemberInfo>();
 		private static List<MemberInfo> _expandedMembers = new List<MemberInfo>();
 		private Dictionary<MemberInfo, (object, Type)> _memberValuesCache = new Dictionary<MemberInfo, (object, Type)>();
 		private DateTime _lastComponentRefresh = DateTime.Now;
 		private bool _automaticComponentRefresh = false;
 		private int _componentRefreshInterval = 2;
+		private string _componentSearch = "";
+		private bool _isComponentSearching = false;
+		private CancellationTokenSource _componentSearchCts;
 		private static readonly HashSet<string> _excludedMembers = new HashSet<string>
 		{
 			"useGUILayout",
@@ -126,7 +130,7 @@ namespace MultiTool.Tabs
 		public override void OnCacheRefresh()
 		{
 			if (!_automaticComponentRefresh) return;
-			UpdateMembers();
+			UpdateMemberValues();
 		}
 
 		public override void Update()
@@ -978,69 +982,89 @@ namespace MultiTool.Tabs
 		{
 			Component component = _selected.trackedComponent.component;
 
-			_configPosition = GUILayout.BeginScrollView(_configPosition);
-			foreach (MemberInfo member in _componentMembers)
+			GUILayout.BeginHorizontal("box");
+			GUILayout.Label("Search", GUILayout.ExpandWidth(false));
+			string newSearch = GUILayout.TextField(_componentSearch, GUILayout.MaxWidth(300));
+			if (newSearch != _componentSearch)
 			{
-				GUILayout.BeginVertical("box");
-				GUILayout.BeginHorizontal();
-				GUILayout.Label($"{member.Name}", "LabelSubHeader", GUILayout.ExpandWidth(false));
-				(object current, Type type) = _memberValuesCache[member];
-				if (type == null)
-					GUILayout.Label("NULL", "LabelLeft");
-				else
-					GUILayout.Label($"{GetAccessLevel(member)} {type.GetFriendlyName()}", "LabelLeft");
-				GUILayout.EndHorizontal();
-				if (current != null)
-				{
-					object next = null;
-					bool handled = false;
-
-					foreach (var (rendererType, renderer) in _renderers)
-					{
-						if (rendererType.IsInstanceOfType(current))
-						{
-							next = renderer(member, current);
-							if (next != null && !Equals(current, next))
-								SetValue(member, component, next);
-							handled = true;
-							break;
-						}
-					}
-
-					if (!handled && current is Component memberComponent)
-					{
-						if (GUILayout.Button($"Select", "ButtonSecondary", GUILayout.MaxWidth(100)))
-						{
-							try
-							{
-								GameObject gameObject = memberComponent.gameObject;
-								SceneObject sceneObj = GetSceneObjectFromGameObject(gameObject);
-								_selected.trackedSceneObject = new TrackedSceneObject(gameObject.GetInstanceID(), sceneObj);
-								_selected.trackedComponent = new TrackedComponent(memberComponent, gameObject.GetInstanceID(), sceneObj);
-								ScrollToObject();
-							}
-							catch
-							{
-								_selected.trackedSceneObject = null;
-								_selected.trackedComponent = new TrackedComponent(memberComponent);
-							}
-							_configPosition = Vector2.zero;
-							UpdateMembers();
-							_expandedMembers.Clear();
-						}
-						handled = true;
-					}
-
-					if (!handled)
-					{
-						GUILayout.Label($"Value: {current}");
-						GUILayout.Label("NOTE: This type doesn't currently support editing");
-					}
-				}
-				GUILayout.EndVertical();
-				GUILayout.Space(10);
+				_componentSearch = newSearch;
+				ComponentSearchAsync(_componentSearch);
 			}
-			GUILayout.EndScrollView();
+			GUILayout.EndHorizontal();
+			GUILayout.Space(5);
+
+			if (_isComponentSearching)
+			{
+				GUILayout.FlexibleSpace();
+				GUILayout.Label("Searching...", "LabelMessage");
+				GUILayout.FlexibleSpace();
+			}
+			else
+			{
+				_configPosition = GUILayout.BeginScrollView(_configPosition);
+				foreach (MemberInfo member in _cachedComponentMembers)
+				{
+					GUILayout.BeginVertical("box");
+					GUILayout.BeginHorizontal();
+					GUILayout.Label($"{member.Name}", "LabelSubHeader", GUILayout.ExpandWidth(false));
+					(object current, Type type) = _memberValuesCache[member];
+					if (type == null)
+						GUILayout.Label("NULL", "LabelLeft");
+					else
+						GUILayout.Label($"{GetAccessLevel(member)} {type.GetFriendlyName()}", "LabelLeft");
+					GUILayout.EndHorizontal();
+					if (current != null)
+					{
+						object next = null;
+						bool handled = false;
+
+						foreach (var (rendererType, renderer) in _renderers)
+						{
+							if (rendererType.IsInstanceOfType(current))
+							{
+								next = renderer(member, current);
+								if (next != null && !Equals(current, next))
+									SetValue(member, component, next);
+								handled = true;
+								break;
+							}
+						}
+
+						if (!handled && current is Component memberComponent)
+						{
+							if (GUILayout.Button($"Select", "ButtonSecondary", GUILayout.MaxWidth(100)))
+							{
+								try
+								{
+									GameObject gameObject = memberComponent.gameObject;
+									SceneObject sceneObj = GetSceneObjectFromGameObject(gameObject);
+									_selected.trackedSceneObject = new TrackedSceneObject(gameObject.GetInstanceID(), sceneObj);
+									_selected.trackedComponent = new TrackedComponent(memberComponent, gameObject.GetInstanceID(), sceneObj);
+									ScrollToObject();
+								}
+								catch
+								{
+									_selected.trackedSceneObject = null;
+									_selected.trackedComponent = new TrackedComponent(memberComponent);
+								}
+								_configPosition = Vector2.zero;
+								UpdateMembers();
+								_expandedMembers.Clear();
+							}
+							handled = true;
+						}
+
+						if (!handled)
+						{
+							GUILayout.Label($"Value: {current}");
+							GUILayout.Label("NOTE: This type doesn't currently support editing");
+						}
+					}
+					GUILayout.EndVertical();
+					GUILayout.Space(10);
+				}
+				GUILayout.EndScrollView();
+			}
 
 			GUILayout.FlexibleSpace();
 			GUILayout.BeginHorizontal("box");
@@ -1053,6 +1077,7 @@ namespace MultiTool.Tabs
 					_selected.trackedComponent = null;
 					_configPosition = Vector2.zero;
 					_componentMembers.Clear();
+					_cachedComponentMembers.Clear();
 					_expandedMembers.Clear();
 				}
 				GUILayout.Space(5);
@@ -1065,10 +1090,9 @@ namespace MultiTool.Tabs
 			GUILayout.FlexibleSpace();
 			if (GUILayout.Button("Refresh", GUILayout.ExpandWidth(false)))
 			{
-				UpdateMembers();
+				UpdateMemberValues();
 			}
 			GUILayout.EndHorizontal();
-			GUILayout.FlexibleSpace();
 			_automaticComponentRefresh = GUILayout.Toggle(_automaticComponentRefresh, "Automatically refresh");
 			if (_automaticComponentRefresh)
 			{
@@ -1128,8 +1152,8 @@ namespace MultiTool.Tabs
 		{
 			if (_selected.trackedComponent == null) return;
 
-			_lastComponentRefresh = DateTime.Now;
 			_componentMembers = GetMembers(_selected.trackedComponent.component);
+			_cachedComponentMembers = _componentMembers.ToList();
 			UpdateMemberValues();
 		}
 
@@ -1138,6 +1162,8 @@ namespace MultiTool.Tabs
 		/// </summary>
 		private void UpdateMemberValues()
 		{
+			if (_selected.trackedComponent == null || _componentMembers == null || _componentMembers.Count == 0) return;
+
 			_memberValuesCache.Clear();
 			foreach (var member in _componentMembers)
 			{
@@ -1152,6 +1178,60 @@ namespace MultiTool.Tabs
 					Logger.Log($"Failed to get value for {member.Name}. Details: {ex}", Logger.LogLevel.Error);
 				}
 			}
+			_lastComponentRefresh = DateTime.Now;
+		}
+
+		/// <summary>
+		/// Trigger a component search, cancelling any existing searches.
+		/// </summary>
+		/// <param name="query">Query string</param>
+		private async void ComponentSearchAsync(string query)
+		{
+			_componentSearchCts?.Cancel();
+			_componentSearchCts = new CancellationTokenSource();
+			var token = _componentSearchCts.Token;
+			_isComponentSearching = true;
+
+			try
+			{
+				_cachedComponentMembers = _componentMembers.ToList();
+				if (query != string.Empty)
+				{
+					var result = await Task.Run(() => ComponentSearch(_cachedComponentMembers, query, token), token);
+					if (!token.IsCancellationRequested)
+						_cachedComponentMembers = result;
+				}
+				_position = Vector2.zero;
+			}
+			catch (OperationCanceledException)
+			{
+				// Search was cancelled, ignore.
+			}
+			_isComponentSearching = false;
+		}
+
+		/// <summary>
+		/// Search components for a query string.
+		/// </summary>
+		/// <param name="members">Component members</param>
+		/// <param name="query">Query string</param>
+		/// <param name="token">CancellationToken</param>
+		/// <returns>List of MemberInfo results</returns>
+		private List<MemberInfo> ComponentSearch(List<MemberInfo> members, string query, CancellationToken token)
+		{
+			var results = new List<MemberInfo>();
+			query = query.ToLowerInvariant();
+
+			foreach (var member in members)
+			{
+				token.ThrowIfCancellationRequested();
+
+				string memberName = member.Name.ToLowerInvariant();
+				if (memberName.Contains(query))
+					results.Add(member);
+			}
+
+			return results;
 		}
 
 		/// <summary>
