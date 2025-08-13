@@ -23,7 +23,7 @@ namespace MultiTool.Modules
                 tab.Update();
 
 				if (!tab.HasCache) continue;
-				tab.NextCacheUpdate -= Time.fixedDeltaTime;
+				tab.NextCacheUpdate -= Time.unscaledDeltaTime;
 				if (tab.NextCacheUpdate <= 0)
 				{
 					tab.OnCacheRefresh();

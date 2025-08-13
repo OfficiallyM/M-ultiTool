@@ -429,11 +429,20 @@ namespace MultiTool.Utilities.UI
 			GUIStyle labelCenter = new GUIStyle(skin.label);
 			labelCenter.name = "LabelCenter";
 			labelCenter.alignment = TextAnchor.MiddleCenter;
-			labelMessage.normal.textColor = theme.TextColour;
-			labelMessage.hover.textColor = theme.TextColour;
-			labelMessage.active.textColor = theme.TextColour;
-			labelMessage.focused.textColor = theme.TextColour;
-			labelMessage.wordWrap = true;
+			labelCenter.normal.textColor = theme.TextColour;
+			labelCenter.hover.textColor = theme.TextColour;
+			labelCenter.active.textColor = theme.TextColour;
+			labelCenter.focused.textColor = theme.TextColour;
+			labelCenter.wordWrap = true;
+
+			GUIStyle labelLeft = new GUIStyle(skin.label);
+			labelLeft.name = "LabelLeft";
+			labelLeft.alignment = TextAnchor.MiddleLeft;
+			labelLeft.normal.textColor = theme.TextColour;
+			labelLeft.hover.textColor = theme.TextColour;
+			labelLeft.active.textColor = theme.TextColour;
+			labelLeft.focused.textColor = theme.TextColour;
+			labelLeft.wordWrap = true;
 
 			// Notification box styling.
 			GUIStyle boxGrey = new GUIStyle(skin.box);
@@ -475,6 +484,7 @@ namespace MultiTool.Utilities.UI
 				labelSubHeader,
 				labelMessage,
 				labelCenter,
+				labelLeft,
 
 				// Notification boxes.
 				boxGrey,

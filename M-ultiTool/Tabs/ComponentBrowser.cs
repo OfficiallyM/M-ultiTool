@@ -3,9 +3,11 @@ using MultiTool.Core;
 using MultiTool.Extensions;
 using MultiTool.Modules;
 using MultiTool.Utilities;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using UnityEngine;
@@ -17,9 +19,9 @@ namespace MultiTool.Tabs
 	{
 		public override string Name => "Component Browser (Alpha)";
 		public override bool HasConfigPane => true;
-		public override string ConfigTitle => _selected?.sceneObject.gameObject.name ?? "Select object to show components";
+		public override string ConfigTitle => GetConfigTitle();
 		public override bool HasCache => true;
-		public override int CacheRefreshTime => 2;
+		public override int CacheRefreshTime => _componentRefreshInterval;
 
 		// Tab.
 		private Settings _settings = new Settings();
@@ -32,7 +34,7 @@ namespace MultiTool.Tabs
 		// Objects.
 		private List<SceneObject> _cachedObjects;
 		private List<SceneObject> _objects;
-		private TrackedSceneObject _selected;
+		private Tracked _selected = new Tracked();
 		
 		// Pathing.
 		private HashSet<string> _expandedPaths = new HashSet<string>();
@@ -56,13 +58,75 @@ namespace MultiTool.Tabs
 		private bool _showHelpModal = false;
 		private Rect _helpModalRect = new Rect(100, 100, MultiTool.Renderer.resolutionX / 3, MultiTool.Renderer.resolutionY / 3);
 
+		// Configuration.
+		private Dictionary<int, string> _layers = new Dictionary<int, string>();
+		private bool _layersExpanded = false;
+		private float _transformStepSize = 0.1f;
+		private List<MemberInfo> _componentMembers = new List<MemberInfo>();
+		private static List<MemberInfo> _expandedMembers = new List<MemberInfo>();
+		private Dictionary<MemberInfo, (object, Type)> _memberValuesCache = new Dictionary<MemberInfo, (object, Type)>();
+		private DateTime _lastComponentRefresh = DateTime.Now;
+		private bool _automaticComponentRefresh = false;
+		private int _componentRefreshInterval = 2;
+		private static readonly HashSet<string> _excludedMembers = new HashSet<string>
+		{
+			"useGUILayout",
+			"enabled",
+			"isActiveAndEnabled",
+			"transform",
+			"gameObject",
+			"tag",
+			"name",
+			"hideFlags"
+		};
+		private readonly List<(Type type, Func<MemberInfo, object, object> renderer)> _renderers = new List<(Type, Func<MemberInfo, object, object>)>
+		{
+			(typeof(Transform), (member, obj) => {
+				RenderMemberExpandButton(member);
+				if (IsMemberExpanded(member))
+					return GUILayoutExtensions.RenderTransform((Transform)obj, 100);
+				return obj;
+			}),
+			(typeof(Color), (member, obj) => {
+				RenderMemberExpandButton(member);
+				if (IsMemberExpanded(member))
+					return GUILayoutExtensions.ColorField((Color)obj);
+				return obj;
+			}),
+			(typeof(Vector3), (member, obj) => {
+				RenderMemberExpandButton(member);
+				if (IsMemberExpanded(member))
+					return GUILayoutExtensions.Vector3Field((Vector3)obj);
+				return obj;
+			}),
+			(typeof(string), (member, obj) => GUILayout.TextField((string)obj)),
+			(typeof(float), (member, obj) => {
+				if (float.TryParse(GUILayout.TextField(((float)obj).ToString("F4")), out float result))
+					return result;
+				return obj;
+			}),
+			(typeof(int), (member, obj) => {
+				if (int.TryParse(GUILayout.TextField(((int)obj).ToString()), out int result))
+					return result;
+				return obj;
+			}),
+			(typeof(bool), (member, obj) => GUILayout.Toggle((bool)obj, member.Name)),
+		};
+
 		public override void OnRegister()
 		{
 			DataFetcher.I.StartScan();
+
+			// Get available layer names.
+			_layers = Enumerable.Range(0, 32)
+				.Where(i => !string.IsNullOrEmpty(LayerMask.LayerToName(i)))
+				.ToDictionary(i => i, i => LayerMask.LayerToName(i));
 		}
 
 		public override void OnCacheRefresh()
 		{
+			if (!_automaticComponentRefresh) return;
+			UpdateMembers();
 		}
 
 		public override void Update()
@@ -80,6 +144,16 @@ namespace MultiTool.Tabs
 			// Reverse to set the list to oldest first.
 			_objects.Reverse();
 			_cachedObjects = _objects.ToList();
+		}
+
+		private string GetConfigTitle()
+		{
+			string title = "Select object to edit";
+			if (_selected.trackedComponent != null)
+				title = _selected.trackedComponent.component.GetType().Name;
+			else if (_selected.trackedSceneObject?.sceneObject?.gameObject != null)
+				title = _selected.trackedSceneObject?.sceneObject?.gameObject?.name;
+			return title;
 		}
 
 		/// <summary>
@@ -292,8 +366,11 @@ namespace MultiTool.Tabs
 		/// </summary>
 		private void RefreshTracked()
 		{
-			if (_selected != null && !_selected.Refresh(_cachedObjects))
-				_selected = null;
+			if (_selected.trackedSceneObject != null && !_selected.trackedSceneObject.Refresh(_cachedObjects))
+				_selected.trackedSceneObject = null;
+
+			if (_selected.trackedComponent != null && !_selected.trackedComponent.Refresh(_cachedObjects))
+				_selected.trackedComponent = null;
 
 			List<TrackedSceneObject> clear = new List<TrackedSceneObject>();
 			foreach (TrackedSceneObject bookmark in _bookmarks)
@@ -337,7 +414,10 @@ namespace MultiTool.Tabs
 				GUILayout.Space(10);
 				DateTime lastScan = DataFetcher.I.GetLastScanTime();
 				TimeSpan elapsed = DateTime.Now - lastScan;
-				GUILayout.Label($"Last refreshed {(int)elapsed.TotalMinutes} minute(s) ago");
+				if (elapsed.TotalMinutes < 1)
+					GUILayout.Label($"Last refreshed {(int)elapsed.TotalSeconds} second(s) ago");
+				else
+					GUILayout.Label($"Last refreshed {(int)elapsed.TotalMinutes} minute(s) ago");
 				GUILayout.FlexibleSpace();
 				GUILayout.BeginVertical();
 				GUILayout.BeginHorizontal();
@@ -400,10 +480,10 @@ namespace MultiTool.Tabs
 				GUILayout.EndVertical();
 				GUILayout.EndHorizontal();
 
-				if (_selected != null || _bookmarks.Count > 0)
+				if (_selected.trackedSceneObject != null || _bookmarks.Count > 0)
 				{
 					GUILayout.BeginHorizontal("box");
-					if (_selected != null && GUILayout.Button("Scroll to selected", GUILayout.MaxWidth(200)))
+					if (_selected.trackedSceneObject != null && GUILayout.Button("Scroll to selected", GUILayout.MaxWidth(200)))
 						ScrollToObject();
 
 					GUILayout.FlexibleSpace();
@@ -451,7 +531,8 @@ namespace MultiTool.Tabs
 							catch { }
 							if (GUILayout.Button(name, "ButtonPrimaryTextLeft"))
 							{
-								_selected = new TrackedSceneObject(bookmark.sceneObject.gameObject.GetInstanceID(), bookmark.sceneObject);
+								_selected.trackedSceneObject = new TrackedSceneObject(bookmark.sceneObject.gameObject.GetInstanceID(), bookmark.sceneObject);
+								_selected.trackedComponent = null;
 								ScrollToObject(bookmark.sceneObject);
 							}
 
@@ -500,7 +581,7 @@ namespace MultiTool.Tabs
 			GUILayout.Label("Match objects with a tag\nExample: 'tag:Player' would find any objects tagged \"Player\"");
 			GUILayout.Space(5);
 			GUILayout.Label("'layer:'");
-			GUILayout.Label("Match objects on a layer\nExample: TODO: Add example");
+			GUILayout.Label("Match objects on a layer\nExample: 'layer:player' would find any objects on the \"player\" layer");
 			GUILayout.Space(5);
 			GUILayout.Label("'name:'");
 			GUILayout.Label("Same as the basic name search");
@@ -539,7 +620,7 @@ namespace MultiTool.Tabs
 			{
 				if (obj.gameObject == null) continue;
 
-				GUILayout.BeginHorizontal(_selected?.sceneObject == obj ? "BoxGrey" : "box");
+				GUILayout.BeginHorizontal(_selected?.trackedSceneObject?.sceneObject == obj ? "BoxGrey" : "box");
 				GUILayout.Space(indent * 34f);
 
 				bool expanded = IsExpanded(obj.gameObject);
@@ -570,10 +651,11 @@ namespace MultiTool.Tabs
 				catch { }
 				if (GUILayout.Button(name, "ButtonPrimaryTextLeft"))
 				{
-					if (_selected != null && _selected.sceneObject == obj)
-						_selected = null;
+					if (_selected.trackedSceneObject != null && _selected.trackedSceneObject?.sceneObject == obj)
+						_selected.trackedSceneObject = null;
 					else
-						_selected = new TrackedSceneObject(obj.gameObject.GetInstanceID(), obj);
+						_selected.trackedSceneObject = new TrackedSceneObject(obj.gameObject.GetInstanceID(), obj);
+					_selected.trackedComponent = null;
 				}
 
 				if (GUILayout.Button(IsInBookmarks(obj) ? "★" : "☆", "ButtonSecondary", GUILayout.Width(35)))
@@ -631,7 +713,7 @@ namespace MultiTool.Tabs
 		/// <param name="obj">Object to scroll to, or selected object if not set</param>
 		private void ScrollToObject(SceneObject obj = null)
 		{
-			if (obj == null) obj = _selected?.sceneObject;
+			if (obj == null) obj = _selected?.trackedSceneObject?.sceneObject;
 			if (obj == null) return;
 
 			// Expand parent if collapsed to ensure we can scroll to it.
@@ -677,6 +759,48 @@ namespace MultiTool.Tabs
 		}
 
 		/// <summary>
+		/// Get a SceneObject from a given GameObject.
+		/// </summary>
+		/// <param name="obj">GameObject to find</param>
+		/// <returns>SceneObject if found, otherwise null</returns>
+		private SceneObject GetSceneObjectFromGameObject(GameObject obj)
+		{
+			if (obj == null) return null;
+
+			foreach (var root in _cachedObjects)
+			{
+				var found = FindSceneObjectRecursive(root, obj);
+				if (found != null)
+					return found;
+			}
+
+			return null;
+		}
+
+		/// <summary>
+		/// Recursively search for gameObject within a scene.
+		/// </summary>
+		/// <param name="current">Current SceneObject</param>
+		/// <param name="target">The target GameObject</param>
+		/// <returns>SceneObject if found, otherwise null</returns>
+		private SceneObject FindSceneObjectRecursive(SceneObject current, GameObject target)
+		{
+			if (current == null) return null;
+
+			if (current.gameObject == target)
+				return current;
+
+			foreach (var child in current.children)
+			{
+				var found = FindSceneObjectRecursive(child, target);
+				if (found != null)
+					return found;
+			}
+
+			return null;
+		}
+
+		/// <summary>
 		/// Check if a given object is bookmarked.
 		/// </summary>
 		/// <param name="obj">Object to check</param>
@@ -709,40 +833,478 @@ namespace MultiTool.Tabs
 
 		public override void RenderConfigPane(Rect dimensions)
 		{
-			if (_selected == null) return;
-
+			if (_selected.trackedSceneObject == null && _selected.trackedComponent == null) return;
+			
 			GUILayout.BeginArea(dimensions);
 			GUILayout.BeginHorizontal();
 			GUILayout.Space(5);
 			GUILayout.BeginVertical();
 			GUILayout.Space(10);
-			_configPosition = GUILayout.BeginScrollView(_configPosition);
 
-			if (_selected.sceneObject.gameObject.activeSelf)
-			{
-				GUILayout.BeginHorizontal();
-				GUILayout.FlexibleSpace();
-				if (GUILayout.Button("Teleport to", GUILayout.MaxWidth(100)))
-					GameUtilities.TeleportPlayerWithParent(_selected.sceneObject.gameObject.transform.position + Vector3.up * 2f);
+			if (_selected.trackedComponent != null)
+				RenderComponentConfig();
+			else
+				RenderObjectConfig();
 
-				GUILayout.Space(5);
-
-				if (GUILayout.Button("Teleport here", GUILayout.MaxWidth(100)))
-				{
-					Vector3 position = mainscript.M.player.lookPoint + Vector3.up * 0.75f;
-					Quaternion rotation = Quaternion.FromToRotation(Vector3.forward, -mainscript.M.player.mainCam.transform.right);
-
-					_selected.sceneObject.gameObject.transform.position = position;
-					_selected.sceneObject.gameObject.transform.rotation = rotation;
-				}
-				GUILayout.FlexibleSpace();
-				GUILayout.EndHorizontal();
-			}
-
-			GUILayout.EndScrollView();
 			GUILayout.EndVertical();
 			GUILayout.EndHorizontal();
 			GUILayout.EndArea();
+		}
+
+		/// <summary>
+		/// Render object configuration for the selected object.
+		/// </summary>
+		private void RenderObjectConfig()
+		{
+			SceneObject sceneObject = _selected.trackedSceneObject.sceneObject;
+			GameObject gameObject = sceneObject.gameObject;
+			if (gameObject == null) return;
+			Transform transform = gameObject.transform;
+
+			_configPosition = GUILayout.BeginScrollView(_configPosition);
+
+			GUILayout.Label("Actions", "LabelHeader");
+			GUILayout.BeginHorizontal();
+			if (GUILayout.Button("Teleport to", GUILayout.MaxWidth(100)))
+				GameUtilities.TeleportPlayerWithParent(gameObject.transform.position + Vector3.up * 2f);
+			GUILayout.Space(5);
+
+			if (GUILayout.Button("Teleport here", GUILayout.MaxWidth(100)))
+			{
+				Vector3 position = mainscript.M.player.lookPoint + Vector3.up * 0.75f;
+				Quaternion rotation = Quaternion.FromToRotation(Vector3.forward, -mainscript.M.player.mainCam.transform.right);
+
+				gameObject.transform.position = position;
+				gameObject.transform.rotation = rotation;
+			}
+			GUILayout.Space(5);
+
+			if (GUILayout.Button("Delete", "ButtonSecondary", GUILayout.MaxWidth(100)))
+			{
+				tosaveitemscript save = gameObject.GetComponent<tosaveitemscript>();
+				if (save != null)
+				{
+					save.removeFromMemory = true;
+
+					foreach (tosaveitemscript childSave in gameObject.GetComponentsInChildren<tosaveitemscript>())
+					{
+						childSave.removeFromMemory = true;
+					}
+				}
+				UnityEngine.Object.Destroy(gameObject);
+				_selected = null;
+			}
+			GUILayout.EndHorizontal();
+			GUILayout.Space(20);
+
+			GUILayout.Label("Details", "LabelHeader");
+			GUILayout.BeginHorizontal();
+			if (GUILayout.Button("", gameObject.activeSelf ? "BoxGreen" : "BoxGrey", GUILayout.Width(25)))
+			{
+				gameObject.SetActive(!gameObject.activeSelf);
+			}
+			GUILayout.Label("activeSelf");
+			gameObject.name = GUILayout.TextField(gameObject.name, GUILayout.MaxWidth(300));
+			GUILayout.EndHorizontal();
+			GUILayout.BeginHorizontal();
+			if (GUILayout.Button("", gameObject.isStatic ? "BoxGreen" : "BoxGrey", GUILayout.Width(25)))
+			{
+				gameObject.isStatic = !gameObject.isStatic;
+			}
+			GUILayout.Label("isStatic");
+			GUILayout.Label($"Instance ID: {gameObject.GetInstanceID()}");
+			GUILayout.Label($"Tag: {gameObject.tag}");
+			GUILayout.EndHorizontal();
+			GUILayout.BeginHorizontal();
+			GUILayout.Label("Layer:", GUILayout.ExpandWidth(false));
+			GUILayout.BeginVertical();
+			if (GUILayout.Button(_layers[gameObject.layer] ?? "Unknown", GUILayout.MaxWidth(150)))
+				_layersExpanded = !_layersExpanded;
+			if (_layersExpanded)
+			{
+				foreach (var layer in _layers)
+				{
+					if (layer.Key == gameObject.layer) continue;
+
+					if (GUILayout.Button(layer.Value, GUILayout.MaxWidth(150)))
+					{
+						gameObject.layer = layer.Key;
+						_layersExpanded = false;
+					}
+				}
+			}
+			GUILayout.EndVertical();
+			GUILayout.EndHorizontal();
+			GUILayout.Space(20);
+
+			GUILayout.Label("Transform", "LabelHeader");
+			GUILayout.Label("Step size (For -/+ buttons)");
+			float.TryParse(GUILayout.TextField(Mathf.Abs(_transformStepSize).ToString("F2"), GUILayout.MaxWidth(100)), out _transformStepSize);
+			GUILayout.Space(5);
+			GUILayoutExtensions.RenderTransform(transform, 100, _transformStepSize);
+			GUILayout.Space(20);
+
+			GUILayout.Label("Components", "LabelHeader");
+			foreach (Component component in gameObject.GetComponents<Component>())
+			{
+				string componentName = component.GetType().Name;
+				string[] ignoredComponents = new string[] { "Transform" };
+				if (ignoredComponents.Contains(componentName))
+					continue;
+
+				GUILayout.BeginHorizontal("box");
+				if (GUILayout.Button(componentName))
+				{
+					_selected.trackedComponent = new TrackedComponent(component, gameObject.GetInstanceID(), sceneObject);
+					_configPosition = Vector2.zero;
+					UpdateMembers();
+					_expandedMembers.Clear();
+				}
+
+				if (GUILayout.Button("X", GUILayout.MaxWidth(30)))
+				{
+					UnityEngine.Object.Destroy(component);
+					break;
+				}
+				GUILayout.EndHorizontal();
+			}
+			GUILayout.EndScrollView();
+		}
+
+		/// <summary>
+		/// Render component configuration for the selected object and component.
+		/// </summary>
+		private void RenderComponentConfig()
+		{
+			Component component = _selected.trackedComponent.component;
+
+			_configPosition = GUILayout.BeginScrollView(_configPosition);
+			foreach (MemberInfo member in _componentMembers)
+			{
+				GUILayout.BeginVertical("box");
+				GUILayout.BeginHorizontal();
+				GUILayout.Label($"{member.Name}", "LabelSubHeader", GUILayout.ExpandWidth(false));
+				(object current, Type type) = _memberValuesCache[member];
+				if (type == null)
+					GUILayout.Label("NULL", "LabelLeft");
+				else
+					GUILayout.Label($"{GetAccessLevel(member)} {type.GetFriendlyName()}", "LabelLeft");
+				GUILayout.EndHorizontal();
+				if (current != null)
+				{
+					object next = null;
+					bool handled = false;
+
+					foreach (var (rendererType, renderer) in _renderers)
+					{
+						if (rendererType.IsInstanceOfType(current))
+						{
+							next = renderer(member, current);
+							if (next != null && !Equals(current, next))
+								SetValue(member, component, next);
+							handled = true;
+							break;
+						}
+					}
+
+					if (!handled && current is Component memberComponent)
+					{
+						if (GUILayout.Button($"Select", "ButtonSecondary", GUILayout.MaxWidth(100)))
+						{
+							try
+							{
+								GameObject gameObject = memberComponent.gameObject;
+								SceneObject sceneObj = GetSceneObjectFromGameObject(gameObject);
+								_selected.trackedSceneObject = new TrackedSceneObject(gameObject.GetInstanceID(), sceneObj);
+								_selected.trackedComponent = new TrackedComponent(memberComponent, gameObject.GetInstanceID(), sceneObj);
+								ScrollToObject();
+							}
+							catch
+							{
+								_selected.trackedSceneObject = null;
+								_selected.trackedComponent = new TrackedComponent(memberComponent);
+							}
+							_configPosition = Vector2.zero;
+							UpdateMembers();
+							_expandedMembers.Clear();
+						}
+						handled = true;
+					}
+
+					if (!handled)
+					{
+						GUILayout.Label($"Value: {current}");
+						GUILayout.Label("NOTE: This type doesn't currently support editing");
+					}
+				}
+				GUILayout.EndVertical();
+				GUILayout.Space(10);
+			}
+			GUILayout.EndScrollView();
+
+			GUILayout.FlexibleSpace();
+			GUILayout.BeginHorizontal("box");
+			GUILayout.BeginVertical();
+			GUILayout.BeginHorizontal();
+			if (_selected.trackedSceneObject != null)
+			{
+				if (GUILayout.Button("< Back to object", GUILayout.ExpandWidth(false)))
+				{
+					_selected.trackedComponent = null;
+					_configPosition = Vector2.zero;
+					_componentMembers.Clear();
+					_expandedMembers.Clear();
+				}
+				GUILayout.Space(5);
+			}
+			if (GUILayout.Button("Copy as JSON", GUILayout.ExpandWidth(false)))
+			{
+				CopyComponentToJson();
+				Notifications.SendSuccess("Success", "Copied component to clipboard");
+			}
+			GUILayout.FlexibleSpace();
+			if (GUILayout.Button("Refresh", GUILayout.ExpandWidth(false)))
+			{
+				UpdateMembers();
+			}
+			GUILayout.EndHorizontal();
+			GUILayout.FlexibleSpace();
+			_automaticComponentRefresh = GUILayout.Toggle(_automaticComponentRefresh, "Automatically refresh");
+			if (_automaticComponentRefresh)
+			{
+				GUILayout.BeginHorizontal();
+				GUILayout.Label("Refresh interval: ", GUILayout.ExpandWidth(false));
+				int.TryParse(GUILayout.TextField(_componentRefreshInterval.ToString(), GUILayout.ExpandWidth(false)), out int newInterval);
+				if (newInterval != _componentRefreshInterval)
+				{
+					_componentRefreshInterval = newInterval;
+					NextCacheUpdate = _componentRefreshInterval;
+				}
+				GUILayout.Label("s");
+				GUILayout.EndHorizontal();
+			}
+			TimeSpan elapsed = DateTime.Now - _lastComponentRefresh;
+			if (elapsed.TotalMinutes < 1)
+				GUILayout.Label($"Last refreshed {(int)elapsed.TotalSeconds} second(s) ago");
+			else
+				GUILayout.Label($"Last refreshed {(int)elapsed.TotalMinutes} minute(s) ago");
+			GUILayout.EndVertical();
+			GUILayout.EndHorizontal();
+			GUILayout.Space(5);
+		}
+
+		/// <summary>
+		/// Get all valid members for a given component.
+		/// </summary>
+		/// <param name="component">The component</param>
+		/// <returns>List of MemberInfo</returns>
+		private List<MemberInfo> GetMembers(Component component)
+		{
+			var members = new List<MemberInfo>();
+			var type = component.GetType();
+
+			const BindingFlags flags = BindingFlags.Instance | BindingFlags.Static |
+										BindingFlags.Public | BindingFlags.NonPublic;
+
+			foreach (var field in type.GetFields(flags))
+			{
+				if (!_excludedMembers.Contains(field.Name))
+					members.Add(field);
+			}
+
+			foreach (var prop in type.GetProperties(flags))
+			{
+				if (!_excludedMembers.Contains(prop.Name))
+					members.Add(prop);
+			}
+
+			return members;
+		}
+
+		/// <summary>
+		/// Get members for a tracked component.
+		/// </summary>
+		private void UpdateMembers()
+		{
+			if (_selected.trackedComponent == null) return;
+
+			_lastComponentRefresh = DateTime.Now;
+			_componentMembers = GetMembers(_selected.trackedComponent.component);
+			UpdateMemberValues();
+		}
+
+		/// <summary>
+		/// Update member values cache.
+		/// </summary>
+		private void UpdateMemberValues()
+		{
+			_memberValuesCache.Clear();
+			foreach (var member in _componentMembers)
+			{
+				try
+				{
+					object value = GetValue(member, _selected.trackedComponent.component);
+					Type type = value?.GetType();
+					_memberValuesCache[member] = (value, type);
+				}
+				catch (Exception ex)
+				{
+					Logger.Log($"Failed to get value for {member.Name}. Details: {ex}", Logger.LogLevel.Error);
+				}
+			}
+		}
+
+		/// <summary>
+		/// Wrapper around field/property GetValue().
+		/// </summary>
+		/// <param name="member">MemberInfo</param>
+		/// <param name="target">Object whose value will be returned</param>
+		/// <returns>Object value or null if member is invalid</returns>
+		private object GetValue(MemberInfo member, object target)
+		{
+			var field = member as FieldInfo;
+			if (field != null)
+				return field.GetValue(target);
+
+			var prop = member as PropertyInfo;
+			if (prop != null)
+				return prop.GetValue(target, null);
+
+			return null;
+		}
+
+		/// <summary>
+		/// Wrapper around field/property SetValue().
+		/// </summary>
+		/// <param name="member">MemberInfo</param>
+		/// <param name="target">Object whose value will be set</param>
+		/// <param name="value">Value to set</param>
+		private void SetValue(MemberInfo member, object target, object value)
+		{
+			try
+			{
+				var field = member as FieldInfo;
+				if (field != null)
+				{
+					field.SetValue(target, value);
+				}
+				else
+				{
+					var prop = member as PropertyInfo;
+					if (prop != null)
+					{
+						prop.SetValue(target, value, null);
+					}
+				}
+
+				UpdateMemberValues();
+			}
+			catch (Exception ex)
+			{
+				Logger.Log($"Failed to set {member.Name}. Details: {ex}", Logger.LogLevel.Warning);
+				Notifications.SendError("Save failed", $"Failed to set value for {member.Name}.");
+			}
+		}
+
+		/// <summary>
+		/// Check if member fields are expanded.
+		/// </summary>
+		/// <param name="member">MemberInfo to check</param>
+		/// <returns>True if member is expanded, otherwise false</returns>
+		private static bool IsMemberExpanded(MemberInfo member)
+		{
+			return _expandedMembers.Contains(member);
+		}
+
+		/// <summary>
+		/// Render button to expand member fields.
+		/// </summary>
+		/// <param name="member">MemberInfo to render expand button for</param>
+		private static void RenderMemberExpandButton(MemberInfo member)
+		{
+			bool expanded = IsMemberExpanded(member);
+			if (GUILayout.Button($"{(expanded ? "- Hide" : "+ Show")} fields", GUILayout.MaxWidth(100)))
+			{
+				if (expanded)
+					_expandedMembers.Remove(member);
+				else
+					_expandedMembers.Add(member);
+			}
+		}
+
+		/// <summary>
+		/// Get the access level for a given member.
+		/// </summary>
+		/// <param name="member">Member to get access level for</param>
+		/// <returns>Access level as a string or "unknown"</returns>
+		private string GetAccessLevel(MemberInfo member)
+		{
+			if (member is FieldInfo field)
+			{
+				if (field.IsPublic) return "public";
+				if (field.IsPrivate) return "private";
+				if (field.IsFamily) return "protected";
+				if (field.IsAssembly) return "internal";
+				if (field.IsFamilyOrAssembly) return "protected internal";
+				if (field.IsFamilyAndAssembly) return "private protected";
+			}
+			else if (member is PropertyInfo prop)
+			{
+				var getter = prop.GetGetMethod(true);
+				if (getter != null)
+				{
+					if (getter.IsPublic) return "public";
+					if (getter.IsPrivate) return "private";
+					if (getter.IsFamily) return "protected";
+					if (getter.IsAssembly) return "internal";
+					if (getter.IsFamilyOrAssembly) return "protected internal";
+					if (getter.IsFamilyAndAssembly) return "private protected";
+				}
+			}
+			return "unknown";
+		}
+
+		/// <summary>
+		/// Export a component as JSON to clipboard.
+		/// </summary>
+		private void CopyComponentToJson()
+		{
+			var exportDict = _memberValuesCache.ToDictionary(
+				kvp => kvp.Key.Name,
+				kvp => FormatValue(kvp.Value.Item1)
+			);
+
+			string json = JsonConvert.SerializeObject(exportDict, Formatting.Indented);
+			GUIUtility.systemCopyBuffer = json;
+		}
+
+		/// <summary>
+		/// Format component values to be JSON safe.
+		/// </summary>
+		/// <param name="value">Value to format</param>
+		/// <returns>JSON safe formatted value</returns>
+		private object FormatValue(object value)
+		{
+			if (value == null) return null;
+			try
+			{
+				if (value is UnityEngine.Object uo) return uo.name;
+			}
+			catch
+			{
+				return "unknown";
+			}
+
+			if (value is Vector3 v3)
+				return new { v3.x, v3.y, v3.z };
+
+			if (value is System.Collections.IEnumerable enumerable && !(value is string))
+				return enumerable.Cast<object>().Select(FormatValue).ToList();
+
+			if (value.GetType().IsPrimitive || value is string)
+				return value;
+
+			return value.ToString();
 		}
 	}
 }
