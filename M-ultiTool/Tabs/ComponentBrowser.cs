@@ -35,7 +35,16 @@ namespace MultiTool.Tabs
 		private List<SceneObject> _cachedObjects;
 		private List<SceneObject> _objects;
 		private Tracked _selected = new Tracked();
-		
+
+		// Hierarchy interaction.
+		private enum HierarchySelectionMode
+		{
+			Normal,
+			ChangeParent,
+		}
+		private HierarchySelectionMode _selectionMode = HierarchySelectionMode.Normal;
+		private GameObject _parentChangingObject;
+
 		// Pathing.
 		private HashSet<string> _expandedPaths = new HashSet<string>();
 		private HashSet<string> _searchExpandedPaths = new HashSet<string>();
@@ -155,6 +164,7 @@ namespace MultiTool.Tabs
 			// Reverse to set the list to oldest first.
 			_objects.Reverse();
 			_cachedObjects = _objects.ToList();
+			SearchAsync(_search);
 		}
 
 		private string GetConfigTitle()
@@ -164,6 +174,8 @@ namespace MultiTool.Tabs
 				title = _selected.trackedComponent.component.GetType().Name;
 			else if (_selected.trackedSceneObject?.sceneObject?.gameObject != null)
 				title = _selected.trackedSceneObject?.sceneObject?.gameObject?.name;
+			else if (_parentChangingObject != null)
+				title = _parentChangingObject.name;
 			return title;
 		}
 
@@ -377,7 +389,7 @@ namespace MultiTool.Tabs
 		/// </summary>
 		private void RefreshTracked()
 		{
-			if (_selected.trackedSceneObject != null && !_selected.trackedSceneObject.Refresh(_cachedObjects))
+			if (_selected.trackedSceneObject != null && !_selected.trackedSceneObject.Refresh(_cachedObjects) && _selectionMode == HierarchySelectionMode.Normal)
 				_selected.trackedSceneObject = null;
 
 			if (_selected.trackedComponent != null && !_selected.trackedComponent.Refresh(_cachedObjects))
@@ -397,174 +409,192 @@ namespace MultiTool.Tabs
 
 		public override void RenderTab(Rect dimensions)
 		{
-			if (_showHelpModal)
+			// Wrap the entire tab rendering in a try-catch to prevent
+			// tab crashing due to unstable data.
+			try
 			{
-				_helpModalRect = GUILayout.Window(0, _helpModalRect, RenderHelpWindow, "<size=24>Help</size>", "box");
-			}
-
-			_viewportHeight = dimensions.height - 20f;
-			GUILayout.BeginArea(dimensions);
-			GUILayout.BeginVertical();
-
-			if (_objects == null)
-			{
-				GUILayout.FlexibleSpace();
-				GUILayout.Label("Loading...", "LabelMessage");
-				GUILayout.FlexibleSpace();
-			}
-			else
-			{
-				GUILayout.BeginHorizontal("box");
-				if (GUILayout.Button("Refresh", GUILayout.MaxWidth(200)))
+				if (_showHelpModal)
 				{
-					_objects = null;
-					_cachedObjects = null;
-					DataFetcher.I.StartScan();
-					return;
+					_helpModalRect = GUILayout.Window(0, _helpModalRect, RenderHelpWindow, "<size=24>Help</size>", "box");
 				}
-				GUILayout.Space(10);
-				DateTime lastScan = DataFetcher.I.GetLastScanTime();
-				TimeSpan elapsed = DateTime.Now - lastScan;
-				if (elapsed.TotalMinutes < 1)
-					GUILayout.Label($"Last refreshed {(int)elapsed.TotalSeconds} second(s) ago");
-				else
-					GUILayout.Label($"Last refreshed {(int)elapsed.TotalMinutes} minute(s) ago");
-				GUILayout.FlexibleSpace();
+
+				_viewportHeight = dimensions.height - 20f;
+				GUILayout.BeginArea(dimensions);
 				GUILayout.BeginVertical();
-				GUILayout.BeginHorizontal();
-				GUILayout.Label("Search", GUILayout.MaxWidth(50));
-				string newSearch = GUILayout.TextField(_search, GUILayout.MaxWidth(300));
-				if (newSearch != _search)
+
+				if (_objects == null)
 				{
-					_search = newSearch;
-					SearchAsync(_search);
+					GUILayout.FlexibleSpace();
+					GUILayout.Label("Loading...", "LabelMessage");
+					GUILayout.FlexibleSpace();
 				}
-				GUILayout.Space(5);
-				if (GUILayout.Button($"{(_showSearchSettings ? "-" : "+")} Search settings", GUILayout.MaxWidth(200)))
-					_showSearchSettings = !_showSearchSettings;
-				GUILayout.Space(10);
-				if (GUILayout.Button("Help", GUILayout.MaxWidth(50)))
-					_showHelpModal = !_showHelpModal;
-				GUILayout.EndHorizontal();
-				if (_showSearchSettings)
-				{
-					GUILayout.Label("Search settings", "LabelSubHeader");
-
-					GUILayout.BeginHorizontal();
-					GUILayout.Label("Search depth", GUILayout.MaxWidth(100));
-					int.TryParse(GUILayout.TextField(_searchDepth.ToString(), GUILayout.MaxWidth(100)), out int searchDepth);
-					if (searchDepth != _searchDepth)
-					{
-						_searchDepth = searchDepth;
-						SearchAsync(_search);
-					}
-					if (GUILayout.Button("Set to infinite", GUILayout.MaxWidth(100)))
-					{
-						_searchDepth = -1;
-						SearchAsync(_search);
-					}
-					GUILayout.EndHorizontal();
-					GUILayout.Label("Depth of child objects to search, -1 for unlimited depth", GUILayout.MaxWidth(500));
-
-					bool shouldSearchInactive = GUILayout.Toggle(_searchInactive, "Search inactive objects");
-					if (shouldSearchInactive != _searchInactive)
-					{
-						_searchInactive = shouldSearchInactive;
-						SearchAsync(_search);
-					}
-
-					bool expandChildren = GUILayout.Toggle(_expandChildren, "Expand to show matching child objects");
-					if (expandChildren != _expandChildren)
-					{
-						_expandChildren = expandChildren;
-						SearchAsync(_search);
-					}
-
-					bool onlyShowMatchingObjects = GUILayout.Toggle(_onlyShowMatchingObjects, "Only show matching children");
-					if (onlyShowMatchingObjects != _onlyShowMatchingObjects)
-					{
-						_onlyShowMatchingObjects = onlyShowMatchingObjects;
-						SearchAsync(_search);
-					}
-					GUILayout.Label("With this unchecked, all children of a matching parent will show regardless of whether the child matches", GUILayout.MaxWidth(550));
-				}
-				GUILayout.EndVertical();
-				GUILayout.EndHorizontal();
-
-				if (_selected.trackedSceneObject != null || _bookmarks.Count > 0)
+				else
 				{
 					GUILayout.BeginHorizontal("box");
-					if (_selected.trackedSceneObject != null && GUILayout.Button("Scroll to selected", GUILayout.MaxWidth(200)))
-						ScrollToObject();
-
-					GUILayout.FlexibleSpace();
-
-					if (_bookmarks.Count > 0 && GUILayout.Button($"{(_isBookmarksExpanded ? "-" : "+")} Bookmarks", GUILayout.MaxWidth(200)))
-						_isBookmarksExpanded = !_isBookmarksExpanded;
-					GUILayout.EndHorizontal();
-				}
-
-				if (_isSearching)
-				{
-					GUILayout.FlexibleSpace();
-					GUILayout.Label("Searching...", "LabelMessage");
-					GUILayout.FlexibleSpace();
-				}
-				else
-				{
-					GUILayout.BeginHorizontal();
-					GUILayout.BeginVertical();
-					_position = GUILayout.BeginScrollView(_position);
-					RenderHierarchy(_cachedObjects);
-					GUILayout.EndScrollView();
-					GUILayout.EndVertical();
-
-					if (_isBookmarksExpanded)
+					if (GUILayout.Button("Refresh", GUILayout.MaxWidth(200)))
 					{
-						GUILayout.BeginVertical(GUILayout.MaxWidth(350));
+						_objects = null;
+						_cachedObjects = null;
+						DataFetcher.I.StartScan();
+						return;
+					}
+					GUILayout.Space(10);
+					DateTime lastScan = DataFetcher.I.GetLastScanTime();
+					TimeSpan elapsed = DateTime.Now - lastScan;
+					if (elapsed.TotalMinutes < 1)
+						GUILayout.Label($"Last refreshed {(int)elapsed.TotalSeconds} second(s) ago");
+					else
+						GUILayout.Label($"Last refreshed {(int)elapsed.TotalMinutes} minute(s) ago");
+					GUILayout.FlexibleSpace();
+					GUILayout.BeginVertical();
+					GUILayout.BeginHorizontal();
+					GUILayout.Label("Search", GUILayout.MaxWidth(50));
+					string newSearch = GUILayout.TextField(_search, GUILayout.MaxWidth(300));
+					if (newSearch != _search)
+					{
+						_search = newSearch;
+						SearchAsync(_search);
+					}
+					GUILayout.Space(5);
+					if (GUILayout.Button($"{(_showSearchSettings ? "-" : "+")} Search settings", GUILayout.MaxWidth(200)))
+						_showSearchSettings = !_showSearchSettings;
+					GUILayout.Space(10);
+					if (GUILayout.Button("Help", GUILayout.MaxWidth(50)))
+						_showHelpModal = !_showHelpModal;
+					GUILayout.EndHorizontal();
+					if (_showSearchSettings)
+					{
+						GUILayout.Label("Search settings", "LabelSubHeader");
+
 						GUILayout.BeginHorizontal();
-						GUILayout.FlexibleSpace();
-						GUILayout.Label("Bookmarks", "LabelSubHeader");
-						GUILayout.FlexibleSpace();
-						GUILayout.EndHorizontal();
-
-						_bookmarksPosition = GUILayout.BeginScrollView(_bookmarksPosition);
-						foreach (TrackedSceneObject bookmark in _bookmarks)
+						GUILayout.Label("Search depth", GUILayout.MaxWidth(100));
+						int.TryParse(GUILayout.TextField(_searchDepth.ToString(), GUILayout.MaxWidth(100)), out int searchDepth);
+						if (searchDepth != _searchDepth)
 						{
-							if (bookmark.sceneObject == null || bookmark.sceneObject.gameObject == null) continue;
+							_searchDepth = searchDepth;
+							SearchAsync(_search);
+						}
+						if (GUILayout.Button("Set to infinite", GUILayout.MaxWidth(100)))
+						{
+							_searchDepth = -1;
+							SearchAsync(_search);
+						}
+						GUILayout.EndHorizontal();
+						GUILayout.Label("Depth of child objects to search, -1 for unlimited depth", GUILayout.MaxWidth(500));
 
-							GUILayout.BeginHorizontal("box");
-							string name = "Unknown";
-							try
-							{
-								name = bookmark.sceneObject.gameObject.name;
-							}
-							catch { }
-							if (GUILayout.Button(name, "ButtonPrimaryTextLeft"))
-							{
-								_selected.trackedSceneObject = new TrackedSceneObject(bookmark.sceneObject.gameObject.GetInstanceID(), bookmark.sceneObject);
-								_selected.trackedComponent = null;
-								ScrollToObject(bookmark.sceneObject);
-							}
+						bool shouldSearchInactive = GUILayout.Toggle(_searchInactive, "Search inactive objects");
+						if (shouldSearchInactive != _searchInactive)
+						{
+							_searchInactive = shouldSearchInactive;
+							SearchAsync(_search);
+						}
 
-							if (GUILayout.Button("X", GUILayout.MaxWidth(30)))
-							{
-								_bookmarks.Remove(bookmark);
-								if (_bookmarks.Count == 0)
-									_isBookmarksExpanded = false;
-								break;
-							}
+						bool expandChildren = GUILayout.Toggle(_expandChildren, "Expand to show matching child objects");
+						if (expandChildren != _expandChildren)
+						{
+							_expandChildren = expandChildren;
+							SearchAsync(_search);
+						}
+
+						bool onlyShowMatchingObjects = GUILayout.Toggle(_onlyShowMatchingObjects, "Only show matching children");
+						if (onlyShowMatchingObjects != _onlyShowMatchingObjects)
+						{
+							_onlyShowMatchingObjects = onlyShowMatchingObjects;
+							SearchAsync(_search);
+						}
+						GUILayout.Label("With this unchecked, all children of a matching parent will show regardless of whether the child matches", GUILayout.MaxWidth(550));
+					}
+					GUILayout.EndVertical();
+					GUILayout.EndHorizontal();
+
+					if (_selected.trackedSceneObject != null || _bookmarks.Count > 0)
+					{
+						GUILayout.BeginHorizontal("box");
+						if (_selected.trackedSceneObject != null && GUILayout.Button("Scroll to selected", GUILayout.MaxWidth(200)))
+							ScrollToObject();
+
+						GUILayout.FlexibleSpace();
+
+						if (_bookmarks.Count > 0 && GUILayout.Button($"{(_isBookmarksExpanded ? "-" : "+")} Bookmarks", GUILayout.MaxWidth(200)))
+							_isBookmarksExpanded = !_isBookmarksExpanded;
+						GUILayout.EndHorizontal();
+					}
+
+					if (_isSearching)
+					{
+						GUILayout.FlexibleSpace();
+						GUILayout.Label("Searching...", "LabelMessage");
+						GUILayout.FlexibleSpace();
+					}
+					else
+					{
+						GUILayout.BeginHorizontal();
+						GUILayout.BeginVertical();
+						if (_selectionMode != HierarchySelectionMode.Normal)
+						{
+							GUILayout.BeginHorizontal();
+							string mode = "parent change mode";
+							GUILayout.Label($"Hierachy in {mode}", "LabelSubHeader", GUILayout.ExpandWidth(false));
+							if (GUILayout.Button("Cancel", GUILayout.ExpandWidth(false)))
+								_selectionMode = HierarchySelectionMode.Normal;
 							GUILayout.EndHorizontal();
 						}
+						_position = GUILayout.BeginScrollView(_position);
+						RenderHierarchy(_cachedObjects);
 						GUILayout.EndScrollView();
 						GUILayout.EndVertical();
-					}
-					GUILayout.EndHorizontal();
-				}
-			}
 
-			GUILayout.EndVertical();
-			GUILayout.EndArea();
+						if (_isBookmarksExpanded)
+						{
+							GUILayout.BeginVertical(GUILayout.MaxWidth(350));
+							GUILayout.BeginHorizontal();
+							GUILayout.FlexibleSpace();
+							GUILayout.Label("Bookmarks", "LabelSubHeader");
+							GUILayout.FlexibleSpace();
+							GUILayout.EndHorizontal();
+
+							_bookmarksPosition = GUILayout.BeginScrollView(_bookmarksPosition);
+							foreach (TrackedSceneObject bookmark in _bookmarks)
+							{
+								if (bookmark.sceneObject == null || bookmark.sceneObject.gameObject == null) continue;
+
+								GUILayout.BeginHorizontal("box");
+								string name = "Unknown";
+								try
+								{
+									name = bookmark.sceneObject.gameObject.name;
+								}
+								catch { }
+								if (GUILayout.Button(name, "ButtonPrimaryTextLeft"))
+								{
+									_selected.trackedSceneObject = new TrackedSceneObject(bookmark.sceneObject.gameObject.GetInstanceID(), bookmark.sceneObject);
+									_selected.trackedComponent = null;
+									ScrollToObject(bookmark.sceneObject);
+								}
+
+								if (GUILayout.Button("X", GUILayout.MaxWidth(30)))
+								{
+									_bookmarks.Remove(bookmark);
+									if (_bookmarks.Count == 0)
+										_isBookmarksExpanded = false;
+									break;
+								}
+								GUILayout.EndHorizontal();
+							}
+							GUILayout.EndScrollView();
+							GUILayout.EndVertical();
+						}
+						GUILayout.EndHorizontal();
+					}
+				}
+
+				GUILayout.EndVertical();
+				GUILayout.EndArea();
+			}
+			catch (Exception ex)
+			{
+				Logger.Log($"Error in component browser tab render. Details: {ex}", Logger.LogLevel.Error);
+			}
 		}
 
 		private void RenderHelpWindow(int windowID)
@@ -662,11 +692,19 @@ namespace MultiTool.Tabs
 				catch { }
 				if (GUILayout.Button(name, "ButtonPrimaryTextLeft"))
 				{
-					if (_selected.trackedSceneObject != null && _selected.trackedSceneObject?.sceneObject == obj)
-						_selected.trackedSceneObject = null;
-					else
-						_selected.trackedSceneObject = new TrackedSceneObject(obj.gameObject.GetInstanceID(), obj);
-					_selected.trackedComponent = null;
+					switch (_selectionMode)
+					{
+						case HierarchySelectionMode.Normal:
+							if (_selected.trackedSceneObject != null && _selected.trackedSceneObject?.sceneObject == obj)
+								_selected.trackedSceneObject = null;
+							else
+								_selected.trackedSceneObject = new TrackedSceneObject(obj.gameObject.GetInstanceID(), obj);
+							_selected.trackedComponent = null;
+							break;
+						case HierarchySelectionMode.ChangeParent:
+							ChangeParent(obj);
+							break;
+					}
 				}
 
 				if (GUILayout.Button(IsInBookmarks(obj) ? "★" : "☆", "ButtonSecondary", GUILayout.Width(35)))
@@ -842,24 +880,97 @@ namespace MultiTool.Tabs
 			}
 		}
 
+		/// <summary>
+		/// Change selected object parent.
+		/// </summary>
+		/// <param name="targetObj">New parent object</param>
+		private void ChangeParent(SceneObject targetObj)
+		{
+			GameObject targetGameObject = targetObj.gameObject;
+
+			if (_parentChangingObject == null) return;
+
+			// Can't parent to self.
+			if (targetGameObject == _parentChangingObject)
+			{
+				Notifications.SendWarning("Parent change", "You cannot set an object as its own parent.");
+				return;
+			}
+
+			// Can't parent to a descendant.
+			if (IsDescendantOf(targetGameObject.transform, _parentChangingObject.transform))
+			{
+				Notifications.SendWarning("Parent change", "You cannot make an object a child of its own descendant.");
+				return;
+			}
+
+			// Already the parent.
+			if (_parentChangingObject.transform.parent == targetGameObject.transform)
+			{
+				Notifications.SendWarning("Parent change", "This object is already a child of the selected parent.");
+				return;
+			}
+
+			_parentChangingObject.transform.SetParent(targetGameObject.transform);
+			_objects = null;
+			_cachedObjects = null;
+			DataFetcher.I.StartScan();
+			Notifications.SendSuccess("Parent change", $"'{_parentChangingObject.name}' is now a child of '{targetGameObject.name}'.");
+			_parentChangingObject = null;
+			_selectionMode = HierarchySelectionMode.Normal;
+		}
+
+		/// <summary>
+		/// Check if transform is a descendant of another transform.
+		/// </summary>
+		/// <param name="potentialParent">Parent transform</param>
+		/// <param name="potentialChild">Child transform</param>
+		/// <returns>True if child transform is a child of parent, otherwise false</returns>
+		private bool IsDescendantOf(Transform potentialParent, Transform potentialChild)
+		{
+			foreach (Transform child in potentialParent)
+			{
+				if (child == potentialChild)
+					return true;
+				if (IsDescendantOf(child, potentialChild))
+					return true;
+			}
+			return false;
+		}
+
 		public override void RenderConfigPane(Rect dimensions)
 		{
-			if (_selected.trackedSceneObject == null && _selected.trackedComponent == null) return;
+			// Wrap the entire config rendering in a try-catch to prevent
+			// tab crashing due to unstable data.
+			try
+			{
+				if (_selected?.trackedSceneObject == null && _selected?.trackedComponent == null) return;
 			
-			GUILayout.BeginArea(dimensions);
-			GUILayout.BeginHorizontal();
-			GUILayout.Space(5);
-			GUILayout.BeginVertical();
-			GUILayout.Space(10);
+				GUILayout.BeginArea(dimensions);
+				GUILayout.BeginHorizontal();
+				GUILayout.Space(5);
+				GUILayout.BeginVertical();
+				GUILayout.Space(10);
 
-			if (_selected.trackedComponent != null)
-				RenderComponentConfig();
-			else
-				RenderObjectConfig();
+				if (_selected.trackedComponent != null)
+					RenderComponentConfig();
+				else if (_selectionMode == HierarchySelectionMode.ChangeParent || _parentChangingObject != null)
+				{
+					GUILayout.Label("Changing parent", "LabelSubHeader");
+					if (GUILayout.Button("Cancel", GUILayout.ExpandWidth(false)))
+						_selectionMode = HierarchySelectionMode.Normal;
+				}
+				else
+					RenderObjectConfig();
 
-			GUILayout.EndVertical();
-			GUILayout.EndHorizontal();
-			GUILayout.EndArea();
+				GUILayout.EndVertical();
+				GUILayout.EndHorizontal();
+				GUILayout.EndArea();
+			}
+			catch (Exception ex)
+			{
+				Logger.Log($"Error in component browser config render. Details: {ex}", Logger.LogLevel.Error);
+			}
 		}
 
 		/// <summary>
@@ -887,6 +998,13 @@ namespace MultiTool.Tabs
 
 				gameObject.transform.position = position;
 				gameObject.transform.rotation = rotation;
+			}
+			GUILayout.Space(5);
+
+			if (GUILayout.Button("Change parent", GUILayout.ExpandWidth(false)))
+			{
+				_selectionMode = HierarchySelectionMode.ChangeParent;
+				_parentChangingObject = gameObject;
 			}
 			GUILayout.Space(5);
 
