@@ -72,6 +72,13 @@ namespace MultiTool.Tabs
 		private string _componentSearch = "";
 		private bool _isComponentSearching = false;
 		private CancellationTokenSource _componentSearchCts;
+		private enum SortMode
+		{
+			FieldOrder,
+			NameAscending,
+			NameDescending
+		}
+		private SortMode _componentSortMode = SortMode.FieldOrder;
 		private static readonly HashSet<string> _excludedMembers = new HashSet<string>
 		{
 			"useGUILayout",
@@ -982,7 +989,8 @@ namespace MultiTool.Tabs
 		{
 			Component component = _selected.trackedComponent.component;
 
-			GUILayout.BeginHorizontal("box");
+			GUILayout.BeginVertical("box");
+			GUILayout.BeginHorizontal();
 			GUILayout.Label("Search", GUILayout.ExpandWidth(false));
 			string newSearch = GUILayout.TextField(_componentSearch, GUILayout.MaxWidth(300));
 			if (newSearch != _componentSearch)
@@ -991,6 +999,20 @@ namespace MultiTool.Tabs
 				ComponentSearchAsync(_componentSearch);
 			}
 			GUILayout.EndHorizontal();
+			GUILayout.BeginHorizontal();
+			if (GUILayout.Button($"Sort by {GetSortName(_componentSortMode)}", GUILayout.ExpandWidth(false)))
+			{
+				_componentSortMode = (SortMode)(((int)_componentSortMode + 1) % Enum.GetValues(typeof(SortMode)).Length);
+				ComponentSearchAsync(_componentSearch);
+			}
+			GUILayout.Space(5);
+			if (GUILayout.Button("Copy as JSON", GUILayout.ExpandWidth(false)))
+			{
+				CopyComponentToJson();
+				Notifications.SendSuccess("Success", "Copied component to clipboard");
+			}
+			GUILayout.EndHorizontal();
+			GUILayout.EndVertical();
 			GUILayout.Space(5);
 
 			if (_isComponentSearching)
@@ -1080,12 +1102,6 @@ namespace MultiTool.Tabs
 					_cachedComponentMembers.Clear();
 					_expandedMembers.Clear();
 				}
-				GUILayout.Space(5);
-			}
-			if (GUILayout.Button("Copy as JSON", GUILayout.ExpandWidth(false)))
-			{
-				CopyComponentToJson();
-				Notifications.SendSuccess("Success", "Copied component to clipboard");
 			}
 			GUILayout.FlexibleSpace();
 			if (GUILayout.Button("Refresh", GUILayout.ExpandWidth(false)))
@@ -1199,8 +1215,11 @@ namespace MultiTool.Tabs
 				{
 					var result = await Task.Run(() => ComponentSearch(_cachedComponentMembers, query, token), token);
 					if (!token.IsCancellationRequested)
+					{
 						_cachedComponentMembers = result;
+					}
 				}
+				SortMembers();
 				_position = Vector2.zero;
 			}
 			catch (OperationCanceledException)
@@ -1232,6 +1251,46 @@ namespace MultiTool.Tabs
 			}
 
 			return results;
+		}
+
+		/// <summary>
+		/// Sort component members cache.
+		/// </summary>
+		private void SortMembers()
+		{
+			switch (_componentSortMode)
+			{
+				case SortMode.NameAscending:
+					_cachedComponentMembers = _cachedComponentMembers
+						.OrderBy(m => m.Name, StringComparer.OrdinalIgnoreCase).ToList();
+					break;
+				case SortMode.NameDescending:
+					_cachedComponentMembers = _cachedComponentMembers
+						.OrderByDescending(m => m.Name, StringComparer.OrdinalIgnoreCase).ToList();
+					break;
+				case SortMode.FieldOrder:
+				default:
+					// No sort needed, result already matches field order from _componentMembers.
+					break;
+			}
+		}
+
+		/// <summary>
+		/// Get pretty name for sort mode.
+		/// </summary>
+		/// <param name="mode">Sort mode</param>
+		/// <returns>Prettified sort mode</returns>
+		private string GetSortName(SortMode mode)
+		{
+			switch (_componentSortMode)
+			{
+				case SortMode.NameAscending:
+					return "Name ascending";
+				case SortMode.NameDescending:
+					return "Name descending";
+			}
+
+			return "Field order";
 		}
 
 		/// <summary>
