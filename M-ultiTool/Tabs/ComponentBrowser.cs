@@ -44,6 +44,7 @@ namespace MultiTool.Tabs
 		}
 		private HierarchySelectionMode _selectionMode = HierarchySelectionMode.Normal;
 		private GameObject _parentChangingObject;
+		private GameObject _createdGameObject;
 
 		// Pathing.
 		private HashSet<string> _expandedPaths = new HashSet<string>();
@@ -165,6 +166,15 @@ namespace MultiTool.Tabs
 			_objects.Reverse();
 			_cachedObjects = _objects.ToList();
 			SearchAsync(_search);
+
+			// Support for scrolling to newly created objects.
+			if (_createdGameObject != null)
+			{
+				SceneObject createdSceneObject = GetSceneObjectFromGameObject(_createdGameObject);
+				_selected.trackedSceneObject = new TrackedSceneObject(_createdGameObject.GetInstanceID(), createdSceneObject);
+				_selected.trackedComponent = null;
+				ScrollToObject();
+			}
 		}
 
 		private string GetConfigTitle()
@@ -433,9 +443,7 @@ namespace MultiTool.Tabs
 					GUILayout.BeginHorizontal("box");
 					if (GUILayout.Button("Refresh", GUILayout.MaxWidth(200)))
 					{
-						_objects = null;
-						_cachedObjects = null;
-						DataFetcher.I.StartScan();
+						RefreshData();
 						return;
 					}
 					GUILayout.Space(10);
@@ -507,18 +515,20 @@ namespace MultiTool.Tabs
 					GUILayout.EndVertical();
 					GUILayout.EndHorizontal();
 
-					if (_selected.trackedSceneObject != null || _bookmarks.Count > 0)
+					GUILayout.BeginHorizontal("box");
+					if (_selected.trackedSceneObject != null && GUILayout.Button("Scroll to selected", GUILayout.ExpandWidth(false)))
+						ScrollToObject();
+
+					if (GUILayout.Button("Create new object", GUILayout.ExpandWidth(false)))
 					{
-						GUILayout.BeginHorizontal("box");
-						if (_selected.trackedSceneObject != null && GUILayout.Button("Scroll to selected", GUILayout.MaxWidth(200)))
-							ScrollToObject();
-
-						GUILayout.FlexibleSpace();
-
-						if (_bookmarks.Count > 0 && GUILayout.Button($"{(_isBookmarksExpanded ? "-" : "+")} Bookmarks", GUILayout.MaxWidth(200)))
-							_isBookmarksExpanded = !_isBookmarksExpanded;
-						GUILayout.EndHorizontal();
+						_createdGameObject = new GameObject("New GameObject");
+						RefreshData();
 					}
+					GUILayout.FlexibleSpace();
+
+					if (_bookmarks.Count > 0 && GUILayout.Button($"{(_isBookmarksExpanded ? "-" : "+")} Bookmarks", GUILayout.ExpandWidth(false)))
+						_isBookmarksExpanded = !_isBookmarksExpanded;
+					GUILayout.EndHorizontal();
 
 					if (_isSearching)
 					{
@@ -723,6 +733,16 @@ namespace MultiTool.Tabs
 		}
 
 		/// <summary>
+		/// Refresh hierarchy data.
+		/// </summary>
+		private void RefreshData()
+		{
+			_objects = null;
+			_cachedObjects = null;
+			DataFetcher.I.StartScan();
+		}
+
+		/// <summary>
 		/// Expand a given object in the hierarchy.
 		/// </summary>
 		/// <param name="obj">Object to expand</param>
@@ -912,9 +932,7 @@ namespace MultiTool.Tabs
 			}
 
 			_parentChangingObject.transform.SetParent(targetGameObject.transform);
-			_objects = null;
-			_cachedObjects = null;
-			DataFetcher.I.StartScan();
+			RefreshData();
 			Notifications.SendSuccess("Parent change", $"'{_parentChangingObject.name}' is now a child of '{targetGameObject.name}'.");
 			_parentChangingObject = null;
 			_selectionMode = HierarchySelectionMode.Normal;
@@ -987,11 +1005,11 @@ namespace MultiTool.Tabs
 
 			GUILayout.Label("Actions", "LabelHeader");
 			GUILayout.BeginHorizontal();
-			if (GUILayout.Button("Teleport to", GUILayout.MaxWidth(100)))
+			if (GUILayout.Button("Teleport to", GUILayout.ExpandWidth(false)))
 				GameUtilities.TeleportPlayerWithParent(gameObject.transform.position + Vector3.up * 2f);
 			GUILayout.Space(5);
 
-			if (GUILayout.Button("Teleport here", GUILayout.MaxWidth(100)))
+			if (GUILayout.Button("Teleport here", GUILayout.ExpandWidth(false)))
 			{
 				Vector3 position = mainscript.M.player.lookPoint + Vector3.up * 0.75f;
 				Quaternion rotation = Quaternion.FromToRotation(Vector3.forward, -mainscript.M.player.mainCam.transform.right);
@@ -999,7 +1017,8 @@ namespace MultiTool.Tabs
 				gameObject.transform.position = position;
 				gameObject.transform.rotation = rotation;
 			}
-			GUILayout.Space(5);
+			GUILayout.EndHorizontal();
+			GUILayout.BeginHorizontal();
 
 			if (GUILayout.Button("Change parent", GUILayout.ExpandWidth(false)))
 			{
@@ -1008,7 +1027,15 @@ namespace MultiTool.Tabs
 			}
 			GUILayout.Space(5);
 
-			if (GUILayout.Button("Delete", "ButtonSecondary", GUILayout.MaxWidth(100)))
+			if (GUILayout.Button("Duplicate", GUILayout.ExpandWidth(false)))
+			{
+				GameObject clone = GameObject.Instantiate(gameObject);
+				clone.transform.parent = gameObject.transform.parent;
+				RefreshData();
+			}
+			GUILayout.Space(5);
+
+			if (GUILayout.Button("Delete", "ButtonSecondary", GUILayout.ExpandWidth(false)))
 			{
 				tosaveitemscript save = gameObject.GetComponent<tosaveitemscript>();
 				if (save != null)
@@ -1021,7 +1048,8 @@ namespace MultiTool.Tabs
 					}
 				}
 				UnityEngine.Object.Destroy(gameObject);
-				_selected = null;
+				_selected.trackedSceneObject = null;
+				_selected.trackedComponent = null;
 			}
 			GUILayout.EndHorizontal();
 			GUILayout.Space(20);
@@ -1074,7 +1102,9 @@ namespace MultiTool.Tabs
 			GUILayout.Space(20);
 
 			GUILayout.Label("Components", "LabelHeader");
-			foreach (Component component in gameObject.GetComponents<Component>())
+			Component[] components = gameObject.GetComponents<Component>();
+			int rendered = 0;
+			foreach (Component component in components)
 			{
 				string componentName = component.GetType().Name;
 				string[] ignoredComponents = new string[] { "Transform" };
@@ -1096,6 +1126,11 @@ namespace MultiTool.Tabs
 					break;
 				}
 				GUILayout.EndHorizontal();
+				rendered++;
+			}
+			if (rendered == 0)
+			{
+				GUILayout.Label("No components");
 			}
 			GUILayout.EndScrollView();
 		}
