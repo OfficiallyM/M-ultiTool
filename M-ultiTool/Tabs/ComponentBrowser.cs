@@ -518,14 +518,16 @@ namespace MultiTool.Tabs
 					GUILayout.EndHorizontal();
 
 					GUILayout.BeginHorizontal("box");
-					if (_selected.trackedSceneObject != null && GUILayout.Button("Scroll to selected", GUILayout.ExpandWidth(false)))
-						ScrollToObject();
-
 					if (GUILayout.Button("Create new object", GUILayout.ExpandWidth(false)))
 					{
 						_createdGameObject = new GameObject("New GameObject");
 						RefreshData();
 					}
+					GUILayout.Space(5);
+
+					if (_selected.trackedSceneObject != null && GUILayout.Button("Scroll to selected", GUILayout.ExpandWidth(false)))
+						ScrollToObject();
+
 					GUILayout.FlexibleSpace();
 
 					if (_bookmarks.Count > 0 && GUILayout.Button($"{(_isBookmarksExpanded ? "-" : "+")} Bookmarks", GUILayout.ExpandWidth(false)))
