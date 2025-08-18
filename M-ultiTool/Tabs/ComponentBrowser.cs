@@ -89,6 +89,8 @@ namespace MultiTool.Tabs
 			NameDescending
 		}
 		private SortMode _componentSortMode = SortMode.FieldOrder;
+		private string _addComponentSearch;
+		private List<Type> _addComponentSuggestions = new List<Type>();
 		private static readonly HashSet<string> _excludedMembers = new HashSet<string>
 		{
 			"useGUILayout",
@@ -1102,6 +1104,40 @@ namespace MultiTool.Tabs
 			GUILayout.Space(20);
 
 			GUILayout.Label("Components", "LabelHeader");
+
+			GUILayout.BeginVertical("box");
+			GUILayout.Label("Add new component", "LabelSubHeader");
+			string newSearch = GUILayout.TextField(_addComponentSearch, GUILayout.MaxWidth(300));
+			if (newSearch != _addComponentSearch)
+			{
+				_addComponentSearch = newSearch;
+				UpdateComponentSuggestions();
+			}
+
+			if (_addComponentSuggestions.Count > 0)
+			{
+				foreach (var type in _addComponentSuggestions.Take(10))
+				{
+					if (GUILayout.Button(type.FullName))
+					{
+						try
+						{
+							gameObject.AddComponent(type);
+							Notifications.SendSuccess("Component added", $"{type.Name} added successfully.");
+							_addComponentSearch = "";
+							_addComponentSuggestions.Clear();
+						}
+						catch (Exception ex)
+						{
+							Notifications.SendError("Error", $"Failed to add component {type.Name}");
+							Logger.Log($"Failed to add component {type.Name}. Details: {ex}", Logger.LogLevel.Error);
+						}
+					}
+				}
+			}
+			GUILayout.EndVertical();
+
+			GUILayout.Label("Current components", "LabelSubHeader");
 			Component[] components = gameObject.GetComponents<Component>();
 			int rendered = 0;
 			foreach (Component component in components)
@@ -1132,6 +1168,7 @@ namespace MultiTool.Tabs
 			{
 				GUILayout.Label("No components");
 			}
+
 			GUILayout.EndScrollView();
 		}
 
@@ -1597,6 +1634,24 @@ namespace MultiTool.Tabs
 				return value;
 
 			return value.ToString();
+		}
+
+		/// <summary>
+		/// Update the component autocomplete from search query.
+		/// </summary>
+		private void UpdateComponentSuggestions()
+		{
+			if (string.IsNullOrWhiteSpace(_addComponentSearch))
+			{
+				_addComponentSuggestions.Clear();
+				return;
+			}
+
+			string query = _addComponentSearch.ToLowerInvariant();
+			_addComponentSuggestions = DataUtilities.AllComponentTypes
+				.Where(t => t.Name.ToLowerInvariant().Contains(query))
+				.OrderBy(t => t.Name)
+				.ToList();
 		}
 	}
 }
