@@ -1,4 +1,6 @@
-﻿using UnityEngine;
+﻿using System;
+using System.Collections.Generic;
+using UnityEngine;
 
 namespace MultiTool.Extensions
 {
@@ -31,6 +33,70 @@ namespace MultiTool.Extensions
 				if (max.HasValue) parsed = Mathf.Min(max.Value, parsed);
 				return parsed;
 			}
+
+			return value;
+		}
+
+		/// <summary>
+		/// Renders two float input fields.
+		/// </summary>
+		/// <param name="value">The current Vector2 value</param>
+		/// <param name="label">Optional label to display above the fields</param>
+		/// <param name="maxWidth">Optional maximum width for each axis field</param>
+		/// <param name="stepSize">Optional step size for -/+ buttons. If null, those buttons won't render</param>
+		/// <returns>Vector2</returns>
+		public static Vector2 Vector2Field(Vector2 value, string label = null, float? maxWidth = null, float? stepSize = null)
+		{
+			GUILayout.BeginVertical();
+
+			GUILayout.BeginHorizontal();
+			if (!string.IsNullOrEmpty(label))
+			{
+				GUILayout.Label(label, GUILayout.ExpandWidth(false));
+				GUILayout.Space(5);
+			}
+
+			if (GUILayout.Button("Copy", GUILayout.ExpandWidth(false)))
+				GUIUtility.systemCopyBuffer = $"{value.x}, {value.y}";
+
+			if (GUILayout.Button("Paste", GUILayout.ExpandWidth(false)))
+			{
+				var parts = GUIUtility.systemCopyBuffer.Split(',');
+				if (parts.Length == 2 && float.TryParse(parts[0], out var x) && float.TryParse(parts[1], out var y))
+					value = new Vector2(x, y);
+			}
+			GUILayout.EndHorizontal();
+
+			GUILayout.BeginHorizontal();
+
+			GUILayout.BeginVertical();
+			value.x = FloatField(value.x, "X", maxWidth);
+			if (stepSize != null)
+			{
+				GUILayout.BeginHorizontal(maxWidth != null ? GUILayout.MaxWidth(maxWidth.Value) : GUILayout.ExpandWidth(true));
+				if (GUILayout.Button("-", GUILayout.MaxWidth(30)))
+					value.x -= stepSize.Value;
+				if (GUILayout.Button("+", GUILayout.MaxWidth(30)))
+					value.x += stepSize.Value;
+				GUILayout.EndHorizontal();
+			}
+			GUILayout.EndVertical();
+
+			GUILayout.BeginVertical();
+			value.y = FloatField(value.y, "Y", maxWidth);
+			if (stepSize != null)
+			{
+				GUILayout.BeginHorizontal(maxWidth != null ? GUILayout.MaxWidth(maxWidth.Value) : GUILayout.ExpandWidth(true));
+				if (GUILayout.Button("-", GUILayout.MaxWidth(30)))
+					value.y -= stepSize.Value;
+				if (GUILayout.Button("+", GUILayout.MaxWidth(30)))
+					value.y += stepSize.Value;
+				GUILayout.EndHorizontal();
+			}
+			GUILayout.EndVertical();
+
+			GUILayout.EndHorizontal();
+			GUILayout.EndVertical();
 
 			return value;
 		}
@@ -113,6 +179,186 @@ namespace MultiTool.Extensions
 		/// <summary>
 		/// Renders four float input fields.
 		/// </summary>
+		/// <param name="value">The current Vector4 value</param>
+		/// <param name="label">Optional label to display above the fields</param>
+		/// <param name="maxWidth">Optional maximum width for each axis field</param>
+		/// <param name="stepSize">Optional step size for -/+ buttons. If null, those buttons won't render</param>
+		/// <returns>Vector4</returns>
+		public static Vector4 Vector4Field(Vector4 value, string label = null, float? maxWidth = null, float? stepSize = null)
+		{
+			GUILayout.BeginVertical();
+
+			GUILayout.BeginHorizontal();
+			if (!string.IsNullOrEmpty(label))
+			{
+				GUILayout.Label(label, GUILayout.ExpandWidth(false));
+				GUILayout.Space(5);
+			}
+
+			if (GUILayout.Button("Copy", GUILayout.ExpandWidth(false)))
+				GUIUtility.systemCopyBuffer = $"{value.x}, {value.y}, {value.z}, {value.w}";
+
+			if (GUILayout.Button("Paste", GUILayout.ExpandWidth(false)))
+			{
+				var parts = GUIUtility.systemCopyBuffer.Split(',');
+				if (parts.Length == 4 && float.TryParse(parts[0], out var x) && float.TryParse(parts[1], out var y) && float.TryParse(parts[2], out var z) && float.TryParse(parts[3], out var w))
+					value = new Vector4(x, y, z, w);
+			}
+			GUILayout.EndHorizontal();
+
+			GUILayout.BeginHorizontal();
+
+			GUILayout.BeginVertical();
+			value.x = FloatField(value.x, "X", maxWidth);
+			if (stepSize != null)
+			{
+				GUILayout.BeginHorizontal(maxWidth != null ? GUILayout.MaxWidth(maxWidth.Value) : GUILayout.ExpandWidth(true));
+				if (GUILayout.Button("-", GUILayout.MaxWidth(30)))
+					value.x -= stepSize.Value;
+				if (GUILayout.Button("+", GUILayout.MaxWidth(30)))
+					value.x += stepSize.Value;
+				GUILayout.EndHorizontal();
+			}
+			GUILayout.EndVertical();
+
+			GUILayout.BeginVertical();
+			value.y = FloatField(value.y, "Y", maxWidth);
+			if (stepSize != null)
+			{
+				GUILayout.BeginHorizontal(maxWidth != null ? GUILayout.MaxWidth(maxWidth.Value) : GUILayout.ExpandWidth(true));
+				if (GUILayout.Button("-", GUILayout.MaxWidth(30)))
+					value.y -= stepSize.Value;
+				if (GUILayout.Button("+", GUILayout.MaxWidth(30)))
+					value.y += stepSize.Value;
+				GUILayout.EndHorizontal();
+			}
+			GUILayout.EndVertical();
+
+			GUILayout.BeginVertical();
+			value.z = FloatField(value.z, "Z", maxWidth);
+			if (stepSize != null)
+			{
+				GUILayout.BeginHorizontal(maxWidth != null ? GUILayout.MaxWidth(maxWidth.Value) : GUILayout.ExpandWidth(true));
+				if (GUILayout.Button("-", GUILayout.MaxWidth(30)))
+					value.z -= stepSize.Value;
+				if (GUILayout.Button("+", GUILayout.MaxWidth(30)))
+					value.z += stepSize.Value;
+				GUILayout.EndHorizontal();
+			}
+			GUILayout.EndVertical();
+
+			GUILayout.BeginVertical();
+			value.w = FloatField(value.w, "W", maxWidth);
+			if (stepSize != null)
+			{
+				GUILayout.BeginHorizontal(maxWidth != null ? GUILayout.MaxWidth(maxWidth.Value) : GUILayout.ExpandWidth(true));
+				if (GUILayout.Button("-", GUILayout.MaxWidth(30)))
+					value.w -= stepSize.Value;
+				if (GUILayout.Button("+", GUILayout.MaxWidth(30)))
+					value.w += stepSize.Value;
+				GUILayout.EndHorizontal();
+			}
+			GUILayout.EndVertical();
+
+			GUILayout.EndHorizontal();
+			GUILayout.EndVertical();
+
+			return value;
+		}
+
+		/// <summary>
+		/// Renders four float input fields for a Quaternion.
+		/// </summary>
+		/// <param name="value">The current Quaternion value</param>
+		/// <param name="label">Optional label to display above the fields</param>
+		/// <param name="maxWidth">Optional maximum width for each axis field</param>
+		/// <param name="stepSize">Optional step size for -/+ buttons. If null, those buttons won't render</param>
+		/// <returns>Quaternion</returns>
+		public static Quaternion QuaternionField(Quaternion value, string label = null, float? maxWidth = null, float? stepSize = null)
+		{
+			GUILayout.BeginVertical();
+
+			GUILayout.BeginHorizontal();
+			if (!string.IsNullOrEmpty(label))
+			{
+				GUILayout.Label(label, GUILayout.ExpandWidth(false));
+				GUILayout.Space(5);
+			}
+
+			if (GUILayout.Button("Copy", GUILayout.ExpandWidth(false)))
+				GUIUtility.systemCopyBuffer = $"{value.x}, {value.y}, {value.z}, {value.w}";
+
+			if (GUILayout.Button("Paste", GUILayout.ExpandWidth(false)))
+			{
+				var parts = GUIUtility.systemCopyBuffer.Split(',');
+				if (parts.Length == 4 && float.TryParse(parts[0], out var x) && float.TryParse(parts[1], out var y) && float.TryParse(parts[2], out var z) && float.TryParse(parts[3], out var w))
+					value = new Quaternion(x, y, z, w);
+			}
+			GUILayout.EndHorizontal();
+
+			GUILayout.BeginHorizontal();
+
+			GUILayout.BeginVertical();
+			value.x = FloatField(value.x, "X", maxWidth);
+			if (stepSize != null)
+			{
+				GUILayout.BeginHorizontal(maxWidth != null ? GUILayout.MaxWidth(maxWidth.Value) : GUILayout.ExpandWidth(true));
+				if (GUILayout.Button("-", GUILayout.MaxWidth(30)))
+					value.x -= stepSize.Value;
+				if (GUILayout.Button("+", GUILayout.MaxWidth(30)))
+					value.x += stepSize.Value;
+				GUILayout.EndHorizontal();
+			}
+			GUILayout.EndVertical();
+
+			GUILayout.BeginVertical();
+			value.y = FloatField(value.y, "Y", maxWidth);
+			if (stepSize != null)
+			{
+				GUILayout.BeginHorizontal(maxWidth != null ? GUILayout.MaxWidth(maxWidth.Value) : GUILayout.ExpandWidth(true));
+				if (GUILayout.Button("-", GUILayout.MaxWidth(30)))
+					value.y -= stepSize.Value;
+				if (GUILayout.Button("+", GUILayout.MaxWidth(30)))
+					value.y += stepSize.Value;
+				GUILayout.EndHorizontal();
+			}
+			GUILayout.EndVertical();
+
+			GUILayout.BeginVertical();
+			value.z = FloatField(value.z, "Z", maxWidth);
+			if (stepSize != null)
+			{
+				GUILayout.BeginHorizontal(maxWidth != null ? GUILayout.MaxWidth(maxWidth.Value) : GUILayout.ExpandWidth(true));
+				if (GUILayout.Button("-", GUILayout.MaxWidth(30)))
+					value.z -= stepSize.Value;
+				if (GUILayout.Button("+", GUILayout.MaxWidth(30)))
+					value.z += stepSize.Value;
+				GUILayout.EndHorizontal();
+			}
+			GUILayout.EndVertical();
+
+			GUILayout.BeginVertical();
+			value.w = FloatField(value.w, "W", maxWidth);
+			if (stepSize != null)
+			{
+				GUILayout.BeginHorizontal(maxWidth != null ? GUILayout.MaxWidth(maxWidth.Value) : GUILayout.ExpandWidth(true));
+				if (GUILayout.Button("-", GUILayout.MaxWidth(30)))
+					value.w -= stepSize.Value;
+				if (GUILayout.Button("+", GUILayout.MaxWidth(30)))
+					value.w += stepSize.Value;
+				GUILayout.EndHorizontal();
+			}
+			GUILayout.EndVertical();
+
+			GUILayout.EndHorizontal();
+			GUILayout.EndVertical();
+
+			return value;
+		}
+
+		/// <summary>
+		/// Renders four float input fields.
+		/// </summary>
 		/// <param name="value">The current color value</param>
 		/// <param name="label">Optional label to display above the fields</param>
 		/// <param name="maxWidth">Optional maximum width for each axis field</param>
@@ -169,6 +415,35 @@ namespace MultiTool.Extensions
 			GUILayout.Space(5);
 			transform.localScale = Vector3Field(transform.localScale, "Scale", maxWidth, stepSize);
 			return transform;
+		}
+
+		/// <summary>
+		/// Renders an enum field as a set of buttons.
+		/// </summary>
+		/// <param name="value">Current enum value</param>
+		/// <param name="label">Optional label above the buttons</param>
+		/// <returns>New enum value</returns>
+		public static Enum EnumField(Enum value, string label = null)
+		{
+			GUILayout.BeginVertical();
+
+			if (!string.IsNullOrEmpty(label))
+				GUILayout.Label(label, GUILayout.ExpandWidth(false));
+
+			var values = Enum.GetValues(value.GetType());
+
+			foreach (Enum option in values)
+			{
+				bool isSelected = value.Equals(option);
+				if (GUILayout.Toggle(isSelected, option.ToString()))
+				{
+					value = option;
+				}
+			}
+
+			GUILayout.EndVertical();
+
+			return value;
 		}
 	}
 }

@@ -116,10 +116,34 @@ namespace MultiTool.Tabs
 					return GUILayoutExtensions.ColorField((Color)obj);
 				return obj;
 			}),
+			(typeof(Vector2), (member, obj) => {
+				RenderMemberExpandButton(member);
+				if (IsMemberExpanded(member))
+					return GUILayoutExtensions.Vector2Field((Vector2)obj);
+				return obj;
+			}),
 			(typeof(Vector3), (member, obj) => {
 				RenderMemberExpandButton(member);
 				if (IsMemberExpanded(member))
 					return GUILayoutExtensions.Vector3Field((Vector3)obj);
+				return obj;
+			}),
+			(typeof(Vector4), (member, obj) => {
+				RenderMemberExpandButton(member);
+				if (IsMemberExpanded(member))
+					return GUILayoutExtensions.Vector4Field((Vector4)obj);
+				return obj;
+			}),
+			(typeof(Quaternion), (member, obj) => {
+				RenderMemberExpandButton(member);
+				if (IsMemberExpanded(member))
+					return GUILayoutExtensions.QuaternionField((Quaternion)obj);
+				return obj;
+			}),
+			(typeof(Enum), (member, obj) => {
+				RenderMemberExpandButton(member);
+				if (IsMemberExpanded(member))
+					return GUILayoutExtensions.EnumField((Enum)obj);
 				return obj;
 			}),
 			(typeof(string), (member, obj) => GUILayout.TextField((string)obj)),
@@ -1270,7 +1294,10 @@ namespace MultiTool.Tabs
 
 						if (!handled)
 						{
-							GUILayout.Label($"Value: {current}");
+							if (current is UnityEngine.Object memberObject)
+								GUILayout.Label($"Name: {memberObject.name}");
+							else
+								GUILayout.Label($"Value: {current}");
 							GUILayout.Label("NOTE: This type doesn't currently support editing");
 						}
 					}
