@@ -1295,7 +1295,16 @@ namespace MultiTool.Tabs
 						if (!handled)
 						{
 							if (current is UnityEngine.Object memberObject)
-								GUILayout.Label($"Name: {memberObject.name}");
+							{
+								try
+								{
+									GUILayout.Label($"Name: {memberObject.name}");
+								}
+								catch
+								{
+									GUILayout.Label($"Value: {current}");
+								}
+							}
 							else
 								GUILayout.Label($"Value: {current}");
 							GUILayout.Label("NOTE: This type doesn't currently support editing");
