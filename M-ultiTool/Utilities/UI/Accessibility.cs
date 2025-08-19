@@ -90,7 +90,7 @@ namespace MultiTool.Utilities.UI
 		/// <param name="str">The string to translate</param>
 		/// <param name="state">The button state</param>
 		/// <returns>Accessibility mode translated string</returns>
-		public static string GetAccessibleString(string str, bool state)
+		public static string GetAccessibleString(string str, bool state, bool useAltColourless = false)
         {
             LoadFromConfig();
 
@@ -103,6 +103,8 @@ namespace MultiTool.Utilities.UI
                 case AccessibilityMode.Contrast:
                     return state ? $"<color=#{onColour}>{str}</color>" : str;
                 case AccessibilityMode.Colourless:
+					if (useAltColourless)
+						return state ? $"<size=18>> {str} <</size>" : str;
                     return state ? $"{str} ✔" : $"{str} ✖";
             }
 

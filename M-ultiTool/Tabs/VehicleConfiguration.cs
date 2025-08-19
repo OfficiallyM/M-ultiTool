@@ -87,7 +87,7 @@ namespace MultiTool.Tabs
 				if (tab.IsDisabled)
 					GUI.enabled = false;
 
-				if (GUILayout.Button(_tabs.GetActive() == tab.Id ? $"<color=#0F0>{tab.Name}</color>" : tab.Name, GUILayout.MinWidth(60), GUILayout.MaxHeight(30)))
+				if (GUILayout.Button(Accessibility.GetAccessibleString(tab.Name, _tabs.GetActive() == tab.Id, true), GUILayout.MinWidth(60), GUILayout.MaxHeight(30)))
 					_tabs.SetActive(tab.Id);
 
 				GUI.enabled = true;
