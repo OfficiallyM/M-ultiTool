@@ -79,7 +79,7 @@ namespace MultiTool.Tabs
 
 			if (GUILayout.Button("Create new theme", "ButtonSecondary", GUILayout.MaxWidth(200)))
 			{
-				GUIRenderer.Tabs.SetActive(MultiTool.Renderer.themeTabId);
+				GUIRenderer.Tabs.SetActive(MultiTool.Renderer.themeTabId, false);
 			}
 
 			GUILayout.Space(10);
