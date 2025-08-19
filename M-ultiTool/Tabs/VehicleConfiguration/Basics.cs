@@ -27,11 +27,19 @@ namespace MultiTool.Tabs.VehicleConfiguration
 			carscript car = mainscript.M.player.Car;
 			partconditionscript partconditionscript = car.gameObject.GetComponent<partconditionscript>();
 
-			// Vehicle god mode.
+			GUILayout.BeginHorizontal();
 			if (GUILayout.Button(Accessibility.GetAccessibleString("Vehicle god mode", car.crashMultiplier <= 0.0), GUILayout.MaxWidth(200)))
 			{
 				car.crashMultiplier *= -1f;
 			}
+			GUILayout.Space(10);
+
+			if (GUILayout.Button("Flip vehicle", GUILayout.MaxWidth(200)))
+			{
+				car.transform.rotation = Quaternion.Euler(0, car.transform.rotation.eulerAngles.y, 0);
+			}
+			GUILayout.EndHorizontal();
+			GUILayout.Space(10);
 
 			// Toggle slot mover.
 			if (GUILayout.Button(Accessibility.GetAccessibleString("Toggle slot mover", _settings.mode == "slotControl"), GUILayout.MaxWidth(200)))
@@ -85,7 +93,7 @@ namespace MultiTool.Tabs.VehicleConfiguration
 			{
 				GameUtilities.Paint(Colour.GetColour(), partconditionscript);
 			}
-			GUILayout.EndHorizontal();
+			GUILayout.EndHorizontal();			
 
 			GUILayout.EndScrollView();
             GUILayout.EndVertical();
