@@ -1013,6 +1013,12 @@ namespace MultiTool.Tabs
 				GUILayout.EndHorizontal();
 				GUILayout.EndArea();
 			}
+			catch (KeyNotFoundException ex)
+			{
+				Logger.Log($"Error in component browser config render. Details: {ex}", Logger.LogLevel.Error);
+				_selected = new Tracked();
+				Notifications.SendError("Error detected", "Anything selected has been deselected to avoid the tab crashing.");
+			}
 			catch (Exception ex)
 			{
 				Logger.Log($"Error in component browser config render. Details: {ex}", Logger.LogLevel.Error);
