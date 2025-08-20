@@ -483,6 +483,13 @@ namespace MultiTool.Modules
 							    }
                             }
 						}
+
+						// Add seat positions.
+						foreach (seatscript seat in settings.car.GetComponentsInChildren<seatscript>())
+						{
+							if (seat.GetComponent<BoxCollider>() == null || seat.name.ToLower().Contains("col")) continue;
+							slots.Add(seat.gameObject);
+						}
 					}
 
 					tosaveitemscript carSave = settings.car.GetComponent<tosaveitemscript>();
