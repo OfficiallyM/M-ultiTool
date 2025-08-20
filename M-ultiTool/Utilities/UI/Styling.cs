@@ -92,6 +92,24 @@ namespace MultiTool.Utilities.UI
 					AccessibilityOnColour = Color.green,
 					AccessibilityOffColour = Color.white,
 				});
+				_themes.Add(new Theme()
+				{
+					Name = "Cassidy Blue",
+					IsCore = true,
+
+					ButtonPrimaryColour = new Color(37 / 255f, 92 / 255f, 123 / 255f),
+					ButtonPrimaryHoverColour = new Color(31 / 255f, 205 / 255f, 217 / 255f),
+					ButtonSecondaryColour = new Color(37 / 255f, 92 / 255f, 123 / 255f),
+					ButtonSecondaryHoverColour = new Color(31 / 255f, 205 / 255f, 217 / 255f),
+					BoxColour = new Color(6 / 255f, 41 / 255f, 71 / 255f, 100 / 255f),
+					BoxHoverColour = new Color(31 / 255f, 205 / 255f, 217 / 255f),
+
+					ButtonPrimaryTextColour = new Color(249 / 255f, 241 / 255f, 230 / 255f),
+					ButtonSecondaryTextColour = new Color(249 / 255f, 241 / 255f, 230 / 255f),
+					TextColour = new Color(249 / 255f, 241 / 255f, 230 / 255f),
+					AccessibilityOnColour = Color.green,
+					AccessibilityOffColour = Color.red,
+				});
 
 				// Load saved themes.
 				_path = Path.Combine(ModLoader.GetModConfigFolder(MultiTool.mod), "Themes.json");
