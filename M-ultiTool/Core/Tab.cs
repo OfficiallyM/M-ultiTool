@@ -16,6 +16,7 @@ namespace MultiTool.Core
         public virtual void OnRegister() { }
         public virtual void OnUnregister() { }
         public virtual void Update() { }
+		public virtual void FixedUpdate() { }
 		public virtual void OnCacheRefresh() { }
 
 		internal virtual string Source { get; set; }

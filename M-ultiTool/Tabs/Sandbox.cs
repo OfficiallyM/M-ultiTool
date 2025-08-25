@@ -1,11 +1,9 @@
 ﻿using MultiTool.Core;
 using MultiTool.Modules;
-using MultiTool.Utilities;
+using MultiTool.Utilities.UI;
 using System;
 using UnityEngine;
-using Settings = MultiTool.Core.Settings;
 using Logger = MultiTool.Modules.Logger;
-using MultiTool.Utilities.UI;
 
 namespace MultiTool.Tabs
 {
@@ -16,9 +14,10 @@ namespace MultiTool.Tabs
 		private Settings _settings = new Settings();
 		private Vector2 _position;
 
-		private string _hourStr = "0";
-		private string _minuteStr = "0";
-		private string _secondStr = "0";
+		private string _hour = "0";
+		private string _minute = "0";
+		private string _second = "0";
+		private float _timeScale = 1f;
 
 		private temporaryTurnOffGeneration _temp;
 		private GameObject _ufo;
@@ -35,6 +34,7 @@ namespace MultiTool.Tabs
 			_position = GUILayout.BeginScrollView(_position);
 
 			GUILayout.Label("Time manipulation", "LabelHeader");
+			GUILayout.Label($"Time setting", "LabelSubHeader");
 			napszakvaltakozas timescript = mainscript.M.napszak;
 			float cycleLength = timescript.dt + timescript.nt;
 			float clockOffset = 1f / 16f;
@@ -42,19 +42,19 @@ namespace MultiTool.Tabs
 			GUILayout.Label($"Current world time: {ToTimestring(timescript.currentTime + clockOffset)}");
 
 			GUILayout.BeginHorizontal();
-			_hourStr = GUILayout.TextField(_hourStr, 2, GUILayout.Width(40));
+			_hour = GUILayout.TextField(_hour, 2, GUILayout.Width(40));
 			GUILayout.Label(":", GUILayout.Width(8));
-			_minuteStr = GUILayout.TextField(_minuteStr, 2, GUILayout.Width(40));
+			_minute = GUILayout.TextField(_minute, 2, GUILayout.Width(40));
 			GUILayout.Label(":", GUILayout.Width(8));
-			_secondStr = GUILayout.TextField(_secondStr, 2, GUILayout.Width(40));
+			_second = GUILayout.TextField(_second, 2, GUILayout.Width(40));
 			GUILayout.EndHorizontal();
 
 			GUILayout.BeginHorizontal();
-			if (GUILayout.Button("Set", GUILayout.MaxWidth(250)))
+			if (GUILayout.Button("Set", GUILayout.MaxWidth(200)))
 			{
-				if (!int.TryParse(_hourStr, out int h)) h = 0;
-				if (!int.TryParse(_minuteStr, out int m)) m = 0;
-				if (!int.TryParse(_secondStr, out int s)) s = 0;
+				if (!int.TryParse(_hour, out int h)) h = 0;
+				if (!int.TryParse(_minute, out int m)) m = 0;
+				if (!int.TryParse(_second, out int s)) s = 0;
 
 				h = Mathf.Clamp(h, 0, 23);
 				m = Mathf.Clamp(m, 0, 59);
@@ -66,15 +66,56 @@ namespace MultiTool.Tabs
 				timescript.startTime = timescript.time + timescript.tekeres - selectedTime;
 			}
 
-			if (GUILayout.Button(Accessibility.GetAccessibleString("Unlock", "Lock", !timescript.enabled), GUILayout.MaxWidth(250)))
+			if (GUILayout.Button(Accessibility.GetAccessibleString("Unlock", "Lock", !timescript.enabled), GUILayout.MaxWidth(200)))
 				timescript.enabled = !timescript.enabled;
+
+			if (GUILayout.Button("Sync to real time", GUILayout.MaxWidth(200)))
+			{
+				DateTime now = DateTime.Now;
+				int h = now.Hour;
+				int m = now.Minute;
+				int s = now.Second;
+				_hour = h.ToString("F2");
+				_minute = m.ToString("F2");
+				_second = s.ToString("F2");
+
+				float clockSeconds = (h * 3600) + (m * 60) + s;
+				float selectedTime = Mathf.Round(((clockSeconds / 86400f) * cycleLength) - clockOffset * cycleLength);
+				selectedTime = Mathf.Clamp(selectedTime, 0, cycleLength);
+
+				timescript.startTime = timescript.time + timescript.tekeres - selectedTime;
+			}
+			GUILayout.EndHorizontal();
+			GUILayout.Space(10);
+
+			GUILayout.Label($"Time Scale", "LabelSubHeader");
+			float gameMinPerRealMin = (86400f / cycleLength) * Mathf.Abs(_timeScale);
+			float gameHrPerRealMin = gameMinPerRealMin / 60f;
+			float realMinPerGameDay = (cycleLength / 60f) / Mathf.Max(Mathf.Abs(_timeScale), 1e-6f);
+			float realHrPerGameDay = realMinPerGameDay / 60f;
+			GUILayout.Label($"1 real minute = {gameMinPerRealMin:F1} game minutes ({gameHrPerRealMin:F2} hours)");
+			GUILayout.Label($"1 game day = {realMinPerGameDay:F1} real minutes ({realHrPerGameDay:F2} hours)");
+			GUILayout.BeginHorizontal();
+			float.TryParse(GUILayout.TextField(_timeScale.ToString("F6"), GUILayout.MaxWidth(200)), out _timeScale);
+			GUILayout.Label("x");
+			GUILayout.EndHorizontal();
+			GUILayout.BeginHorizontal();
+			if (GUILayout.Button("Reset time scale", GUILayout.MaxWidth(200)))
+			{
+				_timeScale = 1f;
+			}
+
+			if (GUILayout.Button("Set to real time", GUILayout.MaxWidth(200)))
+			{
+				_timeScale = cycleLength / 60f / 1440f;
+			}
 			GUILayout.EndHorizontal();
 			GUILayout.Space(10);
 
 			GUILayout.Label("UFO", "LabelHeader");
 			GUILayout.Label("UFO spawning (doesn't save):");
 			GUILayout.BeginHorizontal();
-			if (GUILayout.Button("Spawn", GUILayout.MaxWidth(250)))
+			if (GUILayout.Button("Spawn", GUILayout.MaxWidth(200)))
 			{
 				try
 				{
@@ -106,7 +147,7 @@ namespace MultiTool.Tabs
 			GUILayout.Space(10);
 
 			GUILayout.Label("Tools", "LabelHeader");
-			if (GUILayout.Button(Accessibility.GetAccessibleString("Toggle color picker", _settings.mode == "colorPicker"), GUILayout.MaxWidth(250)))
+			if (GUILayout.Button(Accessibility.GetAccessibleString("Toggle color picker", _settings.mode == "colorPicker"), GUILayout.MaxWidth(200)))
 			{
 				if (_settings.mode == "colorPicker")
 					_settings.mode = null;
@@ -115,7 +156,7 @@ namespace MultiTool.Tabs
 			}
 			GUILayout.Space(10);
 
-			if (GUILayout.Button(Accessibility.GetAccessibleString("Toggle object scale mode", _settings.mode == "scale"), GUILayout.MaxWidth(250)))
+			if (GUILayout.Button(Accessibility.GetAccessibleString("Toggle object scale mode", _settings.mode == "scale"), GUILayout.MaxWidth(200)))
 			{
 				if (_settings.mode == "scale")
 					_settings.mode = null;
@@ -124,7 +165,7 @@ namespace MultiTool.Tabs
 			}
 			GUILayout.Space(10);
 
-			if (GUILayout.Button(Accessibility.GetAccessibleString("Toggle object regenerator", _settings.mode == "objectRegenerator"), GUILayout.MaxWidth(250)))
+			if (GUILayout.Button(Accessibility.GetAccessibleString("Toggle object regenerator", _settings.mode == "objectRegenerator"), GUILayout.MaxWidth(200)))
 			{
 				if (_settings.mode == "objectRegenerator")
 				{
@@ -136,7 +177,7 @@ namespace MultiTool.Tabs
 			}
 			GUILayout.Space(10);
 
-			if (GUILayout.Button(Accessibility.GetAccessibleString("Toggle weight changer", _settings.mode == "weightChanger"), GUILayout.MaxWidth(250)))
+			if (GUILayout.Button(Accessibility.GetAccessibleString("Toggle weight changer", _settings.mode == "weightChanger"), GUILayout.MaxWidth(200)))
 			{
 				if (_settings.mode == "weightChanger")
 				{
@@ -150,6 +191,13 @@ namespace MultiTool.Tabs
 			GUILayout.EndScrollView();
 			GUILayout.EndVertical();
 			GUILayout.EndArea();
+		}
+
+		public override void FixedUpdate()
+		{
+			napszakvaltakozas timescript = mainscript.M.napszak;
+			if (timescript.enabled)
+				timescript.tekeres += Time.fixedDeltaTime * (_timeScale - 1f);
 		}
 
 		/// <summary>

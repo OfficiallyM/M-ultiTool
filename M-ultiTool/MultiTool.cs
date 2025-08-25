@@ -524,5 +524,10 @@ namespace MultiTool
 					break;
 			}
 		}
+
+		public override void FixedUpdate()
+		{
+			Renderer.FixedUpdate();
+		}
 	}
 }

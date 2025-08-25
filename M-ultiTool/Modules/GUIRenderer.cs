@@ -946,6 +946,11 @@ namespace MultiTool.Modules
 			}
 		}
 
+		internal void FixedUpdate()
+		{
+			Tabs.FixedUpdate();
+		}
+
 		private void ToggleMenu(bool? force = null)
 		{
 			if (force.HasValue)

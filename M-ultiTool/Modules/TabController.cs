@@ -32,6 +32,14 @@ namespace MultiTool.Modules
 			}
         }
 
+		internal void FixedUpdate()
+		{
+			foreach (Tab tab in _tabs)
+			{
+				tab.FixedUpdate();
+			}
+		}
+
         /// <summary>
 		/// Add new tab.
 		/// </summary>
