@@ -16,8 +16,9 @@ namespace MultiTool.Tabs
 		private Settings _settings = new Settings();
 		private Vector2 _position;
 
-		private float _selectedTime;
-		private bool _isTimeLocked = false;
+		private string _hourStr = "0";
+		private string _minuteStr = "0";
+		private string _secondStr = "0";
 
 		private temporaryTurnOffGeneration _temp;
 		private GameObject _ufo;
@@ -33,31 +34,44 @@ namespace MultiTool.Tabs
 			GUILayout.BeginVertical();
 			_position = GUILayout.BeginScrollView(_position);
 
-			// Time setting.
+			GUILayout.Label("Time manipulation", "LabelHeader");
 			napszakvaltakozas timescript = mainscript.M.napszak;
-			float currentTime = Mathf.InverseLerp(0f, timescript.dt + timescript.nt, timescript.time + _selectedTime - timescript.startTime);
-			int totalSeconds = (int)(currentTime * 24 * 60 * 60);
-			int hours = totalSeconds / 3600;
-			int minutes = (totalSeconds % 3600) / 60;
-			int seconds = totalSeconds % 60;
-			GUILayout.Label($"Time: {hours}:{minutes}:{seconds}");
-			float time = GUILayout.HorizontalSlider(_selectedTime, 0f, timescript.dt + timescript.nt, GUILayout.MaxWidth(dimensions.width / 2));
-			_selectedTime = Mathf.Round(time);
+			float cycleLength = timescript.dt + timescript.nt;
+			float clockOffset = 1f / 16f;
+
+			GUILayout.Label($"Current world time: {ToTimestring(timescript.currentTime + clockOffset)}");
+
+			GUILayout.BeginHorizontal();
+			_hourStr = GUILayout.TextField(_hourStr, 2, GUILayout.Width(40));
+			GUILayout.Label(":", GUILayout.Width(8));
+			_minuteStr = GUILayout.TextField(_minuteStr, 2, GUILayout.Width(40));
+			GUILayout.Label(":", GUILayout.Width(8));
+			_secondStr = GUILayout.TextField(_secondStr, 2, GUILayout.Width(40));
+			GUILayout.EndHorizontal();
+
 			GUILayout.BeginHorizontal();
 			if (GUILayout.Button("Set", GUILayout.MaxWidth(250)))
 			{
-				timescript.tekeres = _selectedTime;
+				if (!int.TryParse(_hourStr, out int h)) h = 0;
+				if (!int.TryParse(_minuteStr, out int m)) m = 0;
+				if (!int.TryParse(_secondStr, out int s)) s = 0;
+
+				h = Mathf.Clamp(h, 0, 23);
+				m = Mathf.Clamp(m, 0, 59);
+				s = Mathf.Clamp(s, 0, 59);
+				float clockSeconds = (h * 3600) + (m * 60) + s;
+				float selectedTime = Mathf.Round(((clockSeconds / 86400f) * cycleLength) - clockOffset * cycleLength);
+				selectedTime = Mathf.Clamp(selectedTime, 0, cycleLength);
+
+				timescript.startTime = timescript.time + timescript.tekeres - selectedTime;
 			}
 
-			if (GUILayout.Button(Accessibility.GetAccessibleString("Unlock", "Lock", _isTimeLocked), GUILayout.MaxWidth(250)))
-			{
-				_isTimeLocked = !_isTimeLocked;
-
-				timescript.enabled = !_isTimeLocked;
-			}
+			if (GUILayout.Button(Accessibility.GetAccessibleString("Unlock", "Lock", !timescript.enabled), GUILayout.MaxWidth(250)))
+				timescript.enabled = !timescript.enabled;
 			GUILayout.EndHorizontal();
 			GUILayout.Space(10);
 
+			GUILayout.Label("UFO", "LabelHeader");
 			GUILayout.Label("UFO spawning (doesn't save):");
 			GUILayout.BeginHorizontal();
 			if (GUILayout.Button("Spawn", GUILayout.MaxWidth(250)))
@@ -91,6 +105,7 @@ namespace MultiTool.Tabs
 			GUILayout.EndHorizontal();
 			GUILayout.Space(10);
 
+			GUILayout.Label("Tools", "LabelHeader");
 			if (GUILayout.Button(Accessibility.GetAccessibleString("Toggle color picker", _settings.mode == "colorPicker"), GUILayout.MaxWidth(250)))
 			{
 				if (_settings.mode == "colorPicker")
@@ -135,6 +150,20 @@ namespace MultiTool.Tabs
 			GUILayout.EndScrollView();
 			GUILayout.EndVertical();
 			GUILayout.EndArea();
+		}
+
+		/// <summary>
+		/// Convert a float to a time string.
+		/// </summary>
+		/// <param name="time">Current time</param>
+		/// <returns>Time formatted as a string</returns>
+		private string ToTimestring(float time)
+		{
+			int totalSeconds = (int)(time * 24 * 60 * 60);
+			int hours = totalSeconds / 3600;
+			int minutes = (totalSeconds % 3600) / 60;
+			int seconds = totalSeconds % 60;
+			return $"{hours}:{minutes}:{seconds}";
 		}
 	}
 }
