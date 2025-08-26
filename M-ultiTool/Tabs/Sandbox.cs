@@ -18,6 +18,10 @@ namespace MultiTool.Tabs
 		private string _minute = "0";
 		private string _second = "0";
 		private float _timeScale = 1f;
+		private float _rtRatio;
+		private float _etRatio;
+		private float _dayTime;
+		private float _nightTime;
 
 		private temporaryTurnOffGeneration _temp;
 		private GameObject _ufo;
@@ -25,6 +29,12 @@ namespace MultiTool.Tabs
 		public override void OnRegister()
 		{
 			_temp = mainscript.M.menu.GetComponentInChildren<temporaryTurnOffGeneration>();
+
+			napszakvaltakozas timescript = mainscript.M.napszak;
+			_rtRatio = timescript.reggelTime / timescript.daytime;
+			_etRatio = timescript.esteTime / timescript.nighttime;
+			_dayTime = timescript.daytime;
+			_nightTime = timescript.nighttime;
 		}
 
 		public override void RenderTab(Rect dimensions)
@@ -108,6 +118,40 @@ namespace MultiTool.Tabs
 			if (GUILayout.Button("Set to real time", GUILayout.MaxWidth(200)))
 			{
 				_timeScale = cycleLength / 60f / 1440f;
+			}
+			GUILayout.EndHorizontal();
+			GUILayout.Space(10);
+
+			GUILayout.Label($"Day/night length", "LabelSubHeader");
+			GUILayout.BeginHorizontal();
+			GUILayout.Label("Day:", GUILayout.MaxWidth(40));
+			float.TryParse(GUILayout.TextField(_dayTime.ToString("F2"), GUILayout.MaxWidth(60)), out _dayTime);
+			GUILayout.Label("minutes");
+			GUILayout.EndHorizontal();
+
+			GUILayout.BeginHorizontal();
+			GUILayout.Label("Night:", GUILayout.MaxWidth(40));
+			float.TryParse(GUILayout.TextField(_nightTime.ToString("F2"), GUILayout.MaxWidth(60)), out _nightTime);
+			GUILayout.Label("minutes");
+			GUILayout.EndHorizontal();
+
+			GUILayout.BeginHorizontal();
+			if (GUILayout.Button("Set", GUILayout.MaxWidth(200)))
+			{
+				timescript.daytime = _dayTime;
+				timescript.nighttime = _nightTime;
+				ApplyTimeLengths(timescript);
+			}
+
+			if (GUILayout.Button("Reset to default", GUILayout.MaxWidth(200)))
+			{
+				_dayTime = 20f;
+				_nightTime = 5f;
+				timescript.daytime = 20f;
+				timescript.nighttime = 5f;
+				timescript.reggelTime = 4f;
+				timescript.esteTime = 3f;
+				ApplyTimeLengths(timescript);
 			}
 			GUILayout.EndHorizontal();
 			GUILayout.Space(10);
@@ -212,6 +256,43 @@ namespace MultiTool.Tabs
 			int minutes = (totalSeconds % 3600) / 60;
 			int seconds = totalSeconds % 60;
 			return $"{hours}:{minutes}:{seconds}";
+		}
+
+		/// <summary>
+		/// Apply updated time lengths, calculating the morning and evening times.
+		/// </summary>
+		/// <param name="timescript">Time script</param>
+		private void ApplyTimeLengths(napszakvaltakozas timescript)
+		{
+			// Recalculate reggel/este based on ratios.
+			timescript.reggelTime = timescript.daytime * _rtRatio;
+			timescript.esteTime = timescript.daytime * _etRatio;
+
+			// Store the old time.
+			float cycleLengthOld = timescript.dt + timescript.nt;
+			float currentTimeOld = timescript.time + timescript.tekeres - timescript.startTime;
+			float fraction = currentTimeOld / cycleLengthOld;
+
+			// Recalculate dependent fields.
+			if (timescript.minute)
+			{
+				timescript.dt = timescript.daytime * 60f;
+				timescript.nt = timescript.nighttime * 60f;
+				timescript.rt = timescript.reggelTime * 60f;
+				timescript.et = timescript.esteTime * 60f;
+			}
+			else
+			{
+				timescript.dt = timescript.daytime;
+				timescript.nt = timescript.nighttime;
+				timescript.rt = timescript.reggelTime;
+				timescript.et = timescript.esteTime;
+			}
+
+			// Recalculate based on old time to ensure the time doesn't change.
+			float cycleLengthNew = timescript.dt + timescript.nt;
+			float currentTimeNew = fraction * cycleLengthNew;
+			timescript.startTime = timescript.time + timescript.tekeres - currentTimeNew;
 		}
 	}
 }
