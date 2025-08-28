@@ -124,6 +124,14 @@ namespace MultiTool.Core
 	}
 
 	[DataContract]
+	internal class TimeData
+	{
+		[DataMember] public float timescale { get; set; }
+		[DataMember] public float dayLength { get; set; }
+		[DataMember] public float nightLength { get; set; }
+	}
+
+	[DataContract]
 	internal class Save
 	{
 		[DataMember] public List<POIData> pois { get; set; }
@@ -141,6 +149,8 @@ namespace MultiTool.Core
 
 		[DataMember] public PlayerData playerData { get; set; }
 		[DataMember] public bool isPlayerDataPerSave { get; set; } = false;
+
+		[DataMember] public TimeData timeData { get; set; }
 	}
 
 	[DataContract]

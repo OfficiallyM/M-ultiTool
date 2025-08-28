@@ -518,6 +518,17 @@ namespace MultiTool.Utilities
         }
 
 		/// <summary>
+		/// Update time data in save.
+		/// </summary>
+		/// <param name="timeData">New time data</param>
+		public static void UpdateTimeData(TimeData timeData)
+		{
+			Save data = UnserializeSaveData();
+			data.timeData = timeData;
+			SerializeSaveData(data);
+		}
+
+		/// <summary>
 		/// Load POIs from save.
 		/// </summary>
 		/// <returns>List of newly spawned POIs</returns>
@@ -1023,6 +1034,16 @@ namespace MultiTool.Utilities
             Save data = UnserializeSaveData();
             return data.isPlayerDataPerSave;
         }
+
+		/// <summary>
+		/// Get time data from save.
+		/// </summary>
+		/// <returns>TimeData or null if nothing is saved</returns>
+		public static TimeData GetTimeData()
+		{
+			Save data = UnserializeSaveData();
+			return data.timeData;
+		}
 
         /// <summary>
         /// Get slot data by ID and slot name.
