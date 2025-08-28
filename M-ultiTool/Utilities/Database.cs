@@ -1,13 +1,13 @@
 ﻿using MultiTool.Core;
 using MultiTool.Modules;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using TLDLoader;
 using UnityEngine;
 using Logger = MultiTool.Modules.Logger;
-using System.Collections;
 
 namespace MultiTool.Utilities
 {
@@ -290,6 +290,27 @@ namespace MultiTool.Utilities
 					thumbnail = ThumbnailGenerator.GetThumbnail(objClass.prefab, POI: true),
 					name = Translator.T(objClass.prefab.name, "POI"),
 				});
+			}
+
+			// Find unused buildings.
+			string[] buildingNames = new string[]
+			{
+				"Pyramid1",
+				"toalettarium",
+				"ROADSIGNS1"
+			};
+			GameObject[] allObjects = Resources.FindObjectsOfTypeAll<GameObject>();
+			foreach (GameObject obj in allObjects)
+			{
+				if (buildingNames.Contains(obj.name) && obj.transform.parent != null && obj.transform.parent.name == "ForRunden")
+				{
+					POIsCache.Add(new POI()
+					{
+						poi = obj,
+						thumbnail = ThumbnailGenerator.GetThumbnail(obj, POI: true),
+						name = Translator.T(obj.name, "POI"),
+					});
+				}
 			}
 
 			return POIsCache;

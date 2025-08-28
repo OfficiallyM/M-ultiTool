@@ -285,9 +285,11 @@ namespace MultiTool.Utilities
 				pos = mainscript.M.player.lookPoint + mainscript.M.player.transform.forward * 5f;
 				pos.y = mainscript.M.player.gameObject.transform.position.y;
 
-				// Starter house needs a different offset.
+				// Starter house and pyramid needs a different offset.
 				if (POI.poi.name == "haz02")
 					pos += Vector3.up * 0.18f;
+				else if (POI.poi.name == "Pyramid1")
+					pos -= Vector3.up * 4f;
 				else
 					pos -= Vector3.up * 0.85f;
 
@@ -301,6 +303,21 @@ namespace MultiTool.Utilities
 				}
 
 				gameObject = UnityEngine.Object.Instantiate(POI.poi, pos, rot, mainscript.M.terrainGenerationSettings.roadBuildingGeneration.parent);
+				gameObject.SetActive(true);
+
+				// Some unused buildings need a custom rotation.
+				string[] rotateBuildings = new string[]
+				{
+					"toalettarium",
+					"ROADSIGNS1"
+				};
+				if (rotateBuildings.Contains(POI.poi.name))
+				{
+					Transform transform = gameObject.transform;
+					Vector3 angle = transform.localEulerAngles;
+					angle.x = -90f;
+					transform.localEulerAngles = angle;
+				}
 
 				buildingscript buildingscript = gameObject.GetComponent<buildingscript>();
 				if (buildingscript != null)
