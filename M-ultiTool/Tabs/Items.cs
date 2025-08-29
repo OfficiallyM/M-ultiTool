@@ -30,7 +30,8 @@ namespace MultiTool.Tabs
 		private bool _filterShow = false;
 		private List<int> _filters = new List<int>();
         private string _search = string.Empty;
-        private float _lastWidth = 0;
+		private string _lastSearch = string.Empty;
+		private float _lastWidth = 0;
         private int _lastRowLength = 0;
         private List<List<Item>> _itemsChunked = new List<List<Item>>();
         private bool _rechunk = false;
@@ -61,14 +62,15 @@ namespace MultiTool.Tabs
         public override void Update()
         {
             List<Item> items = GUIRenderer.items;
-            if (_search != string.Empty)
+            if (_search != _lastSearch)
             {
                 items = GUIRenderer.items.Where(i => i.gameObject.name.ToLower().Contains(_search.ToLower())).ToList();
                 _rechunk = true;
-                _itemScrollPosition = new Vector2(0, 0);
+				_lastSearch = _search;
+				_itemScrollPosition = new Vector2(0, 0);
             }
 
-            if (_filters.Count > 0)
+            if (_filters.Count > 0 && _rechunk)
             {
                 items = items.Where(v => _filters.Contains(v.category)).ToList();
                 _rechunk = true;
@@ -106,7 +108,8 @@ namespace MultiTool.Tabs
             if (GUILayout.Button("Reset", GUILayout.MaxWidth(70)))
             {
                 _search = string.Empty;
-                _rechunk = true;
+				_lastSearch = string.Empty;
+				_rechunk = true;
             }
             GUILayout.FlexibleSpace();
 
