@@ -260,6 +260,7 @@ namespace MultiTool.Tabs
 
 		public override void FixedUpdate()
 		{
+			if (mainscript.M == null) return;
 			napszakvaltakozas timescript = mainscript.M.napszak;
 			if (timescript.enabled)
 				timescript.tekeres += Time.fixedDeltaTime * (_timeScale - 1f);
