@@ -378,12 +378,12 @@ namespace MultiTool.Tabs.VehicleConfiguration
 
 		private bool IsRightSide(Wheel wheel)
 		{
-			return wheel.graphics.W.transform.localPosition.x > 0;
+			return wheel.graphics?.W?.transform.localPosition.x > 0;
 		}
 
 		private bool IsFront(Wheel wheel)
 		{
-			return wheel.graphics.W.transform.localPosition.z > 0;
+			return wheel.graphics?.W?.transform.localPosition.z > 0;
 		}
 	}
 }
