@@ -1,4 +1,4 @@
-﻿using MultiTool.Modules;
+﻿using Newtonsoft.Json;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -7,7 +7,6 @@ using System.Linq;
 using System.Reflection;
 using System.Runtime.Serialization;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace MultiTool.Extensions
 {
@@ -145,6 +144,39 @@ namespace MultiTool.Extensions
 			}
 
 			return true;
+		}
+
+		/// <summary>
+		/// Export an object as a base64 string.
+		/// </summary>
+		/// <param name="obj">Object</param>
+		/// <returns>Base64 export string</returns>
+		public static string ToExportString(this object obj)
+		{
+			string json = JsonConvert.SerializeObject(obj, new JsonSerializerSettings
+			{
+				TypeNameHandling = TypeNameHandling.Auto,
+				Formatting = Formatting.Indented
+			});
+
+			return Convert.ToBase64String(Encoding.UTF8.GetBytes(json));
+		}
+
+		/// <summary>
+		/// Imports a base64 string back to an object.
+		/// </summary>
+		/// <typeparam name="T">Object type</typeparam>
+		/// <param name="str">Import string</param>
+		/// <returns>Imported object</returns>
+		public static T ToObjectImport<T>(this string str)
+		{
+			byte[] bytes = Convert.FromBase64String(str);
+			string json = Encoding.UTF8.GetString(bytes);
+
+			return JsonConvert.DeserializeObject<T>(json, new JsonSerializerSettings
+			{
+				TypeNameHandling = TypeNameHandling.Auto
+			});
 		}
 	}
 

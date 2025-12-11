@@ -1,4 +1,7 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Reflection;
 using System.Runtime.Serialization;
 using UnityEngine;
 
@@ -136,6 +139,29 @@ namespace MultiTool.Core
 		public float defaultMax;
 	}
 
+	// Placeholder interface to allow for generic tuning saving.
+	internal interface ITuning { }
+
+	[DataContract]
+	[KnownType("GetKnownTypes")]
+	internal class TuningSave
+	{
+		[DataMember] public string name;
+		[DataMember] public string type;
+		[DataMember] public ITuning tuning;
+
+		private static IEnumerable<Type> _knownTypes;
+		private static IEnumerable<Type> GetKnownTypes()
+		{
+			if (_knownTypes == null)
+				_knownTypes = Assembly.GetExecutingAssembly()
+					.GetTypes()
+					.Where(t => typeof(ITuning).IsAssignableFrom(t))
+					.ToList();
+			return _knownTypes;
+		}
+	}
+
 	internal class EngineStats
     {
 		public float maxTorque;
@@ -145,7 +171,7 @@ namespace MultiTool.Core
     }
 
     [DataContract]
-	internal class EngineTuning
+	internal class EngineTuning : ITuning
     {
         [DataMember] public float rpmChangeModifier;
         [DataMember] public float startChance;
@@ -181,7 +207,7 @@ namespace MultiTool.Core
     }
 
     [DataContract]
-	internal class TransmissionTuning
+	internal class TransmissionTuning : ITuning
     {
         [DataMember] public List<Gear> gears = new List<Gear>();
 		[DataMember] public float differentialRatio;
@@ -189,7 +215,7 @@ namespace MultiTool.Core
 	}
 
     [DataContract]
-	internal class VehicleTuning
+	internal class VehicleTuning : ITuning
     {
         [DataMember] public float steerAngle;
         [DataMember] public float brakePower;    
@@ -228,7 +254,7 @@ namespace MultiTool.Core
 	}
 
     [DataContract]
-    internal class WheelTuning
+    internal class WheelTuning : ITuning
     {
 		[DataMember] public bool applyToAll = true;
 		[DataMember] public List<Wheel> wheels = new List<Wheel>();
