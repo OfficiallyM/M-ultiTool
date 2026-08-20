@@ -1265,6 +1265,67 @@ namespace MultiTool.Utilities
         }
 
 		/// <summary>
+		/// Save vehicle tune.
+		/// </summary>
+		/// <param name="tune">Vehicle tune to save</param>
+		public static void AddTune(TuningSave tune)
+		{
+			ReadGlobalData();
+
+			if (_globalData.tunes == null)
+				_globalData.tunes = new List<TuningSave>();
+
+			_globalData.tunes.Add(tune);
+			WriteGlobalData();
+		}
+
+		/// <summary>
+		/// Remove a saved vehicle tune.
+		/// </summary>
+		/// <param name="tune">Vehicle tune to remove</param>
+		public static void RemoveTune(TuningSave tune)
+		{
+			ReadGlobalData();
+
+			if (_globalData.tunes == null) return;
+
+			_globalData.tunes.Remove(tune);
+			WriteGlobalData();
+		}
+
+		/// <summary>
+		/// Get all saved vehicle tunes.
+		/// </summary>
+		/// <returns>List of saved vehicle tunes.</returns>
+		public static List<TuningSave> GetTunes()
+		{
+			ReadGlobalData();
+
+			if (_globalData.tunes == null)
+				_globalData.tunes = new List<TuningSave>();
+
+			return _globalData.tunes;
+		}
+
+		/// <summary>
+		/// Get vehiclde tunes by tune type.
+		/// </summary>
+		/// <param name="type">Tune type</param>
+		/// <returns>List of vehicle tunes</returns>
+		public static List<TuningSave> GetTunesByType(string type)
+		{
+			List<TuningSave> tunes = new List<TuningSave>();
+
+			foreach (var tune in GetTunes())
+			{
+				if (tune.type == type)
+					tunes.Add(tune);
+			}
+
+			return tunes;
+		}
+
+		/// <summary>
 		/// Sanitise name for data storage.
 		/// </summary>
 		/// <param name="name">Name</param>

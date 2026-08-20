@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
@@ -147,7 +148,9 @@ namespace MultiTool.Core
 	internal class TuningSave
 	{
 		[DataMember] public string name;
+		[DataMember] public string part;
 		[DataMember] public string type;
+		[DataMember] public string car;
 		[DataMember] public ITuning tuning;
 
 		private static IEnumerable<Type> _knownTypes;
@@ -231,8 +234,8 @@ namespace MultiTool.Core
 	[DataContract]
 	internal class Wheel
 	{
-		public tosaveitemscript save;
-		public wheelgraphicsscript graphics;
+		[JsonIgnore] public tosaveitemscript save;
+		[JsonIgnore] public wheelgraphicsscript graphics;
 		[DataMember] public string slot;
 
 		// Grip.

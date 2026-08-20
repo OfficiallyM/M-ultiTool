@@ -1,13 +1,12 @@
 ﻿using MultiTool.Core;
-using MultiTool.Utilities.UI;
+using MultiTool.Extensions;
+using MultiTool.Modules;
 using MultiTool.Utilities;
+using MultiTool.Utilities.UI;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using UnityEngine;
-using MultiTool.Extensions;
 
 namespace MultiTool.Tabs.VehicleConfiguration
 {
@@ -16,14 +15,20 @@ namespace MultiTool.Tabs.VehicleConfiguration
         public override string Name => "Transmission Tuning";
 
 		private Vector2 _position;
+		private Vector2 _footerPosition;
 		private Core.TransmissionTuning _transmissionTuning = null;
 		private Core.TransmissionTuning _defaultTuning = null;
 		private Core.TransmissionTuning _lastSavedTuning = null;
+		private bool _sharingOpen = false;
+		private string _export;
+		private string _import;
+		private TuningSave _saved;
 
 		public override void OnVehicleChange()
 		{
 			_transmissionTuning = null;
 			_lastSavedTuning = null;
+			_export = null;
 		}
 
 		public override void RenderTab(Rect dimensions)
@@ -166,7 +171,65 @@ namespace MultiTool.Tabs.VehicleConfiguration
 
 			GUILayout.Space(10);
 
-			GUILayout.BeginVertical("box");
+			GUILayout.BeginVertical("box", _sharingOpen ? GUILayout.MinHeight(dimensions.height / 1.25f) : GUILayout.MinHeight(20));
+			if (_sharingOpen)
+			{
+				_footerPosition = GUILayout.BeginScrollView(_footerPosition);
+				GUILayout.BeginVertical(GUILayout.MinHeight(dimensions.height / 2f), GUILayout.MaxHeight(dimensions.height - 20f));
+				GUILayout.Label("Exporting", "LabelSubHeader");
+				if (GUILayout.Button("Export current tuning", GUILayout.MaxWidth(200)))
+					_export = new TuningSave()
+					{
+						part = car.name,
+						type = "transmission",
+						car = car.name,
+						tuning = _transmissionTuning,
+					}
+					.ToExportString();
+				if (!string.IsNullOrEmpty(_export))
+				{
+					GUILayout.Label("Exported tuning:");
+					GUILayout.Label("Copy and paste the below to someone to share the transmission tuning with them.");
+					GUILayout.TextArea(_export);
+					GUILayout.Space(10);
+				}
+
+				GUILayout.Label("Importing", "LabelSubHeader");
+				_import = GUILayout.TextArea(_import);
+				if (GUILayout.Button("Import", GUILayout.MaxWidth(200)))
+				{
+					_saved = _import.ToObjectImport<TuningSave>();
+				}
+				if (_saved != null)
+				{
+					if (_saved.type != "transmission")
+					{
+						Notifications.SendError("Import failed", "Not a valid transmission tune.");
+						_saved = null;
+					}
+					else if (_saved.part != car.name)
+					{
+						GUILayout.Label("This tune is not designed for this vehicle, import anyway?");
+						if (GUILayout.Button("Import anyway", GUILayout.MaxWidth(200)))
+						{
+							_transmissionTuning = _saved.tuning as Core.TransmissionTuning;
+							_saved = null;
+							_import = null;
+							Notifications.SendSuccess("Transmission tuning", "Tuning imported");
+						}
+					}
+					else
+					{
+						_transmissionTuning = _saved.tuning as Core.TransmissionTuning;
+						_saved = null;
+						_import = null;
+						Notifications.SendSuccess("Transmission tuning", "Tuning imported");
+					}
+				}
+				GUILayout.FlexibleSpace();
+				GUILayout.EndVertical();
+				GUILayout.EndScrollView();
+			}
 			GUILayout.BeginHorizontal();
 			if (GUILayout.Button("Apply", GUILayout.MaxWidth(200)))
 			{
@@ -185,6 +248,13 @@ namespace MultiTool.Tabs.VehicleConfiguration
 			{
 				_transmissionTuning.gears = _defaultTuning.gears.Copy();
 				_transmissionTuning.differentialRatio = _defaultTuning.differentialRatio;
+			}
+
+			GUILayout.FlexibleSpace();
+			if (GUILayout.Button(Accessibility.GetAccessibleString("Tuning sharing", _sharingOpen), GUILayout.MaxWidth(200)))
+			{
+				_sharingOpen = !_sharingOpen;
+				_footerPosition = Vector2.zero;
 			}
 
 			GUILayout.EndHorizontal();

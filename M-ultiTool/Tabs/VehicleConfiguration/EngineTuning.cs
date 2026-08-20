@@ -18,7 +18,8 @@ namespace MultiTool.Tabs.VehicleConfiguration
 		public override string Name => "Engine Tuning";
 
 		private Vector2 _position;
-		private Vector2 _tunerFooterPosition;
+		private Vector2 _footerPosition;
+		private Vector3 _sidebarPosition;
 
 		private enum FooterPane
 		{
@@ -31,12 +32,14 @@ namespace MultiTool.Tabs.VehicleConfiguration
 		private Core.EngineTuning _defaultTuning = null;
 		private Core.EngineTuning _lastSavedTuning = null;
 		private FooterPane _footerPane = FooterPane.None;
+		private bool _sidebarOpen = false;
 		private Core.EngineStats _engineStats = null;
 		private bool _hideLastTorquePoint = false;
 		private int _maxFluidIndex = 0;
 		private string _export;
 		private string _import;
 		private TuningSave _saved;
+		private string _saveTuneName;
 
 		public override void OnRegister()
 		{
@@ -139,6 +142,9 @@ namespace MultiTool.Tabs.VehicleConfiguration
 			bool updateEngineStats = false;
 
 			GUILayout.BeginArea(dimensions);
+
+			GUILayout.BeginHorizontal();
+			GUILayout.BeginVertical();
 			_position = GUILayout.BeginScrollView(_position);
 
 			GUILayout.Label("Basics", "LabelHeader");
@@ -436,12 +442,75 @@ namespace MultiTool.Tabs.VehicleConfiguration
 
 			if (updateEngineStats)
 				UpdateEngineTunerStats();
+			GUILayout.EndVertical();
+
+			if (_sidebarOpen)
+			{
+				GUILayout.Space(10);
+				GUILayout.BeginVertical(GUILayout.MinWidth(dimensions.width * 0.3f));
+				GUILayout.Label("Saved engine tunes", "LabelHeader");
+				GUILayout.Space(5);
+				GUILayout.BeginHorizontal();
+				_saveTuneName = GUILayout.TextField(_saveTuneName);
+				if (GUILayout.Button("Save current tune", GUILayout.ExpandWidth(false)))
+				{
+					if (string.IsNullOrEmpty(_saveTuneName))
+					{
+						Notifications.SendError("Engine tuning", "Please provide a tune name.");
+						return;
+					}
+
+					SaveUtilities.AddTune(new TuningSave()
+					{
+						name = _saveTuneName,
+						part = engine.name,
+						type = "engine",
+						car = car.name,
+						tuning = _engineTuning,
+					});
+					_saveTuneName = null;
+				}
+				GUILayout.EndHorizontal();
+
+				_sidebarPosition = GUILayout.BeginScrollView(_sidebarPosition);
+
+				foreach (var tune in SaveUtilities.GetTunesByType("engine"))
+				{
+					GUILayout.BeginVertical("box");
+					GUILayout.Label(tune.name, "LabelSubHeader");
+					GUILayout.Label($"For engine: {tune.part}");
+					if (tune.part != engine.name)
+						GUILayout.Label("Warning: Not designed for current engine");
+					GUILayout.Label($"Built using vehicle: {tune.car}");
+					GUILayout.BeginHorizontal();
+					if (GUILayout.Button("Use tune", GUILayout.ExpandWidth(false)))
+					{
+						_engineTuning = tune.tuning as Core.EngineTuning;
+						Notifications.SendSuccess("Engine tuning", "Tune applied to current settings.");
+					}
+					GUILayout.Space(10);
+					if (GUILayout.Button("Remove tune", "ButtonSecondary", GUILayout.ExpandWidth(false)))
+					{
+						SaveUtilities.RemoveTune(tune);
+						Notifications.SendSuccess("Engine tuning", "Tune has been deleted.");
+						break;
+					}
+					GUILayout.EndHorizontal();
+					GUILayout.Space(10);
+					GUILayout.EndVertical();
+				}
+
+				GUILayout.EndScrollView();
+
+				GUILayout.EndVertical();
+			}
+			GUILayout.EndHorizontal();
 
 			GUILayout.BeginVertical("box", _footerPane != FooterPane.None ? GUILayout.MinHeight(dimensions.height / 1.25f) : GUILayout.MinHeight(20));
 			switch (_footerPane)
 			{
 				case FooterPane.EngineStats:
-					_tunerFooterPosition = GUILayout.BeginScrollView(_tunerFooterPosition);
+					_footerPosition = GUILayout.BeginScrollView(_footerPosition);
 					GUILayout.BeginVertical(GUILayout.MinHeight(dimensions.height / 2f), GUILayout.MaxHeight(dimensions.height - 20f));
 					GUILayout.Label("Engine statistics", "LabelHeader");
 					GUILayout.Label($"Max torque: {_engineStats.maxTorque.ToString("F2")}Nm");
@@ -458,14 +527,15 @@ namespace MultiTool.Tabs.VehicleConfiguration
 					GUILayout.EndScrollView();
 					break;
 				case FooterPane.Share:
-					_tunerFooterPosition = GUILayout.BeginScrollView(_tunerFooterPosition);
+					_footerPosition = GUILayout.BeginScrollView(_footerPosition);
 					GUILayout.BeginVertical(GUILayout.MinHeight(dimensions.height / 2f), GUILayout.MaxHeight(dimensions.height - 20f));
 					GUILayout.Label("Exporting", "LabelSubHeader");
 					if (GUILayout.Button("Export current tuning", GUILayout.MaxWidth(200)))
 						_export = new TuningSave()
 						{
-							name = engine.name,
+							part = engine.name,
 							type = "engine",
+							car = car.name,
 							tuning = _engineTuning,
 						}
 						.ToExportString();
@@ -490,13 +560,14 @@ namespace MultiTool.Tabs.VehicleConfiguration
 							Notifications.SendError("Import failed", "Not a valid engine tune.");
 							_saved = null;
 						}
-						else if (_saved.name != engine.name)
+						else if (_saved.part != engine.name)
 						{
 							GUILayout.Label("This tune is not designed for this engine, import anyway?");
 							if (GUILayout.Button("Import anyway", GUILayout.MaxWidth(200)))
 							{
 								_engineTuning = _saved.tuning as Core.EngineTuning;
 								_saved = null;
+								_import = null;
 								Notifications.SendSuccess("Engine tuning", "Tuning imported");
 							}
 						}
@@ -504,6 +575,7 @@ namespace MultiTool.Tabs.VehicleConfiguration
 						{
 							_engineTuning = _saved.tuning as Core.EngineTuning;
 							_saved = null;
+							_import = null;
 							Notifications.SendSuccess("Engine tuning", "Tuning imported");
 						}
 					}
@@ -551,13 +623,19 @@ namespace MultiTool.Tabs.VehicleConfiguration
 			if (GUILayout.Button(Accessibility.GetAccessibleString("Tuning sharing", _footerPane == FooterPane.Share), GUILayout.MaxWidth(200)))
 			{
 				_footerPane = _footerPane == FooterPane.None ? FooterPane.Share : FooterPane.None;
-				_tunerFooterPosition = Vector2.zero;
+				_footerPosition = Vector2.zero;
 			}
 
 			if (GUILayout.Button(Accessibility.GetAccessibleString("Toggle stats", _footerPane == FooterPane.EngineStats), GUILayout.MaxWidth(200)))
 			{
 				_footerPane = _footerPane == FooterPane.None ? FooterPane.EngineStats : FooterPane.None;
-				_tunerFooterPosition = Vector2.zero;
+				_footerPosition = Vector2.zero;
+			}
+			GUILayout.Space(10);
+
+			if (GUILayout.Button(Accessibility.GetAccessibleString("Saved tunes", _sidebarOpen), "ButtonSecondary"))
+			{
+				_sidebarOpen = !_sidebarOpen;
 			}
 			GUILayout.EndHorizontal();
 			GUILayout.EndVertical();

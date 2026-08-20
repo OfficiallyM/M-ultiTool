@@ -157,5 +157,6 @@ namespace MultiTool.Core
 	internal class GlobalSave
 	{
 		[DataMember] public PlayerData playerData { get; set; }
+		[DataMember] public List<TuningSave> tunes { get; set; }
 	}
 }

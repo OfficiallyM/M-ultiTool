@@ -156,7 +156,8 @@ namespace MultiTool.Extensions
 			string json = JsonConvert.SerializeObject(obj, new JsonSerializerSettings
 			{
 				TypeNameHandling = TypeNameHandling.Auto,
-				Formatting = Formatting.Indented
+				Formatting = Formatting.Indented,
+				ReferenceLoopHandling = ReferenceLoopHandling.Ignore,
 			});
 
 			return Convert.ToBase64String(Encoding.UTF8.GetBytes(json));

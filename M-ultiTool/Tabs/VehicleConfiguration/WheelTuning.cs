@@ -1,5 +1,6 @@
 ﻿using MultiTool.Core;
 using MultiTool.Extensions;
+using MultiTool.Modules;
 using MultiTool.Utilities;
 using MultiTool.Utilities.UI;
 using System.Collections.Generic;
@@ -15,9 +16,14 @@ namespace MultiTool.Tabs.VehicleConfiguration
 		public override bool HasCache => true;
 
 		private Vector2 _position;
+		private Vector2 _footerPosition;
 		private Core.WheelTuning _tuning = null;
 		private Core.WheelTuning _defaultTuning = null;
 		private Core.WheelTuning _lastSavedTuning = null;
+		private bool _sharingOpen = false;
+		private string _export;
+		private string _import;
+		private TuningSave _saved;
 
 		public override void OnVehicleChange()
 		{
@@ -25,6 +31,7 @@ namespace MultiTool.Tabs.VehicleConfiguration
 			_tuning = null;
 			LoadData(car);
 			_lastSavedTuning = null;
+			_export = null;
 		}
 
 		public override void OnCacheRefresh()
@@ -198,7 +205,67 @@ namespace MultiTool.Tabs.VehicleConfiguration
 
 			GUILayout.Space(10);
 
-			GUILayout.BeginVertical("box");
+			GUILayout.BeginVertical("box", _sharingOpen ? GUILayout.MinHeight(dimensions.height / 1.25f) : GUILayout.MinHeight(20));
+			if (_sharingOpen)
+			{
+				_footerPosition = GUILayout.BeginScrollView(_footerPosition);
+				GUILayout.BeginVertical(GUILayout.MinHeight(dimensions.height / 2f), GUILayout.MaxHeight(dimensions.height - 20f));
+				GUILayout.Label("Exporting", "LabelSubHeader");
+				if (GUILayout.Button("Export current tuning", GUILayout.MaxWidth(200)))
+					_export = new TuningSave()
+					{
+						part = car.name,
+						type = "wheel",
+						car = car.name,
+						tuning = _tuning,
+					}
+					.ToExportString();
+				if (!string.IsNullOrEmpty(_export))
+				{
+					GUILayout.Label("Exported tuning:");
+					GUILayout.Label("Copy and paste the below to someone to share the wheel tuning with them.");
+					GUILayout.TextArea(_export);
+					GUILayout.Space(10);
+				}
+
+				GUILayout.Label("Importing", "LabelSubHeader");
+				_import = GUILayout.TextArea(_import);
+				if (GUILayout.Button("Import", GUILayout.MaxWidth(200)))
+				{
+					_saved = _import.ToObjectImport<TuningSave>();
+				}
+				if (_saved != null)
+				{
+					if (_saved.type != "wheel")
+					{
+						Notifications.SendError("Import failed", "Not a valid wheel tune.");
+						_saved = null;
+					}
+					else if (_saved.part != car.name)
+					{
+						GUILayout.Label("This tune is not designed for this vehicle, import anyway?");
+						if (GUILayout.Button("Import anyway", GUILayout.MaxWidth(200)))
+						{
+							_tuning = _saved.tuning as Core.WheelTuning;
+							GameUtilities.RemapWheelTuning(save, _tuning);
+							_saved = null;
+							_import = null;
+							Notifications.SendSuccess("Wheel tuning", "Tuning imported");
+						}
+					}
+					else
+					{
+						_tuning = _saved.tuning as Core.WheelTuning;
+						GameUtilities.RemapWheelTuning(save, _tuning);
+						_saved = null;
+						_import = null;
+						Notifications.SendSuccess("Wheel tuning", "Tuning imported");
+					}
+				}
+				GUILayout.FlexibleSpace();
+				GUILayout.EndVertical();
+				GUILayout.EndScrollView();
+			}
 			GUILayout.BeginHorizontal();
 			if (GUILayout.Button("Apply", GUILayout.MaxWidth(200)))
 			{
@@ -232,6 +299,13 @@ namespace MultiTool.Tabs.VehicleConfiguration
 					wheel.forwardOffset = 0;
 					wheel.verticalOffset = 0;
 				}
+			}
+
+			GUILayout.FlexibleSpace();
+			if (GUILayout.Button(Accessibility.GetAccessibleString("Tuning sharing", _sharingOpen), GUILayout.MaxWidth(200)))
+			{
+				_sharingOpen = !_sharingOpen;
+				_footerPosition = Vector2.zero;
 			}
 
 			GUILayout.EndHorizontal();

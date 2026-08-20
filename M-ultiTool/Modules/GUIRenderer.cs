@@ -92,7 +92,7 @@ namespace MultiTool.Modules
 		internal static bool applyConditionToAttached = false;
 
 		// Item menu variables.
-		internal static List<Item> items = new List<Item>();
+		internal static List<Core.Item> items = new List<Core.Item>();
 		internal static Dictionary<string, List<Type>> categories = new Dictionary<string, List<Type>>()
 		{
 			{ "Vehicle chassis", new List<Type>() { typeof(carscript) } },
@@ -1033,7 +1033,7 @@ namespace MultiTool.Modules
 			float width = mainMenuWidth;
 			float height = mainMenuHeight;
 
-            GUILayout.BeginArea(new Rect(x, y, width, height), $"<color=#f87ffa><size=18><b>{MultiTool.mod.Name}</b></size>\n<size=16>v{MultiTool.mod.Version} - made with ❤️ by {MultiTool.mod.Author}</size></color>", "box");
+            GUILayout.BeginArea(new Rect(x, y, width, height), $"<color=#f87ffa><size=18><b>{MultiTool.mod.Name}</b></size>\n<size=16>v{MultiTool.mod.Version} - made with ❤️ by M-</size></color>", "box");
             GUILayout.BeginVertical();
             GUILayout.BeginHorizontal();
             GUILayout.FlexibleSpace();
@@ -1152,8 +1152,8 @@ namespace MultiTool.Modules
 
                 case "basics":
                     // Condition.
-                    GUILayout.Label($"Condition: {(Item.Condition)startVehicleCondition}");
-                    int maxCondition = (int)Enum.GetValues(typeof(Item.Condition)).Cast<Item.Condition>().Max();
+                    GUILayout.Label($"Condition: {(Core.Item.Condition)startVehicleCondition}");
+                    int maxCondition = (int)Enum.GetValues(typeof(Core.Item.Condition)).Cast<Core.Item.Condition>().Max();
                     float rawCondition = GUILayout.HorizontalSlider(startVehicleCondition, -1, maxCondition);
                     startVehicleCondition = Mathf.RoundToInt(rawCondition);
 
