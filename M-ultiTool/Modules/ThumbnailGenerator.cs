@@ -8,6 +8,12 @@ using UnityEngine;
 
 namespace MultiTool.Modules
 {
+	// TODO: Dogshit. Replace with modloader generator.
+	// Needs to keep 200x200 and support for variants and conditions.
+	// This might be the time for a rewrite of the core. Database, vehicles, items, spawning
+	// to make the data passing not all weird and tied together.
+	// This is all to fix variant refresh not having enough time to kick in so rendering the wrong thing
+	// so needs doing in a coroutine.
 	internal static class ThumbnailGenerator
 	{
 		private static string cacheDir = null;
@@ -82,7 +88,7 @@ namespace MultiTool.Modules
 		private static Texture2D GenerateThumbnail(GameObject item, int? variant = null, bool POI = false)
 		{
 			GameObject gameObject = new GameObject("THUMBNAIL GENERATOR FOR " + item.name.ToUpper());
-			gameObject.transform.position = new Vector3(UnityEngine.Random.Range(-100f, 100f), UnityEngine.Random.Range(-200f, -100f), UnityEngine.Random.Range(-100f, 100f));
+			gameObject.transform.position = new Vector3(UnityEngine.Random.Range(-200f, 200f), UnityEngine.Random.Range(-1000f, -9999f), UnityEngine.Random.Range(-200f, 200f));
 			gameObject.layer = 1;
 			gameObject.SetActive(false);
 			GameObject gameObject2 = UnityEngine.Object.Instantiate(item, gameObject.transform, false);
@@ -93,16 +99,20 @@ namespace MultiTool.Modules
 				randomTypeSelector component = item.GetComponent<randomTypeSelector>();
 				if (component != null)
 				{
-					component.forceStart = false;
 					component.rtipus = variant.Value;
+					component.started = true;
 					component.Refresh();
 				}
 			}
 
 			// Render all thumbnails in pristine and in white.
-			partconditionscript condition = gameObject2.GetComponent<partconditionscript>();
-			if (condition != null)
-				GameUtilities.SetConditionAndPaint(0, Color.white, condition);
+			try
+			{
+				partconditionscript condition = gameObject2.GetComponent<partconditionscript>();
+				if (condition != null)
+					GameUtilities.SetConditionAndPaint(0, Color.white, condition);
+			}
+			catch { }
 
 			gameObject2.transform.SetParent(gameObject.transform, false);
 			gameObject2.transform.localPosition = Vector3.zero;

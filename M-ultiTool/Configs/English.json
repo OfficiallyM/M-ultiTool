@@ -42,6 +42,11 @@
 		},
 		{
 			"objectName": "Bus02Full",
+			"variant": 0,
+			"name": "IFA (Bed)"
+		},
+		{
+			"objectName": "Bus02Full",
 			"variant": 1,
 			"name": "IFA (Tanker)"
 		},
@@ -51,13 +56,13 @@
 			"name": "IFA (Box)"
 		},
 		{
-			"objectName": "Bus02Full",
-			"variant": 3,
-			"name": "IFA (Bed)"
-		},
-		{
 			"objectName": "Bus03Full",
 			"name": "Ikarus 260"
+		},
+		{
+			"objectName": "Bus02UtanfutoFull",
+			"variant": 0,
+			"name": "IFA trailer (Bed)"
 		},
 		{
 			"objectName": "Bus02UtanfutoFull",
@@ -70,18 +75,13 @@
 			"name": "IFA trailer (Box)"
 		},
 		{
-			"objectName": "Bus02UtanfutoFull",
-			"variant": 3,
-			"name": "IFA trailer (Bed)"
-		},
-		{
 			"objectName": "Car06Full",
-			"variant": 1,
+			"variant": 0,
 			"name": "VW Golf - Gas"
 		},
 		{
 			"objectName": "Car06Full",
-			"variant": 2,
+			"variant": 1,
 			"name": "VW Golf - Diesel"
 		},
 		{
@@ -90,13 +90,18 @@
 		},
 		{
 			"objectName": "Car07 Full",
+			"variant": 0,
+			"name": "Plymouth Fury (Silver trim)"
+		},
+		{
+			"objectName": "Car07 Full",
 			"variant": 1,
 			"name": "Plymouth Fury (Gold trim)"
 		},
 		{
-			"objectName": "Car07 Full",
-			"variant": 2,
-			"name": "Plymouth Fury (Silver trim)"
+			"objectName": "Car08 Full",
+			"variant": 0,
+			"name": "VW Beetle (Body engine bay)"
 		},
 		{
 			"objectName": "Car08 Full",
@@ -104,9 +109,9 @@
 			"name": "VW Beetle (Black engine bay)"
 		},
 		{
-			"objectName": "Car08 Full",
-			"variant": 2,
-			"name": "VW Beetle (Body engine bay)"
+			"objectName": "Car08c Full",
+			"variant": 0,
+			"name": "VW Beetle Cabrio (Body engine bay)"
 		},
 		{
 			"objectName": "Car08c Full",
@@ -114,13 +119,13 @@
 			"name": "VW Beetle Cabrio (Black engine bay)"
 		},
 		{
-			"objectName": "Car08c Full",
-			"variant": 2,
-			"name": "VW Beetle Cabrio (Body engine bay)"
-		},
-		{
 			"objectName": "Bike03Full",
 			"name": "Jawa"
+		},
+		{
+			"objectName": "Car10Full",
+			"variant": 0,
+			"name": "Wartburg (Silver trim)"
 		},
 		{
 			"objectName": "Car10Full",
@@ -128,9 +133,9 @@
 			"name": "Wartburg (Black trim)"
 		},
 		{
-			"objectName": "Car10Full",
-			"variant": 2,
-			"name": "Wartburg (Silver trim)"
+			"objectName": "Car10kFull",
+			"variant": 0,
+			"name": "Wartburg estate (Silver trim)"
 		},
 		{
 			"objectName": "Car10kFull",
@@ -138,13 +143,13 @@
 			"name": "Wartburg estate (Black trim)"
 		},
 		{
-			"objectName": "Car10kFull",
-			"variant": 2,
-			"name": "Wartburg estate (Silver trim)"
-		},
-		{
 			"objectName": "Bike03Full2",
 			"name": "Pannonia"
+		},
+		{
+			"objectName": "Car09full",
+			"variant": 0,
+			"name": "Barkas (2 side windows)"
 		},
 		{
 			"objectName": "Car09full",
@@ -157,9 +162,9 @@
 			"name": "Barkas (0 side windows)"
 		},
 		{
-			"objectName": "Car09full",
-			"variant": 3,
-			"name": "Barkas (2 side windows)"
+			"objectName": "Car09full_slide",
+			"variant": 0,
+			"name": "Barkas slide (2 side windows)"
 		},
 		{
 			"objectName": "Car09full_slide",
@@ -172,29 +177,24 @@
 			"name": "Barkas slide (0 side windows)"
 		},
 		{
-			"objectName": "Car09full_slide",
-			"variant": 3,
-			"name": "Barkas slide (2 side windows)"
-		},
-		{
 			"objectName": "Car09Pfull",
-			"variant": 1,
+			"variant": 0,
 			"name": "Barkas pickup"
 		},
 		{
 			"objectName": "Car09Tfull",
-			"variant": 1,
+			"variant": 0,
 			"name": "Barkas transporter"
+		},
+		{
+			"objectName": "Car11full",
+			"variant": 0,
+			"name": "Lamborghini Countach"
 		},
 		{
 			"objectName": "Car11full",
 			"variant": 1,
 			"name": "Lamborghini Countach (Widebody)"
-		},
-		{
-			"objectName": "Car11full",
-			"variant": 2,
-			"name": "Lamborghini Countach (Normal)"
 		}
 	],
 	"POIs": [
