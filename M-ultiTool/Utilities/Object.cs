@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.Rendering;
-using Logger = MultiTool.Modules.Logger;
+using Logger = MultiTool.Services.Logger;
 
 namespace MultiTool.Utilities
 {

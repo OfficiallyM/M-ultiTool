@@ -1,11 +1,11 @@
-﻿using MultiTool.Core;
-using MultiTool.Extensions;
-using MultiTool.Modules;
+﻿using MultiTool.Extensions;
+using MultiTool.UI;
+using MultiTool.UI.Tabs.VehicleConfiguration;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
-using Logger = MultiTool.Modules.Logger;
+using Logger = MultiTool.Services.Logger;
 
 namespace MultiTool.Utilities
 {
