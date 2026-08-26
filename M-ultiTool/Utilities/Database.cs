@@ -14,7 +14,7 @@ namespace MultiTool.Utilities
 	internal static class DatabaseUtilities
 	{
 		private static List<Vehicle> vehiclesCache = new List<Vehicle>();
-		private static List<Item> itemsCache = new List<Item>();
+		private static List<Core.Item> itemsCache = new List<Core.Item>();
 		private static List<POI> POIsCache = new List<POI>();
         private static Assembly amtAssembly;
         private static IEnumerable amtItems;
@@ -105,9 +105,9 @@ namespace MultiTool.Utilities
         /// Load all AMT items.
         /// </summary>
         /// <returns>List of items</returns>
-        private static List<Item> LoadAMTItems()
+        private static List<Core.Item> LoadAMTItems()
         {
-            List<Item> items = new List<Item>();
+            List<Core.Item> items = new List<Core.Item>();
             if (AMTSetup())
             {
                 int category = GUIRenderer.categories.Keys.ToList().IndexOf("Mod items");
@@ -131,7 +131,7 @@ namespace MultiTool.Utilities
                                 spawnMethod = spawn,
                             };
 
-                            items.Add(new Item() { gameObject = gameObject, thumbnail = ThumbnailGenerator.GetThumbnail(gameObject), amt = data, category = category });
+                            items.Add(new Core.Item() { gameObject = gameObject, thumbnail = ThumbnailGenerator.GetThumbnail(gameObject), amt = data, category = category });
                         }
                     }
                     catch (Exception ex)
@@ -172,9 +172,10 @@ namespace MultiTool.Utilities
 								Vehicle vehicle = new Vehicle()
 								{
 									gameObject = gameObject,
-									variant = i + 1,
-									thumbnail = ThumbnailGenerator.GetThumbnail(gameObject, i + 2), // I have no idea why +1 produces the wrong variant in the thumbnail.
-									name = Translator.T(gameObject.name, "vehicle", i + 1),
+									//variant = i + 1,
+									variant = i,
+									thumbnail = ThumbnailGenerator.GetThumbnail(gameObject, i),
+									name = Translator.T(gameObject.name, "vehicle", i),
 								};
 								vehiclesCache.Add(vehicle);
 							}
@@ -208,7 +209,7 @@ namespace MultiTool.Utilities
 		/// Load items from database.
 		/// </summary>
 		/// <returns>List of items</returns>
-		internal static List<Item> LoadItems()
+		internal static List<Core.Item> LoadItems()
 		{
 			// Return items from cache if not empty.
 			if (itemsCache.Count > 0)
@@ -221,7 +222,7 @@ namespace MultiTool.Utilities
 					// Remove vehicles and trailers from items array.
 					if (item && !GameUtilities.IsVehicleOrTrailer(item) && item.name != null && item.name != "ErrorPrefab")
 					{
-						itemsCache.Add(new Item() { gameObject = item, thumbnail = ThumbnailGenerator.GetThumbnail(item), category = GameUtilities.GetCategory(item) });
+						itemsCache.Add(new Core.Item() { gameObject = item, thumbnail = ThumbnailGenerator.GetThumbnail(item), category = GameUtilities.GetCategory(item) });
 					}
 				}
 				catch (Exception ex)
@@ -233,7 +234,30 @@ namespace MultiTool.Utilities
             // Populate with AMT items.
             itemsCache.AddRange(LoadAMTItems());
 
+			// Populate with mod items.
+			itemsCache.AddRange(LoadModItems());
+
             return itemsCache;
+		}
+
+		internal static List<Core.Item> LoadModItems()
+		{
+			List<Core.Item> items = new List<Core.Item>();
+			int category = GUIRenderer.categories.Keys.ToList().IndexOf("Mod items");
+
+			foreach (GameObject item in ModLoader.Database.GetAllItems())
+			{
+				try
+				{
+					itemsCache.Add(new Core.Item() { gameObject = item, thumbnail = ThumbnailGenerator.GetThumbnail(item), category = category });
+				}
+				catch (Exception ex)
+				{
+					Logger.Log($"Failed to load mod item {(item?.name ?? "Unknown")} - {ex}", Logger.LogLevel.Error);
+				}
+			}
+
+			return items;
 		}
 
 		/// <summary>
