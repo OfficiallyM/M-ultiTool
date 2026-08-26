@@ -1,16 +1,17 @@
-﻿using MultiTool.Components;
-using MultiTool.Core;
-using MultiTool.Modules;
+﻿using MultiTool.Config;
+using MultiTool.Database;
+using MultiTool.Save;
+using MultiTool.Services;
+using MultiTool.UI;
+using MultiTool.UI.Tabs.ComponentBrowser;
 using MultiTool.Utilities;
-using MultiTool.Utilities.UI;
 using System;
 using System.IO;
 using System.Linq;
-using System.Reflection;
 using TLDLoader;
 using UnityEngine;
-using Logger = MultiTool.Modules.Logger;
-using Settings = MultiTool.Core.Settings;
+using Logger = MultiTool.Services.Logger;
+using Settings = MultiTool.Services.Settings;
 
 namespace MultiTool
 {
@@ -25,7 +26,7 @@ namespace MultiTool
 
         // Modules.
         internal static GUIRenderer Renderer;
-		internal static Config Configuration;
+		internal static Configuration Configuration;
 		internal static Keybinds Binds;
 
 		private Settings settings = new Settings();
@@ -41,17 +42,17 @@ namespace MultiTool
 			// Initialise modules.
 			try
 			{
-				Modules.Logger.Init();
+				Services.Logger.Init();
 				Translator.Init();
 				ThumbnailGenerator.Init();
 
                 Renderer = new GUIRenderer();
-                Configuration = new Config();
+                Configuration = new Configuration();
                 Binds = new Keybinds();
 			}
 			catch (Exception ex)
 			{
-				Modules.Logger.Log($"Module initialisation failed - {ex}", Modules.Logger.LogLevel.Critical);
+				Services.Logger.Log($"Module initialisation failed - {ex}", Services.Logger.LogLevel.Critical);
 			}
 		}
 
@@ -116,7 +117,7 @@ namespace MultiTool
 				}
 				catch (Exception ex)
 				{
-					Modules.Logger.Log($"Failed to delete entity - {ex}", Modules.Logger.LogLevel.Warning);
+					Services.Logger.Log($"Failed to delete entity - {ex}", Services.Logger.LogLevel.Warning);
 				}
 			}
 
@@ -356,7 +357,7 @@ namespace MultiTool
 						{
 							tosaveitemscript save = GUIRenderer.selectedObject;
 							GameObject gameObject = save.gameObject;
-							Core.Item prefab = GUIRenderer.items.Where(i => i.gameObject.name == gameObject.name.Replace("(Clone)", "")).FirstOrDefault();
+							Database.Item prefab = GUIRenderer.items.Where(i => i.gameObject.name == gameObject.name.Replace("(Clone)", "")).FirstOrDefault();
 							if (prefab == null)
 								return;
 
