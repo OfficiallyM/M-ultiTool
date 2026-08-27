@@ -1,5 +1,4 @@
 ﻿using MultiTool.Database;
-using MultiTool.Services;
 using MultiTool.Utilities;
 using System;
 using System.Linq;
@@ -7,17 +6,17 @@ using UnityEngine;
 
 namespace MultiTool.UI.Tabs.VehicleConfiguration
 {
-    internal sealed class BasicsTab : UI.VehicleConfigurationTab
+	internal sealed class BasicsTab : UI.VehicleConfigurationTab
 	{
-        public override string Name => "Basics";
+		public override string Name => "Basics";
 
-        private Vector2 _position;
+		private Vector2 _position;
 
 		public override void RenderTab(Rect dimensions)
-        {
-            GUILayout.BeginArea(dimensions);
-            GUILayout.BeginVertical();
-            _position = GUILayout.BeginScrollView(_position);
+		{
+			GUILayout.BeginArea(dimensions);
+			GUILayout.BeginVertical();
+			_position = GUILayout.BeginScrollView(_position);
 
 			carscript car = mainscript.M.player.Car;
 			partconditionscript partconditionscript = car.gameObject.GetComponent<partconditionscript>();
@@ -88,11 +87,11 @@ namespace MultiTool.UI.Tabs.VehicleConfiguration
 			{
 				GameUtilities.Paint(Colour.GetColour(), partconditionscript);
 			}
-			GUILayout.EndHorizontal();			
+			GUILayout.EndHorizontal();
 
 			GUILayout.EndScrollView();
-            GUILayout.EndVertical();
-            GUILayout.EndArea();
-        }
-    }
+			GUILayout.EndVertical();
+			GUILayout.EndArea();
+		}
+	}
 }

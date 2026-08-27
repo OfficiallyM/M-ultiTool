@@ -10,8 +10,8 @@ namespace MultiTool.UI.Tabs
 	internal class DebugTab : Tab
 	{
 		public override string Name => "Mod debug";
-        public override bool ShowInNavigation => false;
-        internal override bool IsFullScreen => true;
+		public override bool ShowInNavigation => false;
+		internal override bool IsFullScreen => true;
 		private Vector2 _position;
 		private string _data;
 
@@ -49,7 +49,7 @@ namespace MultiTool.UI.Tabs
 
 		private static string PrettifyJson<T>(string json)
 		{
-			var serializer = new DataContractJsonSerializer(typeof(T));
+			DataContractJsonSerializer serializer = new DataContractJsonSerializer(typeof(T));
 			MemoryStream msRead = null;
 			MemoryStream msWrite = null;
 			XmlDictionaryWriter writer = null;

@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Collections.Generic;
 using UnityEngine;
 
 namespace MultiTool.Database
@@ -19,6 +15,6 @@ namespace MultiTool.Database
 		public List<int> fuelTypeInts = new List<int> { -1 };
 		public Color color = new Color(255f / 255f, 255f / 255f, 255f / 255f);
 		public string plate = string.Empty;
-        public AMTData amt = null;
-    }
+		public AMTData amt = null;
+	}
 }

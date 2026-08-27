@@ -12,7 +12,7 @@ namespace MultiTool.Extensions
 {
 	public static class ObjectExtensions
 	{
-		private static readonly MethodInfo CloneMethod = typeof(Object).GetMethod("MemberwiseClone", BindingFlags.NonPublic | BindingFlags.Instance);
+		private static readonly MethodInfo _cloneMethod = typeof(Object).GetMethod("MemberwiseClone", BindingFlags.NonPublic | BindingFlags.Instance);
 
 		public static bool IsPrimitive(this Type type)
 		{
@@ -27,14 +27,14 @@ namespace MultiTool.Extensions
 		private static Object InternalCopy(Object originalObject, IDictionary<Object, Object> visited)
 		{
 			if (originalObject == null) return null;
-			var typeToReflect = originalObject.GetType();
+			Type typeToReflect = originalObject.GetType();
 			if (IsPrimitive(typeToReflect)) return originalObject;
 			if (visited.ContainsKey(originalObject)) return visited[originalObject];
 			if (typeof(Delegate).IsAssignableFrom(typeToReflect)) return null;
-			var cloneObject = CloneMethod.Invoke(originalObject, null);
+			object cloneObject = _cloneMethod.Invoke(originalObject, null);
 			if (typeToReflect.IsArray)
 			{
-				var arrayType = typeToReflect.GetElementType();
+				Type arrayType = typeToReflect.GetElementType();
 				if (IsPrimitive(arrayType) == false)
 				{
 					Array clonedArray = (Array)cloneObject;
@@ -63,8 +63,8 @@ namespace MultiTool.Extensions
 			{
 				if (filter != null && filter(fieldInfo) == false) continue;
 				if (IsPrimitive(fieldInfo.FieldType)) continue;
-				var originalFieldValue = fieldInfo.GetValue(originalObject);
-				var clonedFieldValue = InternalCopy(originalFieldValue, visited);
+				object originalFieldValue = fieldInfo.GetValue(originalObject);
+				object clonedFieldValue = InternalCopy(originalFieldValue, visited);
 				fieldInfo.SetValue(cloneObject, clonedFieldValue);
 			}
 		}
@@ -83,9 +83,9 @@ namespace MultiTool.Extensions
 		{
 			if (obj == null) return default;
 
-			var serializer = new DataContractSerializer(typeof(T));
+			DataContractSerializer serializer = new DataContractSerializer(typeof(T));
 
-			using (var memoryStream = new MemoryStream())
+			using (MemoryStream memoryStream = new MemoryStream())
 			{
 				serializer.WriteObject(memoryStream, obj);
 				memoryStream.Seek(0, SeekOrigin.Begin);
@@ -98,16 +98,16 @@ namespace MultiTool.Extensions
 			if (obj1 == null || obj2 == null)
 				return obj1 == null && obj2 == null;
 
-			var type = obj1.GetType();
+			Type type = obj1.GetType();
 			if (type != obj2.GetType()) return false;
 
-			var dataMembers = type.GetFields(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic)
+			IEnumerable<FieldInfo> dataMembers = type.GetFields(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic)
 								  .Where(p => p.GetCustomAttribute<DataMemberAttribute>() != null);
 
-			foreach (var field in dataMembers)
+			foreach (FieldInfo field in dataMembers)
 			{
-				var value1 = field.GetValue(obj1);
-				var value2 = field.GetValue(obj2);
+				object value1 = field.GetValue(obj1);
+				object value2 = field.GetValue(obj2);
 
 				// Handle nulls.
 				if (value1 == null || value2 == null)
@@ -120,16 +120,16 @@ namespace MultiTool.Extensions
 				// Check if it's a list or collection.
 				else if (value1 is IEnumerable enumerable1 && value2 is IEnumerable enumerable2 && value1.GetType() != typeof(string))
 				{
-					var enum1 = enumerable1.Cast<object>().ToList();
-					var enum2 = enumerable2.Cast<object>().ToList();
+					List<object> enum1 = enumerable1.Cast<object>().ToList();
+					List<object> enum2 = enumerable2.Cast<object>().ToList();
 
 					if (enum1.Count != enum2.Count)
 						return false;
 
 					for (int i = 0; i < enum1.Count; i++)
 					{
-						var item1 = enum1[i];
-						var item2 = enum2[i];
+						object item1 = enum1[i];
+						object item2 = enum2[i];
 
 						if (!AreDataMembersEqual(item1, item2))
 							return false;

@@ -1,34 +1,34 @@
-﻿using System;
+﻿using MultiTool.Services;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using TLDLoader;
 using UnityEngine;
-using MultiTool.Services;
 using Logger = MultiTool.Services.Logger;
 
 namespace MultiTool.UI
 {
-    internal sealed class TabController
-    {
-        private readonly ServiceContext _services;
+	internal sealed class TabController
+	{
+		private readonly ServiceContext _services;
 
-        private string _tab = null;
+		private string _tab = null;
 		private string _lastTab = null;
-        private Tab _lastRenderedTab = null;
+		private Tab _lastRenderedTab = null;
 
-        private List<Tab> _tabs = new List<Tab>();
+		private List<Tab> _tabs = new List<Tab>();
 
-        public TabController(ServiceContext services)
-        {
-            _services = services;
-        }
+		public TabController(ServiceContext services)
+		{
+			_services = services;
+		}
 
-        internal void Update()
-        {
-            foreach (Tab tab in _tabs)
+		internal void Update()
+		{
+			foreach (Tab tab in _tabs)
 			{
-                tab.Update();
+				tab.Update();
 
 				if (!tab.HasCache) continue;
 				tab.NextCacheUpdate -= Time.unscaledDeltaTime;
@@ -38,7 +38,7 @@ namespace MultiTool.UI
 					tab.NextCacheUpdate = tab.CacheRefreshTime;
 				}
 			}
-        }
+		}
 
 		internal void FixedUpdate()
 		{
@@ -48,64 +48,64 @@ namespace MultiTool.UI
 			}
 		}
 
-        /// <summary>
+		/// <summary>
 		/// Add new tab.
 		/// </summary>
 		/// <param name="tab"></param>
-        /// <returns>Identifier of the added tab or null if tab is invalid</returns>
+		/// <returns>Identifier of the added tab or null if tab is invalid</returns>
 		public string AddTab(Tab tab)
-        {
-            // Find caller mod name.
-            Assembly caller = Assembly.GetCallingAssembly();
-            Mod callerMod = ModLoader.LoadedMods.Where(m => m.GetType().Assembly.GetName().Name == caller.GetName().Name).FirstOrDefault();
+		{
+			// Find caller mod name.
+			Assembly caller = Assembly.GetCallingAssembly();
+			Mod callerMod = ModLoader.LoadedMods.Where(m => m.GetType().Assembly.GetName().Name == caller.GetName().Name).FirstOrDefault();
 
-            if (MultiTool.isOnMainMenu)
-            {
-                Logger.Log($"Mod {callerMod.Name} attempted to register a tab too early. Tabs should be registered during OnLoad().", Logger.LogLevel.Error);
-                return null;
-            }
+			if (MultiTool.isOnMainMenu)
+			{
+				Logger.Log($"Mod {callerMod.Name} attempted to register a tab too early. Tabs should be registered during OnLoad().", Logger.LogLevel.Error);
+				return null;
+			}
 
-            tab.Source = callerMod.Name;
-            tab.Id = tab.Name.ToLower().Replace(' ', '_');
-            tab.Services = _services;
+			tab.Source = callerMod.Name;
+			tab.Id = tab.Name.ToLower().Replace(' ', '_');
+			tab.Services = _services;
 
 			// Set default configuration pane title.
 			if (tab.HasConfigPane && tab.ConfigTitle == string.Empty)
 				tab.ConfigTitle = "Configuration";
 
-            // Block duplicate tab registration.
-            if (_tabs.Where(t => t.Id == tab.Id).FirstOrDefault() != null)
-                return null;
+			// Block duplicate tab registration.
+			if (_tabs.Where(t => t.Id == tab.Id).FirstOrDefault() != null)
+				return null;
 
-            tab.OnRegister();
+			tab.OnRegister();
 
-            _tabs.Add(tab);
+			_tabs.Add(tab);
 
-            return tab.Id;
-        }
+			return tab.Id;
+		}
 
-        /// <summary>
-        /// Unregister all tabs to ensure they can be registered again next load.
-        /// </summary>
-        internal void UnregisterAll()
-        {
-            foreach (var tab in _tabs)
-            {
-                tab.OnUnregister();
-            }
+		/// <summary>
+		/// Unregister all tabs to ensure they can be registered again next load.
+		/// </summary>
+		internal void UnregisterAll()
+		{
+			foreach (Tab tab in _tabs)
+			{
+				tab.OnUnregister();
+			}
 
-            _tabs.Clear();
+			_tabs.Clear();
 			_tab = null;
 			_lastRenderedTab = null;
-        }
+		}
 
-        /// <summary>
-        /// Set the active tab.
-        /// </summary>
-        /// <param name="id">Identifier of the tab to set</param>
-        internal void SetActive(string id, bool setLast = true)
-        {
-            _tab = id;
+		/// <summary>
+		/// Set the active tab.
+		/// </summary>
+		/// <param name="id">Identifier of the tab to set</param>
+		internal void SetActive(string id, bool setLast = true)
+		{
+			_tab = id;
 			if (setLast)
 				_lastTab = _tab;
 		}
@@ -119,31 +119,32 @@ namespace MultiTool.UI
 			_tab = _tab == id ? _lastTab : id;
 		}
 
-        /// <summary>
-        /// Get the currently active tab index.
-        /// </summary>
-        /// <returns>Index of the currently active tab</returns>
-        internal string GetActive() => _tab;
+		/// <summary>
+		/// Get the currently active tab index.
+		/// </summary>
+		/// <returns>Index of the currently active tab</returns>
+		internal string GetActive() => _tab;
 
-        /// <summary>
-        /// Get number of tabs.
-        /// </summary>
-        /// <returns>Total number of tabs including disabled tabs</returns>
-        internal int GetCount() => _tabs.Count;
-
-        /// <summary>
-        /// Get tab by identifier.
-        /// </summary>
-        /// <param name="id">Identifier of tab to find</param>
-        /// <returns>Tab if the ID is valid, otherwise null</returns>
-        internal Tab GetById(string id) => _tabs.Where(t => t.Id == id).FirstOrDefault();
+		/// <summary>
+		/// Get number of tabs.
+		/// </summary>
+		/// <returns>Total number of tabs including disabled tabs</returns>
+		internal int GetCount() => _tabs.Count;
 
 		/// <summary>
 		/// Get tab by identifier.
 		/// </summary>
 		/// <param name="id">Identifier of tab to find</param>
 		/// <returns>Tab if the ID is valid, otherwise null</returns>
-		internal T GetById<T>(string id) where T : Tab {
+		internal Tab GetById(string id) => _tabs.Where(t => t.Id == id).FirstOrDefault();
+
+		/// <summary>
+		/// Get tab by identifier.
+		/// </summary>
+		/// <param name="id">Identifier of tab to find</param>
+		/// <returns>Tab if the ID is valid, otherwise null</returns>
+		internal T GetById<T>(string id) where T : Tab
+		{
 			Tab tab = _tabs.Where(t => t.Id == id).FirstOrDefault();
 			return tab as T;
 		}
@@ -160,7 +161,7 @@ namespace MultiTool.UI
 		/// </summary>
 		/// <param name="index">Index of tab to find</param>
 		/// <returns>Tab if the index is valid, otherwise null</returns>
-		internal T GetByIndex<T>(int index) where T: Tab
+		internal T GetByIndex<T>(int index) where T : Tab
 		{
 			Tab tab = _tabs.Count() > index ? _tabs[index] : null;
 			return tab as T;
@@ -172,84 +173,84 @@ namespace MultiTool.UI
 		/// <param name="id">The tab index to render</param>
 		/// <param name="dimensions">The dimensions rect for the tab. Leave null to use menu default</param>
 		public void RenderTab(string id = null, Rect? dimensions = null)
-        {
-            if (_tab == null) _tab = GetByIndex(0).Id;
-            if (id == null) id = _tab;
-            Tab tab = _lastRenderedTab;
-            if (tab == null || tab.Id != id)
-            {
-                tab = GetById(id);
-                // Cache last rendered tab for better performance.
-                _lastRenderedTab = tab;
-            }
+		{
+			if (_tab == null) _tab = GetByIndex(0).Id;
+			if (id == null) id = _tab;
+			Tab tab = _lastRenderedTab;
+			if (tab == null || tab.Id != id)
+			{
+				tab = GetById(id);
+				// Cache last rendered tab for better performance.
+				_lastRenderedTab = tab;
+			}
 
-            Rect tabDimensions = new Rect()
-            {
-                x = MultiTool.Renderer.mainMenuX - 30f,
-                y = MultiTool.Renderer.mainMenuX + (tab.IsFullScreen ? 20f : 60f),
-                width = MultiTool.Renderer.mainMenuWidth - 20f,
-                height = MultiTool.Renderer.mainMenuHeight - (tab.IsFullScreen ? 70f : 110f),
-            };
+			Rect tabDimensions = new Rect()
+			{
+				x = MultiTool.Renderer.mainMenuX - 30f,
+				y = MultiTool.Renderer.mainMenuX + (tab.IsFullScreen ? 20f : 60f),
+				width = MultiTool.Renderer.mainMenuWidth - 20f,
+				height = MultiTool.Renderer.mainMenuHeight - (tab.IsFullScreen ? 70f : 110f),
+			};
 
-            if (dimensions != null)
-                tabDimensions = dimensions.Value;
+			if (dimensions != null)
+				tabDimensions = dimensions.Value;
 
-            float configWidth = tabDimensions.width * 0.25f;
-            float configX = tabDimensions.x + tabDimensions.width - configWidth;
+			float configWidth = tabDimensions.width * 0.25f;
+			float configX = tabDimensions.x + tabDimensions.width - configWidth;
 
-            // Return early if tab is disabled.
-            if (tab.IsDisabled) return;
+			// Return early if tab is disabled.
+			if (tab.IsDisabled) return;
 
-            // Config pane.
-            if (tab.HasConfigPane)
-            {
-                // Decrease tab width to account for content pane.
-                tabDimensions.width -= configWidth + 5f;
+			// Config pane.
+			if (tab.HasConfigPane)
+			{
+				// Decrease tab width to account for content pane.
+				tabDimensions.width -= configWidth + 5f;
 
-                GUI.Box(new Rect(configX, tabDimensions.y, configWidth, tabDimensions.height), $"<size=16>{tab.ConfigTitle}</size>");
+				GUI.Box(new Rect(configX, tabDimensions.y, configWidth, tabDimensions.height), $"<size=16>{tab.ConfigTitle}</size>");
 
-                Rect configDimensions = new Rect()
-                {
-                    x = configX,
-                    y = tabDimensions.y + 20f,
-                    width = configWidth - 10f,
-                    height = tabDimensions.height - 20f,
-                };
+				Rect configDimensions = new Rect()
+				{
+					x = configX,
+					y = tabDimensions.y + 20f,
+					width = configWidth - 10f,
+					height = tabDimensions.height - 20f,
+				};
 
-                try
-                {
-                    tab.RenderConfigPane(configDimensions);
-                }
-                catch (Exception ex)
-                {
-                    tab.Errors++;
-                    Logger.Log($"Error occurred during tab \"{tab.Name}\" MultiTool.Configuration render ({tab.Errors}/5). Details: {ex}", Logger.LogLevel.Error);
+				try
+				{
+					tab.RenderConfigPane(configDimensions);
+				}
+				catch (Exception ex)
+				{
+					tab.Errors++;
+					Logger.Log($"Error occurred during tab \"{tab.Name}\" MultiTool.Configuration render ({tab.Errors}/5). Details: {ex}", Logger.LogLevel.Error);
 
-                    if (tab.Errors >= 5)
-                    {
-                        tab.IsDisabled = true;
-                        Logger.Log($"Tab {tab.Name} threw too many errors and has been disabled.", Logger.LogLevel.Warning);
+					if (tab.Errors >= 5)
+					{
+						tab.IsDisabled = true;
+						Logger.Log($"Tab {tab.Name} threw too many errors and has been disabled.", Logger.LogLevel.Warning);
 						Notifications.SendError("Tab disabled", $"Tab {tab.Name} threw errors and has been disabled.");
-                    }
-                }
-            }
+					}
+				}
+			}
 
-            try
-            {
-                tab.RenderTab(tabDimensions);
-            }
-            catch (Exception ex)
-            {
-                tab.Errors++;
-                Logger.Log($"Error occurred during tab \"{tab.Name}\" render ({tab.Errors}/5). Details: {ex}", Logger.LogLevel.Error);
+			try
+			{
+				tab.RenderTab(tabDimensions);
+			}
+			catch (Exception ex)
+			{
+				tab.Errors++;
+				Logger.Log($"Error occurred during tab \"{tab.Name}\" render ({tab.Errors}/5). Details: {ex}", Logger.LogLevel.Error);
 
-                if (tab.Errors >= 5)
-                {
-                    tab.IsDisabled = true;
-                    Logger.Log($"Tab {tab.Name} threw too many errors and has been disabled.", Logger.LogLevel.Warning);
+				if (tab.Errors >= 5)
+				{
+					tab.IsDisabled = true;
+					Logger.Log($"Tab {tab.Name} threw too many errors and has been disabled.", Logger.LogLevel.Warning);
 					Notifications.SendError("Tab disabled", $"Tab {tab.Name} threw errors and has been disabled.");
 				}
-            }
-        }
-    }
+			}
+		}
+	}
 }

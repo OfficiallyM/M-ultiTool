@@ -1,5 +1,4 @@
 ﻿using MultiTool.Extensions;
-using MultiTool.Services;
 using MultiTool.Utilities;
 using Newtonsoft.Json;
 using System;
@@ -220,7 +219,7 @@ namespace MultiTool.UI.Tabs.ComponentBrowser
 		{
 			_searchCts?.Cancel();
 			_searchCts = new CancellationTokenSource();
-			var token = _searchCts.Token;
+			CancellationToken token = _searchCts.Token;
 			_isSearching = true;
 
 			try
@@ -229,7 +228,7 @@ namespace MultiTool.UI.Tabs.ComponentBrowser
 				_cachedObjects = _objects.ToList();
 				if (query != string.Empty)
 				{
-					var result = await Task.Run(() => Search(_cachedObjects, query, token), token);
+					List<SceneObject> result = await Task.Run(() => Search(_cachedObjects, query, token), token);
 					if (!token.IsCancellationRequested)
 						_cachedObjects = result;
 				}
@@ -252,15 +251,15 @@ namespace MultiTool.UI.Tabs.ComponentBrowser
 		/// <returns>List of SceneObject results</returns>
 		private List<SceneObject> Search(List<SceneObject> roots, string query, CancellationToken token)
 		{
-			var results = new List<SceneObject>();
+			List<SceneObject> results = new List<SceneObject>();
 			HashSet<string> searchExpandedPaths = new HashSet<string>();
-			var filter = ParseQuery(query);
+			SearchFilter filter = ParseQuery(query);
 
-			foreach (var root in roots)
+			foreach (SceneObject root in roots)
 			{
 				token.ThrowIfCancellationRequested();
 
-				var match = FilterAndBuildTree(root, filter, searchExpandedPaths, 0, token);
+				SceneObject match = FilterAndBuildTree(root, filter, searchExpandedPaths, 0, token);
 				if (match != null)
 					results.Add(match);
 			}
@@ -276,10 +275,10 @@ namespace MultiTool.UI.Tabs.ComponentBrowser
 		/// <returns>Built search filter</returns>
 		private SearchFilter ParseQuery(string query)
 		{
-			var filter = new SearchFilter();
-			var tokens = query.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+			SearchFilter filter = new SearchFilter();
+			string[] tokens = query.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
 
-			foreach (var rawToken in tokens)
+			foreach (string rawToken in tokens)
 			{
 				string token = rawToken.Trim();
 				bool negate = token.StartsWith("!");
@@ -319,7 +318,7 @@ namespace MultiTool.UI.Tabs.ComponentBrowser
 		{
 			if (obj == null) return false;
 
-			foreach (var cond in conditions)
+			foreach (SearchCondition cond in conditions)
 			{
 				bool match = false;
 
@@ -366,10 +365,10 @@ namespace MultiTool.UI.Tabs.ComponentBrowser
 
 				bool selfMatch = MatchesConditions(obj.gameObject, filter.Conditions[SearchScope.Self]);
 
-				var matchedChildren = new List<SceneObject>();
-				foreach (var child in obj.children)
+				List<SceneObject> matchedChildren = new List<SceneObject>();
+				foreach (SceneObject child in obj.children)
 				{
-					var match = FilterAndBuildTree(child, filter, expandedPaths, depth + 1, token);
+					SceneObject match = FilterAndBuildTree(child, filter, expandedPaths, depth + 1, token);
 					if (match != null)
 						matchedChildren.Add(match);
 				}
@@ -377,12 +376,12 @@ namespace MultiTool.UI.Tabs.ComponentBrowser
 				// Evaluate root and parent conditions.
 				if (filter.Conditions[SearchScope.Parent].Count > 0 && obj.gameObject.transform.parent != null)
 				{
-					var parentObj = obj.gameObject.transform.parent.gameObject;
+					GameObject parentObj = obj.gameObject.transform.parent.gameObject;
 					if (!MatchesConditions(parentObj, filter.Conditions[SearchScope.Parent])) return null;
 				}
 				if (filter.Conditions[SearchScope.Root].Count > 0)
 				{
-					var rootObj = obj.gameObject.transform.root.gameObject;
+					GameObject rootObj = obj.gameObject.transform.root.gameObject;
 					if (!MatchesConditions(rootObj, filter.Conditions[SearchScope.Root])) return null;
 				}
 
@@ -831,7 +830,7 @@ namespace MultiTool.UI.Tabs.ComponentBrowser
 		/// <returns></returns>
 		private bool TryGetScrollOffset(List<SceneObject> objects, SceneObject target, ref float offset)
 		{
-			foreach (var obj in objects)
+			foreach (SceneObject obj in objects)
 			{
 				if (obj.gameObject == null) continue;
 				bool isExpanded = _expandedPaths.Contains(obj.gameObject.transform.GetPath());
@@ -861,9 +860,9 @@ namespace MultiTool.UI.Tabs.ComponentBrowser
 		{
 			if (obj == null) return null;
 
-			foreach (var root in _cachedObjects)
+			foreach (SceneObject root in _cachedObjects)
 			{
-				var found = FindSceneObjectRecursive(root, obj);
+				SceneObject found = FindSceneObjectRecursive(root, obj);
 				if (found != null)
 					return found;
 			}
@@ -884,9 +883,9 @@ namespace MultiTool.UI.Tabs.ComponentBrowser
 			if (current.gameObject == target)
 				return current;
 
-			foreach (var child in current.children)
+			foreach (SceneObject child in current.children)
 			{
-				var found = FindSceneObjectRecursive(child, target);
+				SceneObject found = FindSceneObjectRecursive(child, target);
 				if (found != null)
 					return found;
 			}
@@ -988,7 +987,7 @@ namespace MultiTool.UI.Tabs.ComponentBrowser
 			try
 			{
 				if (_selected?.trackedSceneObject == null && _selected?.trackedComponent == null) return;
-			
+
 				GUILayout.BeginArea(dimensions);
 				GUILayout.BeginHorizontal();
 				GUILayout.Space(5);
@@ -1110,7 +1109,7 @@ namespace MultiTool.UI.Tabs.ComponentBrowser
 				_layersExpanded = !_layersExpanded;
 			if (_layersExpanded)
 			{
-				foreach (var layer in _layers)
+				foreach (KeyValuePair<int, string> layer in _layers)
 				{
 					if (layer.Key == gameObject.layer) continue;
 
@@ -1145,7 +1144,7 @@ namespace MultiTool.UI.Tabs.ComponentBrowser
 
 			if (_addComponentSuggestions.Count > 0)
 			{
-				foreach (var type in _addComponentSuggestions.Take(10))
+				foreach (Type type in _addComponentSuggestions.Take(10))
 				{
 					if (GUILayout.Button(type.FullName))
 					{
@@ -1259,7 +1258,7 @@ namespace MultiTool.UI.Tabs.ComponentBrowser
 						object next = null;
 						bool handled = false;
 
-						foreach (var (rendererType, renderer) in _renderers)
+						foreach ((Type rendererType, Func<MemberInfo, object, object> renderer) in _renderers)
 						{
 							if (rendererType.IsInstanceOfType(current))
 							{
@@ -1371,19 +1370,19 @@ namespace MultiTool.UI.Tabs.ComponentBrowser
 		/// <returns>List of MemberInfo</returns>
 		private List<MemberInfo> GetMembers(Component component)
 		{
-			var members = new List<MemberInfo>();
-			var type = component.GetType();
+			List<MemberInfo> members = new List<MemberInfo>();
+			Type type = component.GetType();
 
 			const BindingFlags flags = BindingFlags.Instance | BindingFlags.Static |
 										BindingFlags.Public | BindingFlags.NonPublic;
 
-			foreach (var field in type.GetFields(flags))
+			foreach (FieldInfo field in type.GetFields(flags))
 			{
 				if (!_excludedMembers.Contains(field.Name))
 					members.Add(field);
 			}
 
-			foreach (var prop in type.GetProperties(flags))
+			foreach (PropertyInfo prop in type.GetProperties(flags))
 			{
 				if (!_excludedMembers.Contains(prop.Name))
 					members.Add(prop);
@@ -1412,7 +1411,7 @@ namespace MultiTool.UI.Tabs.ComponentBrowser
 			if (_selected.trackedComponent == null || _componentMembers == null || _componentMembers.Count == 0) return;
 
 			_memberValuesCache.Clear();
-			foreach (var member in _componentMembers)
+			foreach (MemberInfo member in _componentMembers)
 			{
 				try
 				{
@@ -1436,7 +1435,7 @@ namespace MultiTool.UI.Tabs.ComponentBrowser
 		{
 			_componentSearchCts?.Cancel();
 			_componentSearchCts = new CancellationTokenSource();
-			var token = _componentSearchCts.Token;
+			CancellationToken token = _componentSearchCts.Token;
 			_isComponentSearching = true;
 
 			try
@@ -1444,7 +1443,7 @@ namespace MultiTool.UI.Tabs.ComponentBrowser
 				_cachedComponentMembers = _componentMembers.ToList();
 				if (query != string.Empty)
 				{
-					var result = await Task.Run(() => ComponentSearch(_cachedComponentMembers, query, token), token);
+					List<MemberInfo> result = await Task.Run(() => ComponentSearch(_cachedComponentMembers, query, token), token);
 					if (!token.IsCancellationRequested)
 					{
 						_cachedComponentMembers = result;
@@ -1469,10 +1468,10 @@ namespace MultiTool.UI.Tabs.ComponentBrowser
 		/// <returns>List of MemberInfo results</returns>
 		private List<MemberInfo> ComponentSearch(List<MemberInfo> members, string query, CancellationToken token)
 		{
-			var results = new List<MemberInfo>();
+			List<MemberInfo> results = new List<MemberInfo>();
 			query = query.ToLowerInvariant();
 
-			foreach (var member in members)
+			foreach (MemberInfo member in members)
 			{
 				token.ThrowIfCancellationRequested();
 
@@ -1532,11 +1531,11 @@ namespace MultiTool.UI.Tabs.ComponentBrowser
 		/// <returns>Object value or null if member is invalid</returns>
 		private object GetValue(MemberInfo member, object target)
 		{
-			var field = member as FieldInfo;
+			FieldInfo field = member as FieldInfo;
 			if (field != null)
 				return field.GetValue(target);
 
-			var prop = member as PropertyInfo;
+			PropertyInfo prop = member as PropertyInfo;
 			if (prop != null)
 				return prop.GetValue(target, null);
 
@@ -1553,14 +1552,14 @@ namespace MultiTool.UI.Tabs.ComponentBrowser
 		{
 			try
 			{
-				var field = member as FieldInfo;
+				FieldInfo field = member as FieldInfo;
 				if (field != null)
 				{
 					field.SetValue(target, value);
 				}
 				else
 				{
-					var prop = member as PropertyInfo;
+					PropertyInfo prop = member as PropertyInfo;
 					if (prop != null)
 					{
 						prop.SetValue(target, value, null);
@@ -1620,7 +1619,7 @@ namespace MultiTool.UI.Tabs.ComponentBrowser
 			}
 			else if (member is PropertyInfo prop)
 			{
-				var getter = prop.GetGetMethod(true);
+				MethodInfo getter = prop.GetGetMethod(true);
 				if (getter != null)
 				{
 					if (getter.IsPublic) return "public";
@@ -1639,7 +1638,7 @@ namespace MultiTool.UI.Tabs.ComponentBrowser
 		/// </summary>
 		private void CopyComponentToJson()
 		{
-			var exportDict = _memberValuesCache.ToDictionary(
+			Dictionary<string, object> exportDict = _memberValuesCache.ToDictionary(
 				kvp => kvp.Key.Name,
 				kvp => FormatValue(kvp.Value.Item1)
 			);

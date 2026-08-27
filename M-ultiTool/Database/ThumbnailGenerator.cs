@@ -14,14 +14,14 @@ namespace MultiTool.Database
 	// so needs doing in a coroutine.
 	internal static class ThumbnailGenerator
 	{
-		private static string cacheDir = null;
-		private static bool regenerateCache = false;
+		private static string _cacheDir = null;
+		private static bool _regenerateCache = false;
 
 		public static void Init()
 		{
-			string configDir =  Path.Combine(ModLoader.ModsFolder, "Config", "Mod Settings", MultiTool.mod.ID);
+			string configDir = Path.Combine(ModLoader.ModsFolder, "Config", "Mod Settings", MultiTool.mod.ID);
 			DirectoryInfo dir = Directory.CreateDirectory(Path.Combine(configDir, "Cache"));
-			cacheDir = dir.FullName;
+			_cacheDir = dir.FullName;
 		}
 
 		/// <summary>
@@ -39,7 +39,7 @@ namespace MultiTool.Database
 		/// </summary>
 		internal static void RebuildCache()
 		{
-			DirectoryInfo cacheDirectory = new DirectoryInfo(cacheDir);
+			DirectoryInfo cacheDirectory = new DirectoryInfo(_cacheDir);
 			foreach (FileInfo file in cacheDirectory.GetFiles())
 			{
 				file.Delete();
@@ -64,11 +64,11 @@ namespace MultiTool.Database
 				fileName += $"-{variant.Value - 1}";
 			}
 			fileName += ".png";
-			if (!regenerateCache && File.Exists(Path.Combine(cacheDir, fileName)))
+			if (!_regenerateCache && File.Exists(Path.Combine(_cacheDir, fileName)))
 			{
 				RenderTexture renderTexture = new RenderTexture(200, 200, 16);
 				Texture2D texture2D = new Texture2D(renderTexture.width, renderTexture.height);
-				byte[] cacheImage = File.ReadAllBytes(Path.Combine(cacheDir, fileName));
+				byte[] cacheImage = File.ReadAllBytes(Path.Combine(_cacheDir, fileName));
 				ImageConversion.LoadImage(texture2D, cacheImage);
 				texture2D.Apply();
 				return texture2D;
@@ -223,7 +223,7 @@ namespace MultiTool.Database
 				fileName += $"-{variant.Value - 1}";
 			}
 			fileName += ".png";
-			File.WriteAllBytes(Path.Combine(cacheDir, fileName), texture2D.EncodeToPNG());
+			File.WriteAllBytes(Path.Combine(_cacheDir, fileName), texture2D.EncodeToPNG());
 
 			return texture2D;
 		}

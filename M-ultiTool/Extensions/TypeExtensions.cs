@@ -6,7 +6,7 @@ namespace MultiTool.Extensions
 {
 	public static class TypeExtensions
 	{
-		private static readonly Dictionary<Type, string> Aliases = new Dictionary<Type, string>
+		private static readonly Dictionary<Type, string> _aliases = new Dictionary<Type, string>
 		{
 			{ typeof(void), "void" }, { typeof(bool), "bool" }, { typeof(byte), "byte" },
 			{ typeof(sbyte), "sbyte" }, { typeof(char), "char" }, { typeof(decimal), "decimal" },
@@ -35,18 +35,18 @@ namespace MultiTool.Extensions
 			// Handle generic types like List<T>, Dictionary<TKey, TValue>, etc.
 			if (type.IsGenericType)
 			{
-				var genericTypeDefName = type.Name;
-				var backtickIndex = genericTypeDefName.IndexOf('`');
+				string genericTypeDefName = type.Name;
+				int backtickIndex = genericTypeDefName.IndexOf('`');
 				if (backtickIndex > 0)
 					genericTypeDefName = genericTypeDefName.Substring(0, backtickIndex);
 
-				var genericArgs = type.GetGenericArguments();
+				Type[] genericArgs = type.GetGenericArguments();
 				string genericArgsNames = string.Join(", ", genericArgs.Select(t => t.GetFriendlyName()));
 				return $"{genericTypeDefName}<{genericArgsNames}>";
 			}
 
 			// Check for alias (int, float, etc.).
-			if (Aliases.TryGetValue(type, out var alias))
+			if (_aliases.TryGetValue(type, out string alias))
 				return alias;
 
 			// Default to just the type name.

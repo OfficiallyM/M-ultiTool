@@ -5,7 +5,6 @@ using MultiTool.Utilities;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
-using Logger = MultiTool.Services.Logger;
 
 namespace MultiTool.UI.Tabs
 {

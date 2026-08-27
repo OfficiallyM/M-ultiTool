@@ -4,13 +4,12 @@ using MultiTool.Utilities;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
-using Logger = MultiTool.Services.Logger;
 
 namespace MultiTool.UI.Tabs.VehicleConfiguration
 {
-    internal sealed class WheelTuningTab : UI.VehicleConfigurationTab
+	internal sealed class WheelTuningTab : UI.VehicleConfigurationTab
 	{
-        public override string Name => "Wheel Tuning";
+		public override string Name => "Wheel Tuning";
 		public override bool HasCache => true;
 
 		private Vector2 _position;
@@ -190,7 +189,7 @@ namespace MultiTool.UI.Tabs.VehicleConfiguration
 					GUILayout.Label($"Wheel {wheel.slot}", "LabelHeader");
 					GUILayout.Space(5);
 
-					RenderWheelSliders(wheel, _defaultTuning.wheels[index] ,true);
+					RenderWheelSliders(wheel, _defaultTuning.wheels[index], true);
 					GUILayout.Space(5);
 					GUILayout.EndVertical();
 
@@ -459,4 +458,3 @@ namespace MultiTool.UI.Tabs.VehicleConfiguration
 		}
 	}
 }
- 

@@ -1,11 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.Rendering;
-using Logger = MultiTool.Services.Logger;
 
 namespace MultiTool.Utilities
 {

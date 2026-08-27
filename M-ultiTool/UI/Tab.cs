@@ -15,13 +15,13 @@ namespace MultiTool.UI
 		public virtual string ConfigTitle { get; set; }
 		public virtual bool HasCache { get { return false; } }
 		public virtual int CacheRefreshTime { get { return 1; } }
-        public virtual bool ShowInNavigation { get { return true; } }
-        internal virtual bool IsFullScreen { get { return false; } }
+		public virtual bool ShowInNavigation { get { return true; } }
+		internal virtual bool IsFullScreen { get { return false; } }
 		public virtual void RenderTab(Rect dimensions) { }
 		public virtual void RenderConfigPane(Rect dimensions) { }
-        public virtual void OnRegister() { }
-        public virtual void OnUnregister() { }
-        public virtual void Update() { }
+		public virtual void OnRegister() { }
+		public virtual void OnUnregister() { }
+		public virtual void Update() { }
 		public virtual void FixedUpdate() { }
 		public virtual void OnCacheRefresh() { }
 

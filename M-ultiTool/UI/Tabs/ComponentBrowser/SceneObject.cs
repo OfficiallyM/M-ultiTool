@@ -30,12 +30,12 @@ namespace MultiTool.UI.Tabs.ComponentBrowser
 
 		private SceneObject FindByInstanceId(List<SceneObject> roots, int id)
 		{
-			foreach (var obj in roots)
+			foreach (SceneObject obj in roots)
 			{
 				if (obj.gameObject?.GetInstanceID() == id)
 					return obj;
 
-				var found = FindByInstanceId(obj.children, id);
+				SceneObject found = FindByInstanceId(obj.children, id);
 				if (found != null)
 					return found;
 			}
@@ -70,12 +70,12 @@ namespace MultiTool.UI.Tabs.ComponentBrowser
 
 		private SceneObject FindByInstanceId(List<SceneObject> roots, int id)
 		{
-			foreach (var obj in roots)
+			foreach (SceneObject obj in roots)
 			{
 				if (obj.gameObject?.GetInstanceID() == id)
 					return obj;
 
-				var found = FindByInstanceId(obj.children, id);
+				SceneObject found = FindByInstanceId(obj.children, id);
 				if (found != null)
 					return found;
 			}

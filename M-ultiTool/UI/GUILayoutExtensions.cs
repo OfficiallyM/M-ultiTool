@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using UnityEngine;
 
 namespace MultiTool.UI
@@ -61,8 +60,8 @@ namespace MultiTool.UI
 
 			if (GUILayout.Button("Paste", GUILayout.ExpandWidth(false)))
 			{
-				var parts = GUIUtility.systemCopyBuffer.Split(',');
-				if (parts.Length == 2 && float.TryParse(parts[0], out var x) && float.TryParse(parts[1], out var y))
+				string[] parts = GUIUtility.systemCopyBuffer.Split(',');
+				if (parts.Length == 2 && float.TryParse(parts[0], out float x) && float.TryParse(parts[1], out float y))
 					value = new Vector2(x, y);
 			}
 			GUILayout.EndHorizontal();
@@ -125,8 +124,8 @@ namespace MultiTool.UI
 
 			if (GUILayout.Button("Paste", GUILayout.ExpandWidth(false)))
 			{
-				var parts = GUIUtility.systemCopyBuffer.Split(',');
-				if (parts.Length == 3 && float.TryParse(parts[0], out var x) && float.TryParse(parts[1], out var y) && float.TryParse(parts[2], out var z))
+				string[] parts = GUIUtility.systemCopyBuffer.Split(',');
+				if (parts.Length == 3 && float.TryParse(parts[0], out float x) && float.TryParse(parts[1], out float y) && float.TryParse(parts[2], out float z))
 					value = new Vector3(x, y, z);
 			}
 			GUILayout.EndHorizontal();
@@ -200,8 +199,8 @@ namespace MultiTool.UI
 
 			if (GUILayout.Button("Paste", GUILayout.ExpandWidth(false)))
 			{
-				var parts = GUIUtility.systemCopyBuffer.Split(',');
-				if (parts.Length == 4 && float.TryParse(parts[0], out var x) && float.TryParse(parts[1], out var y) && float.TryParse(parts[2], out var z) && float.TryParse(parts[3], out var w))
+				string[] parts = GUIUtility.systemCopyBuffer.Split(',');
+				if (parts.Length == 4 && float.TryParse(parts[0], out float x) && float.TryParse(parts[1], out float y) && float.TryParse(parts[2], out float z) && float.TryParse(parts[3], out float w))
 					value = new Vector4(x, y, z, w);
 			}
 			GUILayout.EndHorizontal();
@@ -290,8 +289,8 @@ namespace MultiTool.UI
 
 			if (GUILayout.Button("Paste", GUILayout.ExpandWidth(false)))
 			{
-				var parts = GUIUtility.systemCopyBuffer.Split(',');
-				if (parts.Length == 4 && float.TryParse(parts[0], out var x) && float.TryParse(parts[1], out var y) && float.TryParse(parts[2], out var z) && float.TryParse(parts[3], out var w))
+				string[] parts = GUIUtility.systemCopyBuffer.Split(',');
+				if (parts.Length == 4 && float.TryParse(parts[0], out float x) && float.TryParse(parts[1], out float y) && float.TryParse(parts[2], out float z) && float.TryParse(parts[3], out float w))
 					value = new Quaternion(x, y, z, w);
 			}
 			GUILayout.EndHorizontal();
@@ -379,8 +378,8 @@ namespace MultiTool.UI
 
 			if (GUILayout.Button("Paste", GUILayout.ExpandWidth(false)))
 			{
-				var parts = GUIUtility.systemCopyBuffer.Split(',');
-				if (parts.Length == 4 && float.TryParse(parts[0], out var r) && float.TryParse(parts[1], out var g) && float.TryParse(parts[2], out var b) && float.TryParse(parts[3], out var a))
+				string[] parts = GUIUtility.systemCopyBuffer.Split(',');
+				if (parts.Length == 4 && float.TryParse(parts[0], out float r) && float.TryParse(parts[1], out float g) && float.TryParse(parts[2], out float b) && float.TryParse(parts[3], out float a))
 					value = new Color(r, g, b, a);
 			}
 			GUILayout.EndHorizontal();
@@ -430,7 +429,7 @@ namespace MultiTool.UI
 			if (!string.IsNullOrEmpty(label))
 				GUILayout.Label(label, GUILayout.ExpandWidth(false));
 
-			var values = Enum.GetValues(value.GetType());
+			Array values = Enum.GetValues(value.GetType());
 
 			foreach (Enum option in values)
 			{

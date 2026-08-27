@@ -2,20 +2,18 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Serialization;
-using System.Text;
-using System.Threading.Tasks;
 using UnityEngine;
 
 namespace MultiTool.Services
 {
 	internal class Keybinds
 	{
-		private GUIStyle labelStyle = new GUIStyle();
+		private GUIStyle _labelStyle = new GUIStyle();
 
-		private int rebindAction = -1;
-		private readonly Array keyCodes = Enum.GetValues(typeof(KeyCode));
+		private int _rebindAction = -1;
+		private readonly Array _keyCodes = Enum.GetValues(typeof(KeyCode));
 
-		private Dictionary<string, Vector2> scrollPositions = new Dictionary<string, Vector2>();
+		private Dictionary<string, Vector2> _scrollPositions = new Dictionary<string, Vector2>();
 
 		public enum Inputs
 		{
@@ -34,7 +32,7 @@ namespace MultiTool.Services
 			left,
 			right,
 			select,
-            action6,
+			action6,
 		}
 
 		public List<Key> keys = new List<Key>();
@@ -150,18 +148,18 @@ namespace MultiTool.Services
 				keys[14].defaultKey = KeyCode.Return;
 				keys[14].name = "Select";
 
-                // Action 6.
-                keys[15].key = KeyCode.V;
-                keys[15].defaultKey = KeyCode.V;
-                keys[15].name = "Action 6";
-            }
+				// Action 6.
+				keys[15].key = KeyCode.V;
+				keys[15].defaultKey = KeyCode.V;
+				keys[15].name = "Action 6";
+			}
 			catch (Exception ex)
 			{
 				Logger.Log($"Keybind load error: {ex}", Logger.LogLevel.Error);
 			}
 
-			labelStyle.alignment = TextAnchor.MiddleCenter;
-			labelStyle.normal.textColor = Color.white;
+			_labelStyle.alignment = TextAnchor.MiddleCenter;
+			_labelStyle.normal.textColor = Color.white;
 		}
 
 		public void OnLoad()
@@ -207,80 +205,80 @@ namespace MultiTool.Services
 			}
 		}
 
-        /// <summary>
-        /// <para>Render a rebind menu</para>
-        /// <para>This should be called from an OnGUI function</para>
-        /// </summary>
-        /// <param name="title">The menu title</param>
-        /// <param name="actions">Int array of actions to display rebinds for</param>
-        /// <param name="x">The X position to display the menu</param>
-        /// <param name="y">The Y position to display the menu</param>
-        /// <param name="width">Width of the menu</param>
-        /// <param name="height">Height of the menu</param>
-        public void RenderRebindMenu(string title, int[] actions, float x, float y, float width, float height)
+		/// <summary>
+		/// <para>Render a rebind menu</para>
+		/// <para>This should be called from an OnGUI function</para>
+		/// </summary>
+		/// <param name="title">The menu title</param>
+		/// <param name="actions">Int array of actions to display rebinds for</param>
+		/// <param name="x">The X position to display the menu</param>
+		/// <param name="y">The Y position to display the menu</param>
+		/// <param name="width">Width of the menu</param>
+		/// <param name="height">Height of the menu</param>
+		public void RenderRebindMenu(string title, int[] actions, float x, float y, float width, float height)
 		{
 			if (actions.Length == 0)
 				return;
 
-            GUILayout.BeginArea(new Rect(x, y, width, height), $"<size=16><b>{title}</b></size>", "box");
-            GUILayout.BeginVertical();
-            GUILayout.Space(30);
-            Vector2 scrollPosition = GUILayout.BeginScrollView(scrollPositions.ContainsKey(title) ? scrollPositions[title] : new Vector2(0, 0));
-            if (!scrollPositions.ContainsKey(title))
-                scrollPositions.Add(title, scrollPosition);
-            else
-                scrollPositions[title] = scrollPosition;
+			GUILayout.BeginArea(new Rect(x, y, width, height), $"<size=16><b>{title}</b></size>", "box");
+			GUILayout.BeginVertical();
+			GUILayout.Space(30);
+			Vector2 scrollPosition = GUILayout.BeginScrollView(_scrollPositions.ContainsKey(title) ? _scrollPositions[title] : new Vector2(0, 0));
+			if (!_scrollPositions.ContainsKey(title))
+				_scrollPositions.Add(title, scrollPosition);
+			else
+				_scrollPositions[title] = scrollPosition;
 
 			for (int i = 0; i < actions.Length; i++)
 			{
 				int action = actions[i];
 				Key key = GetKeyByAction(action);
 
-				GUILayout.Label($"{key.name} - Current ({key.key}) - Default ({keys[action].defaultKey})", labelStyle);
+				GUILayout.Label($"{key.name} - Current ({key.key}) - Default ({keys[action].defaultKey})", _labelStyle);
 
-                GUILayout.BeginHorizontal();
-                GUILayout.FlexibleSpace();
-				string rebindText = rebindAction == action ? "Waiting..." : "Rebind";
+				GUILayout.BeginHorizontal();
+				GUILayout.FlexibleSpace();
+				string rebindText = _rebindAction == action ? "Waiting..." : "Rebind";
 				if (GUILayout.Button(rebindText))
 				{
-					if (rebindAction == -1)
+					if (_rebindAction == -1)
 					{
-						rebindAction = action;
+						_rebindAction = action;
 					}
 				}
 
-                GUILayout.FlexibleSpace();
+				GUILayout.FlexibleSpace();
 
 				if (GUILayout.Button("Reset"))
 				{
 					key.Reset();
-                    MultiTool.Configuration.UpdateKeybinds(keys);
+					MultiTool.Configuration.UpdateKeybinds(keys);
 				}
-                GUILayout.FlexibleSpace();
-                GUILayout.EndHorizontal();
-                GUILayout.Space(10);
-            }
+				GUILayout.FlexibleSpace();
+				GUILayout.EndHorizontal();
+				GUILayout.Space(10);
+			}
 
 			GUILayout.EndScrollView();
 
-			if (rebindAction != -1)
+			if (_rebindAction != -1)
 			{
-				Key key = GetKeyByAction(rebindAction);
+				Key key = GetKeyByAction(_rebindAction);
 				if (key != null && Input.anyKeyDown)
 				{
-					foreach (KeyCode keyCode in keyCodes)
+					foreach (KeyCode keyCode in _keyCodes)
 					{
 						if (Input.GetKey(keyCode) && keyCode != KeyCode.None)
 						{
 							key.Set(keyCode);
-							rebindAction = -1;
+							_rebindAction = -1;
 							MultiTool.Configuration.UpdateKeybinds(keys);
 						}
 					}
 				}
 			}
-            GUILayout.EndVertical();
-            GUILayout.EndArea();
+			GUILayout.EndVertical();
+			GUILayout.EndArea();
 		}
 	}
 }

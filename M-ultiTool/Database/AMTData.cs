@@ -1,15 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Reflection;
 
 namespace MultiTool.Database
 {
-    internal class AMTData
-    {
-        public object modItem { get; set; }
-        public MethodInfo spawnMethod { get; set; }
-    }
+	internal class AMTData
+	{
+		public object modItem { get; set; }
+		public MethodInfo spawnMethod { get; set; }
+	}
 }

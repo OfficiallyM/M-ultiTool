@@ -1,14 +1,14 @@
-﻿using System.Collections.Generic;
+﻿using MultiTool.Extensions;
+using MultiTool.Save;
+using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
-using MultiTool.Extensions;
-using MultiTool.Save;
 
 namespace MultiTool.UI.Tabs.VehicleConfiguration
 {
-    internal sealed class GlassTab : UI.VehicleConfigurationTab
+	internal sealed class GlassTab : UI.VehicleConfigurationTab
 	{
-        public override string Name => "Glass";
+		public override string Name => "Glass";
 
 		private Vector2 _position;
 		private Color _color;

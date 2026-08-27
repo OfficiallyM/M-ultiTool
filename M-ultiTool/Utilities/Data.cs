@@ -19,10 +19,12 @@ namespace MultiTool.Utilities
 					_allComponentTypes = AppDomain.CurrentDomain.GetAssemblies()
 						.SelectMany(assembly =>
 						{
-							try { 
+							try
+							{
 								return assembly.GetTypes();
 							}
-							catch (ReflectionTypeLoadException e) { 
+							catch (ReflectionTypeLoadException e)
+							{
 								return e.Types.Where(t => t != null);
 							}
 						})

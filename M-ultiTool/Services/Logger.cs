@@ -6,8 +6,8 @@ namespace MultiTool.Services
 {
 	internal static class Logger
 	{
-		private static string logFile = "";
-		private static bool initialised = false;
+		private static string _logFile = "";
+		private static bool _initialised = false;
 		public enum LogLevel
 		{
 			Debug,
@@ -19,15 +19,15 @@ namespace MultiTool.Services
 
 		public static void Init()
 		{
-			if (!initialised) 
+			if (!_initialised)
 			{
 				// Create logs directory.
 				if (Directory.Exists(ModLoader.ModsFolder))
 				{
 					Directory.CreateDirectory(Path.Combine(ModLoader.ModsFolder, "Logs"));
-					logFile = ModLoader.ModsFolder + "\\Logs\\M-ultiTool.log";
-					File.WriteAllText(logFile, $"M-ultiTool v{MultiTool.mod.Version} initialised\r\n");
-					initialised = true;
+					_logFile = ModLoader.ModsFolder + "\\Logs\\M-ultiTool.log";
+					File.WriteAllText(_logFile, $"M-ultiTool v{MultiTool.mod.Version} initialised\r\n");
+					_initialised = true;
 				}
 			}
 		}
@@ -38,8 +38,8 @@ namespace MultiTool.Services
 		/// <param name="msg">The message to log</param>
 		public static void Log(string msg, LogLevel logLevel = LogLevel.Info)
 		{
-			if (logFile != string.Empty)
-				File.AppendAllText(logFile, $"{DateTime.Now.ToString("s")} [{logLevel}] {msg}\r\n");
+			if (_logFile != string.Empty)
+				File.AppendAllText(_logFile, $"{DateTime.Now.ToString("s")} [{logLevel}] {msg}\r\n");
 		}
 	}
 }

@@ -7,7 +7,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
-using Logger = MultiTool.Services.Logger;
 
 namespace MultiTool.UI.Tabs
 {
@@ -17,20 +16,20 @@ namespace MultiTool.UI.Tabs
 
 		private Vector2 _currentPosition;
 
-        private PlayerData _playerData;
-        private PlayerData _globalPlayerData;
-        private PlayerData _defaultPlayerData;
+		private PlayerData _playerData;
+		private PlayerData _globalPlayerData;
+		private PlayerData _defaultPlayerData;
 
-        private bool _isPerSave = false;
+		private bool _isPerSave = false;
 
 		private List<buildingscript> _previousBuildingTeleports = new List<buildingscript>();
 
-        public override void OnRegister()
-        {
-            // Get default player data values.
-            if (_defaultPlayerData == null)
-            {
-                fpscontroller player = mainscript.M.player;
+		public override void OnRegister()
+		{
+			// Get default player data values.
+			if (_defaultPlayerData == null)
+			{
+				fpscontroller player = mainscript.M.player;
 				_defaultPlayerData = new PlayerData()
 				{
 					walkSpeed = player.FdefMaxSpeed,
@@ -42,89 +41,89 @@ namespace MultiTool.UI.Tabs
 					throwForce = player.throwForceM,
 					pedalSpeed = player.PedalingRpm,
 					mass = player != null && player.mass != null ? player.mass.Mass() : 0,
-                    infiniteAmmo = false,
-                };
-            }
-            _playerData = SaveUtilities.LoadPlayerData(_defaultPlayerData);
-            _globalPlayerData = SaveUtilities.LoadGlobalPlayerData(_defaultPlayerData);
-            _isPerSave = SaveUtilities.LoadIsPlayerDataPerSave();
-            ApplyPlayerData();
-        }
+					infiniteAmmo = false,
+				};
+			}
+			_playerData = SaveUtilities.LoadPlayerData(_defaultPlayerData);
+			_globalPlayerData = SaveUtilities.LoadGlobalPlayerData(_defaultPlayerData);
+			_isPerSave = SaveUtilities.LoadIsPlayerDataPerSave();
+			ApplyPlayerData();
+		}
 
-        public override void RenderTab(Rect dimensions)
+		public override void RenderTab(Rect dimensions)
 		{
 			bool update = false;
 
-            PlayerData activePlayerData = _isPerSave ? _playerData : _globalPlayerData;
+			PlayerData activePlayerData = _isPerSave ? _playerData : _globalPlayerData;
 
-            GUILayout.BeginArea(dimensions);
-            GUILayout.BeginVertical();
-            _currentPosition = GUILayout.BeginScrollView(_currentPosition);
-            GUILayout.BeginHorizontal();
-            if (GUILayout.Button(Accessibility.GetAccessibleString("God mode", Services.State.GodMode), GUILayout.MaxWidth(200)))
-            {
-                Services.State.GodMode = !Services.State.GodMode;
+			GUILayout.BeginArea(dimensions);
+			GUILayout.BeginVertical();
+			_currentPosition = GUILayout.BeginScrollView(_currentPosition);
+			GUILayout.BeginHorizontal();
+			if (GUILayout.Button(Accessibility.GetAccessibleString("God mode", Services.State.GodMode), GUILayout.MaxWidth(200)))
+			{
+				Services.State.GodMode = !Services.State.GodMode;
 				mainscript.M.ChGodMode(Services.State.GodMode);
-            }
-            GUILayout.Space(10);
+			}
+			GUILayout.Space(10);
 
-            if (GUILayout.Button(Accessibility.GetAccessibleString("Noclip", Services.State.Noclip), GUILayout.MaxWidth(200)))
-            {
-                Services.State.Noclip = !Services.State.Noclip;
+			if (GUILayout.Button(Accessibility.GetAccessibleString("Noclip", Services.State.Noclip), GUILayout.MaxWidth(200)))
+			{
+				Services.State.Noclip = !Services.State.Noclip;
 
-                if (Services.State.Noclip)
-                {
-                    Noclip noclip = mainscript.M.player.gameObject.AddComponent<Noclip>();
+				if (Services.State.Noclip)
+				{
+					Noclip noclip = mainscript.M.player.gameObject.AddComponent<Noclip>();
 
-                    // Disable colliders.
-                    foreach (Collider collider in mainscript.M.player.C)
-                    {
-                        collider.enabled = false;
-                    }
-                }
-                else
-                {
-                    Noclip noclip = mainscript.M.player.gameObject.GetComponent<Noclip>();
-                    if (noclip != null)
-                    {
-                        UnityEngine.Object.Destroy(noclip);
+					// Disable colliders.
+					foreach (Collider collider in mainscript.M.player.C)
+					{
+						collider.enabled = false;
+					}
+				}
+				else
+				{
+					Noclip noclip = mainscript.M.player.gameObject.GetComponent<Noclip>();
+					if (noclip != null)
+					{
+						UnityEngine.Object.Destroy(noclip);
 
-                        // Re-enable colliders.
-                        foreach (Collider collider in mainscript.M.player.C)
-                        {
-                            collider.enabled = true;
-                        }
-                    }
-                }
-            }
+						// Re-enable colliders.
+						foreach (Collider collider in mainscript.M.player.C)
+						{
+							collider.enabled = true;
+						}
+					}
+				}
+			}
 			GUILayout.EndHorizontal();
-            GUILayout.Space(10);
+			GUILayout.Space(10);
 
-            GUILayout.BeginVertical(GUILayout.MaxWidth(dimensions.width / 2));
-            if (GUILayout.Button(Accessibility.GetAccessibleString("Set to global player settings", "Set to per-save player settings", _isPerSave), GUILayout.MaxWidth(200)))
-            {
-                _isPerSave = !_isPerSave;
-                SaveUtilities.UpdateIsPlayerDataPerSave(_isPerSave);
-                ApplyPlayerData();
-            }
-            GUILayout.Space(20);
+			GUILayout.BeginVertical(GUILayout.MaxWidth(dimensions.width / 2));
+			if (GUILayout.Button(Accessibility.GetAccessibleString("Set to global player settings", "Set to per-save player settings", _isPerSave), GUILayout.MaxWidth(200)))
+			{
+				_isPerSave = !_isPerSave;
+				SaveUtilities.UpdateIsPlayerDataPerSave(_isPerSave);
+				ApplyPlayerData();
+			}
+			GUILayout.Space(20);
 
-            if (GUILayout.Button(Accessibility.GetAccessibleString("Infinite ammo", activePlayerData.infiniteAmmo), GUILayout.MaxWidth(200)))
-            {
-                activePlayerData.infiniteAmmo = !activePlayerData.infiniteAmmo;
-                update = true;
-            }
-            GUILayout.Space(10);
+			if (GUILayout.Button(Accessibility.GetAccessibleString("Infinite ammo", activePlayerData.infiniteAmmo), GUILayout.MaxWidth(200)))
+			{
+				activePlayerData.infiniteAmmo = !activePlayerData.infiniteAmmo;
+				update = true;
+			}
+			GUILayout.Space(10);
 
-            // Walk speed.
-            GUILayout.Label($"Walk speed: {activePlayerData.walkSpeed} (Default: {_defaultPlayerData.walkSpeed})");
+			// Walk speed.
+			GUILayout.Label($"Walk speed: {activePlayerData.walkSpeed} (Default: {_defaultPlayerData.walkSpeed})");
 			float.TryParse(GUILayout.TextField(activePlayerData.walkSpeed.ToString(), GUILayout.MaxWidth(200)), out float walkSpeed);
 			GUILayout.Space(2);
-            GUILayout.BeginHorizontal();
+			GUILayout.BeginHorizontal();
 			walkSpeed = GUILayout.HorizontalSlider(walkSpeed, 1f, 10f);
 			if (GUILayout.Button("Reset", GUILayout.MaxWidth(200)))
 			{
-                activePlayerData.walkSpeed = _defaultPlayerData.walkSpeed;
+				activePlayerData.walkSpeed = _defaultPlayerData.walkSpeed;
 				update = true;
 			}
 			else
@@ -132,22 +131,22 @@ namespace MultiTool.UI.Tabs
 				walkSpeed = (float)Math.Round(walkSpeed, 2);
 				if (walkSpeed != activePlayerData.walkSpeed)
 				{
-                    activePlayerData.walkSpeed = walkSpeed;
+					activePlayerData.walkSpeed = walkSpeed;
 					update = true;
 				}
 			}
-            GUILayout.EndHorizontal();
-            GUILayout.Space(10);
+			GUILayout.EndHorizontal();
+			GUILayout.Space(10);
 
-            // Run speed.
-            GUILayout.Label($"Run speed: {activePlayerData.runSpeed} (Default: {_defaultPlayerData.runSpeed})");
+			// Run speed.
+			GUILayout.Label($"Run speed: {activePlayerData.runSpeed} (Default: {_defaultPlayerData.runSpeed})");
 			float.TryParse(GUILayout.TextField(activePlayerData.runSpeed.ToString(), GUILayout.MaxWidth(200)), out float runSpeed);
 			GUILayout.Space(2);
 			GUILayout.BeginHorizontal();
-            runSpeed = GUILayout.HorizontalSlider(runSpeed, 1f, 10f);
+			runSpeed = GUILayout.HorizontalSlider(runSpeed, 1f, 10f);
 			if (GUILayout.Button("Reset", GUILayout.MaxWidth(200)))
 			{
-                activePlayerData.runSpeed = _defaultPlayerData.runSpeed;
+				activePlayerData.runSpeed = _defaultPlayerData.runSpeed;
 				update = true;
 			}
 			else
@@ -155,22 +154,22 @@ namespace MultiTool.UI.Tabs
 				runSpeed = (float)Math.Round(runSpeed, 2);
 				if (runSpeed != activePlayerData.runSpeed)
 				{
-                    activePlayerData.runSpeed = runSpeed;
+					activePlayerData.runSpeed = runSpeed;
 					update = true;
 				}
 			}
-            GUILayout.EndHorizontal();
-            GUILayout.Space(10);
+			GUILayout.EndHorizontal();
+			GUILayout.Space(10);
 
-            // Jump force.
-            GUILayout.Label($"Jump force: {activePlayerData.jumpForce / 100} (Default: {_defaultPlayerData.jumpForce / 100})");
+			// Jump force.
+			GUILayout.Label($"Jump force: {activePlayerData.jumpForce / 100} (Default: {_defaultPlayerData.jumpForce / 100})");
 			float.TryParse(GUILayout.TextField((activePlayerData.jumpForce / 100).ToString(), GUILayout.MaxWidth(200)), out float jumpForce);
 			GUILayout.Space(2);
 			GUILayout.BeginHorizontal();
-            jumpForce = GUILayout.HorizontalSlider(jumpForce, 1f, 2000f);
+			jumpForce = GUILayout.HorizontalSlider(jumpForce, 1f, 2000f);
 			if (GUILayout.Button("Reset", GUILayout.MaxWidth(200)))
 			{
-                activePlayerData.jumpForce = _defaultPlayerData.jumpForce;
+				activePlayerData.jumpForce = _defaultPlayerData.jumpForce;
 				update = true;
 			}
 			else
@@ -178,22 +177,22 @@ namespace MultiTool.UI.Tabs
 				jumpForce = Mathf.Round(jumpForce) * 100;
 				if (jumpForce != activePlayerData.jumpForce)
 				{
-                    activePlayerData.jumpForce = jumpForce;
+					activePlayerData.jumpForce = jumpForce;
 					update = true;
 				}
 			}
-            GUILayout.EndHorizontal();
-            GUILayout.Space(10);
+			GUILayout.EndHorizontal();
+			GUILayout.Space(10);
 
-            // Push force.
-            GUILayout.Label($"Push force: {activePlayerData.pushForce / 10} (Default: {_defaultPlayerData.pushForce / 10})");
+			// Push force.
+			GUILayout.Label($"Push force: {activePlayerData.pushForce / 10} (Default: {_defaultPlayerData.pushForce / 10})");
 			float.TryParse(GUILayout.TextField((activePlayerData.pushForce / 10).ToString(), GUILayout.MaxWidth(200)), out float pushForce);
 			GUILayout.Space(2);
 			GUILayout.BeginHorizontal();
-            pushForce = GUILayout.HorizontalSlider(pushForce, 1f, 2000f);
+			pushForce = GUILayout.HorizontalSlider(pushForce, 1f, 2000f);
 			if (GUILayout.Button("Reset", GUILayout.MaxWidth(200)))
 			{
-                activePlayerData.pushForce = _defaultPlayerData.pushForce;
+				activePlayerData.pushForce = _defaultPlayerData.pushForce;
 				update = true;
 			}
 			else
@@ -201,45 +200,45 @@ namespace MultiTool.UI.Tabs
 				pushForce = Mathf.Round(pushForce) * 10;
 				if (pushForce != activePlayerData.pushForce)
 				{
-                    activePlayerData.pushForce = pushForce;
+					activePlayerData.pushForce = pushForce;
 					update = true;
 				}
 			}
-            GUILayout.EndHorizontal();
-            GUILayout.Space(10);
+			GUILayout.EndHorizontal();
+			GUILayout.Space(10);
 
-            // Carry weight.
-            GUILayout.Label($"Carry weight: {activePlayerData.carryWeight} (Default: {_defaultPlayerData.carryWeight})");
+			// Carry weight.
+			GUILayout.Label($"Carry weight: {activePlayerData.carryWeight} (Default: {_defaultPlayerData.carryWeight})");
 			float.TryParse(GUILayout.TextField(activePlayerData.carryWeight.ToString(), GUILayout.MaxWidth(200)), out float carryWeight);
 			GUILayout.Space(2);
 			GUILayout.BeginHorizontal();
-            carryWeight = GUILayout.HorizontalSlider(carryWeight, 1f, 1000f);
+			carryWeight = GUILayout.HorizontalSlider(carryWeight, 1f, 1000f);
 			if (GUILayout.Button("Reset", GUILayout.MaxWidth(200)))
 			{
-                activePlayerData.carryWeight = _defaultPlayerData.carryWeight;
+				activePlayerData.carryWeight = _defaultPlayerData.carryWeight;
 				update = true;
 			}
-			else 
+			else
 			{
 				carryWeight = Mathf.Round(carryWeight);
 				if (carryWeight != activePlayerData.carryWeight)
 				{
-                    activePlayerData.carryWeight = carryWeight;
+					activePlayerData.carryWeight = carryWeight;
 					update = true;
 				}
 			}
-            GUILayout.EndHorizontal();
-            GUILayout.Space(10);
+			GUILayout.EndHorizontal();
+			GUILayout.Space(10);
 
-            // Pickup force.
-            GUILayout.Label($"Pickup force: {activePlayerData.pickupForce} (Default: {_defaultPlayerData.pickupForce})");
+			// Pickup force.
+			GUILayout.Label($"Pickup force: {activePlayerData.pickupForce} (Default: {_defaultPlayerData.pickupForce})");
 			float.TryParse(GUILayout.TextField(activePlayerData.pickupForce.ToString(), GUILayout.MaxWidth(200)), out float pickupForce);
 			GUILayout.Space(2);
 			GUILayout.BeginHorizontal();
-            pickupForce = GUILayout.HorizontalSlider(pickupForce, 1f, 1000f);
+			pickupForce = GUILayout.HorizontalSlider(pickupForce, 1f, 1000f);
 			if (GUILayout.Button("Reset", GUILayout.MaxWidth(200)))
 			{
-                activePlayerData.pickupForce = _defaultPlayerData.pickupForce;
+				activePlayerData.pickupForce = _defaultPlayerData.pickupForce;
 				update = true;
 			}
 			else
@@ -247,12 +246,12 @@ namespace MultiTool.UI.Tabs
 				pickupForce = Mathf.Round(pickupForce);
 				if (pickupForce != activePlayerData.pickupForce)
 				{
-                    activePlayerData.pickupForce = pickupForce;
+					activePlayerData.pickupForce = pickupForce;
 					update = true;
 				}
 			}
-            GUILayout.EndHorizontal();
-            GUILayout.Space(10);
+			GUILayout.EndHorizontal();
+			GUILayout.Space(10);
 
 			// Throw force.
 			GUILayout.Label($"Throw force: {activePlayerData.throwForce / 1000} (Default: {_defaultPlayerData.throwForce / 1000})");
@@ -334,10 +333,10 @@ namespace MultiTool.UI.Tabs
 			float.TryParse(GUILayout.TextField(activePlayerData.mass.ToString(), GUILayout.MaxWidth(200)), out float mass);
 			GUILayout.Space(2);
 			GUILayout.BeginHorizontal();
-            mass = GUILayout.HorizontalSlider(mass, 1f, 1000f);
+			mass = GUILayout.HorizontalSlider(mass, 1f, 1000f);
 			if (GUILayout.Button("Reset", GUILayout.MaxWidth(200)))
 			{
-                activePlayerData.mass = _defaultPlayerData.mass;
+				activePlayerData.mass = _defaultPlayerData.mass;
 				update = true;
 			}
 			else
@@ -345,15 +344,15 @@ namespace MultiTool.UI.Tabs
 				mass = (float)Math.Round(mass, 2);
 				if (mass != activePlayerData.mass)
 				{
-                    activePlayerData.mass = mass;
+					activePlayerData.mass = mass;
 					update = true;
 				}
 			}
-            GUILayout.EndHorizontal();
-            GUILayout.Space(10);
+			GUILayout.EndHorizontal();
+			GUILayout.Space(10);
 
-            // Bladder control.
-            GUILayout.Label($"Bladder control", "LabelHeader");
+			// Bladder control.
+			GUILayout.Label($"Bladder control", "LabelHeader");
 
 			float pissMax = mainscript.M.player.piss.Tank.F.maxC;
 			int pissPercentage = 0;
@@ -373,23 +372,23 @@ namespace MultiTool.UI.Tabs
 
 			foreach (KeyValuePair<mainscript.fluidenum, int> fluid in GUIRenderer.piss)
 			{
-                GUILayout.BeginHorizontal();
-                GUILayout.Label(fluid.Key.ToString().ToSentenceCase(), GUILayout.MaxWidth(100));
+				GUILayout.BeginHorizontal();
+				GUILayout.Label(fluid.Key.ToString().ToSentenceCase(), GUILayout.MaxWidth(100));
 				int percentage = Mathf.RoundToInt(GUILayout.HorizontalSlider(fluid.Value, 0, 100));
 				if (percentage + (pissPercentage - fluid.Value) <= 100)
 				{
 					tempPiss[fluid.Key] = percentage;
 					changed = true;
 				}
-                GUILayout.Space(5);
+				GUILayout.Space(5);
 				GUILayout.Label($"{percentage}%");
-                GUILayout.EndHorizontal();
+				GUILayout.EndHorizontal();
 			}
 
 			if (changed)
 				GUIRenderer.piss = tempPiss;
 
-            GUILayout.BeginHorizontal();
+			GUILayout.BeginHorizontal();
 			if (GUILayout.Button("Get current", GUILayout.MaxWidth(200)))
 			{
 				tankscript tank = mainscript.M.player.piss.Tank;
@@ -421,7 +420,7 @@ namespace MultiTool.UI.Tabs
 					}
 				}
 			}
-            GUILayout.EndHorizontal();
+			GUILayout.EndHorizontal();
 
 			GUILayout.Label("Teleporting", "LabelHeader");
 
@@ -474,31 +473,31 @@ namespace MultiTool.UI.Tabs
 			}
 
 			GUILayout.EndVertical();
-            GUILayout.EndScrollView();
-            GUILayout.EndVertical();
-            GUILayout.EndArea();
+			GUILayout.EndScrollView();
+			GUILayout.EndVertical();
+			GUILayout.EndArea();
 
 			// Trigger update if values have changed.
 			if (update)
-            {
-                if (_isPerSave)
-                {
-                    SaveUtilities.UpdatePlayerData(activePlayerData);
-                    _playerData = activePlayerData;
-                }
-                else
-                {
-                    SaveUtilities.UpdateGlobalPlayerData(activePlayerData);
-                    _globalPlayerData = activePlayerData;
-                }
-                ApplyPlayerData();
-            }
+			{
+				if (_isPerSave)
+				{
+					SaveUtilities.UpdatePlayerData(activePlayerData);
+					_playerData = activePlayerData;
+				}
+				else
+				{
+					SaveUtilities.UpdateGlobalPlayerData(activePlayerData);
+					_globalPlayerData = activePlayerData;
+				}
+				ApplyPlayerData();
+			}
 		}
 
-        public override void Update()
-        {
-            fpscontroller player = mainscript.M.player;
-            if (player == null) return;
+		public override void Update()
+		{
+			fpscontroller player = mainscript.M.player;
+			if (player == null) return;
 
 			PlayerData activePlayerData = _isPerSave ? _playerData : _globalPlayerData;
 
@@ -507,18 +506,18 @@ namespace MultiTool.UI.Tabs
 				player.inHandP.weapon.infinite = activePlayerData.infiniteAmmo;
 
 			// Click to teleport.
-			if (activePlayerData.clickTeleport && 
+			if (activePlayerData.clickTeleport &&
 				!MultiTool.Renderer.show &&
-				Input.GetKeyDown(MultiTool.Binds.GetKeyByAction((int)Keybinds.Inputs.action1).key) && 
-				Physics.Raycast(player.Cam.transform.position + player.Cam.transform.forward,player.Cam.transform.forward, out RaycastHit hitInfo, float.PositiveInfinity)
+				Input.GetKeyDown(MultiTool.Binds.GetKeyByAction((int)Keybinds.Inputs.action1).key) &&
+				Physics.Raycast(player.Cam.transform.position + player.Cam.transform.forward, player.Cam.transform.forward, out RaycastHit hitInfo, float.PositiveInfinity)
 			)
 				GameUtilities.TeleportPlayerWithParent(hitInfo.point + Vector3.up * 2f);
-        }
+		}
 
-        private void ApplyPlayerData()
-        {
+		private void ApplyPlayerData()
+		{
 			PlayerData data = _isPerSave ? _playerData : _globalPlayerData;
-            fpscontroller player = mainscript.M.player;
+			fpscontroller player = mainscript.M.player;
 			if (player != null)
 			{
 				player.FdefMaxSpeed = data.walkSpeed;
@@ -532,6 +531,6 @@ namespace MultiTool.UI.Tabs
 				if (player.mass != null && player.mass.Mass() != data.mass)
 					player.mass.SetMass(data.mass);
 			}
-        }
+		}
 	}
 }

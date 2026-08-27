@@ -11,7 +11,7 @@ namespace MultiTool.UI.Tabs.ComponentBrowser
 		public static DataFetcher I;
 
 		private List<SceneObject> _sceneObjects = new List<SceneObject>();
-		private Dictionary<Transform, SceneObject> transformToObject = new Dictionary<Transform, SceneObject>();
+		private Dictionary<Transform, SceneObject> _transformToObject = new Dictionary<Transform, SceneObject>();
 		private bool _isScanning = false;
 		private DateTime _lastScan = DateTime.Now;
 
@@ -46,20 +46,20 @@ namespace MultiTool.UI.Tabs.ComponentBrowser
 			foreach (GameObject obj in objects)
 			{
 				SceneObject sceneObject = new SceneObject() { gameObject = obj };
-				transformToObject[obj.transform] = sceneObject;
+				_transformToObject[obj.transform] = sceneObject;
 			}
 
-			foreach (var obj in objects)
+			foreach (GameObject obj in objects)
 			{
 				Transform parent = obj.transform.parent;
-				var node = transformToObject[obj.transform];
+				SceneObject node = _transformToObject[obj.transform];
 
 				if (parent == null)
 				{
 					// Root-level object.
 					_sceneObjects.Add(node);
 				}
-				else if (transformToObject.TryGetValue(parent, out var parentNode))
+				else if (_transformToObject.TryGetValue(parent, out SceneObject parentNode))
 				{
 					node.parent = parentNode;
 					parentNode.children.Add(node);

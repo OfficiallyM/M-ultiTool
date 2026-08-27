@@ -34,7 +34,7 @@ namespace MultiTool.UI
 			Send(new Notification()
 			{
 				Title = title,
-				Message = message, 
+				Message = message,
 				Type = type,
 				Length = length
 			});
@@ -142,7 +142,7 @@ namespace MultiTool.UI
 					notification.LastRenderRect = GUILayoutUtility.GetLastRect();
 
 				// Close layout group before doing manual drawing.
-				GUILayout.EndVertical(); 
+				GUILayout.EndVertical();
 
 				// Can now draw the rest as absolute positioned.
 				Rect boxRect = notification.LastRenderRect;
@@ -180,7 +180,7 @@ namespace MultiTool.UI
 				}
 			}
 
-			foreach (var n in removals)
+			foreach (Notification n in removals)
 			{
 				_notifications.Remove(n);
 			}
