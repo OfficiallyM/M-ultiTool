@@ -7,7 +7,6 @@ using MultiTool.Extensions;
 using MultiTool.Utilities;
 using UnityEngine.Rendering;
 using System.Text.RegularExpressions;
-using Settings = MultiTool.Services.Settings;
 using MultiTool.Database;
 using MultiTool.UI.Tabs.VehicleConfiguration;
 using MultiTool.Services;
@@ -19,9 +18,14 @@ namespace MultiTool.UI
 	internal class GUIRenderer
 	{
         // Modules.
-        internal static TabController Tabs = new TabController();
+        private static ServiceContext _services;
+        internal static TabController Tabs;
 
-		private Settings settings = new Settings();
+        public GUIRenderer(ServiceContext services)
+        {
+            _services = services;
+            Tabs = new TabController(services);
+        }
 
 		// Menu control.
 		internal bool enabled = false;
@@ -393,7 +397,7 @@ namespace MultiTool.UI
 			menuKeyConsumed = false;
 
 			// Detect item when item debugging is enabled.
-			if (settings.objectDebug)
+			if (_services.State.ObjectDebug)
 			{
 				try
 				{
@@ -423,7 +427,7 @@ namespace MultiTool.UI
 				}
 			}
 
-			if (settings.mode == "slotControl")
+			if (_services.State.Mode == "slotControl")
 			{
 				try
 				{
@@ -434,7 +438,7 @@ namespace MultiTool.UI
 					}
 					else if (slots.Count == 0)
 					{
-						partslotscript[] partSlots = settings.car.GetComponentsInChildren<partslotscript>();
+						partslotscript[] partSlots = _services.State.Car.GetComponentsInChildren<partslotscript>();
 						foreach (partslotscript slot in partSlots)
 						{
 							GameObject obj = slot.gameObject;
@@ -452,7 +456,7 @@ namespace MultiTool.UI
 						}
 
 						// Find anything that isn't an actual part.
-						foreach (MeshRenderer child in settings.car.GetComponentsInChildren<MeshRenderer>())
+						foreach (MeshRenderer child in _services.State.Car.GetComponentsInChildren<MeshRenderer>())
 						{
 							string name = PrettifySlotName(child.name).ToLower();
 							GameObject parent = child.transform.parent.gameObject;
@@ -487,16 +491,16 @@ namespace MultiTool.UI
 						}
 
 						// Add seat positions.
-						foreach (seatscript seat in settings.car.GetComponentsInChildren<seatscript>())
+						foreach (seatscript seat in _services.State.Car.GetComponentsInChildren<seatscript>())
 						{
 							if (seat.GetComponent<BoxCollider>() == null || seat.name.ToLower().Contains("col")) continue;
 							slots.Add(seat.gameObject);
 						}
 					}
 
-					tosaveitemscript carSave = settings.car.GetComponent<tosaveitemscript>();
+					tosaveitemscript carSave = _services.State.Car.GetComponent<tosaveitemscript>();
 
-					switch (settings.slotStage)
+					switch (_services.State.SlotStage)
 					{
 						case "slotSelect":
 							bool slotChanged = false;
@@ -535,7 +539,7 @@ namespace MultiTool.UI
 							// Select the hovered slot.
 							if (Input.GetKeyDown(MultiTool.Binds.GetKeyByAction((int)Keybinds.Inputs.select).key))
 							{
-								settings.slotStage = "move";
+								_services.State.SlotStage = "move";
 								selectedSlot = hoveredSlot;
 
 								selectedSlotResetPosition = selectedSlot.transform.localPosition;
@@ -571,7 +575,7 @@ namespace MultiTool.UI
 							// Deselect slot.
 							if (Input.GetKeyDown(MultiTool.Binds.GetKeyByAction((int)Keybinds.Inputs.select).key))
 							{
-								settings.slotStage = "slotSelect";
+								_services.State.SlotStage = "slotSelect";
 								hoveredSlotIndex = Array.FindIndex(slots.ToArray(), s => s.name == selectedSlot.name);
 								SlotMoverMoveDispose();
 								return;
@@ -580,7 +584,7 @@ namespace MultiTool.UI
 							// Switch to rotate mode.
 							if (Input.GetKeyDown(MultiTool.Binds.GetKeyByAction((int)Keybinds.Inputs.action3).key))
 							{
-								settings.slotStage = "rotate";
+								_services.State.SlotStage = "rotate";
 							}
 
 							// Change move amount.
@@ -658,7 +662,7 @@ namespace MultiTool.UI
 							// Deselect slot.
 							if (Input.GetKeyDown(MultiTool.Binds.GetKeyByAction((int)Keybinds.Inputs.select).key))
 							{
-								settings.slotStage = "slotSelect";
+								_services.State.SlotStage = "slotSelect";
 								hoveredSlotIndex = Array.FindIndex(slots.ToArray(), s => s.name == selectedSlot.name);
 								SlotMoverMoveDispose();
 								return;
@@ -667,7 +671,7 @@ namespace MultiTool.UI
 							// Switch to move mode.
 							if (Input.GetKeyDown(MultiTool.Binds.GetKeyByAction((int)Keybinds.Inputs.action3).key))
 							{
-								settings.slotStage = "move";
+								_services.State.SlotStage = "move";
 							}
 
 							// Change move amount.
@@ -749,7 +753,7 @@ namespace MultiTool.UI
 			}
 
 			// Logic for showing colliders.
-			if (settings.showColliders)
+			if (_services.State.ShowColliders)
 			{
 				RaycastHit hitInfo;
 				if (Input.GetKeyDown(MultiTool.Binds.GetKeyByAction((int)Keybinds.Inputs.select).key) && Physics.Raycast(mainscript.M.player.Cam.transform.position, mainscript.M.player.Cam.transform.forward, out hitInfo, float.PositiveInfinity, (int)mainscript.M.player.useLayer))
@@ -1223,7 +1227,7 @@ namespace MultiTool.UI
 			float height = 40f;
 			float x = resolutionX / 2 - 200f;
 			float y = resolutionY * 0.90f;
-			switch (settings.mode)
+			switch (_services.State.Mode)
 			{
 				case "colorPicker":
 					GUI.Box(new Rect(x, y, width, height), string.Empty);
@@ -1294,7 +1298,7 @@ namespace MultiTool.UI
 					width = resolutionX;
 					x = 0;
 					y = resolutionY - 30f;
-					switch (settings.slotStage)
+					switch (_services.State.SlotStage)
 					{
 						case "slotSelect":
 							int displayedSlots = 7;
@@ -1472,7 +1476,7 @@ namespace MultiTool.UI
 					break;
 			}
 
-			if (settings.showCoords)
+			if (_services.State.ShowCoords)
 			{
 				GUIExtensions.DrawOutline(new Rect(20f, 20f, 600f, 30f), $"Local position: {mainscript.M.player.transform.position}", hudStyle, Color.black);
                 GUIExtensions.DrawOutline(new Rect(20f, 50f, 600f, 30f), $"Global position: {GameUtilities.GetGlobalObjectPosition(mainscript.M.player.transform.position)}", hudStyle, Color.black);
@@ -1480,13 +1484,13 @@ namespace MultiTool.UI
 
 			width = resolutionX / 4f;
 			height = resolutionY / 4;
-			if (settings.advancedObjectDebug)
+			if (_services.State.AdvancedObjectDebug)
 				height = resolutionY;
 			x = resolutionX - width;
 			y = 0;
 			float contentWidth = width - 20f;
 
-			if (settings.objectDebug && debugObject != null)
+			if (_services.State.ObjectDebug && debugObject != null)
 			{
 				GUI.Box(new Rect(x, y, width, height), $"<color=#fff><size=18>Object: {debugObject.name.Replace("(Clone)", string.Empty)}</size></color>");
 
@@ -1504,14 +1508,14 @@ namespace MultiTool.UI
                 y += 22f;
                 GUI.Label(new Rect(x, y, contentWidth, 20f), $"Rotation (Quaternion): {debugObject.transform.rotation}", labelStyle);
 
-				if (settings.advancedObjectDebug)
+				if (_services.State.AdvancedObjectDebug)
 				{
 					y += 35f;
 					GUI.Label(new Rect(x, y, contentWidth, 60f), "<color=#fff><size=18>Components</size>\nAssembly - Class</color>");
                     y += 65f;
 
 					Component[] components = debugObject.GetComponents(typeof(Component));
-					if (settings.objectDebugShowChildren)
+					if (_services.State.ObjectDebugShowChildren)
 						components = debugObject.GetComponentsInChildren(typeof(Component));
 					components = components.Distinct().ToArray();
 
@@ -1521,20 +1525,20 @@ namespace MultiTool.UI
 						string assembly = type.Assembly.GetName().Name;
 
 						// Skip core components if hidden.
-						if (!settings.objectDebugShowCore && assembly == "Assembly-CSharp")
+						if (!_services.State.ObjectDebugShowCore && assembly == "Assembly-CSharp")
 							continue;
 
 						// Skip Unity components if hidden.
-						if (!settings.objectDebugShowUnity && assembly.Contains("UnityEngine"))
+						if (!_services.State.ObjectDebugShowUnity && assembly.Contains("UnityEngine"))
 							continue;
 
-						GUI.Label(new Rect(x, y, contentWidth, 20f), $"{assembly} - {type.Name} {(settings.objectDebugShowChildren && component.transform.parent != null ? "(Child of" + component.transform.parent.name + ")" : "")}");
+						GUI.Label(new Rect(x, y, contentWidth, 20f), $"{assembly} - {type.Name} {(_services.State.ObjectDebugShowChildren && component.transform.parent != null ? "(Child of" + component.transform.parent.name + ")" : "")}");
 						y += 22f;
 					}
                 }
             }
 			
-			if (settings.showColliders && settings.showColliderHelp)
+			if (_services.State.ShowColliders && _services.State.ShowColliderHelp)
 			{
 				width = resolutionX / 6;
 				height = 160f;
@@ -1577,10 +1581,9 @@ namespace MultiTool.UI
 		/// </summary>
 		internal static void SlotMoverDispose()
 		{
-			Settings settings = new Settings();
-			settings.mode = null;
-			settings.car = null;
-			settings.slotStage = null;
+			_services.State.Mode = null;
+			_services.State.Car = null;
+			_services.State.SlotStage = null;
 
 			slots.Clear();
 

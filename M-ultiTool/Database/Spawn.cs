@@ -6,7 +6,6 @@ using System.Linq;
 using System.Reflection;
 using UnityEngine;
 using Logger = MultiTool.Services.Logger;
-using Settings = MultiTool.Services.Settings;
 
 namespace MultiTool.Database
 {
@@ -19,7 +18,10 @@ namespace MultiTool.Database
 		/// Wrapper around the default spawn function to handle condition and fuel for items.
 		/// </summary>
 		/// <param name="item">The object to spawn</param>
-		internal static GameObject Spawn(Item item, Vector3? position = null, Quaternion? rotation = null)
+		/// <param name="position"></param>
+		/// <param name="rotation"></param>
+		/// <param name="spawnWithFuel">Whether to spawn with the item's default fuel - from ModState.SpawnWithFuel at the call site</param>
+		internal static GameObject Spawn(Item item, Vector3? position = null, Quaternion? rotation = null, bool spawnWithFuel = true)
         {
             try
             {
@@ -76,7 +78,7 @@ namespace MultiTool.Database
                         alterFluids = true;
 
                     // Support for spawning without any fuel.
-                    if (!new Settings().spawnWithFuel)
+                    if (!spawnWithFuel)
                     {
                         fuelTank.F.fluids.Clear();
                         alterFluids = false;
@@ -140,7 +142,8 @@ namespace MultiTool.Database
 		/// Wrapper around the default spawn function to extend vehicle functionality
 		/// </summary>
 		/// <param name="vehicle">The vehicle to spawn</param>
-		internal static GameObject Spawn(Vehicle vehicle)
+		/// <param name="spawnWithFuel">Whether to spawn with the vehicle's default fuel - from ModState.SpawnWithFuel at the call site</param>
+		internal static GameObject Spawn(Vehicle vehicle, bool spawnWithFuel = true)
 		{
             int selectedCondition = vehicle.conditionInt;
 			if (selectedCondition == -1)
@@ -224,7 +227,7 @@ namespace MultiTool.Database
                     alterFluids = true;
 
                 // Support for spawning without any fuel.
-                if (!new Settings().spawnWithFuel)
+                if (!spawnWithFuel)
                 {
                     fuelTank.F.fluids.Clear();
                     alterFluids = false;

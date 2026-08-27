@@ -7,7 +7,7 @@ namespace MultiTool.UI.Tabs.VehicleConfiguration
 	{
 		public override string Name => "Vehicle Configuration";
 
-		private TabController _tabs = new TabController();
+		private TabController _tabs;
 
         private Vector2 _position;
         
@@ -15,6 +15,7 @@ namespace MultiTool.UI.Tabs.VehicleConfiguration
 
         public override void OnRegister()
 		{
+			_tabs = new TabController(Services);
 			_tabs.AddTab(new BasicsTab());
 			_tabs.AddTab(new FluidsTab());
 			_tabs.AddTab(new GlassTab());

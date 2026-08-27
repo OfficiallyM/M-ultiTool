@@ -4,17 +4,25 @@ using System.Linq;
 using System.Reflection;
 using TLDLoader;
 using UnityEngine;
+using MultiTool.Services;
 using Logger = MultiTool.Services.Logger;
 
 namespace MultiTool.UI
 {
-    public sealed class TabController
+    internal sealed class TabController
     {
+        private readonly ServiceContext _services;
+
         private string _tab = null;
 		private string _lastTab = null;
         private Tab _lastRenderedTab = null;
 
         private List<Tab> _tabs = new List<Tab>();
+
+        public TabController(ServiceContext services)
+        {
+            _services = services;
+        }
 
         internal void Update()
         {
@@ -59,6 +67,7 @@ namespace MultiTool.UI
 
             tab.Source = callerMod.Name;
             tab.Id = tab.Name.ToLower().Replace(' ', '_');
+            tab.Services = _services;
 
 			// Set default configuration pane title.
 			if (tab.HasConfigPane && tab.ConfigTitle == string.Empty)
