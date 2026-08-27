@@ -8,7 +8,6 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using Logger = MultiTool.Services.Logger;
-using Settings = MultiTool.Services.Settings;
 
 namespace MultiTool.UI.Tabs
 {
@@ -17,7 +16,6 @@ namespace MultiTool.UI.Tabs
 		public override string Name => "Player";
 
 		private Vector2 _currentPosition;
-		private Settings _settings = new Settings();
 
         private PlayerData _playerData;
         private PlayerData _globalPlayerData;
@@ -63,18 +61,18 @@ namespace MultiTool.UI.Tabs
             GUILayout.BeginVertical();
             _currentPosition = GUILayout.BeginScrollView(_currentPosition);
             GUILayout.BeginHorizontal();
-            if (GUILayout.Button(Accessibility.GetAccessibleString("God mode", _settings.godMode), GUILayout.MaxWidth(200)))
+            if (GUILayout.Button(Accessibility.GetAccessibleString("God mode", Services.State.GodMode), GUILayout.MaxWidth(200)))
             {
-                _settings.godMode = !_settings.godMode;
-				mainscript.M.ChGodMode(_settings.godMode);
+                Services.State.GodMode = !Services.State.GodMode;
+				mainscript.M.ChGodMode(Services.State.GodMode);
             }
             GUILayout.Space(10);
 
-            if (GUILayout.Button(Accessibility.GetAccessibleString("Noclip", _settings.noclip), GUILayout.MaxWidth(200)))
+            if (GUILayout.Button(Accessibility.GetAccessibleString("Noclip", Services.State.Noclip), GUILayout.MaxWidth(200)))
             {
-                _settings.noclip = !_settings.noclip;
+                Services.State.Noclip = !Services.State.Noclip;
 
-                if (_settings.noclip)
+                if (Services.State.Noclip)
                 {
                     Noclip noclip = mainscript.M.player.gameObject.AddComponent<Noclip>();
 

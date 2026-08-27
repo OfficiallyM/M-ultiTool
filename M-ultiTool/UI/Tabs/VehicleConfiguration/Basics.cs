@@ -11,7 +11,6 @@ namespace MultiTool.UI.Tabs.VehicleConfiguration
 	{
         public override string Name => "Basics";
 
-        private Settings _settings = new Settings();
         private Vector2 _position;
 
 		public override void RenderTab(Rect dimensions)
@@ -38,17 +37,17 @@ namespace MultiTool.UI.Tabs.VehicleConfiguration
 			GUILayout.Space(10);
 
 			// Toggle slot mover.
-			if (GUILayout.Button(Accessibility.GetAccessibleString("Toggle slot mover", _settings.mode == "slotControl"), GUILayout.MaxWidth(200)))
+			if (GUILayout.Button(Accessibility.GetAccessibleString("Toggle slot mover", Services.State.Mode == "slotControl"), GUILayout.MaxWidth(200)))
 			{
-				if (_settings.mode == "slotControl")
+				if (Services.State.Mode == "slotControl")
 				{
 					GUIRenderer.SlotMoverDispose();
 				}
 				else
 				{
-					_settings.mode = "slotControl";
-					_settings.car = car;
-					_settings.slotStage = "slotSelect";
+					Services.State.Mode = "slotControl";
+					Services.State.Car = car;
+					Services.State.SlotStage = "slotSelect";
 				}
 			}
 

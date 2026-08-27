@@ -22,7 +22,6 @@ namespace MultiTool.UI.Tabs.ComponentBrowser
 		public override int CacheRefreshTime => _componentRefreshInterval;
 
 		// Tab.
-		private Settings _settings = new Settings();
 		private Vector2 _position;
 		private Vector2 _configPosition;
 		private Vector2 _bookmarksPosition;

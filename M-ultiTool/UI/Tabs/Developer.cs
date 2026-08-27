@@ -1,6 +1,5 @@
 ﻿using MultiTool.Database;
 using UnityEngine;
-using Settings = MultiTool.Services.Settings;
 
 namespace MultiTool.UI.Tabs
 {
@@ -8,7 +7,6 @@ namespace MultiTool.UI.Tabs
 	{
 		public override string Name => "Developer Tools";
 
-		private Settings _settings = new Settings();
 		private Vector2 _position;
 
 		public override void RenderTab(Rect dimensions)
@@ -18,57 +16,57 @@ namespace MultiTool.UI.Tabs
 			_position = GUILayout.BeginScrollView(_position);
 
 			// Toggle show coords.
-			if (GUILayout.Button(Accessibility.GetAccessibleString("Show coords", _settings.showCoords), GUILayout.MaxWidth(200)))
+			if (GUILayout.Button(Accessibility.GetAccessibleString("Show coords", Services.State.ShowCoords), GUILayout.MaxWidth(200)))
 			{
-				_settings.showCoords = !_settings.showCoords;
+				Services.State.ShowCoords = !Services.State.ShowCoords;
 			}
 
 			// Toggle show object debug.
-			if (GUILayout.Button(Accessibility.GetAccessibleString("Object debug mode", _settings.objectDebug), GUILayout.MaxWidth(200)))
+			if (GUILayout.Button(Accessibility.GetAccessibleString("Object debug mode", Services.State.ObjectDebug), GUILayout.MaxWidth(200)))
 			{
-				_settings.objectDebug = !_settings.objectDebug;
+				Services.State.ObjectDebug = !Services.State.ObjectDebug;
 			}
 
-			if (_settings.objectDebug)
+			if (Services.State.ObjectDebug)
 			{
 				// Toggle advanced object debug.
-				if (GUILayout.Button(Accessibility.GetAccessibleString("Enable advanced debug", _settings.advancedObjectDebug), GUILayout.MaxWidth(200)))
+				if (GUILayout.Button(Accessibility.GetAccessibleString("Enable advanced debug", Services.State.AdvancedObjectDebug), GUILayout.MaxWidth(200)))
 				{
-					_settings.advancedObjectDebug = !_settings.advancedObjectDebug;
+					Services.State.AdvancedObjectDebug = !Services.State.AdvancedObjectDebug;
 				}
 			}
 
-			if (_settings.advancedObjectDebug)
+			if (Services.State.AdvancedObjectDebug)
 			{
 				// Toggle showing Unity components.
-				if (GUILayout.Button(Accessibility.GetAccessibleString("Show Unity components", _settings.objectDebugShowUnity), GUILayout.MaxWidth(200)))
+				if (GUILayout.Button(Accessibility.GetAccessibleString("Show Unity components", Services.State.ObjectDebugShowUnity), GUILayout.MaxWidth(200)))
 				{
-					_settings.objectDebugShowUnity = !_settings.objectDebugShowUnity;
+					Services.State.ObjectDebugShowUnity = !Services.State.ObjectDebugShowUnity;
 				}
 
 				// Toggle showing core components.
-				if (GUILayout.Button(Accessibility.GetAccessibleString("Show core game components", _settings.objectDebugShowCore), GUILayout.MaxWidth(200)))
+				if (GUILayout.Button(Accessibility.GetAccessibleString("Show core game components", Services.State.ObjectDebugShowCore), GUILayout.MaxWidth(200)))
 				{
-					_settings.objectDebugShowCore = !_settings.objectDebugShowCore;
+					Services.State.ObjectDebugShowCore = !Services.State.ObjectDebugShowCore;
 				}
 
 				// Toggle showing child components.
-				if (GUILayout.Button(Accessibility.GetAccessibleString("Show child components", _settings.objectDebugShowChildren), GUILayout.MaxWidth(200)))
+				if (GUILayout.Button(Accessibility.GetAccessibleString("Show child components", Services.State.ObjectDebugShowChildren), GUILayout.MaxWidth(200)))
 				{
-					_settings.objectDebugShowChildren = !_settings.objectDebugShowChildren;
+					Services.State.ObjectDebugShowChildren = !Services.State.ObjectDebugShowChildren;
 				}
 			}
 
 			// Toggle showing colliders.
-			if (GUILayout.Button(Accessibility.GetAccessibleString("Show colliders", _settings.showColliders), GUILayout.MaxWidth(200)))
+			if (GUILayout.Button(Accessibility.GetAccessibleString("Show colliders", Services.State.ShowColliders), GUILayout.MaxWidth(200)))
 			{
-				_settings.showColliders = !_settings.showColliders;
+				Services.State.ShowColliders = !Services.State.ShowColliders;
 			}
 
 			// Toggle showing collider help.
-			if (GUILayout.Button(Accessibility.GetAccessibleString("Show collider help", _settings.showColliderHelp), GUILayout.MaxWidth(200)))
+			if (GUILayout.Button(Accessibility.GetAccessibleString("Show collider help", Services.State.ShowColliderHelp), GUILayout.MaxWidth(200)))
 			{
-				_settings.showColliderHelp = !_settings.showColliderHelp;
+				Services.State.ShowColliderHelp = !Services.State.ShowColliderHelp;
 			}
 
 			if (GUILayout.Button("Rebuild thumbnail cache (this will lag)", "ButtonPrimaryWrap", GUILayout.MaxWidth(200)))

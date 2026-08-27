@@ -4,7 +4,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
-using Settings = MultiTool.Services.Settings;
 using Logger = MultiTool.Services.Logger;
 using MultiTool.Database;
 using MultiTool.Services;
@@ -18,7 +17,6 @@ namespace MultiTool.UI.Tabs
 		private string _configTitle = "Configuration";
 		public override string ConfigTitle => _configTitle;
 
-		private Settings _settings = new Settings();
 
         // Scroll vectors.
 		private Vector2 _vehicleScrollPosition;
@@ -99,9 +97,9 @@ namespace MultiTool.UI.Tabs
 			GUILayout.FlexibleSpace();
 
 			// Delete mode.
-			if (GUILayout.Button(Accessibility.GetAccessibleString("Delete mode", _settings.deleteMode) + $" (Press {MultiTool.Binds.GetKeyByAction((int)Keybinds.Inputs.deleteMode).key})", GUILayout.MaxWidth(250)))
+			if (GUILayout.Button(Accessibility.GetAccessibleString("Delete mode", Services.State.DeleteMode) + $" (Press {MultiTool.Binds.GetKeyByAction((int)Keybinds.Inputs.deleteMode).key})", GUILayout.MaxWidth(250)))
 			{
-				_settings.deleteMode = !_settings.deleteMode;
+				Services.State.DeleteMode = !Services.State.DeleteMode;
 			}
 
 			GUILayout.EndHorizontal();
@@ -130,7 +128,7 @@ namespace MultiTool.UI.Tabs
 							color = Colour.GetColour(),
 							plate = _plate,
 							amt = vehicle.amt,
-						});
+						}, spawnWithFuel: Services.State.SpawnWithFuel);
 
 						if (spawned != null)
 							GUIRenderer.spawnedObjects.Add(spawned);
@@ -260,8 +258,8 @@ namespace MultiTool.UI.Tabs
 				GUILayout.Space(10);
 
 				// Spawn with fuel.
-				if (GUILayout.Button(Accessibility.GetAccessibleString("Spawn with fuel", _settings.spawnWithFuel)))
-					_settings.spawnWithFuel = !_settings.spawnWithFuel;
+				if (GUILayout.Button(Accessibility.GetAccessibleString("Spawn with fuel", Services.State.SpawnWithFuel)))
+					Services.State.SpawnWithFuel = !Services.State.SpawnWithFuel;
 				GUILayout.Space(10);
 
 				// Fuel mixes.

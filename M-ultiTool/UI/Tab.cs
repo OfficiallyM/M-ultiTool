@@ -1,9 +1,15 @@
-﻿using UnityEngine;
+﻿using MultiTool.Services;
+using UnityEngine;
 
 namespace MultiTool.UI
 {
 	public abstract class Tab
 	{
+		// Set by TabController when this tab is registered. Internal so third-party
+		// tabs registered through the public AddTab API never see MultiTool's own
+		// services - this is only populated for MultiTool's built-in tabs.
+		internal ServiceContext Services { get; set; }
+
 		public virtual string Name { get; set; }
 		public virtual bool HasConfigPane { get { return false; } }
 		public virtual string ConfigTitle { get; set; }

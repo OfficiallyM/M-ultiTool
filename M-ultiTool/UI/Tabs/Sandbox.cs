@@ -10,7 +10,6 @@ namespace MultiTool.UI.Tabs
 	{
 		public override string Name => "Sandbox";
 
-		private Settings _settings = new Settings();
 		private Vector2 _position;
 
 		private string _hour = "0";
@@ -210,45 +209,45 @@ namespace MultiTool.UI.Tabs
 			GUILayout.Space(10);
 
 			GUILayout.Label("Tools", "LabelHeader");
-			if (GUILayout.Button(Accessibility.GetAccessibleString("Toggle color picker", _settings.mode == "colorPicker"), GUILayout.MaxWidth(200)))
+			if (GUILayout.Button(Accessibility.GetAccessibleString("Toggle color picker", Services.State.Mode == "colorPicker"), GUILayout.MaxWidth(200)))
 			{
-				if (_settings.mode == "colorPicker")
-					_settings.mode = null;
+				if (Services.State.Mode == "colorPicker")
+					Services.State.Mode = null;
 				else
-					_settings.mode = "colorPicker";
+					Services.State.Mode = "colorPicker";
 			}
 			GUILayout.Space(10);
 
-			if (GUILayout.Button(Accessibility.GetAccessibleString("Toggle object scale mode", _settings.mode == "scale"), GUILayout.MaxWidth(200)))
+			if (GUILayout.Button(Accessibility.GetAccessibleString("Toggle object scale mode", Services.State.Mode == "scale"), GUILayout.MaxWidth(200)))
 			{
-				if (_settings.mode == "scale")
-					_settings.mode = null;
+				if (Services.State.Mode == "scale")
+					Services.State.Mode = null;
 				else
-					_settings.mode = "scale";
+					Services.State.Mode = "scale";
 			}
 			GUILayout.Space(10);
 
-			if (GUILayout.Button(Accessibility.GetAccessibleString("Toggle object regenerator", _settings.mode == "objectRegenerator"), GUILayout.MaxWidth(200)))
+			if (GUILayout.Button(Accessibility.GetAccessibleString("Toggle object regenerator", Services.State.Mode == "objectRegenerator"), GUILayout.MaxWidth(200)))
 			{
-				if (_settings.mode == "objectRegenerator")
+				if (Services.State.Mode == "objectRegenerator")
 				{
-					_settings.mode = null;
+					Services.State.Mode = null;
 					GUIRenderer.selectedObject = null;
 				}
 				else
-					_settings.mode = "objectRegenerator";
+					Services.State.Mode = "objectRegenerator";
 			}
 			GUILayout.Space(10);
 
-			if (GUILayout.Button(Accessibility.GetAccessibleString("Toggle weight changer", _settings.mode == "weightChanger"), GUILayout.MaxWidth(200)))
+			if (GUILayout.Button(Accessibility.GetAccessibleString("Toggle weight changer", Services.State.Mode == "weightChanger"), GUILayout.MaxWidth(200)))
 			{
-				if (_settings.mode == "weightChanger")
+				if (Services.State.Mode == "weightChanger")
 				{
-					_settings.mode = null;
+					Services.State.Mode = null;
 					GUIRenderer.selectedObject = null;
 				}
 				else
-					_settings.mode = "weightChanger";
+					Services.State.Mode = "weightChanger";
 			}
 
 			GUILayout.EndScrollView();

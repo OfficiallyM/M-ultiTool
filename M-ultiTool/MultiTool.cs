@@ -11,7 +11,6 @@ using System.Linq;
 using TLDLoader;
 using UnityEngine;
 using Logger = MultiTool.Services.Logger;
-using Settings = MultiTool.Services.Settings;
 
 namespace MultiTool
 {
@@ -26,10 +25,15 @@ namespace MultiTool
 
         // Modules.
         internal static GUIRenderer Renderer;
-		internal static Configuration Configuration;
-		internal static Keybinds Binds;
 
-		private Settings settings = new Settings();
+		// Named Context, not Services - "Services" already resolves to the MultiTool.Services
+		// namespace from inside this class (see the Services.Logger.* calls below), so a field
+		// with that name would shadow it and silently break every one of those call sites.
+		internal static ServiceContext Context;
+
+		// Shorthand access for widely used services.
+		internal static Keybinds Binds => Context.Keybinds;
+		internal static Configuration Configuration => Context.Configuration;
 
 		internal static Mod mod;
         internal static string configVersion;
@@ -39,20 +43,18 @@ namespace MultiTool
 		{
 			mod = this;
 
-			// Initialise modules.
 			try
 			{
 				Services.Logger.Init();
 				Translator.Init();
 				ThumbnailGenerator.Init();
 
-                Renderer = new GUIRenderer();
-                Configuration = new Configuration();
-                Binds = new Keybinds();
+				Context = new ServiceContext(new Configuration(), new Keybinds(), new ModState());
+                Renderer = new GUIRenderer(Context);
 			}
 			catch (Exception ex)
 			{
-				Services.Logger.Log($"Module initialisation failed - {ex}", Services.Logger.LogLevel.Critical);
+				Services.Logger.Log($"Bootstrap failed - {ex}", Services.Logger.LogLevel.Critical);
 			}
 		}
 
@@ -91,7 +93,7 @@ namespace MultiTool
             Renderer.Update();
 
 			// Delete mode.
-			if (settings.deleteMode)
+			if (Context.State.DeleteMode)
 			{
 				try
 				{
@@ -121,7 +123,7 @@ namespace MultiTool
 				}
 			}
 
-			switch (settings.mode)
+			switch (Context.State.Mode)
 			{
 				case "colorPicker":
 					if (Input.GetKeyDown(Binds.GetKeyByAction((int)Keybinds.Inputs.action1).key) && !Renderer.show)
@@ -365,7 +367,7 @@ namespace MultiTool
 							Quaternion rotation = gameObject.transform.rotation;
 
 							// Recreate object.
-							GameObject spawned = SpawnUtilities.Spawn(prefab, position, rotation);
+							GameObject spawned = SpawnUtilities.Spawn(prefab, position, rotation, Context.State.SpawnWithFuel);
 							GUIRenderer.selectedObject = spawned.GetComponent<tosaveitemscript>();
 
 							// Handle attached children.
