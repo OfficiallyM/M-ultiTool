@@ -38,7 +38,7 @@ namespace MultiTool.UI.Tabs
 			List<POI> pois = GUIRenderer.POIs;
 			if (_search != _lastSearch)
 			{
-				pois = GUIRenderer.POIs.Where(v => v.name.ToLower().Contains(_search.ToLower()) || v.poi.name.ToLower().Contains(_search.ToLower())).ToList();
+				pois = GUIRenderer.POIs.Where(v => v.Name.ToLower().Contains(_search.ToLower()) || v.Poi.name.ToLower().Contains(_search.ToLower())).ToList();
 				_rechunk = true;
 				_lastSearch = _search;
 				_poiScrollPosition = new Vector2(0, 0);
@@ -100,8 +100,8 @@ namespace MultiTool.UI.Tabs
 				{
 					GUILayout.Box("", "button", GUILayout.Width(140), GUILayout.Height(140));
 					Rect boxRect = GUILayoutUtility.GetLastRect();
-					bool buttonImage = GUI.Button(new Rect(boxRect.x + 10f, boxRect.y - 10f, boxRect.width - 20f, boxRect.height - 20f), poi.thumbnail, "ButtonTransparent");
-					bool buttonText = GUI.Button(new Rect(boxRect.x, boxRect.y + (boxRect.height / 2), boxRect.width, boxRect.height / 2), poi.name, "ButtonTransparent");
+					bool buttonImage = GUI.Button(new Rect(boxRect.x + 10f, boxRect.y - 10f, boxRect.width - 20f, boxRect.height - 20f), poi.Thumbnail, "ButtonTransparent");
+					bool buttonText = GUI.Button(new Rect(boxRect.x, boxRect.y + (boxRect.height / 2), boxRect.width, boxRect.height / 2), poi.Name, "ButtonTransparent");
 					if (buttonImage || buttonText)
 					{
 						SpawnedPOI spawnedPOI = SpawnUtilities.Spawn(poi, _poiSpawnItems);
@@ -135,11 +135,11 @@ namespace MultiTool.UI.Tabs
 
 			foreach (SpawnedPOI poi in _spawnedPOIs)
 			{
-				GUILayout.Label(poi.poi.name);
+				GUILayout.Label(poi.Poi.Name);
 				GUILayout.Space(2);
 				GUILayout.BeginHorizontal();
 				if (GUILayout.Button("Teleport to", GUILayout.MaxWidth(100)))
-					GameUtilities.TeleportPlayerWithParent(poi.poiObject.transform.position + Vector3.up * 2f);
+					GameUtilities.TeleportPlayerWithParent(poi.PoiObject.transform.position + Vector3.up * 2f);
 
 				GUILayout.Space(5);
 
@@ -153,7 +153,7 @@ namespace MultiTool.UI.Tabs
 						}, "delete");
 
 					_spawnedPOIs.Remove(poi);
-					GameObject.Destroy(poi.poiObject);
+					GameObject.Destroy(poi.PoiObject);
 					break;
 				}
 

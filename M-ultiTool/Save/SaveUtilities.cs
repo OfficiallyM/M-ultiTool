@@ -36,7 +36,7 @@ namespace MultiTool.Save
 				save_prefab savePrefab1;
 
 				// Attempt to find existing plate.
-				if ((savedatascript.d.data.farStuff.TryGetValue(Mathf.Abs(MultiTool.mod.ID.GetHashCode()), out savePrefab1) || savedatascript.d.data.nearStuff.TryGetValue(Mathf.Abs(MultiTool.mod.ID.GetHashCode()), out savePrefab1)) && savePrefab1.rendszam != null)
+				if ((savedatascript.d.data.farStuff.TryGetValue(Mathf.Abs(MultiTool.ModInstance.ID.GetHashCode()), out savePrefab1) || savedatascript.d.data.nearStuff.TryGetValue(Mathf.Abs(MultiTool.ModInstance.ID.GetHashCode()), out savePrefab1)) && savePrefab1.rendszam != null)
 					saveRendszam = savePrefab1.rendszam;
 
 				// Plate doesn't exist.
@@ -48,7 +48,7 @@ namespace MultiTool.Save
 					savePrefab2.rendszam = new save_rendszam();
 					saveRendszam = savePrefab2.rendszam;
 					saveRendszam.S = string.Empty;
-					savedatascript.d.data.farStuff.Add(Mathf.Abs(MultiTool.mod.ID.GetHashCode()), savePrefab2);
+					savedatascript.d.data.farStuff.Add(Mathf.Abs(MultiTool.ModInstance.ID.GetHashCode()), savePrefab2);
 				}
 
 				// Write the input to the plate.
@@ -125,23 +125,23 @@ namespace MultiTool.Save
 				switch (type)
 				{
 					case "insert":
-						if (data.pois == null)
-							data.pois = new List<POIData>();
+						if (data.Pois == null)
+							data.Pois = new List<POIData>();
 
-						poi.ID = data.pois.Count;
+						poi.ID = data.Pois.Count;
 						ID = poi.ID;
 
 						// Save POI with global position.
-						poi.position = GameUtilities.GetGlobalObjectPosition(poi.position);
+						poi.Position = GameUtilities.GetGlobalObjectPosition(poi.Position);
 
-						data.pois.Add(poi);
+						data.Pois.Add(poi);
 						break;
 					case "delete":
-						POIData poiData = data.pois.First(p => p.ID == poi.ID);
+						POIData poiData = data.Pois.First(p => p.ID == poi.ID);
 						if (poiData != null)
 						{
 							ID = poiData.ID;
-							data.pois.Remove(poiData);
+							data.Pois.Remove(poiData);
 						}
 						break;
 				}
@@ -166,14 +166,14 @@ namespace MultiTool.Save
 
 			try
 			{
-				if (data.glass == null)
-					data.glass = new List<GlassData>();
+				if (data.Glass == null)
+					data.Glass = new List<GlassData>();
 
-				GlassData existing = data.glass.Where(g => g.ID == glass.ID && g.type == glass.type).FirstOrDefault();
+				GlassData existing = data.Glass.Where(g => g.ID == glass.ID && g.Type == glass.Type).FirstOrDefault();
 				if (existing != null)
-					existing.color = glass.color;
+					existing.Color = glass.Color;
 				else
-					data.glass.Add(glass);
+					data.Glass.Add(glass);
 			}
 			catch (Exception ex)
 			{
@@ -193,21 +193,21 @@ namespace MultiTool.Save
 
 			try
 			{
-				if (data.materials == null)
-					data.materials = new List<MaterialData>();
+				if (data.Materials == null)
+					data.Materials = new List<MaterialData>();
 
-				MaterialData existing = data.materials.Where(m => m.ID == material.ID && m.part == material.part && m.parent == material.parent).FirstOrDefault();
+				MaterialData existing = data.Materials.Where(m => m.ID == material.ID && m.Part == material.Part && m.Parent == material.Parent).FirstOrDefault();
 				if (existing != null)
 				{
 					// Update existing saved part.
-					existing.exact = material.exact;
-					existing.type = material.type;
-					existing.color = material.color;
+					existing.Exact = material.Exact;
+					existing.Type = material.Type;
+					existing.Color = material.Color;
 				}
 				else
 				{
 					// Add a new saved part.
-					data.materials.Add(material);
+					data.Materials.Add(material);
 				}
 			}
 			catch (Exception ex)
@@ -228,14 +228,14 @@ namespace MultiTool.Save
 
 			try
 			{
-				if (data.scale == null)
-					data.scale = new List<ScaleData>();
+				if (data.Scale == null)
+					data.Scale = new List<ScaleData>();
 
-				ScaleData existing = data.scale.Where(s => s.ID == scale.ID).FirstOrDefault();
+				ScaleData existing = data.Scale.Where(s => s.ID == scale.ID).FirstOrDefault();
 				if (existing != null)
-					existing.scale = scale.scale;
+					existing.Scale = scale.Scale;
 				else
-					data.scale.Add(scale);
+					data.Scale.Add(scale);
 			}
 			catch (Exception ex)
 			{
@@ -255,17 +255,17 @@ namespace MultiTool.Save
 
 			try
 			{
-				if (data.slots == null)
-					data.slots = new List<SlotData>();
+				if (data.Slots == null)
+					data.Slots = new List<SlotData>();
 
-				SlotData existing = data.slots.Where(s => s.ID == slot.ID && s.slot == slot.slot).FirstOrDefault();
+				SlotData existing = data.Slots.Where(s => s.ID == slot.ID && s.Slot == slot.Slot).FirstOrDefault();
 				if (existing != null)
 				{
-					existing.position = slot.position;
-					existing.rotation = slot.rotation;
+					existing.Position = slot.Position;
+					existing.Rotation = slot.Rotation;
 				}
 				else
-					data.slots.Add(slot);
+					data.Slots.Add(slot);
 			}
 			catch (Exception ex)
 			{
@@ -285,14 +285,14 @@ namespace MultiTool.Save
 
 			try
 			{
-				if (data.lights == null)
-					data.lights = new List<LightData>();
+				if (data.Lights == null)
+					data.Lights = new List<LightData>();
 
-				LightData existing = data.lights.Where(l => l.ID == light.ID && l.name == light.name).FirstOrDefault();
+				LightData existing = data.Lights.Where(l => l.ID == light.ID && l.Name == light.Name).FirstOrDefault();
 				if (existing != null)
-					existing.color = light.color;
+					existing.Color = light.Color;
 				else
-					data.lights.Add(light);
+					data.Lights.Add(light);
 			}
 			catch (Exception ex)
 			{
@@ -312,18 +312,18 @@ namespace MultiTool.Save
 
 			try
 			{
-				if (data.engineTuning == null)
-					data.engineTuning = new List<EngineTuningData>();
+				if (data.EngineTuning == null)
+					data.EngineTuning = new List<EngineTuningData>();
 
-				EngineTuningData existing = data.engineTuning.Where(e => e.ID == engineTuning.ID).FirstOrDefault();
+				EngineTuningData existing = data.EngineTuning.Where(e => e.ID == engineTuning.ID).FirstOrDefault();
 				if (existing != null)
 				{
-					existing.tuning = engineTuning.tuning;
-					if (existing.defaultTuning == null)
-						existing.defaultTuning = engineTuning.defaultTuning;
+					existing.Tuning = engineTuning.Tuning;
+					if (existing.DefaultTuning == null)
+						existing.DefaultTuning = engineTuning.DefaultTuning;
 				}
 				else
-					data.engineTuning.Add(engineTuning);
+					data.EngineTuning.Add(engineTuning);
 			}
 			catch (Exception ex)
 			{
@@ -343,18 +343,18 @@ namespace MultiTool.Save
 
 			try
 			{
-				if (data.transmissionTuning == null)
-					data.transmissionTuning = new List<TransmissionTuningData>();
+				if (data.TransmissionTuning == null)
+					data.TransmissionTuning = new List<TransmissionTuningData>();
 
-				TransmissionTuningData existing = data.transmissionTuning.Where(e => e.ID == transmissionTuning.ID).FirstOrDefault();
+				TransmissionTuningData existing = data.TransmissionTuning.Where(e => e.ID == transmissionTuning.ID).FirstOrDefault();
 				if (existing != null)
 				{
-					existing.tuning = transmissionTuning.tuning;
-					if (existing.defaultTuning == null)
-						existing.defaultTuning = transmissionTuning.defaultTuning;
+					existing.Tuning = transmissionTuning.Tuning;
+					if (existing.DefaultTuning == null)
+						existing.DefaultTuning = transmissionTuning.DefaultTuning;
 				}
 				else
-					data.transmissionTuning.Add(transmissionTuning);
+					data.TransmissionTuning.Add(transmissionTuning);
 			}
 			catch (Exception ex)
 			{
@@ -374,18 +374,18 @@ namespace MultiTool.Save
 
 			try
 			{
-				if (data.vehicleTuning == null)
-					data.vehicleTuning = new List<VehicleTuningData>();
+				if (data.VehicleTuning == null)
+					data.VehicleTuning = new List<VehicleTuningData>();
 
-				VehicleTuningData existing = data.vehicleTuning.Where(e => e.ID == vehicleTuning.ID).FirstOrDefault();
+				VehicleTuningData existing = data.VehicleTuning.Where(e => e.ID == vehicleTuning.ID).FirstOrDefault();
 				if (existing != null)
 				{
-					existing.tuning = vehicleTuning.tuning;
-					if (existing.defaultTuning == null)
-						existing.defaultTuning = vehicleTuning.defaultTuning;
+					existing.Tuning = vehicleTuning.Tuning;
+					if (existing.DefaultTuning == null)
+						existing.DefaultTuning = vehicleTuning.DefaultTuning;
 				}
 				else
-					data.vehicleTuning.Add(vehicleTuning);
+					data.VehicleTuning.Add(vehicleTuning);
 			}
 			catch (Exception ex)
 			{
@@ -405,18 +405,18 @@ namespace MultiTool.Save
 
 			try
 			{
-				if (data.wheelTuning == null)
-					data.wheelTuning = new List<WheelTuningData>();
+				if (data.WheelTuning == null)
+					data.WheelTuning = new List<WheelTuningData>();
 
-				WheelTuningData existing = data.wheelTuning.Where(e => e.ID == wheelTuning.ID).FirstOrDefault();
+				WheelTuningData existing = data.WheelTuning.Where(e => e.ID == wheelTuning.ID).FirstOrDefault();
 				if (existing != null)
 				{
-					existing.tuning = wheelTuning.tuning;
-					if (existing.defaultTuning == null)
-						existing.defaultTuning = wheelTuning.defaultTuning;
+					existing.Tuning = wheelTuning.Tuning;
+					if (existing.DefaultTuning == null)
+						existing.DefaultTuning = wheelTuning.DefaultTuning;
 				}
 				else
-					data.wheelTuning.Add(wheelTuning);
+					data.WheelTuning.Add(wheelTuning);
 			}
 			catch (Exception ex)
 			{
@@ -436,20 +436,20 @@ namespace MultiTool.Save
 
 			try
 			{
-				if (data.weight == null)
-					data.weight = new List<WeightData>();
+				if (data.Weight == null)
+					data.Weight = new List<WeightData>();
 
-				WeightData existing = data.weight.Where(s => s.ID == weight.ID).FirstOrDefault();
+				WeightData existing = data.Weight.Where(s => s.ID == weight.ID).FirstOrDefault();
 				if (existing != null)
 				{
 					// Only set default if we don't already have one set.
-					if (existing.defaultMass == 0)
-						existing.defaultMass = weight.defaultMass;
+					if (existing.DefaultMass == 0)
+						existing.DefaultMass = weight.DefaultMass;
 
-					existing.mass = weight.mass;
+					existing.Mass = weight.Mass;
 				}
 				else
-					data.weight.Add(weight);
+					data.Weight.Add(weight);
 			}
 			catch (Exception ex)
 			{
@@ -469,20 +469,20 @@ namespace MultiTool.Save
 
 			try
 			{
-				if (data.tank == null)
-					data.tank = new List<TankData>();
+				if (data.Tank == null)
+					data.Tank = new List<TankData>();
 
-				TankData existing = data.tank.Where(s => s.ID == tank.ID).FirstOrDefault();
+				TankData existing = data.Tank.Where(s => s.ID == tank.ID).FirstOrDefault();
 				if (existing != null)
 				{
 					// Only set default if we don't already have one set.
-					if (existing.defaultCapacity == 0)
-						existing.defaultCapacity = tank.defaultCapacity;
+					if (existing.DefaultCapacity == 0)
+						existing.DefaultCapacity = tank.DefaultCapacity;
 
-					existing.capacity = tank.capacity;
+					existing.Capacity = tank.Capacity;
 				}
 				else
-					data.tank.Add(tank);
+					data.Tank.Add(tank);
 			}
 			catch (Exception ex)
 			{
@@ -500,7 +500,7 @@ namespace MultiTool.Save
 		{
 			Save data = UnserializeSaveData();
 
-			data.playerData = playerData;
+			data.PlayerData = playerData;
 
 			SerializeSaveData(data);
 		}
@@ -513,7 +513,7 @@ namespace MultiTool.Save
 		{
 			Save data = UnserializeSaveData();
 
-			data.isPlayerDataPerSave = perSave;
+			data.IsPlayerDataPerSave = perSave;
 
 			SerializeSaveData(data);
 		}
@@ -525,7 +525,7 @@ namespace MultiTool.Save
 		public static void UpdateTimeData(TimeData timeData)
 		{
 			Save data = UnserializeSaveData();
-			data.timeData = timeData;
+			data.TimeData = timeData;
 			SerializeSaveData(data);
 		}
 
@@ -541,15 +541,15 @@ namespace MultiTool.Save
 			try
 			{
 				Save data = UnserializeSaveData();
-				if (data.pois != null)
+				if (data.Pois != null)
 				{
-					foreach (POIData poi in data.pois)
+					foreach (POIData poi in data.Pois)
 					{
-						GameObject gameObject = POIs.Where(p => p.poi.name == poi.poi.Replace("(Clone)", "")).FirstOrDefault().poi;
+						GameObject gameObject = POIs.Where(p => p.Poi.name == poi.Poi.Replace("(Clone)", "")).FirstOrDefault().Poi;
 						if (gameObject != null)
 						{
-							Vector3 position = GameUtilities.GetLocalObjectPosition(poi.position);
-							spawnedPOIs.Add(SpawnUtilities.Spawn(new POI() { poi = gameObject }, false, position, poi.rotation));
+							Vector3 position = GameUtilities.GetLocalObjectPosition(poi.Position);
+							spawnedPOIs.Add(SpawnUtilities.Spawn(new POI() { Poi = gameObject }, false, position, poi.Rotation));
 						}
 					}
 				}
@@ -608,16 +608,16 @@ namespace MultiTool.Save
 		public static void LoadGlass(tosaveitemscript save, Save data)
 		{
 			// Return early if no glass data is set.
-			if (data.glass == null) return;
+			if (data.Glass == null) return;
 
-			foreach (GlassData glass in data.glass)
+			foreach (GlassData glass in data.Glass)
 			{
 				try
 				{
 					// Check ID matches.
 					if (save.idInSave == glass.ID)
 					{
-						switch (glass.type)
+						switch (glass.Type)
 						{
 							case "windows":
 								// Set window colour.
@@ -630,14 +630,14 @@ namespace MultiTool.Save
 										// Outer glass.
 										case "Glass":
 											// Use selected colour.
-											meshRenderer.material.color = glass.color;
+											meshRenderer.material.color = glass.Color;
 											break;
 
 										// Inner glass.
 										case "GlassNoReflection":
 											// Use a more transparent version of the selected colour
 											// for the inner glass to ensure it's still see-through.
-											Color innerColor = glass.color;
+											Color innerColor = glass.Color;
 											if (innerColor.a > 0.2f)
 												innerColor.a = 0.2f;
 											meshRenderer.material.color = innerColor;
@@ -653,7 +653,7 @@ namespace MultiTool.Save
 								if (outerGlass != null)
 								{
 									MeshRenderer meshRenderer = outerGlass.GetComponent<MeshRenderer>();
-									meshRenderer.material.color = glass.color;
+									meshRenderer.material.color = glass.Color;
 								}
 								break;
 						}
@@ -674,42 +674,42 @@ namespace MultiTool.Save
 		private static void LoadMaterials(tosaveitemscript save, Save data)
 		{
 			// Return early if no material data is set.
-			if (data.materials == null) return;
+			if (data.Materials == null) return;
 
-			foreach (MaterialData material in data.materials)
+			foreach (MaterialData material in data.Materials)
 			{
 				try
 				{
 					// Check ID matches.
 					if (save.idInSave == material.ID)
 					{
-						if (material.isConditionless.HasValue && material.isConditionless.Value)
+						if (material.IsConditionless.HasValue && material.IsConditionless.Value)
 						{
 							// Conditionless parts are always matched by exact name.
-							MeshRenderer mesh = GameUtilities.GetConditionlessVehiclePartByName(save.gameObject, material.part);
-							GameUtilities.SetConditionlessPartMaterial(mesh, material.type, material.color);
+							MeshRenderer mesh = GameUtilities.GetConditionlessVehiclePartByName(save.gameObject, material.Part);
+							GameUtilities.SetConditionlessPartMaterial(mesh, material.Type, material.Color);
 						}
 						else
 						{
 							// Standard part.
 							List<partconditionscript> parts = new List<partconditionscript>();
 
-							if (material.exact)
+							if (material.Exact)
 							{
-								partconditionscript part = GameUtilities.GetVehiclePartByName(save.gameObject, material.part, false);
+								partconditionscript part = GameUtilities.GetVehiclePartByName(save.gameObject, material.Part, false);
 								if (part != null)
 									parts.Add(part);
 								// Match by partial name as a failover.
 								else
 								{
-									List<partconditionscript> matchedParts = GameUtilities.GetVehiclePartsByPartialName(save.gameObject, material.part, false);
+									List<partconditionscript> matchedParts = GameUtilities.GetVehiclePartsByPartialName(save.gameObject, material.Part, false);
 									if (matchedParts.Count > 0)
 										parts.AddRange(matchedParts);
 								}
 							}
 							else
 							{
-								List<partconditionscript> matchedParts = GameUtilities.GetVehiclePartsByPartialName(save.gameObject, material.part, false);
+								List<partconditionscript> matchedParts = GameUtilities.GetVehiclePartsByPartialName(save.gameObject, material.Part, false);
 								if (matchedParts.Count > 0)
 									parts.AddRange(matchedParts);
 							}
@@ -717,10 +717,10 @@ namespace MultiTool.Save
 							foreach (partconditionscript part in parts)
 							{
 								// Skip any parts where the parent doesn't match.
-								if (material.parent != null)
-									if (material.parent != SanitiseName(part.transform.parent?.name ?? part.name)) continue;
+								if (material.Parent != null)
+									if (material.Parent != SanitiseName(part.transform.parent?.name ?? part.name)) continue;
 
-								GameUtilities.SetPartMaterial(part, material.type, material.color);
+								GameUtilities.SetPartMaterial(part, material.Type, material.Color);
 							}
 						}
 					}
@@ -740,16 +740,16 @@ namespace MultiTool.Save
 		private static void LoadScale(tosaveitemscript save, Save data)
 		{
 			// Return early if no scale data is set.
-			if (data.scale == null) return;
+			if (data.Scale == null) return;
 
-			foreach (ScaleData scale in data.scale)
+			foreach (ScaleData scale in data.Scale)
 			{
 				try
 				{
 					// Check ID matches.
 					if (save.idInSave == scale.ID)
 					{
-						save.gameObject.transform.localScale = scale.scale;
+						save.gameObject.transform.localScale = scale.Scale;
 					}
 				}
 				catch (Exception ex)
@@ -767,9 +767,9 @@ namespace MultiTool.Save
 		private static void LoadSlots(tosaveitemscript save, Save data)
 		{
 			// Return early if no slot data is set.
-			if (data.slots == null) return;
+			if (data.Slots == null) return;
 
-			foreach (SlotData slot in data.slots)
+			foreach (SlotData slot in data.Slots)
 			{
 				try
 				{
@@ -780,10 +780,10 @@ namespace MultiTool.Save
 						foreach (Transform transform in save.GetComponentsInChildren<Transform>())
 						{
 							// Apply position and rotation changes.
-							if (transform.name == slot.slot)
+							if (transform.name == slot.Slot)
 							{
-								transform.localPosition = slot.position;
-								transform.localRotation = slot.rotation;
+								transform.localPosition = slot.Position;
+								transform.localRotation = slot.Rotation;
 							}
 						}
 					}
@@ -803,9 +803,9 @@ namespace MultiTool.Save
 		private static void LoadLights(tosaveitemscript save, Save data)
 		{
 			// Return early if no light data is set.
-			if (data.lights == null) return;
+			if (data.Lights == null) return;
 
-			foreach (LightData light in data.lights)
+			foreach (LightData light in data.Lights)
 			{
 				try
 				{
@@ -813,12 +813,12 @@ namespace MultiTool.Save
 					{
 						headlightscript headlight = null;
 						bool isInteriorLight = false;
-						if (light.name != null && light.name != string.Empty)
+						if (light.Name != null && light.Name != string.Empty)
 						{
 							headlightscript[] lights = save.GetComponentsInChildren<headlightscript>();
 							foreach (headlightscript childLight in lights)
 							{
-								if (childLight.name.ToLower().Contains(light.name.ToLower()))
+								if (childLight.name.ToLower().Contains(light.Name.ToLower()))
 									headlight = childLight;
 							}
 							isInteriorLight = true;
@@ -831,7 +831,7 @@ namespace MultiTool.Save
 						// Unable to find headlight, skip.
 						if (headlight == null) continue;
 
-						GameUtilities.SetHeadlightColor(headlight, light.color, isInteriorLight);
+						GameUtilities.SetHeadlightColor(headlight, light.Color, isInteriorLight);
 					}
 				}
 				catch (Exception ex)
@@ -849,15 +849,15 @@ namespace MultiTool.Save
 		private static void LoadEngineTuning(tosaveitemscript save, Save data)
 		{
 			// Return early if no engine tuning data is set.
-			if (data.engineTuning == null) return;
+			if (data.EngineTuning == null) return;
 
-			foreach (EngineTuningData engineTuning in data.engineTuning)
+			foreach (EngineTuningData engineTuning in data.EngineTuning)
 			{
 				try
 				{
 					if (save.idInSave == engineTuning.ID)
 					{
-						GameUtilities.ApplyEngineTuning(save.GetComponent<enginescript>(), engineTuning.tuning);
+						GameUtilities.ApplyEngineTuning(save.GetComponent<enginescript>(), engineTuning.Tuning);
 					}
 				}
 				catch (Exception ex)
@@ -875,14 +875,14 @@ namespace MultiTool.Save
 		private static void LoadTransmissionTuning(tosaveitemscript save, Save data)
 		{
 			// Return early if no transmission tuning data is set.
-			if (data.transmissionTuning == null) return;
+			if (data.TransmissionTuning == null) return;
 
-			foreach (TransmissionTuningData transmissionTuning in data.transmissionTuning)
+			foreach (TransmissionTuningData transmissionTuning in data.TransmissionTuning)
 			{
 				try
 				{
 					if (save.idInSave == transmissionTuning.ID)
-						GameUtilities.ApplyTransmissionTuning(save.GetComponent<carscript>(), transmissionTuning.tuning);
+						GameUtilities.ApplyTransmissionTuning(save.GetComponent<carscript>(), transmissionTuning.Tuning);
 				}
 				catch (Exception ex)
 				{
@@ -899,14 +899,14 @@ namespace MultiTool.Save
 		private static void LoadVehicleTuning(tosaveitemscript save, Save data)
 		{
 			// Return early if no vehicle tuning data is set.
-			if (data.vehicleTuning == null) return;
+			if (data.VehicleTuning == null) return;
 
-			foreach (VehicleTuningData vehicleTuning in data.vehicleTuning)
+			foreach (VehicleTuningData vehicleTuning in data.VehicleTuning)
 			{
 				try
 				{
 					if (save.idInSave == vehicleTuning.ID)
-						GameUtilities.ApplyVehicleTuning(save.GetComponent<carscript>(), vehicleTuning.tuning);
+						GameUtilities.ApplyVehicleTuning(save.GetComponent<carscript>(), vehicleTuning.Tuning);
 				}
 				catch (Exception ex)
 				{
@@ -923,18 +923,18 @@ namespace MultiTool.Save
 		private static void LoadWheelTuning(tosaveitemscript save, Save data)
 		{
 			// Return early if no vehicle tuning data is set.
-			if (data.wheelTuning == null) return;
+			if (data.WheelTuning == null) return;
 
-			foreach (WheelTuningData wheelTuning in data.wheelTuning)
+			foreach (WheelTuningData wheelTuning in data.WheelTuning)
 			{
 				try
 				{
 					if (save.idInSave == wheelTuning.ID)
 					{
-						if (wheelTuning.tuning.wheels == null || wheelTuning.tuning.wheels.Count == 0) continue;
+						if (wheelTuning.Tuning.Wheels == null || wheelTuning.Tuning.Wheels.Count == 0) continue;
 
-						GameUtilities.RemapWheelTuning(save, wheelTuning.tuning);
-						GameUtilities.ApplyWheelTuning(wheelTuning.tuning);
+						GameUtilities.RemapWheelTuning(save, wheelTuning.Tuning);
+						GameUtilities.ApplyWheelTuning(wheelTuning.Tuning);
 					}
 				}
 				catch (Exception ex)
@@ -952,9 +952,9 @@ namespace MultiTool.Save
 		private static void LoadWeight(tosaveitemscript save, Save data)
 		{
 			// Return early if no weight data is set.
-			if (data.weight == null) return;
+			if (data.Weight == null) return;
 
-			foreach (WeightData weight in data.weight)
+			foreach (WeightData weight in data.Weight)
 			{
 				try
 				{
@@ -962,7 +962,7 @@ namespace MultiTool.Save
 					if (save.idInSave == weight.ID)
 					{
 						massScript mass = save.GetComponent<massScript>();
-						mass.SetMass(weight.mass);
+						mass.SetMass(weight.Mass);
 					}
 				}
 				catch (Exception ex)
@@ -980,9 +980,9 @@ namespace MultiTool.Save
 		private static void LoadTank(tosaveitemscript save, Save data)
 		{
 			// Return early if no tank data is set.
-			if (data.tank == null) return;
+			if (data.Tank == null) return;
 
-			foreach (TankData tankData in data.tank)
+			foreach (TankData tankData in data.Tank)
 			{
 				try
 				{
@@ -998,7 +998,7 @@ namespace MultiTool.Save
 							tank = save.GetComponentInChildren<tankscript>();
 
 						if (tank != null)
-							tank.F.maxC = tankData.capacity;
+							tank.F.maxC = tankData.Capacity;
 					}
 				}
 				catch (Exception ex)
@@ -1017,13 +1017,13 @@ namespace MultiTool.Save
 		{
 			Save data = UnserializeSaveData();
 
-			if (data.playerData == null)
+			if (data.PlayerData == null)
 			{
-				data.playerData = defaultPlayerData;
+				data.PlayerData = defaultPlayerData;
 				SerializeSaveData(data);
 			}
 
-			return data.playerData;
+			return data.PlayerData;
 		}
 
 		/// <summary>
@@ -1033,7 +1033,7 @@ namespace MultiTool.Save
 		public static bool LoadIsPlayerDataPerSave()
 		{
 			Save data = UnserializeSaveData();
-			return data.isPlayerDataPerSave;
+			return data.IsPlayerDataPerSave;
 		}
 
 		/// <summary>
@@ -1043,7 +1043,7 @@ namespace MultiTool.Save
 		public static TimeData GetTimeData()
 		{
 			Save data = UnserializeSaveData();
-			return data.timeData;
+			return data.TimeData;
 		}
 
 		/// <summary>
@@ -1057,9 +1057,9 @@ namespace MultiTool.Save
 			Save data = UnserializeSaveData();
 
 			// Return early if no slot data is set.
-			if (data.slots == null) return null;
+			if (data.Slots == null) return null;
 
-			return data.slots.Where(s => s.ID == ID && s.slot == slot).FirstOrDefault();
+			return data.Slots.Where(s => s.ID == ID && s.Slot == slot).FirstOrDefault();
 		}
 
 		/// <summary>
@@ -1071,7 +1071,7 @@ namespace MultiTool.Save
 		{
 			Save data = UnserializeSaveData();
 
-			return data.engineTuning?.Where(e => e.ID == ID).FirstOrDefault()?.tuning;
+			return data.EngineTuning?.Where(e => e.ID == ID).FirstOrDefault()?.Tuning;
 		}
 
 		/// <summary>
@@ -1083,7 +1083,7 @@ namespace MultiTool.Save
 		{
 			Save data = UnserializeSaveData();
 
-			return data.engineTuning?.Where(e => e.ID == ID).FirstOrDefault()?.defaultTuning;
+			return data.EngineTuning?.Where(e => e.ID == ID).FirstOrDefault()?.DefaultTuning;
 		}
 
 		/// <summary>
@@ -1095,7 +1095,7 @@ namespace MultiTool.Save
 		{
 			Save data = UnserializeSaveData();
 
-			return data.transmissionTuning?.Where(e => e.ID == ID).FirstOrDefault()?.tuning;
+			return data.TransmissionTuning?.Where(e => e.ID == ID).FirstOrDefault()?.Tuning;
 		}
 
 		/// <summary>
@@ -1107,7 +1107,7 @@ namespace MultiTool.Save
 		{
 			Save data = UnserializeSaveData();
 
-			return data.transmissionTuning?.Where(e => e.ID == ID).FirstOrDefault()?.defaultTuning;
+			return data.TransmissionTuning?.Where(e => e.ID == ID).FirstOrDefault()?.DefaultTuning;
 		}
 
 		/// <summary>
@@ -1119,7 +1119,7 @@ namespace MultiTool.Save
 		{
 			Save data = UnserializeSaveData();
 
-			return data.vehicleTuning?.Where(e => e.ID == ID).FirstOrDefault()?.tuning;
+			return data.VehicleTuning?.Where(e => e.ID == ID).FirstOrDefault()?.Tuning;
 		}
 
 		/// <summary>
@@ -1131,7 +1131,7 @@ namespace MultiTool.Save
 		{
 			Save data = UnserializeSaveData();
 
-			return data.vehicleTuning?.Where(e => e.ID == ID).FirstOrDefault()?.defaultTuning;
+			return data.VehicleTuning?.Where(e => e.ID == ID).FirstOrDefault()?.DefaultTuning;
 		}
 
 		/// <summary>
@@ -1143,7 +1143,7 @@ namespace MultiTool.Save
 		{
 			Save data = UnserializeSaveData();
 
-			WheelTuning tuning = data.wheelTuning?.Where(e => e.ID == save.idInSave).FirstOrDefault()?.tuning;
+			WheelTuning tuning = data.WheelTuning?.Where(e => e.ID == save.idInSave).FirstOrDefault()?.Tuning;
 			GameUtilities.RemapWheelTuning(save, tuning);
 			return tuning;
 		}
@@ -1157,7 +1157,7 @@ namespace MultiTool.Save
 		{
 			Save data = UnserializeSaveData();
 
-			WheelTuning tuning = data.wheelTuning?.Where(e => e.ID == save.idInSave).FirstOrDefault()?.defaultTuning;
+			WheelTuning tuning = data.WheelTuning?.Where(e => e.ID == save.idInSave).FirstOrDefault()?.DefaultTuning;
 			return tuning;
 		}
 
@@ -1170,7 +1170,7 @@ namespace MultiTool.Save
 		{
 			Save data = UnserializeSaveData();
 
-			return data.weight?.Where(e => e.ID == ID).FirstOrDefault();
+			return data.Weight?.Where(e => e.ID == ID).FirstOrDefault();
 		}
 
 		/// <summary>
@@ -1182,7 +1182,7 @@ namespace MultiTool.Save
 		{
 			Save data = UnserializeSaveData();
 
-			return data.tank?.Where(e => e.ID == ID).FirstOrDefault();
+			return data.Tank?.Where(e => e.ID == ID).FirstOrDefault();
 		}
 
 		/// <summary>
@@ -1195,7 +1195,7 @@ namespace MultiTool.Save
 				MemoryStream ms = new MemoryStream();
 				DataContractJsonSerializer jsonSerializer = new DataContractJsonSerializer(typeof(GlobalSave));
 				jsonSerializer.WriteObject(ms, _globalData);
-				using (FileStream file = new FileStream(Path.Combine(ModLoader.GetModConfigFolder(MultiTool.mod), "globalData.json"), FileMode.Create, FileAccess.Write))
+				using (FileStream file = new FileStream(Path.Combine(ModLoader.GetModConfigFolder(MultiTool.ModInstance), "globalData.json"), FileMode.Create, FileAccess.Write))
 				{
 					ms.WriteTo(file);
 					ms.Dispose();
@@ -1221,7 +1221,7 @@ namespace MultiTool.Save
 				if (_globalData == null)
 					_globalData = new GlobalSave();
 
-				string dataPath = Path.Combine(ModLoader.GetModConfigFolder(MultiTool.mod), "GlobalData.json");
+				string dataPath = Path.Combine(ModLoader.GetModConfigFolder(MultiTool.ModInstance), "GlobalData.json");
 				if (File.Exists(dataPath))
 				{
 					string json = File.ReadAllText(dataPath);
@@ -1243,7 +1243,7 @@ namespace MultiTool.Save
 		/// <param name="playerData">New global player data.</param>
 		public static void UpdateGlobalPlayerData(PlayerData playerData)
 		{
-			_globalData.playerData = playerData;
+			_globalData.PlayerData = playerData;
 			WriteGlobalData();
 		}
 
@@ -1256,13 +1256,13 @@ namespace MultiTool.Save
 		{
 			ReadGlobalData();
 
-			if (_globalData.playerData == null)
+			if (_globalData.PlayerData == null)
 			{
-				_globalData.playerData = defaultPlayerData;
+				_globalData.PlayerData = defaultPlayerData;
 				WriteGlobalData();
 			}
 
-			return _globalData.playerData;
+			return _globalData.PlayerData;
 		}
 
 		/// <summary>
@@ -1273,10 +1273,10 @@ namespace MultiTool.Save
 		{
 			ReadGlobalData();
 
-			if (_globalData.tunes == null)
-				_globalData.tunes = new List<TuningSave>();
+			if (_globalData.Tunes == null)
+				_globalData.Tunes = new List<TuningSave>();
 
-			_globalData.tunes.Add(tune);
+			_globalData.Tunes.Add(tune);
 			WriteGlobalData();
 		}
 
@@ -1288,9 +1288,9 @@ namespace MultiTool.Save
 		{
 			ReadGlobalData();
 
-			if (_globalData.tunes == null) return;
+			if (_globalData.Tunes == null) return;
 
-			_globalData.tunes.Remove(tune);
+			_globalData.Tunes.Remove(tune);
 			WriteGlobalData();
 		}
 
@@ -1302,10 +1302,10 @@ namespace MultiTool.Save
 		{
 			ReadGlobalData();
 
-			if (_globalData.tunes == null)
-				_globalData.tunes = new List<TuningSave>();
+			if (_globalData.Tunes == null)
+				_globalData.Tunes = new List<TuningSave>();
 
-			return _globalData.tunes;
+			return _globalData.Tunes;
 		}
 
 		/// <summary>
@@ -1319,7 +1319,7 @@ namespace MultiTool.Save
 
 			foreach (TuningSave tune in GetTunes())
 			{
-				if (tune.type == type)
+				if (tune.Type == type)
 					tunes.Add(tune);
 			}
 

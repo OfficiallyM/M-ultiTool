@@ -36,7 +36,7 @@ namespace MultiTool.UI.Tabs
 			TimeData data = SaveUtilities.GetTimeData();
 			if (data != null)
 			{
-				_timeScale = data.timescale;
+				_timeScale = data.Timescale;
 				//_dayTime = data.dayLength;
 				//_nightTime = data.nightLength;
 				//timescript.daytime = _dayTime;
@@ -231,7 +231,7 @@ namespace MultiTool.UI.Tabs
 				if (Services.State.Mode == "objectRegenerator")
 				{
 					Services.State.Mode = null;
-					GUIRenderer.selectedObject = null;
+					GUIRenderer.SelectedObject = null;
 				}
 				else
 					Services.State.Mode = "objectRegenerator";
@@ -243,7 +243,7 @@ namespace MultiTool.UI.Tabs
 				if (Services.State.Mode == "weightChanger")
 				{
 					Services.State.Mode = null;
-					GUIRenderer.selectedObject = null;
+					GUIRenderer.SelectedObject = null;
 				}
 				else
 					Services.State.Mode = "weightChanger";
@@ -320,7 +320,7 @@ namespace MultiTool.UI.Tabs
 
 			SaveUtilities.UpdateTimeData(new TimeData()
 			{
-				timescale = _timeScale,
+				Timescale = _timeScale,
 				//dayLength = timescript.daytime,
 				//nightLength = timescript.nighttime,
 			});

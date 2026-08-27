@@ -147,7 +147,7 @@ namespace MultiTool.UI.Tabs
 		private void Exit()
 		{
 			_theme = null;
-			GUIRenderer.Tabs.SetActive(MultiTool.Renderer.settingsTabId, false);
+			GUIRenderer.Tabs.SetActive(MultiTool.Renderer.SettingsTabId, false);
 			Styling.SetEditingTheme(null);
 			_position = Vector2.zero;
 		}

@@ -78,57 +78,57 @@ namespace MultiTool.UI.Tabs.VehicleConfiguration
 				{
 					_engineTuning = new EngineTuning()
 					{
-						rpmChangeModifier = engine.rpmChangeModifier,
-						startChance = engine.startChance,
-						motorBrakeModifier = engine.motorBrakeModifier,
-						minOptimalTemp2 = engine.minOptimalTemp2,
-						maxOptimalTemp2 = engine.maxOptimalTemp2,
-						engineHeatGainMin = engine.engineHeatGainMin,
-						engineHeatGainMax = engine.engineHeatGainMax,
-						consumptionModifier = engine.consumptionM,
-						noOverheat = engine.noOverHeat,
-						twoStroke = engine.twostroke,
-						oilFluid = engine.Oilfluid,
-						oilTolerationMin = engine.oilTolerationMin,
-						oilTolerationMax = engine.oilTolerationMax,
-						oilConsumptionModifier = engine.OilConsumptionModifier,
-						consumption = new List<Fluid>(),
-						torqueCurve = new List<TorqueCurve>(),
+						RpmChangeModifier = engine.rpmChangeModifier,
+						StartChance = engine.startChance,
+						MotorBrakeModifier = engine.motorBrakeModifier,
+						MinOptimalTemp2 = engine.minOptimalTemp2,
+						MaxOptimalTemp2 = engine.maxOptimalTemp2,
+						EngineHeatGainMin = engine.engineHeatGainMin,
+						EngineHeatGainMax = engine.engineHeatGainMax,
+						ConsumptionModifier = engine.consumptionM,
+						NoOverheat = engine.noOverHeat,
+						TwoStroke = engine.twostroke,
+						OilFluid = engine.Oilfluid,
+						OilTolerationMin = engine.oilTolerationMin,
+						OilTolerationMax = engine.oilTolerationMax,
+						OilConsumptionModifier = engine.OilConsumptionModifier,
+						Consumption = new List<Fluid>(),
+						TorqueCurve = new List<TorqueCurve>(),
 					};
 
 					_defaultTuning = new EngineTuning()
 					{
-						rpmChangeModifier = engine.rpmChangeModifier,
-						startChance = engine.startChance,
-						motorBrakeModifier = engine.motorBrakeModifier,
-						minOptimalTemp2 = engine.minOptimalTemp2,
-						maxOptimalTemp2 = engine.maxOptimalTemp2,
-						engineHeatGainMin = engine.engineHeatGainMin,
-						engineHeatGainMax = engine.engineHeatGainMax,
-						consumptionModifier = engine.consumptionM,
-						noOverheat = engine.noOverHeat,
-						twoStroke = engine.twostroke,
-						oilFluid = engine.Oilfluid,
-						oilTolerationMin = engine.oilTolerationMin,
-						oilTolerationMax = engine.oilTolerationMax,
-						oilConsumptionModifier = engine.OilConsumptionModifier,
-						consumption = new List<Fluid>(),
-						torqueCurve = new List<TorqueCurve>(),
+						RpmChangeModifier = engine.rpmChangeModifier,
+						StartChance = engine.startChance,
+						MotorBrakeModifier = engine.motorBrakeModifier,
+						MinOptimalTemp2 = engine.minOptimalTemp2,
+						MaxOptimalTemp2 = engine.maxOptimalTemp2,
+						EngineHeatGainMin = engine.engineHeatGainMin,
+						EngineHeatGainMax = engine.engineHeatGainMax,
+						ConsumptionModifier = engine.consumptionM,
+						NoOverheat = engine.noOverHeat,
+						TwoStroke = engine.twostroke,
+						OilFluid = engine.Oilfluid,
+						OilTolerationMin = engine.oilTolerationMin,
+						OilTolerationMax = engine.oilTolerationMax,
+						OilConsumptionModifier = engine.OilConsumptionModifier,
+						Consumption = new List<Fluid>(),
+						TorqueCurve = new List<TorqueCurve>(),
 					};
 
 					// Populate fuel consumption fluids.
 					foreach (fluid fluid in engine.FuelConsumption.fluids)
 					{
-						_engineTuning.consumption.Add(new Fluid() { type = fluid.type, amount = fluid.amount });
-						_defaultTuning.consumption.Add(new Fluid() { type = fluid.type, amount = fluid.amount });
+						_engineTuning.Consumption.Add(new Fluid() { Type = fluid.type, Amount = fluid.amount });
+						_defaultTuning.Consumption.Add(new Fluid() { Type = fluid.type, Amount = fluid.amount });
 					}
 
 					// Populate torque curve.
 					for (int torqueKey = 0; torqueKey < engine.torqueCurve.length; torqueKey++)
 					{
 						Keyframe torque = engine.torqueCurve.keys[torqueKey];
-						_engineTuning.torqueCurve.Add(new TorqueCurve(torque.value, torque.time));
-						_defaultTuning.torqueCurve.Add(new TorqueCurve(torque.value, torque.time));
+						_engineTuning.TorqueCurve.Add(new TorqueCurve(torque.value, torque.time));
+						_defaultTuning.TorqueCurve.Add(new TorqueCurve(torque.value, torque.time));
 					}
 				}
 
@@ -147,34 +147,34 @@ namespace MultiTool.UI.Tabs.VehicleConfiguration
 
 			GUILayout.BeginVertical();
 			GUILayout.Label("RPM change modifier (responsiveness)");
-			_engineTuning.rpmChangeModifier = GUILayout.HorizontalSlider(_engineTuning.rpmChangeModifier, 0f, 10f);
-			float.TryParse(GUILayout.TextField(_engineTuning.rpmChangeModifier.ToString("F2"), GUILayout.MaxWidth(200)), out _engineTuning.rpmChangeModifier);
+			_engineTuning.RpmChangeModifier = GUILayout.HorizontalSlider(_engineTuning.RpmChangeModifier, 0f, 10f);
+			float.TryParse(GUILayout.TextField(_engineTuning.RpmChangeModifier.ToString("F2"), GUILayout.MaxWidth(200)), out _engineTuning.RpmChangeModifier);
 			if (GUILayout.Button("Reset", GUILayout.MaxWidth(200)))
-				_engineTuning.rpmChangeModifier = _defaultTuning.rpmChangeModifier;
+				_engineTuning.RpmChangeModifier = _defaultTuning.RpmChangeModifier;
 			GUILayout.EndVertical();
 
 			GUILayout.Space(10);
 
 			GUILayout.BeginVertical();
 			GUILayout.Label("Start chance");
-			_engineTuning.startChance = GUILayout.HorizontalSlider(_engineTuning.startChance, 0f, 1f);
+			_engineTuning.StartChance = GUILayout.HorizontalSlider(_engineTuning.StartChance, 0f, 1f);
 			GUILayout.BeginHorizontal();
-			if (float.TryParse(GUILayout.TextField((_engineTuning.startChance * 100).ToString("F0"), GUILayout.MaxWidth(200)), out float startChance))
-				_engineTuning.startChance = startChance / 100;
+			if (float.TryParse(GUILayout.TextField((_engineTuning.StartChance * 100).ToString("F0"), GUILayout.MaxWidth(200)), out float startChance))
+				_engineTuning.StartChance = startChance / 100;
 			GUILayout.Label("%");
 			GUILayout.EndHorizontal();
 			if (GUILayout.Button("Reset", GUILayout.MaxWidth(200)))
-				_engineTuning.startChance = _defaultTuning.startChance;
+				_engineTuning.StartChance = _defaultTuning.StartChance;
 			GUILayout.EndVertical();
 
 			GUILayout.Space(10);
 
 			GUILayout.BeginVertical();
 			GUILayout.Label("Engine brake modifier");
-			_engineTuning.motorBrakeModifier = GUILayout.HorizontalSlider(_engineTuning.motorBrakeModifier, 0f, 10f);
-			float.TryParse(GUILayout.TextField(_engineTuning.motorBrakeModifier.ToString("F2"), GUILayout.MaxWidth(200)), out _engineTuning.motorBrakeModifier);
+			_engineTuning.MotorBrakeModifier = GUILayout.HorizontalSlider(_engineTuning.MotorBrakeModifier, 0f, 10f);
+			float.TryParse(GUILayout.TextField(_engineTuning.MotorBrakeModifier.ToString("F2"), GUILayout.MaxWidth(200)), out _engineTuning.MotorBrakeModifier);
 			if (GUILayout.Button("Reset", GUILayout.MaxWidth(200)))
-				_engineTuning.motorBrakeModifier = _defaultTuning.motorBrakeModifier;
+				_engineTuning.MotorBrakeModifier = _defaultTuning.MotorBrakeModifier;
 			GUILayout.EndVertical();
 
 			GUILayout.Space(10);
@@ -183,50 +183,50 @@ namespace MultiTool.UI.Tabs.VehicleConfiguration
 
 			GUILayout.BeginVertical();
 			GUILayout.Label("Min optimal temp");
-			_engineTuning.minOptimalTemp2 = GUILayout.HorizontalSlider(_engineTuning.minOptimalTemp2, 0f, 300f);
-			float.TryParse(GUILayout.TextField(_engineTuning.minOptimalTemp2.ToString("F2"), GUILayout.MaxWidth(200)), out _engineTuning.minOptimalTemp2);
+			_engineTuning.MinOptimalTemp2 = GUILayout.HorizontalSlider(_engineTuning.MinOptimalTemp2, 0f, 300f);
+			float.TryParse(GUILayout.TextField(_engineTuning.MinOptimalTemp2.ToString("F2"), GUILayout.MaxWidth(200)), out _engineTuning.MinOptimalTemp2);
 			if (GUILayout.Button("Reset", GUILayout.MaxWidth(200)))
-				_engineTuning.minOptimalTemp2 = _defaultTuning.minOptimalTemp2;
+				_engineTuning.MinOptimalTemp2 = _defaultTuning.MinOptimalTemp2;
 			GUILayout.EndVertical();
 
 			GUILayout.Space(10);
 
 			GUILayout.BeginVertical();
 			GUILayout.Label("Max optimal temp");
-			_engineTuning.maxOptimalTemp2 = GUILayout.HorizontalSlider(_engineTuning.maxOptimalTemp2, 0f, 300f);
-			float.TryParse(GUILayout.TextField(_engineTuning.maxOptimalTemp2.ToString("F2"), GUILayout.MaxWidth(200)), out _engineTuning.maxOptimalTemp2);
+			_engineTuning.MaxOptimalTemp2 = GUILayout.HorizontalSlider(_engineTuning.MaxOptimalTemp2, 0f, 300f);
+			float.TryParse(GUILayout.TextField(_engineTuning.MaxOptimalTemp2.ToString("F2"), GUILayout.MaxWidth(200)), out _engineTuning.MaxOptimalTemp2);
 			if (GUILayout.Button("Reset", GUILayout.MaxWidth(200)))
-				_engineTuning.maxOptimalTemp2 = _defaultTuning.maxOptimalTemp2;
+				_engineTuning.MaxOptimalTemp2 = _defaultTuning.MaxOptimalTemp2;
 			GUILayout.EndVertical();
 
 			GUILayout.Space(10);
 
 			GUILayout.BeginVertical();
 			GUILayout.Label("Engine heat gain min");
-			_engineTuning.engineHeatGainMin = GUILayout.HorizontalSlider(_engineTuning.engineHeatGainMin, 0f, 300f);
-			float.TryParse(GUILayout.TextField(_engineTuning.engineHeatGainMin.ToString("F2"), GUILayout.MaxWidth(200)), out _engineTuning.engineHeatGainMin);
+			_engineTuning.EngineHeatGainMin = GUILayout.HorizontalSlider(_engineTuning.EngineHeatGainMin, 0f, 300f);
+			float.TryParse(GUILayout.TextField(_engineTuning.EngineHeatGainMin.ToString("F2"), GUILayout.MaxWidth(200)), out _engineTuning.EngineHeatGainMin);
 			if (GUILayout.Button("Reset", GUILayout.MaxWidth(200)))
-				_engineTuning.engineHeatGainMin = _defaultTuning.engineHeatGainMin;
+				_engineTuning.EngineHeatGainMin = _defaultTuning.EngineHeatGainMin;
 			GUILayout.EndVertical();
 
 			GUILayout.Space(10);
 
 			GUILayout.BeginVertical();
 			GUILayout.Label("Engine heat gain max");
-			_engineTuning.engineHeatGainMax = GUILayout.HorizontalSlider(_engineTuning.engineHeatGainMax, 0f, 300f);
-			float.TryParse(GUILayout.TextField(_engineTuning.engineHeatGainMax.ToString("F2"), GUILayout.MaxWidth(200)), out _engineTuning.engineHeatGainMax);
+			_engineTuning.EngineHeatGainMax = GUILayout.HorizontalSlider(_engineTuning.EngineHeatGainMax, 0f, 300f);
+			float.TryParse(GUILayout.TextField(_engineTuning.EngineHeatGainMax.ToString("F2"), GUILayout.MaxWidth(200)), out _engineTuning.EngineHeatGainMax);
 			if (GUILayout.Button("Reset", GUILayout.MaxWidth(200)))
-				_engineTuning.engineHeatGainMax = _defaultTuning.engineHeatGainMax;
+				_engineTuning.EngineHeatGainMax = _defaultTuning.EngineHeatGainMax;
 			GUILayout.EndVertical();
 
 			GUILayout.Space(10);
 
 			GUILayout.BeginHorizontal();
 			GUILayout.Label("No overheat");
-			if (GUILayout.Button(Accessibility.GetAccessibleString("Yes", "No", _engineTuning.noOverheat), GUILayout.MaxWidth(200)))
-				_engineTuning.noOverheat = !_engineTuning.noOverheat;
+			if (GUILayout.Button(Accessibility.GetAccessibleString("Yes", "No", _engineTuning.NoOverheat), GUILayout.MaxWidth(200)))
+				_engineTuning.NoOverheat = !_engineTuning.NoOverheat;
 			if (GUILayout.Button("Reset", GUILayout.MaxWidth(200)))
-				_engineTuning.noOverheat = _defaultTuning.noOverheat;
+				_engineTuning.NoOverheat = _defaultTuning.NoOverheat;
 			GUILayout.FlexibleSpace();
 			GUILayout.EndHorizontal();
 
@@ -234,14 +234,14 @@ namespace MultiTool.UI.Tabs.VehicleConfiguration
 
 			GUILayout.Label("Oil", "LabelHeader");
 
-			if (!_defaultTuning.twoStroke)
+			if (!_defaultTuning.TwoStroke)
 			{
 				GUILayout.BeginHorizontal();
 				GUILayout.Label("Is two-stroke?");
-				if (GUILayout.Button(Accessibility.GetAccessibleString("Yes", "No", _engineTuning.twoStroke), GUILayout.MaxWidth(200)))
-					_engineTuning.twoStroke = !_engineTuning.twoStroke;
+				if (GUILayout.Button(Accessibility.GetAccessibleString("Yes", "No", _engineTuning.TwoStroke), GUILayout.MaxWidth(200)))
+					_engineTuning.TwoStroke = !_engineTuning.TwoStroke;
 				if (GUILayout.Button("Reset", GUILayout.MaxWidth(200)))
-					_engineTuning.twoStroke = _defaultTuning.twoStroke;
+					_engineTuning.TwoStroke = _defaultTuning.TwoStroke;
 				GUILayout.FlexibleSpace();
 				GUILayout.EndHorizontal();
 
@@ -249,48 +249,48 @@ namespace MultiTool.UI.Tabs.VehicleConfiguration
 			}
 
 			GUILayout.BeginVertical();
-			GUILayout.Label($"Oil fluid - {_engineTuning.oilFluid.ToString().ToSentenceCase()}");
+			GUILayout.Label($"Oil fluid - {_engineTuning.OilFluid.ToString().ToSentenceCase()}");
 			for (int oilFluidIndex = 0; oilFluidIndex <= _maxFluidIndex; oilFluidIndex++)
 			{
 				fluidenum oilFluid = (fluidenum)oilFluidIndex;
 				// Skip currently set fluid.
-				if (oilFluid == _engineTuning.oilFluid) continue;
+				if (oilFluid == _engineTuning.OilFluid) continue;
 				if (GUILayout.Button(oilFluid.ToString().ToSentenceCase(), GUILayout.MaxWidth(200)))
-					_engineTuning.oilFluid = oilFluid;
+					_engineTuning.OilFluid = oilFluid;
 			}
 			GUILayout.Space(5);
 			if (GUILayout.Button("Reset", GUILayout.MaxWidth(200)))
-				_engineTuning.oilFluid = _defaultTuning.oilFluid;
+				_engineTuning.OilFluid = _defaultTuning.OilFluid;
 			GUILayout.EndVertical();
 
-			if (_engineTuning.twoStroke)
+			if (_engineTuning.TwoStroke)
 			{
 				GUILayout.Space(10);
 
 				GUILayout.BeginVertical();
 				GUILayout.Label("Two-stroke oil toleration min");
-				_engineTuning.oilTolerationMin = GUILayout.HorizontalSlider(_engineTuning.oilTolerationMin, 0f, 1f);
+				_engineTuning.OilTolerationMin = GUILayout.HorizontalSlider(_engineTuning.OilTolerationMin, 0f, 1f);
 				GUILayout.BeginHorizontal();
-				if (float.TryParse(GUILayout.TextField((_engineTuning.oilTolerationMin * 100).ToString("F2"), GUILayout.MaxWidth(200)), out float oilTolerationMin))
-					_engineTuning.oilTolerationMin = oilTolerationMin / 100;
+				if (float.TryParse(GUILayout.TextField((_engineTuning.OilTolerationMin * 100).ToString("F2"), GUILayout.MaxWidth(200)), out float oilTolerationMin))
+					_engineTuning.OilTolerationMin = oilTolerationMin / 100;
 				GUILayout.Label("%");
 				GUILayout.EndHorizontal();
 				if (GUILayout.Button("Reset", GUILayout.MaxWidth(200)))
-					_engineTuning.oilTolerationMin = _defaultTuning.oilTolerationMin;
+					_engineTuning.OilTolerationMin = _defaultTuning.OilTolerationMin;
 				GUILayout.EndVertical();
 
 				GUILayout.Space(10);
 
 				GUILayout.BeginVertical();
 				GUILayout.Label("Two-stroke oil toleration max");
-				_engineTuning.oilTolerationMax = GUILayout.HorizontalSlider(_engineTuning.oilTolerationMax, 0f, 1f);
+				_engineTuning.OilTolerationMax = GUILayout.HorizontalSlider(_engineTuning.OilTolerationMax, 0f, 1f);
 				GUILayout.BeginHorizontal();
-				if (float.TryParse(GUILayout.TextField((_engineTuning.oilTolerationMax * 100).ToString("F2"), GUILayout.MaxWidth(200)), out float oilTolerationMax))
-					_engineTuning.oilTolerationMax = oilTolerationMax / 100;
+				if (float.TryParse(GUILayout.TextField((_engineTuning.OilTolerationMax * 100).ToString("F2"), GUILayout.MaxWidth(200)), out float oilTolerationMax))
+					_engineTuning.OilTolerationMax = oilTolerationMax / 100;
 				GUILayout.Label("%");
 				GUILayout.EndHorizontal();
 				if (GUILayout.Button("Reset", GUILayout.MaxWidth(200)))
-					_engineTuning.oilTolerationMax = _defaultTuning.oilTolerationMax;
+					_engineTuning.OilTolerationMax = _defaultTuning.OilTolerationMax;
 				GUILayout.EndVertical();
 			}
 
@@ -298,10 +298,10 @@ namespace MultiTool.UI.Tabs.VehicleConfiguration
 
 			GUILayout.BeginVertical();
 			GUILayout.Label("Oil consumption modifier");
-			_engineTuning.oilConsumptionModifier = GUILayout.HorizontalSlider(_engineTuning.oilConsumptionModifier, 0f, 10f);
-			float.TryParse(GUILayout.TextField(_engineTuning.oilConsumptionModifier.ToString("F2"), GUILayout.MaxWidth(200)), out _engineTuning.oilConsumptionModifier);
+			_engineTuning.OilConsumptionModifier = GUILayout.HorizontalSlider(_engineTuning.OilConsumptionModifier, 0f, 10f);
+			float.TryParse(GUILayout.TextField(_engineTuning.OilConsumptionModifier.ToString("F2"), GUILayout.MaxWidth(200)), out _engineTuning.OilConsumptionModifier);
 			if (GUILayout.Button("Reset", GUILayout.MaxWidth(200)))
-				_engineTuning.oilConsumptionModifier = _defaultTuning.oilConsumptionModifier;
+				_engineTuning.OilConsumptionModifier = _defaultTuning.OilConsumptionModifier;
 			GUILayout.EndVertical();
 
 			GUILayout.Space(10);
@@ -310,56 +310,56 @@ namespace MultiTool.UI.Tabs.VehicleConfiguration
 
 			GUILayout.BeginVertical();
 			GUILayout.Label("Fuel consumption modifier");
-			_engineTuning.consumptionModifier = GUILayout.HorizontalSlider(_engineTuning.consumptionModifier, 0f, 10f);
-			float.TryParse(GUILayout.TextField(_engineTuning.consumptionModifier.ToString("F2"), GUILayout.MaxWidth(200)), out _engineTuning.consumptionModifier);
+			_engineTuning.ConsumptionModifier = GUILayout.HorizontalSlider(_engineTuning.ConsumptionModifier, 0f, 10f);
+			float.TryParse(GUILayout.TextField(_engineTuning.ConsumptionModifier.ToString("F2"), GUILayout.MaxWidth(200)), out _engineTuning.ConsumptionModifier);
 			if (GUILayout.Button("Reset", GUILayout.MaxWidth(200)))
-				_engineTuning.consumptionModifier = _defaultTuning.consumptionModifier;
+				_engineTuning.ConsumptionModifier = _defaultTuning.ConsumptionModifier;
 			GUILayout.EndVertical();
 
 			GUILayout.Space(10);
 
 			GUILayout.BeginVertical();
 			GUILayout.Label("Fuel consumption", "LabelHeader");
-			foreach (Fluid fluid in _engineTuning.consumption)
+			foreach (Fluid fluid in _engineTuning.Consumption)
 			{
 				for (int fuelFluidIndex = 0; fuelFluidIndex <= _maxFluidIndex; fuelFluidIndex++)
 				{
 					// Skip fluids already selected.
-					if (_engineTuning.consumption.Where(f => (int)f.type == fuelFluidIndex && f.type != fluid.type).FirstOrDefault() != null)
+					if (_engineTuning.Consumption.Where(f => (int)f.Type == fuelFluidIndex && f.Type != fluid.Type).FirstOrDefault() != null)
 						continue;
 
 					fluidenum fuelFluid = (fluidenum)fuelFluidIndex;
-					if (GUILayout.Button(Accessibility.GetAccessibleString(fuelFluid.ToString().ToSentenceCase(), fuelFluid == fluid.type), GUILayout.MaxWidth(200)))
-						fluid.type = fuelFluid;
+					if (GUILayout.Button(Accessibility.GetAccessibleString(fuelFluid.ToString().ToSentenceCase(), fuelFluid == fluid.Type), GUILayout.MaxWidth(200)))
+						fluid.Type = fuelFluid;
 				}
-				fluid.amount = GUILayout.HorizontalSlider(fluid.amount, 0f, 500f);
-				float.TryParse(GUILayout.TextField(fluid.amount.ToString("F2"), GUILayout.MaxWidth(200)), out fluid.amount);
+				fluid.Amount = GUILayout.HorizontalSlider(fluid.Amount, 0f, 500f);
+				float.TryParse(GUILayout.TextField(fluid.Amount.ToString("F2"), GUILayout.MaxWidth(200)), out fluid.Amount);
 				GUILayout.Space(5);
 				if (GUILayout.Button("Remove fluid", GUILayout.MaxWidth(200)))
 				{
-					_engineTuning.consumption.Remove(fluid);
+					_engineTuning.Consumption.Remove(fluid);
 					break;
 				}
 				GUILayout.Space(10);
 			}
-			if (_engineTuning.consumption.Count <= _maxFluidIndex)
+			if (_engineTuning.Consumption.Count <= _maxFluidIndex)
 			{
 				if (GUILayout.Button("Add another fluid", GUILayout.MaxWidth(200)))
 				{
 					// Find the next unused fluid index.
 					List<int> existingIndexes = new List<int>();
-					foreach (Fluid existing in _engineTuning.consumption)
+					foreach (Fluid existing in _engineTuning.Consumption)
 					{
-						existingIndexes.Add((int)existing.type);
+						existingIndexes.Add((int)existing.Type);
 					}
 					existingIndexes.Sort();
 					int index = existingIndexes.Last() + 1;
-					_engineTuning.consumption.Add(new Fluid() { type = (fluidenum)index, amount = 0 });
+					_engineTuning.Consumption.Add(new Fluid() { Type = (fluidenum)index, Amount = 0 });
 				}
 			}
 			GUILayout.Space(5);
 			if (GUILayout.Button("Reset", GUILayout.MaxWidth(200)))
-				_engineTuning.consumption = _defaultTuning.consumption;
+				_engineTuning.Consumption = _defaultTuning.Consumption;
 			GUILayout.EndVertical();
 
 			GUILayout.Space(10);
@@ -367,37 +367,37 @@ namespace MultiTool.UI.Tabs.VehicleConfiguration
 			GUILayout.BeginVertical();
 			GUILayout.Label("Torque curve", "LabelHeader");
 			int torqueIndex = 0;
-			foreach (TorqueCurve torque in _engineTuning.torqueCurve)
+			foreach (TorqueCurve torque in _engineTuning.TorqueCurve)
 			{
-				float originalTorque = torque.torque;
-				float originalRpm = torque.rpm;
+				float originalTorque = torque.Torque;
+				float originalRpm = torque.Rpm;
 
-				bool lastIndex = torqueIndex == _engineTuning.torqueCurve.Count - 1;
+				bool lastIndex = torqueIndex == _engineTuning.TorqueCurve.Count - 1;
 				bool firstIndex = torqueIndex == 0;
 
 				GUILayout.Label($"Torque {(firstIndex || lastIndex ? "(Should be zero)" : string.Empty)}");
 				// Lock first or last curve point to zero.
-				torque.torque = GUILayout.HorizontalSlider(torque.torque, 0, firstIndex || lastIndex ? 0 : 1000);
-				float.TryParse(GUILayout.TextField(torque.torque.ToString("F2"), GUILayout.MaxWidth(200)), out torque.torque);
+				torque.Torque = GUILayout.HorizontalSlider(torque.Torque, 0, firstIndex || lastIndex ? 0 : 1000);
+				float.TryParse(GUILayout.TextField(torque.Torque.ToString("F2"), GUILayout.MaxWidth(200)), out torque.Torque);
 
 				GUILayout.Label($"RPM {(firstIndex ? "(Should be zero)" : string.Empty)}");
-				torque.rpm = GUILayout.HorizontalSlider(torque.rpm, 0, firstIndex ? 0 : 20000);
-				float.TryParse(GUILayout.TextField(torque.rpm.ToString("F2"), GUILayout.MaxWidth(200)), out torque.rpm);
+				torque.Rpm = GUILayout.HorizontalSlider(torque.Rpm, 0, firstIndex ? 0 : 20000);
+				float.TryParse(GUILayout.TextField(torque.Rpm.ToString("F2"), GUILayout.MaxWidth(200)), out torque.Rpm);
 
 				GUILayout.Space(5);
 				GUILayout.BeginHorizontal();
-				if (_engineTuning.torqueCurve.Count > 3 && GUILayout.Button("Remove", GUILayout.MaxWidth(200)))
+				if (_engineTuning.TorqueCurve.Count > 3 && GUILayout.Button("Remove", GUILayout.MaxWidth(200)))
 				{
-					_engineTuning.torqueCurve.Remove(torque);
+					_engineTuning.TorqueCurve.Remove(torque);
 					break;
 				}
 				if (GUILayout.Button("Reset", GUILayout.MaxWidth(200)))
 				{
-					int key = _engineTuning.torqueCurve.IndexOf(torque);
-					if (_defaultTuning.torqueCurve.Count > key && _defaultTuning.torqueCurve[key] != null)
+					int key = _engineTuning.TorqueCurve.IndexOf(torque);
+					if (_defaultTuning.TorqueCurve.Count > key && _defaultTuning.TorqueCurve[key] != null)
 					{
-						TorqueCurve defaultTorque = _defaultTuning.torqueCurve[key];
-						_engineTuning.torqueCurve[key] = defaultTorque;
+						TorqueCurve defaultTorque = _defaultTuning.TorqueCurve[key];
+						_engineTuning.TorqueCurve[key] = defaultTorque;
 						updateEngineStats = true;
 						break;
 					}
@@ -405,7 +405,7 @@ namespace MultiTool.UI.Tabs.VehicleConfiguration
 				GUILayout.EndHorizontal();
 
 				// Check for any changes and update engine stats.
-				if (originalTorque != torque.torque || originalRpm != torque.rpm)
+				if (originalTorque != torque.Torque || originalRpm != torque.Rpm)
 					updateEngineStats = true;
 
 				GUILayout.Space(10);
@@ -414,19 +414,19 @@ namespace MultiTool.UI.Tabs.VehicleConfiguration
 			GUILayout.BeginHorizontal();
 			if (GUILayout.Button("Add new", GUILayout.MaxWidth(200)))
 			{
-				_engineTuning.torqueCurve.Add(new TorqueCurve(0, _engineTuning.torqueCurve[_engineTuning.torqueCurve.Count - 1].rpm));
+				_engineTuning.TorqueCurve.Add(new TorqueCurve(0, _engineTuning.TorqueCurve[_engineTuning.TorqueCurve.Count - 1].Rpm));
 				updateEngineStats = true;
 			}
 			GUILayout.Space(5);
 			if (GUILayout.Button("Reorder by RPM", GUILayout.MaxWidth(200)))
 			{
-				_engineTuning.torqueCurve = _engineTuning.torqueCurve.OrderBy(t => t.rpm).ToList();
+				_engineTuning.TorqueCurve = _engineTuning.TorqueCurve.OrderBy(t => t.Rpm).ToList();
 				updateEngineStats = true;
 			}
 			GUILayout.Space(5);
 			if (GUILayout.Button("Reset torque curve to stock", GUILayout.MaxWidth(200)))
 			{
-				_engineTuning.torqueCurve = _defaultTuning.torqueCurve.Copy();
+				_engineTuning.TorqueCurve = _defaultTuning.TorqueCurve.Copy();
 				updateEngineStats = true;
 			}
 			GUILayout.EndHorizontal();
@@ -458,11 +458,11 @@ namespace MultiTool.UI.Tabs.VehicleConfiguration
 
 					SaveUtilities.AddTune(new TuningSave()
 					{
-						name = _saveTuneName,
-						part = engine.name,
-						type = "engine",
-						car = car.name,
-						tuning = _engineTuning,
+						Name = _saveTuneName,
+						Part = engine.name,
+						Type = "engine",
+						Car = car.name,
+						Tuning = _engineTuning,
 					});
 					_saveTuneName = null;
 				}
@@ -473,15 +473,15 @@ namespace MultiTool.UI.Tabs.VehicleConfiguration
 				foreach (TuningSave tune in SaveUtilities.GetTunesByType("engine"))
 				{
 					GUILayout.BeginVertical("box");
-					GUILayout.Label(tune.name, "LabelSubHeader");
-					GUILayout.Label($"For engine: {tune.part}");
-					if (tune.part != engine.name)
+					GUILayout.Label(tune.Name, "LabelSubHeader");
+					GUILayout.Label($"For engine: {tune.Part}");
+					if (tune.Part != engine.name)
 						GUILayout.Label("Warning: Not designed for current engine");
-					GUILayout.Label($"Built using vehicle: {tune.car}");
+					GUILayout.Label($"Built using vehicle: {tune.Car}");
 					GUILayout.BeginHorizontal();
 					if (GUILayout.Button("Use tune", GUILayout.ExpandWidth(false)))
 					{
-						_engineTuning = tune.tuning as EngineTuning;
+						_engineTuning = tune.Tuning as EngineTuning;
 						Notifications.SendSuccess("Engine tuning", "Tune applied to current settings.");
 					}
 					GUILayout.Space(10);
@@ -509,15 +509,15 @@ namespace MultiTool.UI.Tabs.VehicleConfiguration
 					_footerPosition = GUILayout.BeginScrollView(_footerPosition);
 					GUILayout.BeginVertical(GUILayout.MinHeight(dimensions.height / 2f), GUILayout.MaxHeight(dimensions.height - 20f));
 					GUILayout.Label("Engine statistics", "LabelHeader");
-					GUILayout.Label($"Max torque: {_engineStats.maxTorque.ToString("F2")}Nm");
-					GUILayout.Label($"Max RPM: {_engineStats.maxRPM.ToString("F2")}");
-					GUILayout.Label($"Max horsepower: {_engineStats.maxHp.ToString("F2")}");
+					GUILayout.Label($"Max torque: {_engineStats.MaxTorque.ToString("F2")}Nm");
+					GUILayout.Label($"Max RPM: {_engineStats.MaxRPM.ToString("F2")}");
+					GUILayout.Label($"Max horsepower: {_engineStats.MaxHp.ToString("F2")}");
 					if (GUILayout.Button(Accessibility.GetAccessibleString("Hide last graph point", _hideLastTorquePoint), GUILayout.MaxWidth(200)))
 					{
 						_hideLastTorquePoint = !_hideLastTorquePoint;
 						UpdateEngineTunerStats();
 					}
-					GUILayout.Label(_engineStats.torqueGraph);
+					GUILayout.Label(_engineStats.TorqueGraph);
 					GUILayout.FlexibleSpace();
 					GUILayout.EndVertical();
 					GUILayout.EndScrollView();
@@ -529,10 +529,10 @@ namespace MultiTool.UI.Tabs.VehicleConfiguration
 					if (GUILayout.Button("Export current tuning", GUILayout.MaxWidth(200)))
 						_export = new TuningSave()
 						{
-							part = engine.name,
-							type = "engine",
-							car = car.name,
-							tuning = _engineTuning,
+							Part = engine.name,
+							Type = "engine",
+							Car = car.name,
+							Tuning = _engineTuning,
 						}
 						.ToExportString();
 					if (!string.IsNullOrEmpty(_export))
@@ -551,17 +551,17 @@ namespace MultiTool.UI.Tabs.VehicleConfiguration
 					}
 					if (_saved != null)
 					{
-						if (_saved.type != "engine")
+						if (_saved.Type != "engine")
 						{
 							Notifications.SendError("Import failed", "Not a valid engine tune.");
 							_saved = null;
 						}
-						else if (_saved.part != engine.name)
+						else if (_saved.Part != engine.name)
 						{
 							GUILayout.Label("This tune is not designed for this engine, import anyway?");
 							if (GUILayout.Button("Import anyway", GUILayout.MaxWidth(200)))
 							{
-								_engineTuning = _saved.tuning as EngineTuning;
+								_engineTuning = _saved.Tuning as EngineTuning;
 								_saved = null;
 								_import = null;
 								Notifications.SendSuccess("Engine tuning", "Tuning imported");
@@ -569,7 +569,7 @@ namespace MultiTool.UI.Tabs.VehicleConfiguration
 						}
 						else
 						{
-							_engineTuning = _saved.tuning as EngineTuning;
+							_engineTuning = _saved.Tuning as EngineTuning;
 							_saved = null;
 							_import = null;
 							Notifications.SendSuccess("Engine tuning", "Tuning imported");
@@ -584,7 +584,7 @@ namespace MultiTool.UI.Tabs.VehicleConfiguration
 			GUILayout.BeginHorizontal();
 			if (GUILayout.Button("Apply", GUILayout.MaxWidth(200)))
 			{
-				SaveUtilities.UpdateEngineTuning(new EngineTuningData() { ID = engineSave.idInSave, tuning = _engineTuning, defaultTuning = _defaultTuning });
+				SaveUtilities.UpdateEngineTuning(new EngineTuningData() { ID = engineSave.idInSave, Tuning = _engineTuning, DefaultTuning = _defaultTuning });
 				GameUtilities.ApplyEngineTuning(engine, _engineTuning);
 				_lastSavedTuning = _engineTuning.DeepCopy();
 			}
@@ -597,21 +597,21 @@ namespace MultiTool.UI.Tabs.VehicleConfiguration
 
 			if (GUILayout.Button("Reset tuning to stock", GUILayout.MaxWidth(200)))
 			{
-				_engineTuning.rpmChangeModifier = _defaultTuning.rpmChangeModifier;
-				_engineTuning.startChance = _defaultTuning.startChance;
-				_engineTuning.motorBrakeModifier = _defaultTuning.motorBrakeModifier;
-				_engineTuning.minOptimalTemp2 = _defaultTuning.minOptimalTemp2;
-				_engineTuning.maxOptimalTemp2 = _defaultTuning.maxOptimalTemp2;
-				_engineTuning.engineHeatGainMin = _defaultTuning.engineHeatGainMin;
-				_engineTuning.engineHeatGainMax = _defaultTuning.engineHeatGainMax;
-				_engineTuning.noOverheat = _defaultTuning.noOverheat;
-				_engineTuning.twoStroke = _defaultTuning.twoStroke;
-				_engineTuning.oilFluid = _defaultTuning.oilFluid;
-				_engineTuning.oilTolerationMin = _defaultTuning.oilTolerationMin;
-				_engineTuning.oilTolerationMax = _defaultTuning.oilTolerationMax;
-				_engineTuning.oilConsumptionModifier = _defaultTuning.oilConsumptionModifier;
-				_engineTuning.consumption = _defaultTuning.consumption.Copy();
-				_engineTuning.torqueCurve = _defaultTuning.torqueCurve.Copy();
+				_engineTuning.RpmChangeModifier = _defaultTuning.RpmChangeModifier;
+				_engineTuning.StartChance = _defaultTuning.StartChance;
+				_engineTuning.MotorBrakeModifier = _defaultTuning.MotorBrakeModifier;
+				_engineTuning.MinOptimalTemp2 = _defaultTuning.MinOptimalTemp2;
+				_engineTuning.MaxOptimalTemp2 = _defaultTuning.MaxOptimalTemp2;
+				_engineTuning.EngineHeatGainMin = _defaultTuning.EngineHeatGainMin;
+				_engineTuning.EngineHeatGainMax = _defaultTuning.EngineHeatGainMax;
+				_engineTuning.NoOverheat = _defaultTuning.NoOverheat;
+				_engineTuning.TwoStroke = _defaultTuning.TwoStroke;
+				_engineTuning.OilFluid = _defaultTuning.OilFluid;
+				_engineTuning.OilTolerationMin = _defaultTuning.OilTolerationMin;
+				_engineTuning.OilTolerationMax = _defaultTuning.OilTolerationMax;
+				_engineTuning.OilConsumptionModifier = _defaultTuning.OilConsumptionModifier;
+				_engineTuning.Consumption = _defaultTuning.Consumption.Copy();
+				_engineTuning.TorqueCurve = _defaultTuning.TorqueCurve.Copy();
 				UpdateEngineTunerStats();
 			}
 
@@ -648,7 +648,7 @@ namespace MultiTool.UI.Tabs.VehicleConfiguration
 		/// </summary>
 		private void UpdateEngineTunerStats()
 		{
-			float maxRPM = _engineTuning.torqueCurve.Last().rpm;
+			float maxRPM = _engineTuning.TorqueCurve.Last().Rpm;
 			float maxTorqueRPM = 0;
 			float maxTorque = 0;
 
@@ -656,20 +656,20 @@ namespace MultiTool.UI.Tabs.VehicleConfiguration
 			List<double> torqueGraphY = new List<double>();
 			List<double> hpGraphY = new List<double>();
 
-			foreach (TorqueCurve torque in _engineTuning.torqueCurve)
+			foreach (TorqueCurve torque in _engineTuning.TorqueCurve)
 			{
-				if (torque.torque > maxTorque)
+				if (torque.Torque > maxTorque)
 				{
-					maxTorque = torque.torque;
-					maxTorqueRPM = torque.rpm;
+					maxTorque = torque.Torque;
+					maxTorqueRPM = torque.Rpm;
 				}
 
-				if (_hideLastTorquePoint && torque == _engineTuning.torqueCurve.Last())
+				if (_hideLastTorquePoint && torque == _engineTuning.TorqueCurve.Last())
 					break;
 
-				graphX.Add((double)new decimal(torque.rpm));
-				torqueGraphY.Add((double)new decimal(torque.torque));
-				hpGraphY.Add((double)new decimal(0.0001403f * torque.torque * torque.rpm));
+				graphX.Add((double)new decimal(torque.Rpm));
+				torqueGraphY.Add((double)new decimal(torque.Torque));
+				hpGraphY.Add((double)new decimal(0.0001403f * torque.Torque * torque.Rpm));
 			}
 			float maxHp = 0.0001403f * maxTorque * maxTorqueRPM;
 
@@ -686,10 +686,10 @@ namespace MultiTool.UI.Tabs.VehicleConfiguration
 			graphTexture.LoadImage(graphBytes);
 			_engineStats = new EngineStats()
 			{
-				maxTorque = maxTorque,
-				maxRPM = maxRPM,
-				maxHp = maxHp,
-				torqueGraph = graphTexture,
+				MaxTorque = maxTorque,
+				MaxRPM = maxRPM,
+				MaxHp = maxHp,
+				TorqueGraph = graphTexture,
 			};
 		}
 	}

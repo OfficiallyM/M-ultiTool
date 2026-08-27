@@ -226,6 +226,10 @@ dotnet_naming_rule.private_fields_underscore.severity = warning
 dotnet_naming_rule.private_fields_underscore.symbols = private_fields
 dotnet_naming_rule.private_fields_underscore.style = underscore_camel
 
+dotnet_naming_rule.internal_fields_pascal_case.severity = warning
+dotnet_naming_rule.internal_fields_pascal_case.symbols = internal_fields
+dotnet_naming_rule.internal_fields_pascal_case.style = pascal_case
+
 # Symbol specifications
 
 dotnet_naming_symbols.interface.applicable_kinds = interface
@@ -242,6 +246,9 @@ dotnet_naming_symbols.non_field_members.required_modifiers =
 
 dotnet_naming_symbols.private_fields.applicable_kinds = field
 dotnet_naming_symbols.private_fields.applicable_accessibilities = private
+
+dotnet_naming_symbols.internal_fields.applicable_kinds = field
+dotnet_naming_symbols.internal_fields.applicable_accessibilities = internal, public, protected, protected_internal, private_protected
 
 # Naming styles
 

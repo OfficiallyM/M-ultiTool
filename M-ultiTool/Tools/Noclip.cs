@@ -26,7 +26,7 @@ namespace MultiTool.Tools
 
 			float speed = _normalMoveSpeed;
 			float climbSpeed = this._climbSpeed;
-			if (Input.GetKey(MultiTool.Binds.GetKeyByAction((int)Keybinds.Inputs.noclipSpeedUp).key))
+			if (Input.GetKey(MultiTool.Binds.GetKeyByAction((int)Keybinds.Inputs.noclipSpeedUp).AssignedKey))
 			{
 				speed *= MultiTool.Configuration.GetNoclipFastMoveFactor(_fastMoveFactor);
 				climbSpeed *= MultiTool.Configuration.GetNoclipFastMoveFactor(_fastMoveFactor);
@@ -34,9 +34,9 @@ namespace MultiTool.Tools
 
 			if (Input.GetButton("forward"))
 				mainscript.M.player.transform.root.position += Vector3.ProjectOnPlane(mainscript.M.player.Tb.forward, Vector3.up) * speed * Time.deltaTime;
-			if (Input.GetKey(MultiTool.Binds.GetKeyByAction((int)Keybinds.Inputs.noclipUp).key))
+			if (Input.GetKey(MultiTool.Binds.GetKeyByAction((int)Keybinds.Inputs.noclipUp).AssignedKey))
 				mainscript.M.player.transform.root.position += Vector3.up * climbSpeed * Time.deltaTime;
-			if (Input.GetKey(MultiTool.Binds.GetKeyByAction((int)Keybinds.Inputs.noclipDown).key))
+			if (Input.GetKey(MultiTool.Binds.GetKeyByAction((int)Keybinds.Inputs.noclipDown).AssignedKey))
 				mainscript.M.player.transform.root.position += -Vector3.up * climbSpeed * Time.deltaTime;
 			if (Input.GetButton("backward"))
 				mainscript.M.player.transform.root.position += Vector3.ProjectOnPlane(-mainscript.M.player.Tb.forward, Vector3.up) * speed * Time.deltaTime;

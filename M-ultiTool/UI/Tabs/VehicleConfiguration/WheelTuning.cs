@@ -41,14 +41,14 @@ namespace MultiTool.UI.Tabs.VehicleConfiguration
 				LoadData(car);
 
 			// Check for tire mounting if required.
-			foreach (Wheel wheel in _tuning.wheels)
+			foreach (Wheel wheel in _tuning.Wheels)
 			{
-				if (wheel.forwardSlip == null || wheel.sideSlip == null)
+				if (wheel.ForwardSlip == null || wheel.SideSlip == null)
 				{
-					wheelgraphicsscript wheelgraphic = wheel.save.GetComponentInChildren<wheelgraphicsscript>();
+					wheelgraphicsscript wheelgraphic = wheel.Save.GetComponentInChildren<wheelgraphicsscript>();
 					gumiscript tire = wheelgraphic?.slot?.part?.p?.wheel?.gumi?.part?.p?.gumi;
-					wheel.forwardSlip = tire?.slip1;
-					wheel.sideSlip = tire?.slip2;
+					wheel.ForwardSlip = tire?.slip1;
+					wheel.SideSlip = tire?.slip2;
 				}
 			}
 		}
@@ -65,7 +65,7 @@ namespace MultiTool.UI.Tabs.VehicleConfiguration
 				_defaultTuning = SaveUtilities.GetDefaultWheelTuning(save);
 
 				// Reset any invalid tuning data.
-				if (_tuning != null && _tuning.wheels[0].slot == null)
+				if (_tuning != null && _tuning.Wheels[0].Slot == null)
 					_tuning = null;
 
 				// Save has no data for wheels, load defaults.
@@ -88,47 +88,47 @@ namespace MultiTool.UI.Tabs.VehicleConfiguration
 						tosaveitemscript wheelSave = wheelgraphic.slot.part.tosaveitem;
 						wheels.Add(new Wheel()
 						{
-							save = wheelSave,
-							graphics = wheelgraphic,
-							slot = wheelgraphic.name,
-							forwardSlip = tire?.slip1,
-							sideSlip = tire?.slip2,
-							wheelDamping = collider.wheelDampingRate,
-							distance = collider.suspensionDistance,
-							stiffness = collider.suspensionSpring.spring,
-							damper = collider.suspensionSpring.damper,
-							targetPosition = collider.suspensionSpring.targetPosition,
-							position = collider.transform.localPosition,
+							Save = wheelSave,
+							Graphics = wheelgraphic,
+							Slot = wheelgraphic.name,
+							ForwardSlip = tire?.slip1,
+							SideSlip = tire?.slip2,
+							WheelDamping = collider.wheelDampingRate,
+							Distance = collider.suspensionDistance,
+							Stiffness = collider.suspensionSpring.spring,
+							Damper = collider.suspensionSpring.damper,
+							TargetPosition = collider.suspensionSpring.targetPosition,
+							Position = collider.transform.localPosition,
 						});
 
 						defaultWheels.Add(new Wheel()
 						{
-							slot = wheelgraphic.name,
-							forwardSlip = tire?.slip1,
-							sideSlip = tire?.slip2,
-							wheelDamping = collider.wheelDampingRate,
-							distance = collider.suspensionDistance,
-							stiffness = collider.suspensionSpring.spring,
-							damper = collider.suspensionSpring.damper,
-							targetPosition = collider.suspensionSpring.targetPosition,
-							position = collider.transform.localPosition,
+							Slot = wheelgraphic.name,
+							ForwardSlip = tire?.slip1,
+							SideSlip = tire?.slip2,
+							WheelDamping = collider.wheelDampingRate,
+							Distance = collider.suspensionDistance,
+							Stiffness = collider.suspensionSpring.spring,
+							Damper = collider.suspensionSpring.damper,
+							TargetPosition = collider.suspensionSpring.targetPosition,
+							Position = collider.transform.localPosition,
 						});
 					}
 
 					_tuning = new WheelTuning()
 					{
-						wheels = wheels,
+						Wheels = wheels,
 					};
 
 					_defaultTuning = new WheelTuning()
 					{
-						wheels = defaultWheels,
+						Wheels = defaultWheels,
 					};
 				}
 
 				// Reorder wheel list by slot name.
-				_tuning.wheels = _tuning.wheels.OrderBy(w => w.slot).ToList();
-				_defaultTuning.wheels = _defaultTuning.wheels.OrderBy(w => w.slot).ToList();
+				_tuning.Wheels = _tuning.Wheels.OrderBy(w => w.Slot).ToList();
+				_defaultTuning.Wheels = _defaultTuning.Wheels.OrderBy(w => w.Slot).ToList();
 			}
 		}
 
@@ -142,39 +142,39 @@ namespace MultiTool.UI.Tabs.VehicleConfiguration
 			_position = GUILayout.BeginScrollView(_position);
 			GUILayout.BeginVertical();
 
-			if (GUILayout.Button(Accessibility.GetAccessibleString("Apply to all wheels", _tuning.applyToAll), GUILayout.MaxWidth(200)))
-				_tuning.applyToAll = !_tuning.applyToAll;
+			if (GUILayout.Button(Accessibility.GetAccessibleString("Apply to all wheels", _tuning.ApplyToAll), GUILayout.MaxWidth(200)))
+				_tuning.ApplyToAll = !_tuning.ApplyToAll;
 			GUILayout.Space(10);
 
-			if (_tuning.applyToAll)
+			if (_tuning.ApplyToAll)
 			{
 				GUILayout.BeginVertical("box");
 				GUILayout.Label($"All wheels", "LabelHeader");
 				GUILayout.Space(5);
 
-				if (_tuning.wheels.Count == 0)
+				if (_tuning.Wheels.Count == 0)
 				{
 					GUILayout.Label("Vehicle has no wheels");
 				}
 				else
 				{
 					// Just grab the settings for the first wheel.
-					Wheel wheel = _tuning.wheels[0];
+					Wheel wheel = _tuning.Wheels[0];
 
-					RenderWheelSliders(wheel, _defaultTuning.wheels[0]);
+					RenderWheelSliders(wheel, _defaultTuning.Wheels[0]);
 
 					// Update all other wheels.
-					foreach (Wheel updateWheel in _tuning.wheels)
+					foreach (Wheel updateWheel in _tuning.Wheels)
 					{
 						if (updateWheel == wheel) continue;
 
-						updateWheel.forwardSlip = wheel.forwardSlip;
-						updateWheel.sideSlip = wheel.sideSlip;
-						updateWheel.wheelDamping = wheel.wheelDamping;
-						updateWheel.distance = wheel.distance;
-						updateWheel.stiffness = wheel.stiffness;
-						updateWheel.damper = wheel.damper;
-						updateWheel.targetPosition = wheel.targetPosition;
+						updateWheel.ForwardSlip = wheel.ForwardSlip;
+						updateWheel.SideSlip = wheel.SideSlip;
+						updateWheel.WheelDamping = wheel.WheelDamping;
+						updateWheel.Distance = wheel.Distance;
+						updateWheel.Stiffness = wheel.Stiffness;
+						updateWheel.Damper = wheel.Damper;
+						updateWheel.TargetPosition = wheel.TargetPosition;
 					}
 				}
 				GUILayout.Space(5);
@@ -183,13 +183,13 @@ namespace MultiTool.UI.Tabs.VehicleConfiguration
 			else
 			{
 				int index = 0;
-				foreach (Wheel wheel in _tuning.wheels)
+				foreach (Wheel wheel in _tuning.Wheels)
 				{
 					GUILayout.BeginVertical("box");
-					GUILayout.Label($"Wheel {wheel.slot}", "LabelHeader");
+					GUILayout.Label($"Wheel {wheel.Slot}", "LabelHeader");
 					GUILayout.Space(5);
 
-					RenderWheelSliders(wheel, _defaultTuning.wheels[index], true);
+					RenderWheelSliders(wheel, _defaultTuning.Wheels[index], true);
 					GUILayout.Space(5);
 					GUILayout.EndVertical();
 
@@ -211,10 +211,10 @@ namespace MultiTool.UI.Tabs.VehicleConfiguration
 				if (GUILayout.Button("Export current tuning", GUILayout.MaxWidth(200)))
 					_export = new TuningSave()
 					{
-						part = car.name,
-						type = "wheel",
-						car = car.name,
-						tuning = _tuning,
+						Part = car.name,
+						Type = "wheel",
+						Car = car.name,
+						Tuning = _tuning,
 					}
 					.ToExportString();
 				if (!string.IsNullOrEmpty(_export))
@@ -233,17 +233,17 @@ namespace MultiTool.UI.Tabs.VehicleConfiguration
 				}
 				if (_saved != null)
 				{
-					if (_saved.type != "wheel")
+					if (_saved.Type != "wheel")
 					{
 						Notifications.SendError("Import failed", "Not a valid wheel tune.");
 						_saved = null;
 					}
-					else if (_saved.part != car.name)
+					else if (_saved.Part != car.name)
 					{
 						GUILayout.Label("This tune is not designed for this vehicle, import anyway?");
 						if (GUILayout.Button("Import anyway", GUILayout.MaxWidth(200)))
 						{
-							_tuning = _saved.tuning as WheelTuning;
+							_tuning = _saved.Tuning as WheelTuning;
 							GameUtilities.RemapWheelTuning(save, _tuning);
 							_saved = null;
 							_import = null;
@@ -252,7 +252,7 @@ namespace MultiTool.UI.Tabs.VehicleConfiguration
 					}
 					else
 					{
-						_tuning = _saved.tuning as WheelTuning;
+						_tuning = _saved.Tuning as WheelTuning;
 						GameUtilities.RemapWheelTuning(save, _tuning);
 						_saved = null;
 						_import = null;
@@ -266,7 +266,7 @@ namespace MultiTool.UI.Tabs.VehicleConfiguration
 			GUILayout.BeginHorizontal();
 			if (GUILayout.Button("Apply", GUILayout.MaxWidth(200)))
 			{
-				SaveUtilities.UpdateWheelTuning(new WheelTuningData() { ID = save.idInSave, tuning = _tuning, defaultTuning = _defaultTuning });
+				SaveUtilities.UpdateWheelTuning(new WheelTuningData() { ID = save.idInSave, Tuning = _tuning, DefaultTuning = _defaultTuning });
 				GameUtilities.ApplyWheelTuning(_tuning);
 				_lastSavedTuning = _tuning.DeepCopy();
 			}
@@ -279,22 +279,22 @@ namespace MultiTool.UI.Tabs.VehicleConfiguration
 
 			if (GUILayout.Button("Reset tuning to stock", GUILayout.MaxWidth(200)))
 			{
-				for (int i = 0; i < _tuning.wheels.Count; i++)
+				for (int i = 0; i < _tuning.Wheels.Count; i++)
 				{
-					Wheel wheel = _tuning.wheels[i];
-					Wheel defaultWheel = _defaultTuning.wheels[i];
+					Wheel wheel = _tuning.Wheels[i];
+					Wheel defaultWheel = _defaultTuning.Wheels[i];
 
-					wheel.forwardSlip = defaultWheel.forwardSlip;
-					wheel.sideSlip = defaultWheel.sideSlip;
-					wheel.wheelDamping = defaultWheel.wheelDamping;
-					wheel.distance = defaultWheel.distance;
-					wheel.stiffness = defaultWheel.stiffness;
-					wheel.damper = defaultWheel.damper;
-					wheel.targetPosition = defaultWheel.targetPosition;
-					wheel.position = defaultWheel.position;
-					wheel.outwardOffset = 0;
-					wheel.forwardOffset = 0;
-					wheel.verticalOffset = 0;
+					wheel.ForwardSlip = defaultWheel.ForwardSlip;
+					wheel.SideSlip = defaultWheel.SideSlip;
+					wheel.WheelDamping = defaultWheel.WheelDamping;
+					wheel.Distance = defaultWheel.Distance;
+					wheel.Stiffness = defaultWheel.Stiffness;
+					wheel.Damper = defaultWheel.Damper;
+					wheel.TargetPosition = defaultWheel.TargetPosition;
+					wheel.Position = defaultWheel.Position;
+					wheel.OutwardOffset = 0;
+					wheel.ForwardOffset = 0;
+					wheel.VerticalOffset = 0;
 				}
 			}
 
@@ -317,26 +317,26 @@ namespace MultiTool.UI.Tabs.VehicleConfiguration
 
 		private void RenderWheelSliders(Wheel wheel, Wheel defaultWheel, bool perWheel = false)
 		{
-			if (wheel.forwardSlip != null && wheel.sideSlip != null)
+			if (wheel.ForwardSlip != null && wheel.SideSlip != null)
 			{
 				GUILayout.Label("Grip", "LabelSubHeader");
 				GUILayout.BeginVertical();
 				GUILayout.Label("Forward slip");
-				wheel.forwardSlip = GUILayout.HorizontalSlider(wheel.forwardSlip.Value, 0f, 10f);
-				float.TryParse(GUILayout.TextField(wheel.forwardSlip.Value.ToString("F2"), GUILayout.MaxWidth(200)), out float forwardSlip);
-				wheel.forwardSlip = forwardSlip;
+				wheel.ForwardSlip = GUILayout.HorizontalSlider(wheel.ForwardSlip.Value, 0f, 10f);
+				float.TryParse(GUILayout.TextField(wheel.ForwardSlip.Value.ToString("F2"), GUILayout.MaxWidth(200)), out float forwardSlip);
+				wheel.ForwardSlip = forwardSlip;
 				if (GUILayout.Button("Reset", GUILayout.MaxWidth(200)))
-					wheel.forwardSlip = defaultWheel.forwardSlip;
+					wheel.ForwardSlip = defaultWheel.ForwardSlip;
 				GUILayout.EndVertical();
 				GUILayout.Space(5);
 
 				GUILayout.BeginVertical();
 				GUILayout.Label("Side slip");
-				wheel.sideSlip = GUILayout.HorizontalSlider(wheel.sideSlip.Value, 0f, 10f);
-				float.TryParse(GUILayout.TextField(wheel.sideSlip.Value.ToString("F2"), GUILayout.MaxWidth(200)), out float sideSlip);
-				wheel.sideSlip = sideSlip;
+				wheel.SideSlip = GUILayout.HorizontalSlider(wheel.SideSlip.Value, 0f, 10f);
+				float.TryParse(GUILayout.TextField(wheel.SideSlip.Value.ToString("F2"), GUILayout.MaxWidth(200)), out float sideSlip);
+				wheel.SideSlip = sideSlip;
 				if (GUILayout.Button("Reset", GUILayout.MaxWidth(200)))
-					wheel.sideSlip = defaultWheel.sideSlip;
+					wheel.SideSlip = defaultWheel.SideSlip;
 				GUILayout.EndVertical();
 				GUILayout.Space(5);
 			}
@@ -347,53 +347,53 @@ namespace MultiTool.UI.Tabs.VehicleConfiguration
 			GUILayout.Label("Wheel damping rate");
 			GUILayout.Label("Wheel slow down rate");
 			GUILayout.Label("High values = wheel slows down more quickly");
-			wheel.wheelDamping = GUILayout.HorizontalSlider(wheel.wheelDamping * 100, 0, 100f) / 100;
-			float.TryParse(GUILayout.TextField((wheel.wheelDamping * 100).ToString("F2"), GUILayout.MaxWidth(200)), out float wheelDamping);
-			wheel.wheelDamping = wheelDamping / 100;
+			wheel.WheelDamping = GUILayout.HorizontalSlider(wheel.WheelDamping * 100, 0, 100f) / 100;
+			float.TryParse(GUILayout.TextField((wheel.WheelDamping * 100).ToString("F2"), GUILayout.MaxWidth(200)), out float wheelDamping);
+			wheel.WheelDamping = wheelDamping / 100;
 			if (GUILayout.Button("Reset", GUILayout.MaxWidth(200)))
-				wheel.wheelDamping = defaultWheel.wheelDamping;
+				wheel.WheelDamping = defaultWheel.WheelDamping;
 			GUILayout.EndVertical();
 			GUILayout.Space(5);
 
 			GUILayout.Label("Suspension", "LabelSubHeader");
 			GUILayout.BeginVertical();
 			GUILayout.Label("Spring distance (Ride height)");
-			wheel.distance = GUILayout.HorizontalSlider(wheel.distance, 0, 5f);
-			float.TryParse(GUILayout.TextField(wheel.distance.ToString("F2"), GUILayout.MaxWidth(200)), out float distance);
-			wheel.distance = distance;
+			wheel.Distance = GUILayout.HorizontalSlider(wheel.Distance, 0, 5f);
+			float.TryParse(GUILayout.TextField(wheel.Distance.ToString("F2"), GUILayout.MaxWidth(200)), out float distance);
+			wheel.Distance = distance;
 			if (GUILayout.Button("Reset", GUILayout.MaxWidth(200)))
-				wheel.distance = defaultWheel.distance;
+				wheel.Distance = defaultWheel.Distance;
 			GUILayout.EndVertical();
 			GUILayout.Space(5);
 
 			GUILayout.BeginVertical();
 			GUILayout.Label("Spring stiffness");
-			wheel.stiffness = GUILayout.HorizontalSlider(wheel.stiffness / 1000, 0f, 100f) * 1000;
-			float.TryParse(GUILayout.TextField((wheel.stiffness / 1000).ToString("F2"), GUILayout.MaxWidth(200)), out float stiffness);
-			wheel.stiffness = stiffness * 1000;
+			wheel.Stiffness = GUILayout.HorizontalSlider(wheel.Stiffness / 1000, 0f, 100f) * 1000;
+			float.TryParse(GUILayout.TextField((wheel.Stiffness / 1000).ToString("F2"), GUILayout.MaxWidth(200)), out float stiffness);
+			wheel.Stiffness = stiffness * 1000;
 			if (GUILayout.Button("Reset", GUILayout.MaxWidth(200)))
-				wheel.stiffness = defaultWheel.stiffness;
+				wheel.Stiffness = defaultWheel.Stiffness;
 			GUILayout.EndVertical();
 			GUILayout.Space(5);
 
 			GUILayout.BeginVertical();
 			GUILayout.Label("Spring damper (Shock absorber strength)");
-			wheel.damper = GUILayout.HorizontalSlider(wheel.damper / 100, 0f, 100f) * 100;
-			float.TryParse(GUILayout.TextField((wheel.damper / 100).ToString("F2"), GUILayout.MaxWidth(200)), out float damper);
-			wheel.damper = damper * 100;
+			wheel.Damper = GUILayout.HorizontalSlider(wheel.Damper / 100, 0f, 100f) * 100;
+			float.TryParse(GUILayout.TextField((wheel.Damper / 100).ToString("F2"), GUILayout.MaxWidth(200)), out float damper);
+			wheel.Damper = damper * 100;
 			if (GUILayout.Button("Reset", GUILayout.MaxWidth(200)))
-				wheel.damper = defaultWheel.damper;
+				wheel.Damper = defaultWheel.Damper;
 			GUILayout.EndVertical();
 			GUILayout.Space(5);
 
 			GUILayout.BeginVertical();
 			GUILayout.Label("Target suspension position");
 			GUILayout.Label("0 = fully extended suspension, 100 = fully compressed suspension");
-			wheel.targetPosition = GUILayout.HorizontalSlider(wheel.targetPosition * 100, 0f, 100f) / 100;
-			float.TryParse(GUILayout.TextField((wheel.targetPosition * 100).ToString("F2"), GUILayout.MaxWidth(200)), out float targetPosition);
-			wheel.targetPosition = targetPosition / 100;
+			wheel.TargetPosition = GUILayout.HorizontalSlider(wheel.TargetPosition * 100, 0f, 100f) / 100;
+			float.TryParse(GUILayout.TextField((wheel.TargetPosition * 100).ToString("F2"), GUILayout.MaxWidth(200)), out float targetPosition);
+			wheel.TargetPosition = targetPosition / 100;
 			if (GUILayout.Button("Reset", GUILayout.MaxWidth(200)))
-				wheel.targetPosition = defaultWheel.targetPosition;
+				wheel.TargetPosition = defaultWheel.TargetPosition;
 			GUILayout.EndVertical();
 			GUILayout.Space(5);
 
@@ -402,46 +402,46 @@ namespace MultiTool.UI.Tabs.VehicleConfiguration
 			GUILayout.BeginVertical();
 
 			GUILayout.Label($"Widen/thin {wheelPlural}");
-			wheel.outwardOffset = GUILayout.HorizontalSlider(wheel.outwardOffset, -10f, 10f);
-			float.TryParse(GUILayout.TextField(wheel.outwardOffset.ToString("F3"), GUILayout.MaxWidth(200)), out wheel.outwardOffset);
+			wheel.OutwardOffset = GUILayout.HorizontalSlider(wheel.OutwardOffset, -10f, 10f);
+			float.TryParse(GUILayout.TextField(wheel.OutwardOffset.ToString("F3"), GUILayout.MaxWidth(200)), out wheel.OutwardOffset);
 			if (GUILayout.Button("Reset", GUILayout.MaxWidth(200)))
-				wheel.outwardOffset = 0;
+				wheel.OutwardOffset = 0;
 			GUILayout.EndVertical();
 			GUILayout.Space(5);
 
 			GUILayout.BeginVertical();
 			GUILayout.Label($"Lengthen/shorten {wheelPlural}");
-			wheel.forwardOffset = GUILayout.HorizontalSlider(wheel.forwardOffset, -10f, 10f);
-			float.TryParse(GUILayout.TextField(wheel.forwardOffset.ToString("F3"), GUILayout.MaxWidth(200)), out wheel.forwardOffset);
+			wheel.ForwardOffset = GUILayout.HorizontalSlider(wheel.ForwardOffset, -10f, 10f);
+			float.TryParse(GUILayout.TextField(wheel.ForwardOffset.ToString("F3"), GUILayout.MaxWidth(200)), out wheel.ForwardOffset);
 			if (GUILayout.Button("Reset", GUILayout.MaxWidth(200)))
-				wheel.forwardOffset = 0;
+				wheel.ForwardOffset = 0;
 			GUILayout.EndVertical();
 
 			GUILayout.BeginVertical();
 			GUILayout.Label($"Raise/lower {wheelPlural}");
-			wheel.verticalOffset = GUILayout.HorizontalSlider(wheel.verticalOffset, -10f, 10f);
-			float.TryParse(GUILayout.TextField(wheel.verticalOffset.ToString("F3"), GUILayout.MaxWidth(200)), out wheel.verticalOffset);
+			wheel.VerticalOffset = GUILayout.HorizontalSlider(wheel.VerticalOffset, -10f, 10f);
+			float.TryParse(GUILayout.TextField(wheel.VerticalOffset.ToString("F3"), GUILayout.MaxWidth(200)), out wheel.VerticalOffset);
 			if (GUILayout.Button("Reset", GUILayout.MaxWidth(200)))
-				wheel.verticalOffset = 0;
+				wheel.VerticalOffset = 0;
 			GUILayout.EndVertical();
 
 			// Apply wheel positioning offsets.
 			if (perWheel)
 			{
-				wheel.position = defaultWheel.position;
-				wheel.position.x += wheel.outwardOffset * (IsRightSide(wheel) ? 1f : -1f);
-				wheel.position.y += wheel.verticalOffset;
-				wheel.position.z += wheel.forwardOffset * (IsFront(wheel) ? 1f : -1f);
+				wheel.Position = defaultWheel.Position;
+				wheel.Position.x += wheel.OutwardOffset * (IsRightSide(wheel) ? 1f : -1f);
+				wheel.Position.y += wheel.VerticalOffset;
+				wheel.Position.z += wheel.ForwardOffset * (IsFront(wheel) ? 1f : -1f);
 			}
 			else
 			{
 				int index = 0;
-				foreach (Wheel updateWheel in _tuning.wheels)
+				foreach (Wheel updateWheel in _tuning.Wheels)
 				{
-					updateWheel.position = _defaultTuning.wheels[index].position;
-					updateWheel.position.x += wheel.outwardOffset * (IsRightSide(updateWheel) ? 1f : -1f);
-					updateWheel.position.y += wheel.verticalOffset;
-					updateWheel.position.z += wheel.forwardOffset * (IsFront(updateWheel) ? 1f : -1f);
+					updateWheel.Position = _defaultTuning.Wheels[index].Position;
+					updateWheel.Position.x += wheel.OutwardOffset * (IsRightSide(updateWheel) ? 1f : -1f);
+					updateWheel.Position.y += wheel.VerticalOffset;
+					updateWheel.Position.z += wheel.ForwardOffset * (IsFront(updateWheel) ? 1f : -1f);
 					index++;
 				}
 			}
@@ -449,12 +449,12 @@ namespace MultiTool.UI.Tabs.VehicleConfiguration
 
 		private bool IsRightSide(Wheel wheel)
 		{
-			return wheel.graphics?.W?.transform.localPosition.x > 0;
+			return wheel.Graphics?.W?.transform.localPosition.x > 0;
 		}
 
 		private bool IsFront(Wheel wheel)
 		{
-			return wheel.graphics?.W?.transform.localPosition.z > 0;
+			return wheel.Graphics?.W?.transform.localPosition.z > 0;
 		}
 	}
 }

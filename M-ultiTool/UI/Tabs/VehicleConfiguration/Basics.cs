@@ -55,15 +55,15 @@ namespace MultiTool.UI.Tabs.VehicleConfiguration
 			// Condition.
 			GUILayout.Label("Condition", "LabelHeader");
 			int maxCondition = (int)Enum.GetValues(typeof(Item.Condition)).Cast<Item.Condition>().Max();
-			float rawCondition = GUILayout.HorizontalSlider(GUIRenderer.conditionInt, 0, maxCondition);
-			GUIRenderer.conditionInt = Mathf.RoundToInt(rawCondition);
-			GUILayout.Label(((Item.Condition)GUIRenderer.conditionInt).ToString(), GUIRenderer.labelStyle);
+			float rawCondition = GUILayout.HorizontalSlider(GUIRenderer.ConditionInt, 0, maxCondition);
+			GUIRenderer.ConditionInt = Mathf.RoundToInt(rawCondition);
+			GUILayout.Label(((Item.Condition)GUIRenderer.ConditionInt).ToString(), GUIRenderer.LabelStyle);
 
-			GUIRenderer.applyConditionToAttached = GUILayout.Toggle(GUIRenderer.applyConditionToAttached, "Apply to attached");
+			GUIRenderer.ApplyConditionToAttached = GUILayout.Toggle(GUIRenderer.ApplyConditionToAttached, "Apply to attached");
 
 			if (GUILayout.Button("Apply", GUILayout.MaxWidth(200)))
 			{
-				GameUtilities.SetCondition(GUIRenderer.conditionInt, GUIRenderer.applyConditionToAttached, partconditionscript);
+				GameUtilities.SetCondition(GUIRenderer.ConditionInt, GUIRenderer.ApplyConditionToAttached, partconditionscript);
 			}
 
 			GUILayout.Space(10);

@@ -16,7 +16,7 @@ namespace MultiTool.Services
 
 		public static void Init()
 		{
-			DirectoryInfo dir = Directory.CreateDirectory(Path.Combine(ModLoader.GetModConfigFolder(MultiTool.mod), "Translations"));
+			DirectoryInfo dir = Directory.CreateDirectory(Path.Combine(ModLoader.GetModConfigFolder(MultiTool.ModInstance), "Translations"));
 			_translationDir = dir.FullName;
 
 			LoadTranslationFiles();

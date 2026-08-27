@@ -36,7 +36,7 @@ namespace MultiTool.UI.Tabs.VehicleConfiguration
 				bool createMix = true;
 				foreach (FluidMix mix in _fluids)
 				{
-					if (mix.tank == tank)
+					if (mix.Tank == tank)
 					{
 						createMix = false;
 						break;
@@ -46,15 +46,15 @@ namespace MultiTool.UI.Tabs.VehicleConfiguration
 				if (createMix)
 				{
 					List<FluidPercentage> defaults = new List<FluidPercentage>();
-					foreach (FluidPercentage fluidDefault in GUIRenderer.fluidDefaults)
+					foreach (FluidPercentage fluidDefault in GUIRenderer.FluidDefaults)
 					{
 						defaults.Add(fluidDefault.Clone());
 					}
 
 					FluidMix newMix = new FluidMix()
 					{
-						tank = tank,
-						fluids = defaults,
+						Tank = tank,
+						Fluids = defaults,
 					};
 
 					// Copy amounts from tank as default value.
@@ -66,7 +66,7 @@ namespace MultiTool.UI.Tabs.VehicleConfiguration
 				bool createTank = true;
 				foreach (TankCapacity tankCapacity in _tanks)
 				{
-					if (tankCapacity.tank == tank)
+					if (tankCapacity.Tank == tank)
 					{
 						createTank = false;
 						break;
@@ -78,9 +78,9 @@ namespace MultiTool.UI.Tabs.VehicleConfiguration
 					TankData tankData = SaveUtilities.GetTank(save.idInSave);
 					_tanks.Add(new TankCapacity()
 					{
-						tank = tank,
-						max = tank.F.maxC,
-						defaultMax = tankData?.defaultCapacity ?? tank.F.maxC,
+						Tank = tank,
+						Max = tank.F.maxC,
+						DefaultMax = tankData?.DefaultCapacity ?? tank.F.maxC,
 					});
 				}
 			}
@@ -112,25 +112,25 @@ namespace MultiTool.UI.Tabs.VehicleConfiguration
 			{
 				// Can't use RenderMixSliders() for fuel as it needs the extra
 				// 'Fill with correct fuel' button.
-				tankscript fuelTank = fuelMix.tank;
+				tankscript fuelTank = fuelMix.Tank;
 				float fuelMax = fuelTank.F.maxC;
 				float fuelPercentage = 0;
 
-				foreach (FluidPercentage fluid in fuelMix.fluids)
+				foreach (FluidPercentage fluid in fuelMix.Fluids)
 				{
-					fuelPercentage += fluid.percentage;
+					fuelPercentage += fluid.Percentage;
 				}
 
 				if (fuelPercentage > 100)
 					fuelPercentage = 100;
 
-				foreach (FluidPercentage fluid in fuelMix.fluids)
+				foreach (FluidPercentage fluid in fuelMix.Fluids)
 				{
 					GUILayout.BeginHorizontal();
-					GUILayout.Label(fluid.type.ToString().ToSentenceCase(), GUILayout.MaxWidth(100));
-					int percentage = Mathf.RoundToInt(GUILayout.HorizontalSlider(fluid.percentage, 0, 100));
-					if (percentage + (fuelPercentage - fluid.percentage) <= 100)
-						fluid.percentage = percentage;
+					GUILayout.Label(fluid.Type.ToString().ToSentenceCase(), GUILayout.MaxWidth(100));
+					int percentage = Mathf.RoundToInt(GUILayout.HorizontalSlider(fluid.Percentage, 0, 100));
+					if (percentage + (fuelPercentage - fluid.Percentage) <= 100)
+						fluid.Percentage = percentage;
 					GUILayout.Label($"{percentage}%");
 					GUILayout.EndHorizontal();
 				}
@@ -143,13 +143,13 @@ namespace MultiTool.UI.Tabs.VehicleConfiguration
 
 				if (GUILayout.Button("Apply", GUILayout.MaxWidth(200)))
 				{
-					tankscript tank = fuelMix.tank;
+					tankscript tank = fuelMix.Tank;
 					tank.F.fluids.Clear();
-					foreach (FluidPercentage fluid in fuelMix.fluids)
+					foreach (FluidPercentage fluid in fuelMix.Fluids)
 					{
-						if (fluid.percentage > 0)
+						if (fluid.Percentage > 0)
 						{
-							tank.F.ChangeOne((fluid.percentage / 100) * tank.F.maxC, fluid.type);
+							tank.F.ChangeOne((fluid.Percentage / 100) * tank.F.maxC, fluid.Type);
 						}
 					}
 				}
@@ -186,12 +186,12 @@ namespace MultiTool.UI.Tabs.VehicleConfiguration
 						// Update UI.
 						foreach (fluid fluid in fuelTank.F.fluids)
 						{
-							foreach (FluidPercentage fuelFluid in fuelMix.fluids)
+							foreach (FluidPercentage fuelFluid in fuelMix.Fluids)
 							{
-								if (fluid.type == fuelFluid.type)
+								if (fluid.type == fuelFluid.Type)
 								{
 									int percentage = (int)(fluid.amount / fuelTank.F.maxC * 100);
-									fuelFluid.percentage = percentage;
+									fuelFluid.Percentage = percentage;
 									break;
 								}
 							}
@@ -247,15 +247,15 @@ namespace MultiTool.UI.Tabs.VehicleConfiguration
 				if (mix == fuelMix || mix == engineMix || mix == coolantMix) continue;
 
 				// Tank no longer exists, remove it and skip rendering this frame.
-				if (mix.tank == null)
+				if (mix.Tank == null)
 				{
 					_fluids.Remove(mix);
 					break;
 				}
 
-				GUILayout.Label($"{mix.tank.name.ToSentenceCase()} settings", "LabelSubHeader");
+				GUILayout.Label($"{mix.Tank.name.ToSentenceCase()} settings", "LabelSubHeader");
 				RenderMixSliders(mix);
-				TankCapacity fluidTankCapacity = FindCapacityByTank(mix.tank);
+				TankCapacity fluidTankCapacity = FindCapacityByTank(mix.Tank);
 				if (fluidTankCapacity != null)
 					RenderCapcity(fluidTankCapacity);
 				GUILayout.Space(10);
@@ -270,21 +270,21 @@ namespace MultiTool.UI.Tabs.VehicleConfiguration
 		{
 			if (tank != null)
 				foreach (FluidMix mix in _fluids)
-					if (mix.tank == tank) return mix;
+					if (mix.Tank == tank) return mix;
 			return null;
 		}
 
 		private void ResetToTank(FluidMix mix)
 		{
 			// Copy amounts from tank as default value.
-			foreach (fluid tankFluid in mix.tank.F.fluids)
+			foreach (fluid tankFluid in mix.Tank.F.fluids)
 			{
-				foreach (FluidPercentage mixFluid in mix.fluids)
+				foreach (FluidPercentage mixFluid in mix.Fluids)
 				{
-					foreach (fluid fluid in mix.tank.F.fluids)
+					foreach (fluid fluid in mix.Tank.F.fluids)
 					{
-						if (fluid.type == mixFluid.type)
-							mixFluid.percentage = fluid.amount / mix.tank.F.maxC * 100;
+						if (fluid.type == mixFluid.Type)
+							mixFluid.Percentage = fluid.amount / mix.Tank.F.maxC * 100;
 					}
 				}
 			}
@@ -292,25 +292,25 @@ namespace MultiTool.UI.Tabs.VehicleConfiguration
 
 		private void RenderMixSliders(FluidMix mix)
 		{
-			if (mix.tank == null) return;
+			if (mix.Tank == null) return;
 
 			float fluidPercentage = 0;
 
-			foreach (FluidPercentage fluid in mix.fluids)
+			foreach (FluidPercentage fluid in mix.Fluids)
 			{
-				fluidPercentage += fluid.percentage;
+				fluidPercentage += fluid.Percentage;
 			}
 
 			if (fluidPercentage > 100)
 				fluidPercentage = 100;
 
-			foreach (FluidPercentage fluid in mix.fluids)
+			foreach (FluidPercentage fluid in mix.Fluids)
 			{
 				GUILayout.BeginHorizontal();
-				GUILayout.Label(fluid.type.ToString().ToSentenceCase(), GUILayout.MaxWidth(100));
-				int percentage = Mathf.RoundToInt(GUILayout.HorizontalSlider(fluid.percentage, 0, 100));
-				if (percentage + (fluidPercentage - fluid.percentage) <= 100)
-					fluid.percentage = percentage;
+				GUILayout.Label(fluid.Type.ToString().ToSentenceCase(), GUILayout.MaxWidth(100));
+				int percentage = Mathf.RoundToInt(GUILayout.HorizontalSlider(fluid.Percentage, 0, 100));
+				if (percentage + (fluidPercentage - fluid.Percentage) <= 100)
+					fluid.Percentage = percentage;
 				GUILayout.Label($"{percentage}%");
 				GUILayout.EndHorizontal();
 			}
@@ -323,13 +323,13 @@ namespace MultiTool.UI.Tabs.VehicleConfiguration
 
 			if (GUILayout.Button("Apply", GUILayout.MaxWidth(200)))
 			{
-				tankscript tank = mix.tank;
+				tankscript tank = mix.Tank;
 				tank.F.fluids.Clear();
-				foreach (FluidPercentage fluid in mix.fluids)
+				foreach (FluidPercentage fluid in mix.Fluids)
 				{
-					if (fluid.percentage > 0)
+					if (fluid.Percentage > 0)
 					{
-						tank.F.ChangeOne((fluid.percentage / 100) * tank.F.maxC, fluid.type);
+						tank.F.ChangeOne((fluid.Percentage / 100) * tank.F.maxC, fluid.Type);
 					}
 				}
 			}
@@ -340,31 +340,31 @@ namespace MultiTool.UI.Tabs.VehicleConfiguration
 		{
 			if (tank != null)
 				foreach (TankCapacity capacity in _tanks)
-					if (capacity.tank == tank) return capacity;
+					if (capacity.Tank == tank) return capacity;
 			return null;
 		}
 
 		private void RenderCapcity(TankCapacity capacity)
 		{
-			if (capacity.tank == null) return;
+			if (capacity.Tank == null) return;
 
 			GUILayout.BeginVertical();
 			GUILayout.Label("Capacity", GUILayout.MaxWidth(100));
-			capacity.max = Mathf.RoundToInt(GUILayout.HorizontalSlider(capacity.max, 1, 1000));
-			float.TryParse(GUILayout.TextField(capacity.max.ToString("F0"), GUILayout.MaxWidth(200)), out capacity.max);
+			capacity.Max = Mathf.RoundToInt(GUILayout.HorizontalSlider(capacity.Max, 1, 1000));
+			float.TryParse(GUILayout.TextField(capacity.Max.ToString("F0"), GUILayout.MaxWidth(200)), out capacity.Max);
 			GUILayout.EndVertical();
 
 			GUILayout.BeginHorizontal();
 			if (GUILayout.Button("Apply", GUILayout.MaxWidth(200)))
 			{
-				tankscript tank = capacity.tank;
+				tankscript tank = capacity.Tank;
 				ApplyCapacity(tank, capacity);
 			}
 
 			if (GUILayout.Button("Reset", GUILayout.MaxWidth(200)))
 			{
-				tankscript tank = capacity.tank;
-				capacity.max = capacity.defaultMax;
+				tankscript tank = capacity.Tank;
+				capacity.Max = capacity.DefaultMax;
 				ApplyCapacity(tank, capacity);
 			}
 
@@ -373,14 +373,14 @@ namespace MultiTool.UI.Tabs.VehicleConfiguration
 
 		private void ApplyCapacity(tankscript tank, TankCapacity capacity)
 		{
-			tank.F.maxC = capacity.max;
+			tank.F.maxC = capacity.Max;
 			tosaveitemscript save = tank.GetComponentInParent<tosaveitemscript>();
 			if (save == null) return;
 			SaveUtilities.UpdateTank(new TankData()
 			{
 				ID = save.idInSave,
-				capacity = capacity.max,
-				defaultCapacity = capacity.defaultMax,
+				Capacity = capacity.Max,
+				DefaultCapacity = capacity.DefaultMax,
 			});
 		}
 	}

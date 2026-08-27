@@ -45,7 +45,7 @@ namespace MultiTool.UI.Tabs.ComponentBrowser
 
 			foreach (GameObject obj in objects)
 			{
-				SceneObject sceneObject = new SceneObject() { gameObject = obj };
+				SceneObject sceneObject = new SceneObject() { GameObject = obj };
 				_transformToObject[obj.transform] = sceneObject;
 			}
 
@@ -61,8 +61,8 @@ namespace MultiTool.UI.Tabs.ComponentBrowser
 				}
 				else if (_transformToObject.TryGetValue(parent, out SceneObject parentNode))
 				{
-					node.parent = parentNode;
-					parentNode.children.Add(node);
+					node.Parent = parentNode;
+					parentNode.Children.Add(node);
 				}
 			}
 

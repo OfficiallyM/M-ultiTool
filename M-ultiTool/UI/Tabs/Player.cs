@@ -32,16 +32,16 @@ namespace MultiTool.UI.Tabs
 				fpscontroller player = mainscript.M.player;
 				_defaultPlayerData = new PlayerData()
 				{
-					walkSpeed = player.FdefMaxSpeed,
-					runSpeed = player.FrunM,
-					jumpForce = player.FjumpForce,
-					pushForce = mainscript.M.pushForce,
-					carryWeight = player.maxWeight,
-					pickupForce = player.maxPickupForce,
-					throwForce = player.throwForceM,
-					pedalSpeed = player.PedalingRpm,
-					mass = player != null && player.mass != null ? player.mass.Mass() : 0,
-					infiniteAmmo = false,
+					WalkSpeed = player.FdefMaxSpeed,
+					RunSpeed = player.FrunM,
+					JumpForce = player.FjumpForce,
+					PushForce = mainscript.M.pushForce,
+					CarryWeight = player.maxWeight,
+					PickupForce = player.maxPickupForce,
+					ThrowForce = player.throwForceM,
+					PedalSpeed = player.PedalingRpm,
+					Mass = player != null && player.mass != null ? player.mass.Mass() : 0,
+					InfiniteAmmo = false,
 				};
 			}
 			_playerData = SaveUtilities.LoadPlayerData(_defaultPlayerData);
@@ -108,30 +108,30 @@ namespace MultiTool.UI.Tabs
 			}
 			GUILayout.Space(20);
 
-			if (GUILayout.Button(Accessibility.GetAccessibleString("Infinite ammo", activePlayerData.infiniteAmmo), GUILayout.MaxWidth(200)))
+			if (GUILayout.Button(Accessibility.GetAccessibleString("Infinite ammo", activePlayerData.InfiniteAmmo), GUILayout.MaxWidth(200)))
 			{
-				activePlayerData.infiniteAmmo = !activePlayerData.infiniteAmmo;
+				activePlayerData.InfiniteAmmo = !activePlayerData.InfiniteAmmo;
 				update = true;
 			}
 			GUILayout.Space(10);
 
 			// Walk speed.
-			GUILayout.Label($"Walk speed: {activePlayerData.walkSpeed} (Default: {_defaultPlayerData.walkSpeed})");
-			float.TryParse(GUILayout.TextField(activePlayerData.walkSpeed.ToString(), GUILayout.MaxWidth(200)), out float walkSpeed);
+			GUILayout.Label($"Walk speed: {activePlayerData.WalkSpeed} (Default: {_defaultPlayerData.WalkSpeed})");
+			float.TryParse(GUILayout.TextField(activePlayerData.WalkSpeed.ToString(), GUILayout.MaxWidth(200)), out float walkSpeed);
 			GUILayout.Space(2);
 			GUILayout.BeginHorizontal();
 			walkSpeed = GUILayout.HorizontalSlider(walkSpeed, 1f, 10f);
 			if (GUILayout.Button("Reset", GUILayout.MaxWidth(200)))
 			{
-				activePlayerData.walkSpeed = _defaultPlayerData.walkSpeed;
+				activePlayerData.WalkSpeed = _defaultPlayerData.WalkSpeed;
 				update = true;
 			}
 			else
 			{
 				walkSpeed = (float)Math.Round(walkSpeed, 2);
-				if (walkSpeed != activePlayerData.walkSpeed)
+				if (walkSpeed != activePlayerData.WalkSpeed)
 				{
-					activePlayerData.walkSpeed = walkSpeed;
+					activePlayerData.WalkSpeed = walkSpeed;
 					update = true;
 				}
 			}
@@ -139,22 +139,22 @@ namespace MultiTool.UI.Tabs
 			GUILayout.Space(10);
 
 			// Run speed.
-			GUILayout.Label($"Run speed: {activePlayerData.runSpeed} (Default: {_defaultPlayerData.runSpeed})");
-			float.TryParse(GUILayout.TextField(activePlayerData.runSpeed.ToString(), GUILayout.MaxWidth(200)), out float runSpeed);
+			GUILayout.Label($"Run speed: {activePlayerData.RunSpeed} (Default: {_defaultPlayerData.RunSpeed})");
+			float.TryParse(GUILayout.TextField(activePlayerData.RunSpeed.ToString(), GUILayout.MaxWidth(200)), out float runSpeed);
 			GUILayout.Space(2);
 			GUILayout.BeginHorizontal();
 			runSpeed = GUILayout.HorizontalSlider(runSpeed, 1f, 10f);
 			if (GUILayout.Button("Reset", GUILayout.MaxWidth(200)))
 			{
-				activePlayerData.runSpeed = _defaultPlayerData.runSpeed;
+				activePlayerData.RunSpeed = _defaultPlayerData.RunSpeed;
 				update = true;
 			}
 			else
 			{
 				runSpeed = (float)Math.Round(runSpeed, 2);
-				if (runSpeed != activePlayerData.runSpeed)
+				if (runSpeed != activePlayerData.RunSpeed)
 				{
-					activePlayerData.runSpeed = runSpeed;
+					activePlayerData.RunSpeed = runSpeed;
 					update = true;
 				}
 			}
@@ -162,22 +162,22 @@ namespace MultiTool.UI.Tabs
 			GUILayout.Space(10);
 
 			// Jump force.
-			GUILayout.Label($"Jump force: {activePlayerData.jumpForce / 100} (Default: {_defaultPlayerData.jumpForce / 100})");
-			float.TryParse(GUILayout.TextField((activePlayerData.jumpForce / 100).ToString(), GUILayout.MaxWidth(200)), out float jumpForce);
+			GUILayout.Label($"Jump force: {activePlayerData.JumpForce / 100} (Default: {_defaultPlayerData.JumpForce / 100})");
+			float.TryParse(GUILayout.TextField((activePlayerData.JumpForce / 100).ToString(), GUILayout.MaxWidth(200)), out float jumpForce);
 			GUILayout.Space(2);
 			GUILayout.BeginHorizontal();
 			jumpForce = GUILayout.HorizontalSlider(jumpForce, 1f, 2000f);
 			if (GUILayout.Button("Reset", GUILayout.MaxWidth(200)))
 			{
-				activePlayerData.jumpForce = _defaultPlayerData.jumpForce;
+				activePlayerData.JumpForce = _defaultPlayerData.JumpForce;
 				update = true;
 			}
 			else
 			{
 				jumpForce = Mathf.Round(jumpForce) * 100;
-				if (jumpForce != activePlayerData.jumpForce)
+				if (jumpForce != activePlayerData.JumpForce)
 				{
-					activePlayerData.jumpForce = jumpForce;
+					activePlayerData.JumpForce = jumpForce;
 					update = true;
 				}
 			}
@@ -185,22 +185,22 @@ namespace MultiTool.UI.Tabs
 			GUILayout.Space(10);
 
 			// Push force.
-			GUILayout.Label($"Push force: {activePlayerData.pushForce / 10} (Default: {_defaultPlayerData.pushForce / 10})");
-			float.TryParse(GUILayout.TextField((activePlayerData.pushForce / 10).ToString(), GUILayout.MaxWidth(200)), out float pushForce);
+			GUILayout.Label($"Push force: {activePlayerData.PushForce / 10} (Default: {_defaultPlayerData.PushForce / 10})");
+			float.TryParse(GUILayout.TextField((activePlayerData.PushForce / 10).ToString(), GUILayout.MaxWidth(200)), out float pushForce);
 			GUILayout.Space(2);
 			GUILayout.BeginHorizontal();
 			pushForce = GUILayout.HorizontalSlider(pushForce, 1f, 2000f);
 			if (GUILayout.Button("Reset", GUILayout.MaxWidth(200)))
 			{
-				activePlayerData.pushForce = _defaultPlayerData.pushForce;
+				activePlayerData.PushForce = _defaultPlayerData.PushForce;
 				update = true;
 			}
 			else
 			{
 				pushForce = Mathf.Round(pushForce) * 10;
-				if (pushForce != activePlayerData.pushForce)
+				if (pushForce != activePlayerData.PushForce)
 				{
-					activePlayerData.pushForce = pushForce;
+					activePlayerData.PushForce = pushForce;
 					update = true;
 				}
 			}
@@ -208,22 +208,22 @@ namespace MultiTool.UI.Tabs
 			GUILayout.Space(10);
 
 			// Carry weight.
-			GUILayout.Label($"Carry weight: {activePlayerData.carryWeight} (Default: {_defaultPlayerData.carryWeight})");
-			float.TryParse(GUILayout.TextField(activePlayerData.carryWeight.ToString(), GUILayout.MaxWidth(200)), out float carryWeight);
+			GUILayout.Label($"Carry weight: {activePlayerData.CarryWeight} (Default: {_defaultPlayerData.CarryWeight})");
+			float.TryParse(GUILayout.TextField(activePlayerData.CarryWeight.ToString(), GUILayout.MaxWidth(200)), out float carryWeight);
 			GUILayout.Space(2);
 			GUILayout.BeginHorizontal();
 			carryWeight = GUILayout.HorizontalSlider(carryWeight, 1f, 1000f);
 			if (GUILayout.Button("Reset", GUILayout.MaxWidth(200)))
 			{
-				activePlayerData.carryWeight = _defaultPlayerData.carryWeight;
+				activePlayerData.CarryWeight = _defaultPlayerData.CarryWeight;
 				update = true;
 			}
 			else
 			{
 				carryWeight = Mathf.Round(carryWeight);
-				if (carryWeight != activePlayerData.carryWeight)
+				if (carryWeight != activePlayerData.CarryWeight)
 				{
-					activePlayerData.carryWeight = carryWeight;
+					activePlayerData.CarryWeight = carryWeight;
 					update = true;
 				}
 			}
@@ -231,22 +231,22 @@ namespace MultiTool.UI.Tabs
 			GUILayout.Space(10);
 
 			// Pickup force.
-			GUILayout.Label($"Pickup force: {activePlayerData.pickupForce} (Default: {_defaultPlayerData.pickupForce})");
-			float.TryParse(GUILayout.TextField(activePlayerData.pickupForce.ToString(), GUILayout.MaxWidth(200)), out float pickupForce);
+			GUILayout.Label($"Pickup force: {activePlayerData.PickupForce} (Default: {_defaultPlayerData.PickupForce})");
+			float.TryParse(GUILayout.TextField(activePlayerData.PickupForce.ToString(), GUILayout.MaxWidth(200)), out float pickupForce);
 			GUILayout.Space(2);
 			GUILayout.BeginHorizontal();
 			pickupForce = GUILayout.HorizontalSlider(pickupForce, 1f, 1000f);
 			if (GUILayout.Button("Reset", GUILayout.MaxWidth(200)))
 			{
-				activePlayerData.pickupForce = _defaultPlayerData.pickupForce;
+				activePlayerData.PickupForce = _defaultPlayerData.PickupForce;
 				update = true;
 			}
 			else
 			{
 				pickupForce = Mathf.Round(pickupForce);
-				if (pickupForce != activePlayerData.pickupForce)
+				if (pickupForce != activePlayerData.PickupForce)
 				{
-					activePlayerData.pickupForce = pickupForce;
+					activePlayerData.PickupForce = pickupForce;
 					update = true;
 				}
 			}
@@ -254,22 +254,22 @@ namespace MultiTool.UI.Tabs
 			GUILayout.Space(10);
 
 			// Throw force.
-			GUILayout.Label($"Throw force: {activePlayerData.throwForce / 1000} (Default: {_defaultPlayerData.throwForce / 1000})");
-			float.TryParse(GUILayout.TextField((activePlayerData.throwForce / 1000).ToString(), GUILayout.MaxWidth(200)), out float throwForce);
+			GUILayout.Label($"Throw force: {activePlayerData.ThrowForce / 1000} (Default: {_defaultPlayerData.ThrowForce / 1000})");
+			float.TryParse(GUILayout.TextField((activePlayerData.ThrowForce / 1000).ToString(), GUILayout.MaxWidth(200)), out float throwForce);
 			GUILayout.Space(2);
 			GUILayout.BeginHorizontal();
 			throwForce = GUILayout.HorizontalSlider(throwForce, 1f, 1000f);
 			if (GUILayout.Button("Reset", GUILayout.MaxWidth(200)))
 			{
-				activePlayerData.throwForce = _defaultPlayerData.throwForce;
+				activePlayerData.ThrowForce = _defaultPlayerData.ThrowForce;
 				update = true;
 			}
 			else
 			{
 				throwForce = Mathf.Round(throwForce) * 1000;
-				if (throwForce != activePlayerData.throwForce)
+				if (throwForce != activePlayerData.ThrowForce)
 				{
-					activePlayerData.throwForce = throwForce;
+					activePlayerData.ThrowForce = throwForce;
 					update = true;
 				}
 			}
@@ -277,22 +277,22 @@ namespace MultiTool.UI.Tabs
 			GUILayout.Space(10);
 
 			// Pedal speed.
-			GUILayout.Label($"Bike pedal speed: {activePlayerData.pedalSpeed} (Default: {_defaultPlayerData.pedalSpeed})");
-			float.TryParse(GUILayout.TextField(activePlayerData.pedalSpeed.ToString(), GUILayout.MaxWidth(200)), out float pedalSpeed);
+			GUILayout.Label($"Bike pedal speed: {activePlayerData.PedalSpeed} (Default: {_defaultPlayerData.PedalSpeed})");
+			float.TryParse(GUILayout.TextField(activePlayerData.PedalSpeed.ToString(), GUILayout.MaxWidth(200)), out float pedalSpeed);
 			GUILayout.Space(2);
 			GUILayout.BeginHorizontal();
 			pedalSpeed = GUILayout.HorizontalSlider(pedalSpeed, 1f, 10000f);
 			if (GUILayout.Button("Reset", GUILayout.MaxWidth(200)))
 			{
-				activePlayerData.pedalSpeed = _defaultPlayerData.pedalSpeed;
+				activePlayerData.PedalSpeed = _defaultPlayerData.PedalSpeed;
 				update = true;
 			}
 			else
 			{
 				pedalSpeed = Mathf.Round(pedalSpeed);
-				if (pedalSpeed != activePlayerData.pedalSpeed)
+				if (pedalSpeed != activePlayerData.PedalSpeed)
 				{
-					activePlayerData.pedalSpeed = pedalSpeed;
+					activePlayerData.PedalSpeed = pedalSpeed;
 					update = true;
 				}
 			}
@@ -329,22 +329,22 @@ namespace MultiTool.UI.Tabs
 			//}
 
 			// Mass.
-			GUILayout.Label($"Mass: {activePlayerData.mass} (Default: {_defaultPlayerData.mass})");
-			float.TryParse(GUILayout.TextField(activePlayerData.mass.ToString(), GUILayout.MaxWidth(200)), out float mass);
+			GUILayout.Label($"Mass: {activePlayerData.Mass} (Default: {_defaultPlayerData.Mass})");
+			float.TryParse(GUILayout.TextField(activePlayerData.Mass.ToString(), GUILayout.MaxWidth(200)), out float mass);
 			GUILayout.Space(2);
 			GUILayout.BeginHorizontal();
 			mass = GUILayout.HorizontalSlider(mass, 1f, 1000f);
 			if (GUILayout.Button("Reset", GUILayout.MaxWidth(200)))
 			{
-				activePlayerData.mass = _defaultPlayerData.mass;
+				activePlayerData.Mass = _defaultPlayerData.Mass;
 				update = true;
 			}
 			else
 			{
 				mass = (float)Math.Round(mass, 2);
-				if (mass != activePlayerData.mass)
+				if (mass != activePlayerData.Mass)
 				{
-					activePlayerData.mass = mass;
+					activePlayerData.Mass = mass;
 					update = true;
 				}
 			}
@@ -357,7 +357,7 @@ namespace MultiTool.UI.Tabs
 			float pissMax = mainscript.M.player.piss.Tank.F.maxC;
 			int pissPercentage = 0;
 
-			foreach (KeyValuePair<mainscript.fluidenum, int> fluid in GUIRenderer.piss)
+			foreach (KeyValuePair<mainscript.fluidenum, int> fluid in GUIRenderer.Piss)
 			{
 				pissPercentage += fluid.Value;
 			}
@@ -368,9 +368,9 @@ namespace MultiTool.UI.Tabs
 			bool changed = false;
 
 			// Deep copy piss dictionary.
-			Dictionary<mainscript.fluidenum, int> tempPiss = GUIRenderer.piss.ToDictionary(fluid => fluid.Key, fluid => fluid.Value);
+			Dictionary<mainscript.fluidenum, int> tempPiss = GUIRenderer.Piss.ToDictionary(fluid => fluid.Key, fluid => fluid.Value);
 
-			foreach (KeyValuePair<mainscript.fluidenum, int> fluid in GUIRenderer.piss)
+			foreach (KeyValuePair<mainscript.fluidenum, int> fluid in GUIRenderer.Piss)
 			{
 				GUILayout.BeginHorizontal();
 				GUILayout.Label(fluid.Key.ToString().ToSentenceCase(), GUILayout.MaxWidth(100));
@@ -386,7 +386,7 @@ namespace MultiTool.UI.Tabs
 			}
 
 			if (changed)
-				GUIRenderer.piss = tempPiss;
+				GUIRenderer.Piss = tempPiss;
 
 			GUILayout.BeginHorizontal();
 			if (GUILayout.Button("Get current", GUILayout.MaxWidth(200)))
@@ -394,17 +394,17 @@ namespace MultiTool.UI.Tabs
 				tankscript tank = mainscript.M.player.piss.Tank;
 
 				tempPiss = new Dictionary<mainscript.fluidenum, int>();
-				foreach (KeyValuePair<mainscript.fluidenum, int> fluid in GUIRenderer.piss)
+				foreach (KeyValuePair<mainscript.fluidenum, int> fluid in GUIRenderer.Piss)
 				{
 					tempPiss[fluid.Key] = 0;
 				}
 
-				GUIRenderer.piss = tempPiss;
+				GUIRenderer.Piss = tempPiss;
 
 				foreach (mainscript.fluid fluid in tank.F.fluids)
 				{
 					int percentage = (int)(fluid.amount / tank.F.maxC * 100);
-					GUIRenderer.piss[fluid.type] = percentage;
+					GUIRenderer.Piss[fluid.type] = percentage;
 				}
 			}
 
@@ -412,7 +412,7 @@ namespace MultiTool.UI.Tabs
 			{
 				tankscript tank = mainscript.M.player.piss.Tank;
 				tank.F.fluids.Clear();
-				foreach (KeyValuePair<mainscript.fluidenum, int> fluid in GUIRenderer.piss)
+				foreach (KeyValuePair<mainscript.fluidenum, int> fluid in GUIRenderer.Piss)
 				{
 					if (fluid.Value > 0)
 					{
@@ -424,9 +424,9 @@ namespace MultiTool.UI.Tabs
 
 			GUILayout.Label("Teleporting", "LabelHeader");
 
-			if (GUILayout.Button(Accessibility.GetAccessibleString("Click to teleport", activePlayerData.clickTeleport) + $"\n(Press {MultiTool.Binds.GetPrettyName((int)Keybinds.Inputs.action1)})", "ButtonPrimaryWrap", GUILayout.MaxWidth(200)))
+			if (GUILayout.Button(Accessibility.GetAccessibleString("Click to teleport", activePlayerData.ClickTeleport) + $"\n(Press {MultiTool.Binds.GetPrettyName((int)Keybinds.Inputs.action1)})", "ButtonPrimaryWrap", GUILayout.MaxWidth(200)))
 			{
-				activePlayerData.clickTeleport = !activePlayerData.clickTeleport;
+				activePlayerData.ClickTeleport = !activePlayerData.ClickTeleport;
 				update = true;
 			}
 			GUILayout.Space(10);
@@ -503,12 +503,12 @@ namespace MultiTool.UI.Tabs
 
 			// Apply infinite ammo.
 			if (player.inHandP != null && player.inHandP.weapon != null)
-				player.inHandP.weapon.infinite = activePlayerData.infiniteAmmo;
+				player.inHandP.weapon.infinite = activePlayerData.InfiniteAmmo;
 
 			// Click to teleport.
-			if (activePlayerData.clickTeleport &&
-				!MultiTool.Renderer.show &&
-				Input.GetKeyDown(MultiTool.Binds.GetKeyByAction((int)Keybinds.Inputs.action1).key) &&
+			if (activePlayerData.ClickTeleport &&
+				!MultiTool.Renderer.Show &&
+				Input.GetKeyDown(MultiTool.Binds.GetKeyByAction((int)Keybinds.Inputs.action1).AssignedKey) &&
 				Physics.Raycast(player.Cam.transform.position + player.Cam.transform.forward, player.Cam.transform.forward, out RaycastHit hitInfo, float.PositiveInfinity)
 			)
 				GameUtilities.TeleportPlayerWithParent(hitInfo.point + Vector3.up * 2f);
@@ -520,16 +520,16 @@ namespace MultiTool.UI.Tabs
 			fpscontroller player = mainscript.M.player;
 			if (player != null)
 			{
-				player.FdefMaxSpeed = data.walkSpeed;
-				player.FrunM = data.runSpeed;
-				player.FjumpForce = data.jumpForce;
-				mainscript.M.pushForce = data.pushForce;
-				player.maxWeight = data.carryWeight;
-				player.maxPickupForce = data.pickupForce;
-				player.throwForceM = data.throwForce;
-				player.PedalingRpm = data.pedalSpeed;
-				if (player.mass != null && player.mass.Mass() != data.mass)
-					player.mass.SetMass(data.mass);
+				player.FdefMaxSpeed = data.WalkSpeed;
+				player.FrunM = data.RunSpeed;
+				player.FjumpForce = data.JumpForce;
+				mainscript.M.pushForce = data.PushForce;
+				player.maxWeight = data.CarryWeight;
+				player.maxPickupForce = data.PickupForce;
+				player.throwForceM = data.ThrowForce;
+				player.PedalingRpm = data.PedalSpeed;
+				if (player.mass != null && player.mass.Mass() != data.Mass)
+					player.mass.SetMass(data.Mass);
 			}
 		}
 	}

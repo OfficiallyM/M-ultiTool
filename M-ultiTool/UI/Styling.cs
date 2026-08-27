@@ -108,7 +108,7 @@ namespace MultiTool.UI
 				});
 
 				// Load saved themes.
-				_path = Path.Combine(ModLoader.GetModConfigFolder(MultiTool.mod), "Themes.json");
+				_path = Path.Combine(ModLoader.GetModConfigFolder(MultiTool.ModInstance), "Themes.json");
 				foreach (Theme fileTheme in LoadFromFile().Data)
 				{
 					_themes.Add(fileTheme);
@@ -326,10 +326,10 @@ namespace MultiTool.UI
 			_blue = GUIExtensions.ColorTexture(1, 1, new Color(0, 0.38f, 0.77f));
 
 			// Override scrollbar width and height.
-			skin.verticalScrollbar.fixedWidth = GUIRenderer.scrollWidth;
-			skin.verticalScrollbarThumb.fixedWidth = GUIRenderer.scrollWidth;
-			skin.horizontalScrollbar.fixedHeight = GUIRenderer.scrollWidth;
-			skin.horizontalScrollbarThumb.fixedHeight = GUIRenderer.scrollWidth;
+			skin.verticalScrollbar.fixedWidth = GUIRenderer.ScrollWidth;
+			skin.verticalScrollbarThumb.fixedWidth = GUIRenderer.ScrollWidth;
+			skin.horizontalScrollbar.fixedHeight = GUIRenderer.ScrollWidth;
+			skin.horizontalScrollbarThumb.fixedHeight = GUIRenderer.ScrollWidth;
 
 			// Button styling.
 			_buttonStyle = new GUIStyle(skin.button);

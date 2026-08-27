@@ -34,13 +34,13 @@ namespace MultiTool
 		internal static Keybinds Binds => Context.Keybinds;
 		internal static Configuration Configuration => Context.Configuration;
 
-		internal static Mod mod;
-		internal static string configVersion;
-		internal static bool isOnMainMenu = true;
+		internal static Mod ModInstance;
+		internal static string ConfigVersion;
+		internal static bool IsOnMainMenu = true;
 
 		public MultiTool()
 		{
-			mod = this;
+			ModInstance = this;
 
 			try
 			{
@@ -63,9 +63,9 @@ namespace MultiTool
 			// Set the configuration path.
 			Configuration.SetConfigPath(Path.Combine(ModLoader.GetModConfigFolder(this), "Config.json"));
 
-			configVersion = Configuration.GetVersion();
+			ConfigVersion = Configuration.GetVersion();
 			Configuration.UpdateVersion();
-			isOnMainMenu = true;
+			IsOnMainMenu = true;
 
 			Renderer.OnMenuLoad();
 		}
@@ -78,7 +78,7 @@ namespace MultiTool
 		public override void OnLoad()
 		{
 			Translator.SetLanguage(mainscript.M.menu.language.languageNames[mainscript.M.menu.language.selectedLanguage]);
-			isOnMainMenu = false;
+			IsOnMainMenu = false;
 
 			GameObject controller = new GameObject("M-ultiTool");
 			controller.AddComponent<DataFetcher>();
@@ -96,7 +96,7 @@ namespace MultiTool
 			{
 				try
 				{
-					if (Input.GetKeyDown(Binds.GetKeyByAction((int)Keybinds.Inputs.deleteMode).key) && mainscript.M.player.seat == null)
+					if (Input.GetKeyDown(Binds.GetKeyByAction((int)Keybinds.Inputs.deleteMode).AssignedKey) && mainscript.M.player.seat == null)
 					{
 						Physics.Raycast(mainscript.M.player.Cam.transform.position, mainscript.M.player.Cam.transform.forward, out RaycastHit raycastHit, float.PositiveInfinity, mainscript.M.player.useLayer);
 
@@ -125,7 +125,7 @@ namespace MultiTool
 			switch (Context.State.Mode)
 			{
 				case "colorPicker":
-					if (Input.GetKeyDown(Binds.GetKeyByAction((int)Keybinds.Inputs.action1).key) && !Renderer.show)
+					if (Input.GetKeyDown(Binds.GetKeyByAction((int)Keybinds.Inputs.action1).AssignedKey) && !Renderer.Show)
 					{
 						Physics.Raycast(mainscript.M.player.Cam.transform.position, mainscript.M.player.Cam.transform.forward, out RaycastHit raycastHit, float.PositiveInfinity, mainscript.M.player.useLayer);
 						GameObject hitGameObject = raycastHit.transform.gameObject;
@@ -156,7 +156,7 @@ namespace MultiTool
 						Colour.SetColour(objectColor);
 					}
 
-					if (Input.GetKeyDown(Binds.GetKeyByAction((int)Keybinds.Inputs.action2).key) && !Renderer.show)
+					if (Input.GetKeyDown(Binds.GetKeyByAction((int)Keybinds.Inputs.action2).AssignedKey) && !Renderer.Show)
 					{
 						Physics.Raycast(mainscript.M.player.Cam.transform.position, mainscript.M.player.Cam.transform.forward, out RaycastHit raycastHit, float.PositiveInfinity, mainscript.M.player.useLayer);
 						GameObject hitGameObject = raycastHit.transform.gameObject;
@@ -176,10 +176,10 @@ namespace MultiTool
 					}
 					break;
 				case "scale":
-					if (!Renderer.show)
+					if (!Renderer.Show)
 					{
 						// Select object.
-						if (Input.GetKeyDown(Binds.GetKeyByAction((int)Keybinds.Inputs.action1).key))
+						if (Input.GetKeyDown(Binds.GetKeyByAction((int)Keybinds.Inputs.action1).AssignedKey))
 						{
 							Physics.Raycast(mainscript.M.player.Cam.transform.position, mainscript.M.player.Cam.transform.forward, out RaycastHit raycastHit, float.PositiveInfinity, mainscript.M.player.useLayer);
 							if (raycastHit.collider != null && raycastHit.collider.gameObject != null)
@@ -192,101 +192,101 @@ namespace MultiTool
 								// Can't find the tosaveitemscript, return early.
 								if (save == null)
 								{
-									GUIRenderer.selectedObject = null;
+									GUIRenderer.SelectedObject = null;
 									return;
 								}
 
-								GUIRenderer.selectedObject = save;
+								GUIRenderer.SelectedObject = save;
 								return;
 							}
-							GUIRenderer.selectedObject = null;
+							GUIRenderer.SelectedObject = null;
 						}
 
-						if (GUIRenderer.selectedObject != null)
+						if (GUIRenderer.SelectedObject != null)
 						{
 							// Return early if looking at terrain.
-							if (GUIRenderer.selectedObject.GetComponent<terrainscript>() != null)
+							if (GUIRenderer.SelectedObject.GetComponent<terrainscript>() != null)
 								return;
 
-							tosaveitemscript save = GUIRenderer.selectedObject.GetComponent<tosaveitemscript>();
+							tosaveitemscript save = GUIRenderer.SelectedObject.GetComponent<tosaveitemscript>();
 							bool update = false;
 
-							Vector3 scale = GUIRenderer.selectedObject.transform.localScale;
-							float scaleValue = GUIRenderer.scaleValue;
+							Vector3 scale = GUIRenderer.SelectedObject.transform.localScale;
+							float scaleValue = GUIRenderer.ScaleValue;
 							// Scale up.
-							bool scaleUp = Input.GetKey(Binds.GetKeyByAction((int)Keybinds.Inputs.up).key);
-							if (!GUIRenderer.scaleHold)
-								scaleUp = Input.GetKeyDown(Binds.GetKeyByAction((int)Keybinds.Inputs.up).key);
+							bool scaleUp = Input.GetKey(Binds.GetKeyByAction((int)Keybinds.Inputs.up).AssignedKey);
+							if (!GUIRenderer.ScaleHold)
+								scaleUp = Input.GetKeyDown(Binds.GetKeyByAction((int)Keybinds.Inputs.up).AssignedKey);
 							if (scaleUp)
 							{
-								switch (GUIRenderer.axis)
+								switch (GUIRenderer.Axis)
 								{
 									case "all":
-										GUIRenderer.selectedObject.transform.localScale = new Vector3(scale.x + scaleValue, scale.y + scaleValue, scale.z + scaleValue);
+										GUIRenderer.SelectedObject.transform.localScale = new Vector3(scale.x + scaleValue, scale.y + scaleValue, scale.z + scaleValue);
 										break;
 									case "x":
 										scale.x += scaleValue;
-										GUIRenderer.selectedObject.transform.localScale = scale;
+										GUIRenderer.SelectedObject.transform.localScale = scale;
 										break;
 									case "y":
 										scale.y += scaleValue;
-										GUIRenderer.selectedObject.transform.localScale = scale;
+										GUIRenderer.SelectedObject.transform.localScale = scale;
 										break;
 									case "z":
 										scale.z += scaleValue;
-										GUIRenderer.selectedObject.transform.localScale = scale;
+										GUIRenderer.SelectedObject.transform.localScale = scale;
 										break;
 								}
 								update = true;
 							}
 
 							// Scale down.
-							bool scaleDown = Input.GetKey(Binds.GetKeyByAction((int)Keybinds.Inputs.down).key);
-							if (!GUIRenderer.scaleHold)
-								scaleDown = Input.GetKeyDown(Binds.GetKeyByAction((int)Keybinds.Inputs.down).key);
+							bool scaleDown = Input.GetKey(Binds.GetKeyByAction((int)Keybinds.Inputs.down).AssignedKey);
+							if (!GUIRenderer.ScaleHold)
+								scaleDown = Input.GetKeyDown(Binds.GetKeyByAction((int)Keybinds.Inputs.down).AssignedKey);
 							if (scaleDown)
 							{
-								switch (GUIRenderer.axis)
+								switch (GUIRenderer.Axis)
 								{
 									case "all":
-										GUIRenderer.selectedObject.transform.localScale = new Vector3(scale.x - scaleValue, scale.y - scaleValue, scale.z - scaleValue);
+										GUIRenderer.SelectedObject.transform.localScale = new Vector3(scale.x - scaleValue, scale.y - scaleValue, scale.z - scaleValue);
 										break;
 									case "x":
 										scale.x -= scaleValue;
-										GUIRenderer.selectedObject.transform.localScale = scale;
+										GUIRenderer.SelectedObject.transform.localScale = scale;
 										break;
 									case "y":
 										scale.y -= scaleValue;
-										GUIRenderer.selectedObject.transform.localScale = scale;
+										GUIRenderer.SelectedObject.transform.localScale = scale;
 										break;
 									case "z":
 										scale.z -= scaleValue;
-										GUIRenderer.selectedObject.transform.localScale = scale;
+										GUIRenderer.SelectedObject.transform.localScale = scale;
 										break;
 								}
 								update = true;
 							}
 
 							// Reset scale to default.
-							if (Input.GetKeyDown(Binds.GetKeyByAction((int)Keybinds.Inputs.action4).key))
+							if (Input.GetKeyDown(Binds.GetKeyByAction((int)Keybinds.Inputs.action4).AssignedKey))
 							{
 								// No easy way to store default, just assume it's 1.
-								switch (GUIRenderer.axis)
+								switch (GUIRenderer.Axis)
 								{
 									case "all":
-										GUIRenderer.selectedObject.transform.localScale = new Vector3(1, 1, 1);
+										GUIRenderer.SelectedObject.transform.localScale = new Vector3(1, 1, 1);
 										break;
 									case "x":
 										scale.x = 1;
-										GUIRenderer.selectedObject.transform.localScale = scale;
+										GUIRenderer.SelectedObject.transform.localScale = scale;
 										break;
 									case "y":
 										scale.y = 1;
-										GUIRenderer.selectedObject.transform.localScale = scale;
+										GUIRenderer.SelectedObject.transform.localScale = scale;
 										break;
 									case "z":
 										scale.z = 1;
-										GUIRenderer.selectedObject.transform.localScale = scale;
+										GUIRenderer.SelectedObject.transform.localScale = scale;
 										break;
 								}
 								update = true;
@@ -299,40 +299,40 @@ namespace MultiTool
 								SaveUtilities.UpdateScale(new ScaleData()
 								{
 									ID = save.idInSave,
-									scale = GUIRenderer.selectedObject.transform.localScale
+									Scale = GUIRenderer.SelectedObject.transform.localScale
 								});
 							}
 						}
 
 						// Axis selection control.
-						if (Input.GetKeyDown(Binds.GetKeyByAction((int)Keybinds.Inputs.action3).key))
+						if (Input.GetKeyDown(Binds.GetKeyByAction((int)Keybinds.Inputs.action3).AssignedKey))
 						{
-							int currentIndex = Array.FindIndex(GUIRenderer.axisOptions, a => a == GUIRenderer.axis);
-							if (currentIndex == -1 || currentIndex == GUIRenderer.axisOptions.Length - 1)
-								GUIRenderer.axis = GUIRenderer.axisOptions[0];
+							int currentIndex = Array.FindIndex(GUIRenderer.AxisOptions, a => a == GUIRenderer.Axis);
+							if (currentIndex == -1 || currentIndex == GUIRenderer.AxisOptions.Length - 1)
+								GUIRenderer.Axis = GUIRenderer.AxisOptions[0];
 							else
-								GUIRenderer.axis = GUIRenderer.axisOptions[currentIndex + 1];
+								GUIRenderer.Axis = GUIRenderer.AxisOptions[currentIndex + 1];
 						}
 
 						// Scale value selection control.
-						if (Input.GetKeyDown(Binds.GetKeyByAction((int)Keybinds.Inputs.action5).key))
+						if (Input.GetKeyDown(Binds.GetKeyByAction((int)Keybinds.Inputs.action5).AssignedKey))
 						{
-							int currentIndex = Array.FindIndex(GUIRenderer.scaleOptions, s => s == GUIRenderer.scaleValue);
-							if (currentIndex == -1 || currentIndex == GUIRenderer.scaleOptions.Length - 1)
-								GUIRenderer.scaleValue = GUIRenderer.scaleOptions[0];
+							int currentIndex = Array.FindIndex(GUIRenderer.ScaleOptions, s => s == GUIRenderer.ScaleValue);
+							if (currentIndex == -1 || currentIndex == GUIRenderer.ScaleOptions.Length - 1)
+								GUIRenderer.ScaleValue = GUIRenderer.ScaleOptions[0];
 							else
-								GUIRenderer.scaleValue = GUIRenderer.scaleOptions[currentIndex + 1];
+								GUIRenderer.ScaleValue = GUIRenderer.ScaleOptions[currentIndex + 1];
 						}
 
-						if (Input.GetKeyDown(Binds.GetKeyByAction((int)Keybinds.Inputs.select).key))
+						if (Input.GetKeyDown(Binds.GetKeyByAction((int)Keybinds.Inputs.select).AssignedKey))
 						{
-							GUIRenderer.scaleHold = !GUIRenderer.scaleHold;
+							GUIRenderer.ScaleHold = !GUIRenderer.ScaleHold;
 						}
 					}
 					break;
 				case "objectRegenerator":
 					// Select object.
-					if (Input.GetKeyDown(Binds.GetKeyByAction((int)Keybinds.Inputs.action1).key))
+					if (Input.GetKeyDown(Binds.GetKeyByAction((int)Keybinds.Inputs.action1).AssignedKey))
 					{
 						Physics.Raycast(mainscript.M.player.Cam.transform.position, mainscript.M.player.Cam.transform.forward, out RaycastHit raycastHit, float.PositiveInfinity, mainscript.M.player.useLayer);
 						if (raycastHit.collider != null && raycastHit.collider.gameObject != null)
@@ -345,20 +345,20 @@ namespace MultiTool
 							// Can't find the tosaveitemscript, return early.
 							if (save == null) return;
 
-							GUIRenderer.selectedObject = save;
+							GUIRenderer.SelectedObject = save;
 							return;
 						}
-						GUIRenderer.selectedObject = null;
+						GUIRenderer.SelectedObject = null;
 					}
 
 					// Regenerate object.
-					if (Input.GetKeyDown(Binds.GetKeyByAction((int)Keybinds.Inputs.action4).key))
+					if (Input.GetKeyDown(Binds.GetKeyByAction((int)Keybinds.Inputs.action4).AssignedKey))
 					{
-						if (GUIRenderer.selectedObject != null)
+						if (GUIRenderer.SelectedObject != null)
 						{
-							tosaveitemscript save = GUIRenderer.selectedObject;
+							tosaveitemscript save = GUIRenderer.SelectedObject;
 							GameObject gameObject = save.gameObject;
-							Database.Item prefab = GUIRenderer.items.Where(i => i.gameObject.name == gameObject.name.Replace("(Clone)", "")).FirstOrDefault();
+							Database.Item prefab = GUIRenderer.Items.Where(i => i.GameObject.name == gameObject.name.Replace("(Clone)", "")).FirstOrDefault();
 							if (prefab == null)
 								return;
 
@@ -367,7 +367,7 @@ namespace MultiTool
 
 							// Recreate object.
 							GameObject spawned = SpawnUtilities.Spawn(prefab, position, rotation, Context.State.SpawnWithFuel);
-							GUIRenderer.selectedObject = spawned.GetComponent<tosaveitemscript>();
+							GUIRenderer.SelectedObject = spawned.GetComponent<tosaveitemscript>();
 
 							// Handle attached children.
 							foreach (attachablescript attached in gameObject.GetComponentsInChildren<attachablescript>())
@@ -420,7 +420,7 @@ namespace MultiTool
 					break;
 				case "weightChanger":
 					// Select object.
-					if (Input.GetKeyDown(Binds.GetKeyByAction((int)Keybinds.Inputs.action1).key))
+					if (Input.GetKeyDown(Binds.GetKeyByAction((int)Keybinds.Inputs.action1).AssignedKey))
 					{
 						Physics.Raycast(mainscript.M.player.Cam.transform.position, mainscript.M.player.Cam.transform.forward, out RaycastHit raycastHit, float.PositiveInfinity, mainscript.M.player.useLayer);
 						if (raycastHit.collider != null && raycastHit.collider.gameObject != null)
@@ -433,70 +433,70 @@ namespace MultiTool
 							// Can't find the tosaveitemscript, return early.
 							if (save == null)
 							{
-								GUIRenderer.selectedObject = null;
+								GUIRenderer.SelectedObject = null;
 								return;
 							}
 
 							// Object doesn't have mass, return early.
 							if (save.GetComponent<massScript>() == null)
 							{
-								GUIRenderer.selectedObject = null;
+								GUIRenderer.SelectedObject = null;
 								return;
 							}
 
-							GUIRenderer.selectedObject = save;
+							GUIRenderer.SelectedObject = save;
 							return;
 						}
-						GUIRenderer.selectedObject = null;
+						GUIRenderer.SelectedObject = null;
 					}
 
 					// Weight value selection control.
-					if (Input.GetKeyDown(Binds.GetKeyByAction((int)Keybinds.Inputs.action5).key))
+					if (Input.GetKeyDown(Binds.GetKeyByAction((int)Keybinds.Inputs.action5).AssignedKey))
 					{
-						int currentIndex = Array.FindIndex(GUIRenderer.weightOptions, s => s == GUIRenderer.weightValue);
-						if (currentIndex == -1 || currentIndex == GUIRenderer.weightOptions.Length - 1)
-							GUIRenderer.weightValue = GUIRenderer.weightOptions[0];
+						int currentIndex = Array.FindIndex(GUIRenderer.WeightOptions, s => s == GUIRenderer.WeightValue);
+						if (currentIndex == -1 || currentIndex == GUIRenderer.WeightOptions.Length - 1)
+							GUIRenderer.WeightValue = GUIRenderer.WeightOptions[0];
 						else
-							GUIRenderer.weightValue = GUIRenderer.weightOptions[currentIndex + 1];
+							GUIRenderer.WeightValue = GUIRenderer.WeightOptions[currentIndex + 1];
 					}
 
-					if (Input.GetKeyDown(Binds.GetKeyByAction((int)Keybinds.Inputs.select).key))
+					if (Input.GetKeyDown(Binds.GetKeyByAction((int)Keybinds.Inputs.select).AssignedKey))
 					{
-						GUIRenderer.weightHold = !GUIRenderer.weightHold;
+						GUIRenderer.WeightHold = !GUIRenderer.WeightHold;
 					}
 
-					if (GUIRenderer.selectedObject != null)
+					if (GUIRenderer.SelectedObject != null)
 					{
-						tosaveitemscript save = GUIRenderer.selectedObject.GetComponent<tosaveitemscript>();
-						massScript mass = GUIRenderer.selectedObject.GetComponent<massScript>();
+						tosaveitemscript save = GUIRenderer.SelectedObject.GetComponent<tosaveitemscript>();
+						massScript mass = GUIRenderer.SelectedObject.GetComponent<massScript>();
 						bool update = false;
 
 						float currentMass = mass.OwnMass();
 
 						// Mass increase.
-						bool massUp = Input.GetKey(Binds.GetKeyByAction((int)Keybinds.Inputs.up).key);
-						if (!GUIRenderer.weightHold)
-							massUp = Input.GetKeyDown(Binds.GetKeyByAction((int)Keybinds.Inputs.up).key);
+						bool massUp = Input.GetKey(Binds.GetKeyByAction((int)Keybinds.Inputs.up).AssignedKey);
+						if (!GUIRenderer.WeightHold)
+							massUp = Input.GetKeyDown(Binds.GetKeyByAction((int)Keybinds.Inputs.up).AssignedKey);
 						if (massUp)
 						{
-							mass.SetMass(currentMass + GUIRenderer.weightValue);
+							mass.SetMass(currentMass + GUIRenderer.WeightValue);
 
 							update = true;
 						}
 
 						// Mass decrease.
-						bool massDown = Input.GetKey(Binds.GetKeyByAction((int)Keybinds.Inputs.down).key);
-						if (!GUIRenderer.weightHold)
-							massDown = Input.GetKeyDown(Binds.GetKeyByAction((int)Keybinds.Inputs.down).key);
+						bool massDown = Input.GetKey(Binds.GetKeyByAction((int)Keybinds.Inputs.down).AssignedKey);
+						if (!GUIRenderer.WeightHold)
+							massDown = Input.GetKeyDown(Binds.GetKeyByAction((int)Keybinds.Inputs.down).AssignedKey);
 						if (massDown)
 						{
-							mass.SetMass(currentMass - GUIRenderer.weightValue);
+							mass.SetMass(currentMass - GUIRenderer.WeightValue);
 
 							update = true;
 						}
 
 						// Reset weight to default.
-						if (Input.GetKeyDown(Binds.GetKeyByAction((int)Keybinds.Inputs.action4).key))
+						if (Input.GetKeyDown(Binds.GetKeyByAction((int)Keybinds.Inputs.action4).AssignedKey))
 						{
 							WeightData weight = SaveUtilities.GetWeight(save.idInSave);
 
@@ -507,7 +507,7 @@ namespace MultiTool
 							}
 							else
 							{
-								mass.SetMass(weight.defaultMass);
+								mass.SetMass(weight.DefaultMass);
 								update = true;
 							}
 						}
@@ -518,8 +518,8 @@ namespace MultiTool
 							SaveUtilities.UpdateWeight(new WeightData()
 							{
 								ID = save.idInSave,
-								mass = mass.OwnMass(),
-								defaultMass = currentMass,
+								Mass = mass.OwnMass(),
+								DefaultMass = currentMass,
 							});
 						}
 					}

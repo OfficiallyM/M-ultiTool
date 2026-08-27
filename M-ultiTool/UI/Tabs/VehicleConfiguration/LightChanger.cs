@@ -65,9 +65,9 @@ namespace MultiTool.UI.Tabs.VehicleConfiguration
 				foreach (LightGroup light in _lights)
 				{
 					// Remove selected lights from selectable.
-					if (_selectedLights.Where(l => l.name == light.name).FirstOrDefault() != null) continue;
+					if (_selectedLights.Where(l => l.Name == light.Name).FirstOrDefault() != null) continue;
 
-					if (GUILayout.Button(PrettifyName(light.name), GUILayout.MaxWidth(200)))
+					if (GUILayout.Button(PrettifyName(light.Name), GUILayout.MaxWidth(200)))
 						_selectedLights.Add(light);
 					GUILayout.Space(2);
 				}
@@ -84,7 +84,7 @@ namespace MultiTool.UI.Tabs.VehicleConfiguration
 			{
 				foreach (LightGroup light in _selectedLights)
 				{
-					if (GUILayout.Button(PrettifyName(light.name), GUILayout.MaxWidth(200)))
+					if (GUILayout.Button(PrettifyName(light.Name), GUILayout.MaxWidth(200)))
 					{
 						_selectedLights.Remove(light);
 						break;
@@ -100,21 +100,21 @@ namespace MultiTool.UI.Tabs.VehicleConfiguration
 			{
 				foreach (LightGroup light in _selectedLights)
 				{
-					if (light.headlights != null && light.headlights.Count > 0)
+					if (light.Headlights != null && light.Headlights.Count > 0)
 					{
-						foreach (headlightscript headlight in light.headlights)
+						foreach (headlightscript headlight in light.Headlights)
 						{
-							GameUtilities.SetHeadlightColor(headlight, Colour.GetColour(), light.isInteriorLight);
+							GameUtilities.SetHeadlightColor(headlight, Colour.GetColour(), light.IsInteriorLight);
 							int? id = save.idInSave;
-							if (!light.isInteriorLight)
+							if (!light.IsInteriorLight)
 								id = headlight.GetComponent<tosaveitemscript>()?.idInSave;
 
 							string name = null;
-							if (light.isInteriorLight)
+							if (light.IsInteriorLight)
 								name = "interior";
 
 							if (id.HasValue)
-								SaveUtilities.UpdateLight(new LightData() { ID = id.Value, name = name, color = Colour.GetColour() });
+								SaveUtilities.UpdateLight(new LightData() { ID = id.Value, Name = name, Color = Colour.GetColour() });
 						}
 					}
 				}

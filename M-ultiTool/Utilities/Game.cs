@@ -50,12 +50,12 @@ namespace MultiTool.Utilities
 			}
 
 			// Convert keys to list to get the index later.
-			List<string> names = GUIRenderer.categories.Keys.ToList();
+			List<string> names = GUIRenderer.Categories.Keys.ToList();
 
 			int databaseLength = Enum.GetNames(typeof(itemdatabase.i)).Length;
 
 			// Categories will be located in order.
-			foreach (KeyValuePair<string, List<Type>> category in GUIRenderer.categories)
+			foreach (KeyValuePair<string, List<Type>> category in GUIRenderer.Categories)
 			{
 				foreach (Type type in category.Value)
 				{
@@ -414,31 +414,31 @@ namespace MultiTool.Utilities
 		/// <param name="engineTuning">Tuning settings</param>
 		internal static void ApplyEngineTuning(enginescript engine, EngineTuning engineTuning)
 		{
-			engine.rpmChangeModifier = engineTuning.rpmChangeModifier;
-			engine.startChance = engineTuning.startChance;
-			engine.motorBrakeModifier = engineTuning.motorBrakeModifier;
-			engine.minOptimalTemp2 = engineTuning.minOptimalTemp2;
-			engine.maxOptimalTemp2 = engineTuning.maxOptimalTemp2;
-			engine.engineHeatGainMin = engineTuning.engineHeatGainMin;
-			engine.engineHeatGainMax = engineTuning.engineHeatGainMax;
-			engine.consumptionM = engineTuning.consumptionModifier;
-			engine.noOverHeat = engineTuning.noOverheat;
-			engine.twostroke = engineTuning.twoStroke;
-			engine.Oilfluid = engineTuning.oilFluid;
-			engine.oilTolerationMin = engineTuning.oilTolerationMin;
-			engine.oilTolerationMax = engineTuning.oilTolerationMax;
-			engine.OilConsumptionModifier = engineTuning.oilConsumptionModifier;
+			engine.rpmChangeModifier = engineTuning.RpmChangeModifier;
+			engine.startChance = engineTuning.StartChance;
+			engine.motorBrakeModifier = engineTuning.MotorBrakeModifier;
+			engine.minOptimalTemp2 = engineTuning.MinOptimalTemp2;
+			engine.maxOptimalTemp2 = engineTuning.MaxOptimalTemp2;
+			engine.engineHeatGainMin = engineTuning.EngineHeatGainMin;
+			engine.engineHeatGainMax = engineTuning.EngineHeatGainMax;
+			engine.consumptionM = engineTuning.ConsumptionModifier;
+			engine.noOverHeat = engineTuning.NoOverheat;
+			engine.twostroke = engineTuning.TwoStroke;
+			engine.Oilfluid = engineTuning.OilFluid;
+			engine.oilTolerationMin = engineTuning.OilTolerationMin;
+			engine.oilTolerationMax = engineTuning.OilTolerationMax;
+			engine.OilConsumptionModifier = engineTuning.OilConsumptionModifier;
 			engine.FuelConsumption.fluids.Clear();
 
 			// Set fuel comsumption fluids.
-			foreach (Fluid fluid in engineTuning.consumption)
-				engine.FuelConsumption.fluids.Add(new mainscript.fluid() { type = fluid.type, amount = fluid.amount });
+			foreach (Fluid fluid in engineTuning.Consumption)
+				engine.FuelConsumption.fluids.Add(new mainscript.fluid() { type = fluid.Type, amount = fluid.Amount });
 
 			// Ensure engine torque curve count matches the new count.
 			List<Keyframe> curve = engine.torqueCurve.keys.ToList();
-			if (engineTuning.torqueCurve.Count > curve.Count)
+			if (engineTuning.TorqueCurve.Count > curve.Count)
 			{
-				int diff = engineTuning.torqueCurve.Count - curve.Count;
+				int diff = engineTuning.TorqueCurve.Count - curve.Count;
 
 				// Copy the second key as the first and last will often have different internal values.
 				Keyframe copy = curve[1];
@@ -447,9 +447,9 @@ namespace MultiTool.Utilities
 				for (int i = 0; i < diff; i++)
 					curve.Insert(curve.Count - 2, copy);
 			}
-			else if (engineTuning.torqueCurve.Count < curve.Count)
+			else if (engineTuning.TorqueCurve.Count < curve.Count)
 			{
-				int diff = curve.Count - engineTuning.torqueCurve.Count;
+				int diff = curve.Count - engineTuning.TorqueCurve.Count;
 
 				// Store and remove the last key to add it back on later.
 				Keyframe last = curve[curve.Count - 1];
@@ -469,20 +469,20 @@ namespace MultiTool.Utilities
 			float maxNm = 0;
 			for (int i = 0; i < curve.Count; i++)
 			{
-				TorqueCurve torqueCurve = engineTuning.torqueCurve[i];
+				TorqueCurve torqueCurve = engineTuning.TorqueCurve[i];
 				Keyframe frame = curve[i];
 
 				// Find new maxNm.
-				if (torqueCurve.torque > maxNm)
-					maxNm = torqueCurve.torque;
+				if (torqueCurve.Torque > maxNm)
+					maxNm = torqueCurve.Torque;
 
 				// Find new maxRpm.
-				if (torqueCurve.rpm > maxRpm)
-					maxRpm = torqueCurve.rpm;
+				if (torqueCurve.Rpm > maxRpm)
+					maxRpm = torqueCurve.Rpm;
 
 				// Set the new curve values.
-				frame.value = torqueCurve.torque;
-				frame.time = torqueCurve.rpm;
+				frame.value = torqueCurve.Torque;
+				frame.time = torqueCurve.Rpm;
 				curve[i] = frame;
 			}
 
@@ -500,25 +500,25 @@ namespace MultiTool.Utilities
 		internal static void ApplyTransmissionTuning(carscript car, TransmissionTuning transmissionTuning)
 		{
 			// Apply gear ratios.
-			transmissionTuning.gears = transmissionTuning.gears.OrderBy(t => t.gear).ToList();
+			transmissionTuning.Gears = transmissionTuning.Gears.OrderBy(t => t.GearNumber).ToList();
 			List<carscript.gearc> gears = new List<carscript.gearc>();
 			int gearIndex = 0;
-			foreach (Gear gear in transmissionTuning.gears)
+			foreach (Gear gear in transmissionTuning.Gears)
 			{
 				carscript.gearc stockGear = car.gears.Last();
 				if (car.gears.Length > gearIndex)
 					stockGear = car.gears[gearIndex];
-				gears.Add(new carscript.gearc() { ratio = gear.ratio, freeRun = gear.freeRun, Pos = stockGear.Pos, Path = stockGear.Path });
+				gears.Add(new carscript.gearc() { ratio = gear.Ratio, freeRun = gear.FreeRun, Pos = stockGear.Pos, Path = stockGear.Path });
 				gearIndex++;
 			}
 			car.gears = gears.ToArray();
 
 			// Apply diff tuning.
-			car.differentialRatio = transmissionTuning.differentialRatio;
+			car.differentialRatio = transmissionTuning.DifferentialRatio;
 
 			// Apply drivetrain.
 			car.WHDriven.Clear();
-			switch (transmissionTuning.driveTrain)
+			switch (transmissionTuning.DriveTrain)
 			{
 				case Drivetrain.AWD:
 					foreach (WheelCollider wheel in car.GetComponentsInChildren<WheelCollider>())
@@ -572,8 +572,8 @@ namespace MultiTool.Utilities
 		/// <param name="vehicleTuning">Tuning settings</param>
 		internal static void ApplyVehicleTuning(carscript car, VehicleTuning vehicleTuning)
 		{
-			car.steerAngle = vehicleTuning.steerAngle;
-			car.brakePower = vehicleTuning.brakePower;
+			car.steerAngle = vehicleTuning.SteerAngle;
+			car.brakePower = vehicleTuning.BrakePower;
 		}
 
 		/// <summary>
@@ -582,34 +582,34 @@ namespace MultiTool.Utilities
 		/// <param name="wheelTuning">Tuning settings</param>
 		internal static void ApplyWheelTuning(WheelTuning wheelTuning)
 		{
-			foreach (Wheel wheel in wheelTuning.wheels)
+			foreach (Wheel wheel in wheelTuning.Wheels)
 			{
-				if (wheel.graphics == null) continue;
+				if (wheel.Graphics == null) continue;
 
-				if (wheel.graphics?.slot?.part?.p?.wheel == null)
+				if (wheel.Graphics?.slot?.part?.p?.wheel == null)
 				{
 					continue;
 				}
 
-				gumiscript tire = wheel.graphics?.slot?.part?.p?.wheel?.gumi?.part?.p?.gumi;
-				WheelCollider collider = wheel.graphics.W;
+				gumiscript tire = wheel.Graphics?.slot?.part?.p?.wheel?.gumi?.part?.p?.gumi;
+				WheelCollider collider = wheel.Graphics.W;
 
 				// Apply grip settings.
-				if (wheel.forwardSlip != null)
-					tire.slip1 = wheel.forwardSlip.Value;
-				if (wheel.sideSlip != null)
-					tire.slip2 = wheel.sideSlip.Value;
-				collider.wheelDampingRate = wheel.wheelDamping;
+				if (wheel.ForwardSlip != null)
+					tire.slip1 = wheel.ForwardSlip.Value;
+				if (wheel.SideSlip != null)
+					tire.slip2 = wheel.SideSlip.Value;
+				collider.wheelDampingRate = wheel.WheelDamping;
 
 				// Apply suspension settings.
-				collider.suspensionDistance = wheel.distance;
+				collider.suspensionDistance = wheel.Distance;
 				JointSpring spring = collider.suspensionSpring;
-				spring.spring = wheel.stiffness;
-				spring.damper = wheel.damper;
-				spring.targetPosition = wheel.targetPosition;
+				spring.spring = wheel.Stiffness;
+				spring.damper = wheel.Damper;
+				spring.targetPosition = wheel.TargetPosition;
 				collider.suspensionSpring = spring;
 
-				collider.transform.localPosition = wheel.position;
+				collider.transform.localPosition = wheel.Position;
 			}
 		}
 
@@ -634,12 +634,12 @@ namespace MultiTool.Utilities
 
 				tosaveitemscript wheelSave = wheelgraphic.slot.part.tosaveitem;
 
-				foreach (Wheel wheel in tuning.wheels)
+				foreach (Wheel wheel in tuning.Wheels)
 				{
-					if (wheel.slot == wheelgraphic.name)
+					if (wheel.Slot == wheelgraphic.name)
 					{
-						wheel.graphics = wheelgraphic;
-						wheel.save = wheelSave;
+						wheel.Graphics = wheelgraphic;
+						wheel.Save = wheelSave;
 						break;
 					}
 				}

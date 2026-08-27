@@ -83,7 +83,7 @@ namespace MultiTool.UI.Tabs.VehicleConfiguration
 				PartGroupParent parentGroup = null;
 				foreach (PartGroupParent partParent in _materialParts)
 				{
-					if (partParent.name == parent)
+					if (partParent.Name == parent)
 					{
 						parentGroup = partParent;
 						break;
@@ -98,7 +98,7 @@ namespace MultiTool.UI.Tabs.VehicleConfiguration
 						mainParentGroup = parentGroup;
 				}
 
-				parentGroup.parts.Add(PartGroup.Create(SaveUtilities.SanitiseName(part.name), part, index, parentGroup.name));
+				parentGroup.Parts.Add(PartGroup.Create(SaveUtilities.SanitiseName(part.name), part, index, parentGroup.Name));
 
 				index++;
 			}
@@ -106,18 +106,18 @@ namespace MultiTool.UI.Tabs.VehicleConfiguration
 			// Add any extra conditionless parts.
 			MeshRenderer floor = GameUtilities.GetConditionlessVehiclePartByName(carObject, "Interior");
 			if (floor != null)
-				mainParentGroup.parts.Add(PartGroup.Create("Interior", floor, index + 1, mainParentGroup.name));
+				mainParentGroup.Parts.Add(PartGroup.Create("Interior", floor, index + 1, mainParentGroup.Name));
 			MeshRenderer floor2 = GameUtilities.GetConditionlessVehiclePartByName(carObject, "Floor");
 			if (floor2 != null)
-				mainParentGroup.parts.Add(PartGroup.Create("Floor", floor2, index + 2, mainParentGroup.name));
+				mainParentGroup.Parts.Add(PartGroup.Create("Floor", floor2, index + 2, mainParentGroup.Name));
 
 			// Reindex by group.
 			index = 1;
 			foreach (PartGroupParent parent in _materialParts)
 			{
-				foreach (PartGroup group in parent.parts)
+				foreach (PartGroup group in parent.Parts)
 				{
-					group.index = index;
+					group.Index = index;
 					index++;
 				}
 			}
@@ -150,22 +150,22 @@ namespace MultiTool.UI.Tabs.VehicleConfiguration
 			{
 				foreach (PartGroupParent parent in _materialParts)
 				{
-					GUILayout.Button($"Parent: {GetPrettyPartName(parent.name)}", "ButtonSecondaryTextLeft", GUILayout.MaxWidth(400));
+					GUILayout.Button($"Parent: {GetPrettyPartName(parent.Name)}", "ButtonSecondaryTextLeft", GUILayout.MaxWidth(400));
 
-					foreach (PartGroup group in parent.parts)
+					foreach (PartGroup group in parent.Parts)
 					{
-						string partSelectText = $" ({group.index}) {GetPrettyPartName(group.name)}";
+						string partSelectText = $" ({group.Index}) {GetPrettyPartName(group.Name)}";
 						if (GUILayout.Button(Accessibility.GetAccessibleString(partSelectText, IsGroupSelected(group)), "ButtonPrimaryTextLeft", GUILayout.MaxWidth(400)))
 						{
 							if (!IsGroupSelected(group))
 							{
-								Notifications.SendInformation("Material changer", $"Selected {GetPrettyPartName(group.name)}.", Notification.NotificationLength.VeryShort);
+								Notifications.SendInformation("Material changer", $"Selected {GetPrettyPartName(group.Name)}.", Notification.NotificationLength.VeryShort);
 								_selectedParts.Add(group);
 							}
 							else
 							{
-								Notifications.SendInformation("Material changer", $"Deselected {GetPrettyPartName(group.name)}.", Notification.NotificationLength.VeryShort);
-								DeselectByIndex(group.index);
+								Notifications.SendInformation("Material changer", $"Deselected {GetPrettyPartName(group.Name)}.", Notification.NotificationLength.VeryShort);
+								DeselectByIndex(group.Index);
 							}
 						}
 					}
@@ -182,7 +182,7 @@ namespace MultiTool.UI.Tabs.VehicleConfiguration
 				GUILayout.Label("Selected parts", "LabelSubHeader");
 				foreach (PartGroup selectedPart in _selectedParts)
 				{
-					if (GUILayout.Button($" ({selectedPart.index}) {GetPrettyPartName(selectedPart.name)}", GUILayout.MaxWidth(400)))
+					if (GUILayout.Button($" ({selectedPart.Index}) {GetPrettyPartName(selectedPart.Name)}", GUILayout.MaxWidth(400)))
 					{
 						_selectedParts.Remove(selectedPart);
 						break;
@@ -235,34 +235,34 @@ namespace MultiTool.UI.Tabs.VehicleConfiguration
 					{
 						if (selectedPart.IsConditionless())
 						{
-							foreach (MeshRenderer mesh in selectedPart.meshes)
+							foreach (MeshRenderer mesh in selectedPart.Meshes)
 							{
 								GameUtilities.SetConditionlessPartMaterial(mesh, _selectedMaterial, materialColor);
 								SaveUtilities.UpdateMaterials(new MaterialData()
 								{
 									ID = save.idInSave,
-									part = selectedPart.name,
-									parent = selectedPart.parent,
-									isConditionless = true,
-									exact = true,
-									type = _selectedMaterial,
-									color = materialColor
+									Part = selectedPart.Name,
+									Parent = selectedPart.Parent,
+									IsConditionless = true,
+									Exact = true,
+									Type = _selectedMaterial,
+									Color = materialColor
 								});
 							}
 						}
 						else
 						{
-							foreach (partconditionscript part in selectedPart.parts)
+							foreach (partconditionscript part in selectedPart.Parts)
 							{
 								GameUtilities.SetPartMaterial(part, _selectedMaterial, materialColor);
 								SaveUtilities.UpdateMaterials(new MaterialData()
 								{
 									ID = save.idInSave,
-									part = selectedPart.name,
-									parent = selectedPart.parent,
-									exact = IsExact(selectedPart.name),
-									type = _selectedMaterial,
-									color = materialColor
+									Part = selectedPart.Name,
+									Parent = selectedPart.Parent,
+									Exact = IsExact(selectedPart.Name),
+									Type = _selectedMaterial,
+									Color = materialColor
 								});
 							}
 						}
@@ -283,7 +283,7 @@ namespace MultiTool.UI.Tabs.VehicleConfiguration
 		private bool IsGroupSelected(PartGroup group)
 		{
 			foreach (PartGroup selected in _selectedParts)
-				if (selected.index == group.index) return true;
+				if (selected.Index == group.Index) return true;
 
 			return false;
 		}
@@ -296,7 +296,7 @@ namespace MultiTool.UI.Tabs.VehicleConfiguration
 		{
 			foreach (PartGroup selected in _selectedParts)
 			{
-				if (selected.index == index)
+				if (selected.Index == index)
 				{
 					_selectedParts.Remove(selected);
 					return;

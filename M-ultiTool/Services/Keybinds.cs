@@ -35,30 +35,30 @@ namespace MultiTool.Services
 			action6,
 		}
 
-		public List<Key> keys = new List<Key>();
+		public List<Key> Keys = new List<Key>();
 
 		[DataContract]
 		public class Key
 		{
-			[DataMember] public KeyCode key = KeyCode.None;
-			[DataMember] public int action;
-			[DataMember] public string name;
-			[DataMember] public KeyCode defaultKey = KeyCode.None;
+			[DataMember(Name = "key")] public KeyCode AssignedKey = KeyCode.None;
+			[DataMember(Name = "action")] public int Action;
+			[DataMember(Name = "name")] public string Name;
+			[DataMember(Name = "defaultKey")] public KeyCode DefaultKey = KeyCode.None;
 
 			public void Unset()
 			{
-				key = KeyCode.None;
+				AssignedKey = KeyCode.None;
 			}
 
 			public void Set(KeyCode _key)
 			{
 				Unset();
-				key = _key;
+				AssignedKey = _key;
 			}
 
 			public void Reset()
 			{
-				key = defaultKey;
+				AssignedKey = DefaultKey;
 			}
 		}
 
@@ -70,88 +70,88 @@ namespace MultiTool.Services
 				int maxInputs = (int)Enum.GetValues(typeof(Inputs)).Cast<Inputs>().Max();
 				for (int i = 0; i <= maxInputs; i++)
 				{
-					keys.Add(new Key() { action = i });
+					Keys.Add(new Key() { Action = i });
 				}
 
 				// Menu.
-				keys[0].key = KeyCode.F1;
-				keys[0].defaultKey = KeyCode.F1;
-				keys[0].name = "Open menu";
+				Keys[0].AssignedKey = KeyCode.F1;
+				Keys[0].DefaultKey = KeyCode.F1;
+				Keys[0].Name = "Open menu";
 
 				// Delete mode.
-				keys[1].key = KeyCode.Delete;
-				keys[1].defaultKey = KeyCode.Delete;
-				keys[1].name = "Delete mode";
+				Keys[1].AssignedKey = KeyCode.Delete;
+				Keys[1].DefaultKey = KeyCode.Delete;
+				Keys[1].Name = "Delete mode";
 
 				// Noclip speed up.
-				keys[2].key = KeyCode.LeftShift;
-				keys[2].defaultKey = KeyCode.LeftShift;
-				keys[2].name = "Noclip speed up";
+				Keys[2].AssignedKey = KeyCode.LeftShift;
+				Keys[2].DefaultKey = KeyCode.LeftShift;
+				Keys[2].Name = "Noclip speed up";
 
 				// Noclip fly up.
-				keys[3].key = KeyCode.Space;
-				keys[3].defaultKey = KeyCode.Space;
-				keys[3].name = "Noclip fly up";
+				Keys[3].AssignedKey = KeyCode.Space;
+				Keys[3].DefaultKey = KeyCode.Space;
+				Keys[3].Name = "Noclip fly up";
 
 				// Noclip fly down.
-				keys[4].key = KeyCode.LeftControl;
-				keys[4].defaultKey = KeyCode.LeftControl;
-				keys[4].name = "Noclip fly down";
+				Keys[4].AssignedKey = KeyCode.LeftControl;
+				Keys[4].DefaultKey = KeyCode.LeftControl;
+				Keys[4].Name = "Noclip fly down";
 
 				// Action 1.
-				keys[5].key = KeyCode.Mouse0;
-				keys[5].defaultKey = KeyCode.Mouse0;
-				keys[5].name = "Action 1";
+				Keys[5].AssignedKey = KeyCode.Mouse0;
+				Keys[5].DefaultKey = KeyCode.Mouse0;
+				Keys[5].Name = "Action 1";
 
 				// Action 2.
-				keys[6].key = KeyCode.Mouse1;
-				keys[6].defaultKey = KeyCode.Mouse1;
-				keys[6].name = "Action 2";
+				Keys[6].AssignedKey = KeyCode.Mouse1;
+				Keys[6].DefaultKey = KeyCode.Mouse1;
+				Keys[6].Name = "Action 2";
 
 				// Action 3.
-				keys[7].key = KeyCode.E;
-				keys[7].defaultKey = KeyCode.E;
-				keys[7].name = "Action 3";
+				Keys[7].AssignedKey = KeyCode.E;
+				Keys[7].DefaultKey = KeyCode.E;
+				Keys[7].Name = "Action 3";
 
 				// Action 4.
-				keys[8].key = KeyCode.R;
-				keys[8].defaultKey = KeyCode.R;
-				keys[8].name = "Action 4";
+				Keys[8].AssignedKey = KeyCode.R;
+				Keys[8].DefaultKey = KeyCode.R;
+				Keys[8].Name = "Action 4";
 
 				// Action 5.
-				keys[9].key = KeyCode.F;
-				keys[9].defaultKey = KeyCode.F;
-				keys[9].name = "Action 5";
+				Keys[9].AssignedKey = KeyCode.F;
+				Keys[9].DefaultKey = KeyCode.F;
+				Keys[9].Name = "Action 5";
 
 				// Up.
-				keys[10].key = KeyCode.UpArrow;
-				keys[10].defaultKey = KeyCode.UpArrow;
-				keys[10].name = "Up";
+				Keys[10].AssignedKey = KeyCode.UpArrow;
+				Keys[10].DefaultKey = KeyCode.UpArrow;
+				Keys[10].Name = "Up";
 
 				// Down.
-				keys[11].key = KeyCode.DownArrow;
-				keys[11].defaultKey = KeyCode.DownArrow;
-				keys[11].name = "Down";
+				Keys[11].AssignedKey = KeyCode.DownArrow;
+				Keys[11].DefaultKey = KeyCode.DownArrow;
+				Keys[11].Name = "Down";
 
 				// Left.
-				keys[12].key = KeyCode.LeftArrow;
-				keys[12].defaultKey = KeyCode.LeftArrow;
-				keys[12].name = "Left";
+				Keys[12].AssignedKey = KeyCode.LeftArrow;
+				Keys[12].DefaultKey = KeyCode.LeftArrow;
+				Keys[12].Name = "Left";
 
 				// Right.
-				keys[13].key = KeyCode.RightArrow;
-				keys[13].defaultKey = KeyCode.RightArrow;
-				keys[13].name = "Right";
+				Keys[13].AssignedKey = KeyCode.RightArrow;
+				Keys[13].DefaultKey = KeyCode.RightArrow;
+				Keys[13].Name = "Right";
 
 				// Select.
-				keys[14].key = KeyCode.Return;
-				keys[14].defaultKey = KeyCode.Return;
-				keys[14].name = "Select";
+				Keys[14].AssignedKey = KeyCode.Return;
+				Keys[14].DefaultKey = KeyCode.Return;
+				Keys[14].Name = "Select";
 
 				// Action 6.
-				keys[15].key = KeyCode.V;
-				keys[15].defaultKey = KeyCode.V;
-				keys[15].name = "Action 6";
+				Keys[15].AssignedKey = KeyCode.V;
+				Keys[15].DefaultKey = KeyCode.V;
+				Keys[15].Name = "Action 6";
 			}
 			catch (Exception ex)
 			{
@@ -167,7 +167,7 @@ namespace MultiTool.Services
 			try
 			{
 				// Load the keybinds from the config.
-				keys = MultiTool.Configuration.GetKeybinds(keys);
+				Keys = MultiTool.Configuration.GetKeybinds(Keys);
 			}
 			catch (Exception ex)
 			{
@@ -182,7 +182,7 @@ namespace MultiTool.Services
 		/// <returns>The key</returns>
 		public Key GetKeyByAction(int action)
 		{
-			return keys.Where(k => k.action == action).FirstOrDefault();
+			return Keys.Where(k => k.Action == action).FirstOrDefault();
 		}
 
 		/// <summary>
@@ -192,7 +192,7 @@ namespace MultiTool.Services
 		/// <returns>Prettified key string</returns>
 		public string GetPrettyName(int action)
 		{
-			KeyCode key = GetKeyByAction(action).key;
+			KeyCode key = GetKeyByAction(action).AssignedKey;
 
 			switch (key)
 			{
@@ -234,7 +234,7 @@ namespace MultiTool.Services
 				int action = actions[i];
 				Key key = GetKeyByAction(action);
 
-				GUILayout.Label($"{key.name} - Current ({key.key}) - Default ({keys[action].defaultKey})", _labelStyle);
+				GUILayout.Label($"{key.Name} - Current ({key.AssignedKey}) - Default ({Keys[action].DefaultKey})", _labelStyle);
 
 				GUILayout.BeginHorizontal();
 				GUILayout.FlexibleSpace();
@@ -252,7 +252,7 @@ namespace MultiTool.Services
 				if (GUILayout.Button("Reset"))
 				{
 					key.Reset();
-					MultiTool.Configuration.UpdateKeybinds(keys);
+					MultiTool.Configuration.UpdateKeybinds(Keys);
 				}
 				GUILayout.FlexibleSpace();
 				GUILayout.EndHorizontal();
@@ -272,7 +272,7 @@ namespace MultiTool.Services
 						{
 							key.Set(keyCode);
 							_rebindAction = -1;
-							MultiTool.Configuration.UpdateKeybinds(keys);
+							MultiTool.Configuration.UpdateKeybinds(Keys);
 						}
 					}
 				}
