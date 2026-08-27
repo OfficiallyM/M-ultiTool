@@ -257,7 +257,8 @@ namespace MultiTool.UI
 			sliderColour = RenderColourPalette(maxWidth, sliderColour);
 			GUILayout.EndVertical();
 
-			SetColour(sliderColour);
+			if (inputColour == null)
+				SetColour(sliderColour);
 
 			return sliderColour;
 		}
