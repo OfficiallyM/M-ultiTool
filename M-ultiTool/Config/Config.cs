@@ -12,8 +12,8 @@ namespace MultiTool.Config
 {
 	internal class Configuration
 	{
-		private ConfigSerializable config = new ConfigSerializable();
-		private string configPath = string.Empty;
+		private ConfigSerializable _config = new ConfigSerializable();
+		private string _configPath = string.Empty;
 
 		/// <summary>
 		/// Load the config from the config file.
@@ -24,14 +24,14 @@ namespace MultiTool.Config
 			try
 			{
 				// Config already loaded, return early.
-				if (config == new ConfigSerializable()) return;
+				if (_config == new ConfigSerializable()) return;
 
-				if (File.Exists(configPath))
+				if (File.Exists(_configPath))
 				{
-					string json = File.ReadAllText(configPath);
+					string json = File.ReadAllText(_configPath);
 					MemoryStream ms = new MemoryStream(Encoding.UTF8.GetBytes(json));
 					DataContractJsonSerializer jsonSerializer = new DataContractJsonSerializer(typeof(ConfigSerializable));
-					config = jsonSerializer.ReadObject(ms) as ConfigSerializable;
+					_config = jsonSerializer.ReadObject(ms) as ConfigSerializable;
 					ms.Close();
 				}
 			}
@@ -47,18 +47,18 @@ namespace MultiTool.Config
 		/// <param name="path">The config file path</param>
 		public void SetConfigPath(string path)
 		{
-			configPath = path;
+			_configPath = path;
 			loadFromConfigFile();
 		}
 
-        /// <summary>
-        /// Update config version.
-        /// </summary>
-        public void UpdateVersion()
-        {
-            config.version = MultiTool.mod.Version;
-            Commit();
-        }
+		/// <summary>
+		/// Update config version.
+		/// </summary>
+		public void UpdateVersion()
+		{
+			_config.Version = MultiTool.mod.Version;
+			Commit();
+		}
 
 		/// <summary>
 		/// Update the config file keybinds
@@ -66,7 +66,7 @@ namespace MultiTool.Config
 		/// <param name="binds">The new keybinds</param>
 		public void UpdateKeybinds(List<Keybinds.Key> binds)
 		{
-			config.keybinds = binds;
+			_config.Keybinds = binds;
 			Commit();
 		}
 
@@ -76,7 +76,7 @@ namespace MultiTool.Config
 		/// <param name="width">The new scrollbar width</param>
 		public void UpdateScrollWidth(float width)
 		{
-			config.scrollWidth = width;
+			_config.ScrollWidth = width;
 			Commit();
 		}
 
@@ -86,7 +86,7 @@ namespace MultiTool.Config
 		/// <param name="mode">The accessibility mode to set</param>
 		public void UpdateAccessibilityMode(int mode)
 		{
-			config.accessibility = mode;
+			_config.Accessibility = mode;
 			Commit();
 		}
 
@@ -96,7 +96,7 @@ namespace MultiTool.Config
 		/// <param name="accessibilityModeAffectsColor">Whether accessibility mode affects color labels</param>
 		public void UpdateAccessibilityModeAffectsColor(bool accessibilityModeAffectsColor)
 		{
-			config.accessibilityModeAffectsColor = accessibilityModeAffectsColor;
+			_config.AccessibilityModeAffectsColor = accessibilityModeAffectsColor;
 			Commit();
 		}
 
@@ -106,7 +106,7 @@ namespace MultiTool.Config
 		/// <param name="factor">The new factor</param>
 		public void UpdateNoclipFastMoveFactor(float factor)
 		{
-			config.noclipFastMoveFactor = factor;
+			_config.NoclipFastMoveFactor = factor;
 			Commit();
 		}
 
@@ -116,31 +116,31 @@ namespace MultiTool.Config
 		/// <param name="palette">New palette</param>
 		public void UpdatePalette(List<Color> palette)
 		{
-			config.palette = palette;
+			_config.Palette = palette;
 			Commit();
 		}
 
-        /// <summary>
-        /// Get collider colour from config.
-        /// </summary>
-        /// <param name="color">New color</param>
-        /// <param name="colliderType">Collider type</param>
-        public void UpdateColliderColour(Color color, string colliderType)
-        {
-            switch (colliderType)
-            {
-                case "basic":
-                    config.basicColliderColor = color;
-                    break;
-                case "trigger":
-                    config.triggerColliderColor = color;
-                    break;
-                case "interior":
-                    config.interiorColliderColor = color;
-                    break;
-            }
-            Commit();
-        }
+		/// <summary>
+		/// Get collider colour from config.
+		/// </summary>
+		/// <param name="color">New color</param>
+		/// <param name="colliderType">Collider type</param>
+		public void UpdateColliderColour(Color color, string colliderType)
+		{
+			switch (colliderType)
+			{
+				case "basic":
+					_config.BasicColliderColor = color;
+					break;
+				case "trigger":
+					_config.TriggerColliderColor = color;
+					break;
+				case "interior":
+					_config.InteriorColliderColor = color;
+					break;
+			}
+			Commit();
+		}
 
 		/// <summary>
 		/// Update active theme.
@@ -148,20 +148,20 @@ namespace MultiTool.Config
 		/// <param name="theme">New active theme name</param>
 		public void UpdateTheme(string theme)
 		{
-			config.theme = theme;
+			_config.Theme = theme;
 			Commit();
 		}
 
-        /// <summary>
-        /// Get config version.
-        /// </summary>
-        /// <returns></returns>
-        public string GetVersion()
-        {
-            loadFromConfigFile();
+		/// <summary>
+		/// Get config version.
+		/// </summary>
+		/// <returns></returns>
+		public string GetVersion()
+		{
+			loadFromConfigFile();
 
-            return config.version;
-        }
+			return _config.Version;
+		}
 
 		/// <summary>
 		/// Get keybinds from the config file
@@ -171,21 +171,21 @@ namespace MultiTool.Config
 		{
 			loadFromConfigFile();
 
-			if (config.keybinds == null || config.keybinds.Count == 0)
+			if (_config.Keybinds == null || _config.Keybinds.Count == 0)
 				// No keybinds in config, write the defaults.
 				UpdateKeybinds(defaultBinds);
-			else if (config.keybinds.Count < defaultBinds.Count)
+			else if (_config.Keybinds.Count < defaultBinds.Count)
 			{
 				// Config is missing binds, update missing ones with defaults.
-				List<Keybinds.Key> missing = defaultBinds.Where(k => !config.keybinds.Any(x => x.action == k.action)).ToList();
+				List<Keybinds.Key> missing = defaultBinds.Where(k => !_config.Keybinds.Any(x => x.action == k.action)).ToList();
 				foreach (Keybinds.Key key in missing)
 				{
-					config.keybinds.Add(key);
+					_config.Keybinds.Add(key);
 				}
-				UpdateKeybinds(config.keybinds);
+				UpdateKeybinds(_config.Keybinds);
 			}
 
-			return config.keybinds;
+			return _config.Keybinds;
 		}
 
 		/// <summary>
@@ -196,12 +196,12 @@ namespace MultiTool.Config
 		{
 			loadFromConfigFile();
 
-			if (config.scrollWidth == 0)
+			if (_config.ScrollWidth == 0)
 			{
 				UpdateScrollWidth(defaultScrollWidth);
 			}
 
-			return config.scrollWidth;
+			return _config.ScrollWidth;
 		}
 
 		/// <summary>
@@ -212,7 +212,7 @@ namespace MultiTool.Config
 		{
 			loadFromConfigFile();
 
-			return config.accessibility;
+			return _config.Accessibility;
 		}
 
 		/// <summary>
@@ -224,12 +224,12 @@ namespace MultiTool.Config
 			loadFromConfigFile();
 
 			// Populate from default if not set in config.
-			if (config.accessibilityModeAffectsColor == null)
+			if (_config.AccessibilityModeAffectsColor == null)
 			{
 				UpdateAccessibilityModeAffectsColor(defaultAccessibilityModeAffectsColor);
 			}
 
-			return config.accessibilityModeAffectsColor.GetValueOrDefault();
+			return _config.AccessibilityModeAffectsColor.GetValueOrDefault();
 		}
 
 		/// <summary>
@@ -240,12 +240,12 @@ namespace MultiTool.Config
 		{
 			loadFromConfigFile();
 
-			if (config.noclipFastMoveFactor == 0)
+			if (_config.NoclipFastMoveFactor == 0)
 			{
 				UpdateNoclipFastMoveFactor(defaultFactor);
 			}
 
-			return config.noclipFastMoveFactor;
+			return _config.NoclipFastMoveFactor;
 		}
 
 		/// <summary>
@@ -257,38 +257,38 @@ namespace MultiTool.Config
 		{
 			loadFromConfigFile();
 
-			if (config.palette == null || config.palette.Count == 0)
+			if (_config.Palette == null || _config.Palette.Count == 0)
 				// No palette, set default.
-				config.palette = defaultPalette;
+				_config.Palette = defaultPalette;
 
-			return config.palette;
+			return _config.Palette;
 		}
 
-        /// <summary>
-        /// Get collider colour from config.
-        /// </summary>
-        /// <param name="colliderType">Collider type</param>
-        /// <returns>Color for that collider type or white if it doesn't exist</returns>
-        public Color GetColliderColour(string colliderType)
-        {
-            loadFromConfigFile();
+		/// <summary>
+		/// Get collider colour from config.
+		/// </summary>
+		/// <param name="colliderType">Collider type</param>
+		/// <returns>Color for that collider type or white if it doesn't exist</returns>
+		public Color GetColliderColour(string colliderType)
+		{
+			loadFromConfigFile();
 
-            if (config.basicColliderColor == null) config.basicColliderColor = new Color(1f, 0.0f, 0.0f, 0.8f);
-            if (config.triggerColliderColor == null) config.triggerColliderColor = new Color(0.0f, 1f, 0.0f, 0.8f);
-            if (config.interiorColliderColor == null) config.interiorColliderColor = new Color(0f, 0f, 1f, 0.8f);
+			if (_config.BasicColliderColor == null) _config.BasicColliderColor = new Color(1f, 0.0f, 0.0f, 0.8f);
+			if (_config.TriggerColliderColor == null) _config.TriggerColliderColor = new Color(0.0f, 1f, 0.0f, 0.8f);
+			if (_config.InteriorColliderColor == null) _config.InteriorColliderColor = new Color(0f, 0f, 1f, 0.8f);
 
-            switch (colliderType)
-            {
-                case "basic":
-                    return config.basicColliderColor.Value;
-                case "trigger":
-                    return config.triggerColliderColor.Value;
-                case "interior":
-                    return config.interiorColliderColor.Value;
-            }
+			switch (colliderType)
+			{
+				case "basic":
+					return _config.BasicColliderColor.Value;
+				case "trigger":
+					return _config.TriggerColliderColor.Value;
+				case "interior":
+					return _config.InteriorColliderColor.Value;
+			}
 
-            return Color.white;
-        }
+			return Color.white;
+		}
 
 		/// <summary>
 		/// Get active theme name.
@@ -299,10 +299,10 @@ namespace MultiTool.Config
 		{
 			loadFromConfigFile();
 
-			if (config.theme == null)
-				config.theme = name;
+			if (_config.Theme == null)
+				_config.Theme = name;
 
-			return config.theme;
+			return _config.Theme;
 		}
 
 		/// <summary>
@@ -310,7 +310,7 @@ namespace MultiTool.Config
 		/// </summary>
 		private void Commit()
 		{
-			if (configPath == string.Empty)
+			if (_configPath == string.Empty)
 			{
 				Logger.Log("Config path not found", Logger.LogLevel.Error);
 				return;
@@ -320,8 +320,8 @@ namespace MultiTool.Config
 			{
 				MemoryStream ms = new MemoryStream();
 				DataContractJsonSerializer jsonSerializer = new DataContractJsonSerializer(typeof(ConfigSerializable));
-				jsonSerializer.WriteObject(ms, config);
-				using (FileStream file = new FileStream(configPath, FileMode.Create, FileAccess.Write))
+				jsonSerializer.WriteObject(ms, _config);
+				using (FileStream file = new FileStream(_configPath, FileMode.Create, FileAccess.Write))
 				{
 					ms.WriteTo(file);
 					ms.Dispose();

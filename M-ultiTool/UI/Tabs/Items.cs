@@ -1,12 +1,12 @@
-﻿using MultiTool.Utilities;
+﻿using MultiTool.Database;
+using MultiTool.Extensions;
+using MultiTool.Services;
+using MultiTool.Utilities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
-using MultiTool.Extensions;
 using Logger = MultiTool.Services.Logger;
-using MultiTool.Services;
-using MultiTool.Database;
 
 namespace MultiTool.UI.Tabs
 {
@@ -18,98 +18,98 @@ namespace MultiTool.UI.Tabs
 		public override string ConfigTitle => _configTitle;
 
 
-        // Scroll vectors.
-        private Vector2 _itemScrollPosition;
-        private Vector2 _configScrollPosition;
-        private Vector2 _filterScrollPosition;
+		// Scroll vectors.
+		private Vector2 _itemScrollPosition;
+		private Vector2 _configScrollPosition;
+		private Vector2 _filterScrollPosition;
 
-        // Main tab variables.
-        private Rect _dimensions;
+		// Main tab variables.
+		private Rect _dimensions;
 		private bool _filterShow = false;
 		private List<int> _filters = new List<int>();
-        private string _search = string.Empty;
+		private string _search = string.Empty;
 		private string _lastSearch = string.Empty;
 		private float _lastWidth = 0;
-        private int _lastRowLength = 0;
-        private List<List<Item>> _itemsChunked = new List<List<Item>>();
-        private bool _rechunk = false;
+		private int _lastRowLength = 0;
+		private List<List<Item>> _itemsChunked = new List<List<Item>>();
+		private bool _rechunk = false;
 
-        // Config variables.
-        private int _maxFuelType = 0;
-        private int _maxCondition = 0;
-        private int _condition = 0;
-        private int _fuelMixes = 1;
-        private List<float> _fuelValues = new List<float> { -1f };
-        private List<int> _fuelTypes = new List<int> { -1 };
-        private string _plate = string.Empty;
+		// Config variables.
+		private int _maxFuelType = 0;
+		private int _maxCondition = 0;
+		private int _condition = 0;
+		private int _fuelMixes = 1;
+		private List<float> _fuelValues = new List<float> { -1f };
+		private List<int> _fuelTypes = new List<int> { -1 };
+		private string _plate = string.Empty;
 
 		private bool _showSpawnHistory = false;
 
 		public override void OnRegister()
-        {
-            _maxFuelType = (int)Enum.GetValues(typeof(mainscript.fluidenum)).Cast<mainscript.fluidenum>().Max();
-            _maxCondition = (int)Enum.GetValues(typeof(Item.Condition)).Cast<Item.Condition>().Max();
-        }
+		{
+			_maxFuelType = (int)Enum.GetValues(typeof(mainscript.fluidenum)).Cast<mainscript.fluidenum>().Max();
+			_maxCondition = (int)Enum.GetValues(typeof(Item.Condition)).Cast<Item.Condition>().Max();
+		}
 
-        public override void OnUnregister()
-        {
-            _fuelValues.Clear();
-            _fuelTypes.Clear();
-        }
+		public override void OnUnregister()
+		{
+			_fuelValues.Clear();
+			_fuelTypes.Clear();
+		}
 
-        public override void Update()
-        {
-            List<Item> items = GUIRenderer.items;
-            if (_search != _lastSearch)
-            {
-                items = GUIRenderer.items.Where(i => i.gameObject.name.ToLower().Contains(_search.ToLower())).ToList();
-                _rechunk = true;
+		public override void Update()
+		{
+			List<Item> items = GUIRenderer.items;
+			if (_search != _lastSearch)
+			{
+				items = GUIRenderer.items.Where(i => i.gameObject.name.ToLower().Contains(_search.ToLower())).ToList();
+				_rechunk = true;
 				_lastSearch = _search;
 				_itemScrollPosition = new Vector2(0, 0);
-            }
+			}
 
-            if (_filters.Count > 0 && _rechunk)
-            {
-                items = items.Where(v => _filters.Contains(v.category)).ToList();
-                _rechunk = true;
-                _itemScrollPosition = new Vector2(0, 0);
-            }
+			if (_filters.Count > 0 && _rechunk)
+			{
+				items = items.Where(v => _filters.Contains(v.category)).ToList();
+				_rechunk = true;
+				_itemScrollPosition = new Vector2(0, 0);
+			}
 
-            float width = _dimensions.width;
-            if (_filterShow)
-                width -= 200f;
+			float width = _dimensions.width;
+			if (_filterShow)
+				width -= 200f;
 
-            int rowLength = Mathf.FloorToInt(width / 150f);
-            if (_lastRowLength != rowLength || _rechunk)
-            {
-                _itemsChunked = items.ChunkBy(rowLength);
-                _lastRowLength = rowLength;
-                _lastWidth = rowLength * 150f;
+			int rowLength = Mathf.FloorToInt(width / 150f);
+			if (_lastRowLength != rowLength || _rechunk)
+			{
+				_itemsChunked = items.ChunkBy(rowLength);
+				_lastRowLength = rowLength;
+				_lastWidth = rowLength * 150f;
 
-                _rechunk = false;
-            }
+				_rechunk = false;
+			}
 
 			_configTitle = _showSpawnHistory ? "Spawn history" : "Configuration";
 		}
 
-        public override void RenderTab(Rect dimensions)
-        {
-            _dimensions = dimensions;
+		public override void RenderTab(Rect dimensions)
+		{
+			_dimensions = dimensions;
 
-            GUILayout.BeginArea(dimensions);
-            GUILayout.BeginVertical();
-            GUILayout.BeginHorizontal();
-            GUILayout.Label("Search:", GUILayout.MaxWidth(50));
-            GUILayout.Space(5);
-            _search = GUILayout.TextField(_search, GUILayout.MaxWidth(500));
-            GUILayout.Space(5);
-            if (GUILayout.Button("Reset", GUILayout.MaxWidth(70)))
-            {
-                _search = string.Empty;
+			GUILayout.BeginArea(dimensions);
+			GUILayout.BeginVertical();
+			GUILayout.BeginHorizontal();
+			GUILayout.Label("Search:", GUILayout.MaxWidth(50));
+			GUILayout.Space(5);
+			_search = GUILayout.TextField(_search, GUILayout.MaxWidth(500));
+			GUILayout.Space(5);
+			if (GUILayout.Button("Reset", GUILayout.MaxWidth(70)))
+			{
+				_search = string.Empty;
 				_lastSearch = string.Empty;
 				_rechunk = true;
-            }
-            GUILayout.FlexibleSpace();
+			}
+			GUILayout.FlexibleSpace();
 
 			GUILayout.FlexibleSpace();
 
@@ -122,22 +122,22 @@ namespace MultiTool.UI.Tabs
 			GUILayout.Space(10);
 
 			if (GUILayout.Button("Filters", GUILayout.Width(200)))
-            {
-                _filterShow = !_filterShow;
-                _rechunk = true;
-            }
+			{
+				_filterShow = !_filterShow;
+				_rechunk = true;
+			}
 
-            GUILayout.EndHorizontal();
-            GUILayout.Space(10);
+			GUILayout.EndHorizontal();
+			GUILayout.Space(10);
 
-            GUILayout.BeginHorizontal();
-            _itemScrollPosition = GUILayout.BeginScrollView(_itemScrollPosition);
-            GUILayout.BeginVertical(GUILayout.MaxWidth(_lastWidth));
-            foreach (List<Item> itemsRow in _itemsChunked)
-            {
-                GUILayout.BeginHorizontal();
-                foreach (Item item in itemsRow)
-                {
+			GUILayout.BeginHorizontal();
+			_itemScrollPosition = GUILayout.BeginScrollView(_itemScrollPosition);
+			GUILayout.BeginVertical(GUILayout.MaxWidth(_lastWidth));
+			foreach (List<Item> itemsRow in _itemsChunked)
+			{
+				GUILayout.BeginHorizontal();
+				foreach (Item item in itemsRow)
+				{
 					// An item is broken, remove it from the list and trigger a rechunk
 					// to avoid gaps in the layout.
 					if (item.gameObject == null)
@@ -147,12 +147,12 @@ namespace MultiTool.UI.Tabs
 						break;
 					}
 
-                    GUILayout.Box("", "button", GUILayout.Width(140), GUILayout.Height(140));
-                    Rect boxRect = GUILayoutUtility.GetLastRect();
-                    bool buttonImage = GUI.Button(new Rect(boxRect.x + 10f, boxRect.y - 10f, boxRect.width - 20f, boxRect.height - 20f), item.thumbnail, "ButtonTransparent");
-                    bool buttonText = GUI.Button(new Rect(boxRect.x, boxRect.y + (boxRect.height / 2), boxRect.width, boxRect.height / 2), item.gameObject?.name ?? "Unknown", "ButtonTransparent");
-                    if (buttonImage || buttonText)
-                    {
+					GUILayout.Box("", "button", GUILayout.Width(140), GUILayout.Height(140));
+					Rect boxRect = GUILayoutUtility.GetLastRect();
+					bool buttonImage = GUI.Button(new Rect(boxRect.x + 10f, boxRect.y - 10f, boxRect.width - 20f, boxRect.height - 20f), item.thumbnail, "ButtonTransparent");
+					bool buttonText = GUI.Button(new Rect(boxRect.x, boxRect.y + (boxRect.height / 2), boxRect.width, boxRect.height / 2), item.gameObject?.name ?? "Unknown", "ButtonTransparent");
+					if (buttonImage || buttonText)
+					{
 						GameObject spawned = SpawnUtilities.Spawn(new Item()
 						{
 							gameObject = item.gameObject,
@@ -167,45 +167,45 @@ namespace MultiTool.UI.Tabs
 
 						if (spawned != null)
 							GUIRenderer.spawnedObjects.Add(spawned);
-                    }
-                    GUILayout.Space(5);
-                }
-                GUILayout.EndHorizontal();
-                GUILayout.Space(5);
-            }
-            GUILayout.EndVertical();
-            GUILayout.EndScrollView();
-            if (_filterShow)
-            {
-                GUILayout.FlexibleSpace();
-                GUILayout.BeginVertical(GUILayout.MaxWidth(205));
-                _filterScrollPosition = GUILayout.BeginScrollView(_filterScrollPosition);
-                for (int i = 0; i < GUIRenderer.categories.Count; i++)
-                {
-                    string name = GUIRenderer.categories.ElementAt(i).Key;
-                    if (GUILayout.Button(Accessibility.GetAccessibleString(name, _filters.Contains(i))))
-                    {
-                        if (_filters.Contains(i))
-                            _filters.Remove(i);
-                        else
-                            _filters.Add(i);
-                        _rechunk = true;
+					}
+					GUILayout.Space(5);
+				}
+				GUILayout.EndHorizontal();
+				GUILayout.Space(5);
+			}
+			GUILayout.EndVertical();
+			GUILayout.EndScrollView();
+			if (_filterShow)
+			{
+				GUILayout.FlexibleSpace();
+				GUILayout.BeginVertical(GUILayout.MaxWidth(205));
+				_filterScrollPosition = GUILayout.BeginScrollView(_filterScrollPosition);
+				for (int i = 0; i < GUIRenderer.categories.Count; i++)
+				{
+					string name = GUIRenderer.categories.ElementAt(i).Key;
+					if (GUILayout.Button(Accessibility.GetAccessibleString(name, _filters.Contains(i))))
+					{
+						if (_filters.Contains(i))
+							_filters.Remove(i);
+						else
+							_filters.Add(i);
+						_rechunk = true;
 
-                        _itemScrollPosition = new Vector2(0, 0);
-                    }
-                }
-                GUILayout.EndScrollView();
-                GUILayout.EndVertical();
-            }
-            GUILayout.EndHorizontal();
-            GUILayout.EndVertical();
-            GUILayout.EndArea();
+						_itemScrollPosition = new Vector2(0, 0);
+					}
+				}
+				GUILayout.EndScrollView();
+				GUILayout.EndVertical();
+			}
+			GUILayout.EndHorizontal();
+			GUILayout.EndVertical();
+			GUILayout.EndArea();
 		}
 
-        public override void RenderConfigPane(Rect dimensions)
-        {
-            GUILayout.BeginArea(dimensions);
-            GUILayout.BeginVertical();
+		public override void RenderConfigPane(Rect dimensions)
+		{
+			GUILayout.BeginArea(dimensions);
+			GUILayout.BeginVertical();
 			GUILayout.Space(10);
 			_configScrollPosition = GUILayout.BeginScrollView(_configScrollPosition);
 
@@ -372,9 +372,9 @@ namespace MultiTool.UI.Tabs
 				GUILayout.Space(10);
 			}
 
-            GUILayout.EndScrollView();
-            GUILayout.EndVertical();
-            GUILayout.EndArea();
-        }
-    }
+			GUILayout.EndScrollView();
+			GUILayout.EndVertical();
+			GUILayout.EndArea();
+		}
+	}
 }

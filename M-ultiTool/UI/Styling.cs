@@ -8,27 +8,27 @@ using Logger = MultiTool.Services.Logger;
 
 namespace MultiTool.UI
 {
-    internal static class Styling
-    {
-        private static bool _hasInitialised = false;
+	internal static class Styling
+	{
+		private static bool _hasInitialised = false;
 		private static GUISkin _baseSkin;
-        private static GUISkin _skin;
+		private static GUISkin _skin;
 		private static Themes _themes = new Themes();
 		private static Theme _activeTheme;
 		private static Theme _editingTheme;
 
 		private static string _path;
 
-        // GUI styles.
-        private static GUIStyle _buttonStyle;
+		// GUI styles.
+		private static GUIStyle _buttonStyle;
 
-        // Core textures.
-        private static Texture2D _black;
-        private static Texture2D _blackHover;
+		// Core textures.
+		private static Texture2D _black;
+		private static Texture2D _blackHover;
 		private static Texture2D _white;
 		private static Texture2D _whiteHover;
 		private static Texture2D _grey;
-        private static Texture2D _transparent;
+		private static Texture2D _transparent;
 		private static Texture2D _green;
 		private static Texture2D _orange;
 		private static Texture2D _red;
@@ -46,9 +46,9 @@ namespace MultiTool.UI
 		}
 
 		public static void Bootstrap()
-        {
-            if (!_hasInitialised)
-            {
+		{
+			if (!_hasInitialised)
+			{
 				_baseSkin = CreateSkin(GUI.skin, null);
 
 				// Add default themes.
@@ -117,7 +117,7 @@ namespace MultiTool.UI
 				CreateThemeTextures();
 				LoadSelectedTheme();
 				_hasInitialised = true;
-            }
+			}
 		}
 
 		/// <summary>

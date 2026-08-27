@@ -17,133 +17,133 @@ namespace MultiTool.Database
 		private static List<Vehicle> vehiclesCache = new List<Vehicle>();
 		private static List<Item> itemsCache = new List<Item>();
 		private static List<POI> POIsCache = new List<POI>();
-        private static Assembly amtAssembly;
-        private static IEnumerable amtItems;
-        private static bool hasAmtSetupRan = false;
+		private static Assembly amtAssembly;
+		private static IEnumerable amtItems;
+		private static bool hasAmtSetupRan = false;
 
-        /// <summary>
-        /// Initial AMT database parsing.
-        /// </summary>
-        /// <returns>True if loaded correctly, otherwise false</returns>
-        private static bool AMTSetup()
-        {
-            if (amtItems != null) return true;
+		/// <summary>
+		/// Initial AMT database parsing.
+		/// </summary>
+		/// <returns>True if loaded correctly, otherwise false</returns>
+		private static bool AMTSetup()
+		{
+			if (amtItems != null) return true;
 
-            if (hasAmtSetupRan) return amtItems != null;
+			if (hasAmtSetupRan) return amtItems != null;
 
-            // Load AMT database.
-            Mod amt = ModLoader.LoadedMods.Where(m => m.ID == "AdvancedModdingToolkit").FirstOrDefault();
-            if (amt != null)
-            {
-                Version amtVersion = new Version(amt.Version);
-                if (amtVersion.CompareTo(new Version("0.3.0.0")) >= 0)
-                {
-                    try
-                    {
-                        amtAssembly = amt.GetType().Assembly;
-                        Type database = amtAssembly.GetType("Amt.Database");
-                        Type modItem = amtAssembly.GetType("Amt.ModItem");
-                        PropertyInfo instanceProp = database.GetProperty("Instance", BindingFlags.Static | BindingFlags.Public);
-                        object instance = instanceProp.GetValue(database, null);
-                        amtItems = instance.GetType().GetProperty("Items", BindingFlags.Instance | BindingFlags.Public).GetValue(instance, null) as IEnumerable;
-                        return true;
-                    }
-                    catch (Exception ex)
-                    {
-                        Logger.Log($"Error occurred loading AMT items. Details: {ex}", Logger.LogLevel.Error);
-                    }
-                }
-                else
-                    Logger.Log("Outdated AMT version, please update for it to support M-ultiTool.", Logger.LogLevel.Error);
-            }
+			// Load AMT database.
+			Mod amt = ModLoader.LoadedMods.Where(m => m.ID == "AdvancedModdingToolkit").FirstOrDefault();
+			if (amt != null)
+			{
+				Version amtVersion = new Version(amt.Version);
+				if (amtVersion.CompareTo(new Version("0.3.0.0")) >= 0)
+				{
+					try
+					{
+						amtAssembly = amt.GetType().Assembly;
+						Type database = amtAssembly.GetType("Amt.Database");
+						Type modItem = amtAssembly.GetType("Amt.ModItem");
+						PropertyInfo instanceProp = database.GetProperty("Instance", BindingFlags.Static | BindingFlags.Public);
+						object instance = instanceProp.GetValue(database, null);
+						amtItems = instance.GetType().GetProperty("Items", BindingFlags.Instance | BindingFlags.Public).GetValue(instance, null) as IEnumerable;
+						return true;
+					}
+					catch (Exception ex)
+					{
+						Logger.Log($"Error occurred loading AMT items. Details: {ex}", Logger.LogLevel.Error);
+					}
+				}
+				else
+					Logger.Log("Outdated AMT version, please update for it to support M-ultiTool.", Logger.LogLevel.Error);
+			}
 
-            hasAmtSetupRan = true;
-            return false;
-        }
+			hasAmtSetupRan = true;
+			return false;
+		}
 
-        /// <summary>
-        /// Load all AMT vehicles.
-        /// </summary>
-        /// <returns>List of vehicles</returns>
-        private static List<Vehicle> LoadAMTVehicles()
-        {
-            List<Vehicle> amtVehicles = new List<Vehicle>();
-            if (AMTSetup())
-            {
-                foreach (var item in amtItems)
-                {
-                    string key = item.GetType().GetProperty("Key").GetValue(item, null) as string;
-                    try
-                    {
-                        object value = item.GetType().GetProperty("Value").GetValue(item, null);
-                        MethodInfo spawn = value.GetType().GetMethod("ManualSpawn", BindingFlags.Instance | BindingFlags.Public);
-                        GameObject gameObject = value.GetType().GetProperty("GameObject", BindingFlags.Instance | BindingFlags.Public).GetValue(value, null) as GameObject;
+		/// <summary>
+		/// Load all AMT vehicles.
+		/// </summary>
+		/// <returns>List of vehicles</returns>
+		private static List<Vehicle> LoadAMTVehicles()
+		{
+			List<Vehicle> amtVehicles = new List<Vehicle>();
+			if (AMTSetup())
+			{
+				foreach (object item in amtItems)
+				{
+					string key = item.GetType().GetProperty("Key").GetValue(item, null) as string;
+					try
+					{
+						object value = item.GetType().GetProperty("Value").GetValue(item, null);
+						MethodInfo spawn = value.GetType().GetMethod("ManualSpawn", BindingFlags.Instance | BindingFlags.Public);
+						GameObject gameObject = value.GetType().GetProperty("GameObject", BindingFlags.Instance | BindingFlags.Public).GetValue(value, null) as GameObject;
 
-                        Type controllerType = amtAssembly.GetType("Amt.Vehicles.VehicleController");
-                        var controller = gameObject.GetComponent(controllerType);
-                        if (controller != null)
-                        {
-                            AMTData data = new AMTData()
-                            {
-                                modItem = value,
-                                spawnMethod = spawn,
-                            };
+						Type controllerType = amtAssembly.GetType("Amt.Vehicles.VehicleController");
+						Component controller = gameObject.GetComponent(controllerType);
+						if (controller != null)
+						{
+							AMTData data = new AMTData()
+							{
+								modItem = value,
+								spawnMethod = spawn,
+							};
 
-                            amtVehicles.Add(new Vehicle() { gameObject = gameObject, name = key, thumbnail = ThumbnailGenerator.GetThumbnail(gameObject), amt = data });
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        Logger.Log($"Error occurred loading AMT vehicle {key}. Details: {ex}", Logger.LogLevel.Error);
-                    }
-                }
-            }
+							amtVehicles.Add(new Vehicle() { gameObject = gameObject, name = key, thumbnail = ThumbnailGenerator.GetThumbnail(gameObject), amt = data });
+						}
+					}
+					catch (Exception ex)
+					{
+						Logger.Log($"Error occurred loading AMT vehicle {key}. Details: {ex}", Logger.LogLevel.Error);
+					}
+				}
+			}
 
-            return amtVehicles;
-        }
+			return amtVehicles;
+		}
 
-        /// <summary>
-        /// Load all AMT items.
-        /// </summary>
-        /// <returns>List of items</returns>
-        private static List<Item> LoadAMTItems()
-        {
-            List<Item> items = new List<Item>();
-            if (AMTSetup())
-            {
-                int category = GUIRenderer.categories.Keys.ToList().IndexOf("Mod items");
+		/// <summary>
+		/// Load all AMT items.
+		/// </summary>
+		/// <returns>List of items</returns>
+		private static List<Item> LoadAMTItems()
+		{
+			List<Item> items = new List<Item>();
+			if (AMTSetup())
+			{
+				int category = GUIRenderer.categories.Keys.ToList().IndexOf("Mod items");
 
-                foreach (var item in amtItems)
-                {
-                    string key = item.GetType().GetProperty("Key").GetValue(item, null) as string;
-                    try
-                    {
-                        object value = item.GetType().GetProperty("Value").GetValue(item, null);
-                        MethodInfo spawn = value.GetType().GetMethod("ManualSpawn", BindingFlags.Instance | BindingFlags.Public);
-                        GameObject gameObject = value.GetType().GetProperty("GameObject", BindingFlags.Instance | BindingFlags.Public).GetValue(value, null) as GameObject;
+				foreach (object item in amtItems)
+				{
+					string key = item.GetType().GetProperty("Key").GetValue(item, null) as string;
+					try
+					{
+						object value = item.GetType().GetProperty("Value").GetValue(item, null);
+						MethodInfo spawn = value.GetType().GetMethod("ManualSpawn", BindingFlags.Instance | BindingFlags.Public);
+						GameObject gameObject = value.GetType().GetProperty("GameObject", BindingFlags.Instance | BindingFlags.Public).GetValue(value, null) as GameObject;
 
-                        Type controllerType = amtAssembly.GetType("Amt.Vehicles.VehicleController");
-                        var controller = gameObject.GetComponent(controllerType);
-                        if (controller == null)
-                        {
-                            AMTData data = new AMTData()
-                            {
-                                modItem = value,
-                                spawnMethod = spawn,
-                            };
+						Type controllerType = amtAssembly.GetType("Amt.Vehicles.VehicleController");
+						Component controller = gameObject.GetComponent(controllerType);
+						if (controller == null)
+						{
+							AMTData data = new AMTData()
+							{
+								modItem = value,
+								spawnMethod = spawn,
+							};
 
-                            items.Add(new Item() { gameObject = gameObject, thumbnail = ThumbnailGenerator.GetThumbnail(gameObject), amt = data, category = category });
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        Logger.Log($"Error occurred loading AMT item {key}. Details: {ex}", Logger.LogLevel.Error);
-                    }
-                }
-            }
+							items.Add(new Item() { gameObject = gameObject, thumbnail = ThumbnailGenerator.GetThumbnail(gameObject), amt = data, category = category });
+						}
+					}
+					catch (Exception ex)
+					{
+						Logger.Log($"Error occurred loading AMT item {key}. Details: {ex}", Logger.LogLevel.Error);
+					}
+				}
+			}
 
-            return items;
-        }
+			return items;
+		}
 
 		/// <summary>
 		/// Load all vehicles and generate thumbnails
@@ -200,10 +200,10 @@ namespace MultiTool.Database
 				}
 			}
 
-            // Populate with AMT vehicles.
-            vehiclesCache.AddRange(LoadAMTVehicles());
+			// Populate with AMT vehicles.
+			vehiclesCache.AddRange(LoadAMTVehicles());
 
-            return vehiclesCache;
+			return vehiclesCache;
 		}
 
 		/// <summary>
@@ -232,13 +232,13 @@ namespace MultiTool.Database
 				}
 			}
 
-            // Populate with AMT items.
-            itemsCache.AddRange(LoadAMTItems());
+			// Populate with AMT items.
+			itemsCache.AddRange(LoadAMTItems());
 
 			// Populate with mod items.
 			itemsCache.AddRange(LoadModItems());
 
-            return itemsCache;
+			return itemsCache;
 		}
 
 		internal static List<Item> LoadModItems()

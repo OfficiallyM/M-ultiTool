@@ -3,13 +3,12 @@ using MultiTool.Save;
 using System.Collections.Generic;
 using UnityEngine;
 using static mainscript;
-using Logger = MultiTool.Services.Logger;
 
 namespace MultiTool.UI.Tabs.VehicleConfiguration
 {
-    internal sealed class FluidsTab : UI.VehicleConfigurationTab
+	internal sealed class FluidsTab : UI.VehicleConfigurationTab
 	{
-        public override string Name => "Fluids";
+		public override string Name => "Fluids";
 		public override bool HasCache => true;
 
 		private Vector2 _position;
@@ -44,10 +43,10 @@ namespace MultiTool.UI.Tabs.VehicleConfiguration
 					}
 				}
 
-                if (createMix)
-                {
+				if (createMix)
+				{
 					List<FluidPercentage> defaults = new List<FluidPercentage>();
-					foreach (FluidPercentage fluidDefault in GUIRenderer.fluidDefaults) 
+					foreach (FluidPercentage fluidDefault in GUIRenderer.fluidDefaults)
 					{
 						defaults.Add(fluidDefault.Clone());
 					}
@@ -62,7 +61,7 @@ namespace MultiTool.UI.Tabs.VehicleConfiguration
 					ResetToTank(newMix);
 
 					_fluids.Add(newMix);
-                }
+				}
 
 				bool createTank = true;
 				foreach (TankCapacity tankCapacity in _tanks)
@@ -278,7 +277,7 @@ namespace MultiTool.UI.Tabs.VehicleConfiguration
 		private void ResetToTank(FluidMix mix)
 		{
 			// Copy amounts from tank as default value.
-			foreach (var tankFluid in mix.tank.F.fluids)
+			foreach (fluid tankFluid in mix.tank.F.fluids)
 			{
 				foreach (FluidPercentage mixFluid in mix.fluids)
 				{

@@ -53,7 +53,7 @@ namespace MultiTool.Services
 					string json = File.ReadAllText(file);
 					MemoryStream ms = new MemoryStream(Encoding.UTF8.GetBytes(json));
 					DataContractJsonSerializer jsonSerializer = new DataContractJsonSerializer(typeof(Translate));
-					var config = jsonSerializer.ReadObject(ms) as Translate;
+					Translate config = jsonSerializer.ReadObject(ms) as Translate;
 					ms.Close();
 
 					_translations.Add(Path.GetFileNameWithoutExtension(file), config);
@@ -73,7 +73,7 @@ namespace MultiTool.Services
 		/// <returns>Translated object name or untranslated name if no translation is found</returns>
 		public static string T(string objectName, string type, int? variant = null)
 		{
-            string defaultObjectName = objectName;
+			string defaultObjectName = objectName;
 
 			// Fallback to English if the current language isn't supported.
 			if (!_translations.ContainsKey(_language))
@@ -83,14 +83,14 @@ namespace MultiTool.Services
 
 			if (_translations.ContainsKey(_language))
 			{
-                Translate config = _translations[_language];
-                List<Translatable> translate = null;
+				Translate config = _translations[_language];
+				List<Translatable> translate = null;
 
-                // Find translation list for type.
+				// Find translation list for type.
 				switch (type)
 				{
 					case "vehicle":
-                        translate = config.vehicles;
+						translate = config.vehicles;
 						break;
 					case "POI":
 						translate = config.POIs;
@@ -100,33 +100,33 @@ namespace MultiTool.Services
 						break;
 				}
 
-                // Attempt to find the translation.
-                if (translate != null)
-                {
-                    foreach (Translatable translatable in translate)
-                    {
-                        if (translatable.objectName == objectName)
-                        {
-                            if (variant != null && variant != -1)
-                            {
-                                if (translatable.variant == variant)
-                                {
-                                    objectName = translatable.name;
-                                    break;
-                                }
-                            }
-                            else
-                            {
-                                objectName = translatable.name;
-                                break;
-                            }
-                        }
-                    }
-                }
+				// Attempt to find the translation.
+				if (translate != null)
+				{
+					foreach (Translatable translatable in translate)
+					{
+						if (translatable.objectName == objectName)
+						{
+							if (variant != null && variant != -1)
+							{
+								if (translatable.variant == variant)
+								{
+									objectName = translatable.name;
+									break;
+								}
+							}
+							else
+							{
+								objectName = translatable.name;
+								break;
+							}
+						}
+					}
+				}
 			}
 
-            // No translation and has a variant, just append the variant number.
-            if (defaultObjectName == objectName && variant != null && variant != -1)
+			// No translation and has a variant, just append the variant number.
+			if (defaultObjectName == objectName && variant != null && variant != -1)
 			{
 				objectName += $" (Variant {variant.GetValueOrDefault()})";
 			}

@@ -8,16 +8,16 @@ namespace MultiTool.Config
 	[DataContract]
 	internal class ConfigSerializable
 	{
-        [DataMember] public string version { get; set; }
-		[DataMember] public List<Key> keybinds { get; set; }
-		[DataMember] public float scrollWidth { get; set; }
-		[DataMember] public int accessibility { get; set; }
-		[DataMember] public bool? accessibilityModeAffectsColor { get; set; }
-		[DataMember] public float noclipFastMoveFactor { get; set; }
-		[DataMember] public List<Color> palette { get; set; }
-        [DataMember] public Color? basicColliderColor { get; set; }
-        [DataMember] public Color? triggerColliderColor { get; set; }
-        [DataMember] public Color? interiorColliderColor { get; set; }
-		[DataMember] public string theme { get; set; }
-    }
+		[DataMember(Name = "version")] public string Version { get; set; }
+		[DataMember(Name = "keybinds")] public List<Key> Keybinds { get; set; }
+		[DataMember(Name = "scrollWidth")] public float ScrollWidth { get; set; }
+		[DataMember(Name = "accessibility")] public int Accessibility { get; set; }
+		[DataMember(Name = "accessibilityModeAffectsColor")] public bool? AccessibilityModeAffectsColor { get; set; }
+		[DataMember(Name = "noclipFastMoveFactor")] public float NoclipFastMoveFactor { get; set; }
+		[DataMember(Name = "palette")] public List<Color> Palette { get; set; }
+		[DataMember(Name = "basicColliderColor")] public Color? BasicColliderColor { get; set; }
+		[DataMember(Name = "triggerColliderColor")] public Color? TriggerColliderColor { get; set; }
+		[DataMember(Name = "interiorColliderColor")] public Color? InteriorColliderColor { get; set; }
+		[DataMember(Name = "theme")] public string Theme { get; set; }
+	}
 }

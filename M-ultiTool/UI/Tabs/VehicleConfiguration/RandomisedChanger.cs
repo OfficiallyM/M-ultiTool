@@ -4,9 +4,9 @@ using UnityEngine;
 
 namespace MultiTool.UI.Tabs.VehicleConfiguration
 {
-    internal sealed class RandomisedChangerTab : UI.VehicleConfigurationTab
+	internal sealed class RandomisedChangerTab : UI.VehicleConfigurationTab
 	{
-        public override string Name => "Randomised Changer";
+		public override string Name => "Randomised Changer";
 		public override bool HasCache => true;
 
 		private Vector2 _position;

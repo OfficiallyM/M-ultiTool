@@ -10,7 +10,6 @@ using System.IO;
 using System.Linq;
 using TLDLoader;
 using UnityEngine;
-using Logger = MultiTool.Services.Logger;
 
 namespace MultiTool
 {
@@ -21,10 +20,10 @@ namespace MultiTool
 		public override string Name => "M-ultiTool";
 		public override string Author => "M-";
 		public override string Version => "5.0.0-DEV";
-        public override bool LoadInMenu => true;
+		public override bool LoadInMenu => true;
 
-        // Modules.
-        internal static GUIRenderer Renderer;
+		// Modules.
+		internal static GUIRenderer Renderer;
 
 		// Named Context, not Services - "Services" already resolves to the MultiTool.Services
 		// namespace from inside this class (see the Services.Logger.* calls below), so a field
@@ -36,7 +35,7 @@ namespace MultiTool
 		internal static Configuration Configuration => Context.Configuration;
 
 		internal static Mod mod;
-        internal static string configVersion;
+		internal static string configVersion;
 		internal static bool isOnMainMenu = true;
 
 		public MultiTool()
@@ -50,7 +49,7 @@ namespace MultiTool
 				ThumbnailGenerator.Init();
 
 				Context = new ServiceContext(new Configuration(), new Keybinds(), new ModState());
-                Renderer = new GUIRenderer(Context);
+				Renderer = new GUIRenderer(Context);
 			}
 			catch (Exception ex)
 			{
@@ -61,22 +60,22 @@ namespace MultiTool
 		// Override functions.
 		public override void OnMenuLoad()
 		{
-            // Set the configuration path.
-            Configuration.SetConfigPath(Path.Combine(ModLoader.GetModConfigFolder(this), "Config.json"));
+			// Set the configuration path.
+			Configuration.SetConfigPath(Path.Combine(ModLoader.GetModConfigFolder(this), "Config.json"));
 
-            configVersion = Configuration.GetVersion();
-            Configuration.UpdateVersion();
+			configVersion = Configuration.GetVersion();
+			Configuration.UpdateVersion();
 			isOnMainMenu = true;
 
 			Renderer.OnMenuLoad();
-        }
+		}
 
 		public override void OnGUI()
 		{
 			Renderer.OnGUI();
 		}
 
-        public override void OnLoad()
+		public override void OnLoad()
 		{
 			Translator.SetLanguage(mainscript.M.menu.language.languageNames[mainscript.M.menu.language.selectedLanguage]);
 			isOnMainMenu = false;
@@ -90,7 +89,7 @@ namespace MultiTool
 
 		public override void Update()
 		{
-            Renderer.Update();
+			Renderer.Update();
 
 			// Delete mode.
 			if (Context.State.DeleteMode)
@@ -99,7 +98,7 @@ namespace MultiTool
 				{
 					if (Input.GetKeyDown(Binds.GetKeyByAction((int)Keybinds.Inputs.deleteMode).key) && mainscript.M.player.seat == null)
 					{
-						Physics.Raycast(mainscript.M.player.Cam.transform.position, mainscript.M.player.Cam.transform.forward, out var raycastHit, float.PositiveInfinity, mainscript.M.player.useLayer);
+						Physics.Raycast(mainscript.M.player.Cam.transform.position, mainscript.M.player.Cam.transform.forward, out RaycastHit raycastHit, float.PositiveInfinity, mainscript.M.player.useLayer);
 
 						// Require objects to have a tosaveitemscript in order to delete them.
 						// This prevents players from deleting the world, buildings and other
@@ -128,7 +127,7 @@ namespace MultiTool
 				case "colorPicker":
 					if (Input.GetKeyDown(Binds.GetKeyByAction((int)Keybinds.Inputs.action1).key) && !Renderer.show)
 					{
-						Physics.Raycast(mainscript.M.player.Cam.transform.position, mainscript.M.player.Cam.transform.forward, out var raycastHit, float.PositiveInfinity, mainscript.M.player.useLayer);
+						Physics.Raycast(mainscript.M.player.Cam.transform.position, mainscript.M.player.Cam.transform.forward, out RaycastHit raycastHit, float.PositiveInfinity, mainscript.M.player.useLayer);
 						GameObject hitGameObject = raycastHit.transform.gameObject;
 						partconditionscript part = hitGameObject.GetComponent<partconditionscript>();
 						sprayscript spray = hitGameObject.GetComponent<sprayscript>();
@@ -159,7 +158,7 @@ namespace MultiTool
 
 					if (Input.GetKeyDown(Binds.GetKeyByAction((int)Keybinds.Inputs.action2).key) && !Renderer.show)
 					{
-						Physics.Raycast(mainscript.M.player.Cam.transform.position, mainscript.M.player.Cam.transform.forward, out var raycastHit, float.PositiveInfinity, mainscript.M.player.useLayer);
+						Physics.Raycast(mainscript.M.player.Cam.transform.position, mainscript.M.player.Cam.transform.forward, out RaycastHit raycastHit, float.PositiveInfinity, mainscript.M.player.useLayer);
 						GameObject hitGameObject = raycastHit.transform.gameObject;
 						partconditionscript part = hitGameObject.transform.root.GetComponent<partconditionscript>();
 						sprayscript spray = hitGameObject.transform.root.GetComponent<sprayscript>();
@@ -179,29 +178,29 @@ namespace MultiTool
 				case "scale":
 					if (!Renderer.show)
 					{
-                        // Select object.
-                        if (Input.GetKeyDown(Binds.GetKeyByAction((int)Keybinds.Inputs.action1).key))
-                        {
-                            Physics.Raycast(mainscript.M.player.Cam.transform.position, mainscript.M.player.Cam.transform.forward, out var raycastHit, float.PositiveInfinity, mainscript.M.player.useLayer);
-                            if (raycastHit.collider != null && raycastHit.collider.gameObject != null)
-                            {
-                                GameObject hitGameObject = raycastHit.collider.transform.gameObject;
+						// Select object.
+						if (Input.GetKeyDown(Binds.GetKeyByAction((int)Keybinds.Inputs.action1).key))
+						{
+							Physics.Raycast(mainscript.M.player.Cam.transform.position, mainscript.M.player.Cam.transform.forward, out RaycastHit raycastHit, float.PositiveInfinity, mainscript.M.player.useLayer);
+							if (raycastHit.collider != null && raycastHit.collider.gameObject != null)
+							{
+								GameObject hitGameObject = raycastHit.collider.transform.gameObject;
 
-                                // Recurse upwards to find a tosaveitemscript.
-                                tosaveitemscript save = hitGameObject.GetComponentInParent<tosaveitemscript>();
+								// Recurse upwards to find a tosaveitemscript.
+								tosaveitemscript save = hitGameObject.GetComponentInParent<tosaveitemscript>();
 
-                                // Can't find the tosaveitemscript, return early.
-                                if (save == null)
-                                {
-                                    GUIRenderer.selectedObject = null;
-                                    return;
-                                }
+								// Can't find the tosaveitemscript, return early.
+								if (save == null)
+								{
+									GUIRenderer.selectedObject = null;
+									return;
+								}
 
-                                GUIRenderer.selectedObject = save;
-                                return;
-                            }
-                            GUIRenderer.selectedObject = null;
-                        }
+								GUIRenderer.selectedObject = save;
+								return;
+							}
+							GUIRenderer.selectedObject = null;
+						}
 
 						if (GUIRenderer.selectedObject != null)
 						{
@@ -223,19 +222,19 @@ namespace MultiTool
 								switch (GUIRenderer.axis)
 								{
 									case "all":
-                                        GUIRenderer.selectedObject.transform.localScale = new Vector3(scale.x + scaleValue, scale.y + scaleValue, scale.z + scaleValue);
+										GUIRenderer.selectedObject.transform.localScale = new Vector3(scale.x + scaleValue, scale.y + scaleValue, scale.z + scaleValue);
 										break;
 									case "x":
 										scale.x += scaleValue;
-                                        GUIRenderer.selectedObject.transform.localScale = scale;
+										GUIRenderer.selectedObject.transform.localScale = scale;
 										break;
 									case "y":
 										scale.y += scaleValue;
-                                        GUIRenderer.selectedObject.transform.localScale = scale;
+										GUIRenderer.selectedObject.transform.localScale = scale;
 										break;
 									case "z":
 										scale.z += scaleValue;
-                                        GUIRenderer.selectedObject.transform.localScale = scale;
+										GUIRenderer.selectedObject.transform.localScale = scale;
 										break;
 								}
 								update = true;
@@ -250,19 +249,19 @@ namespace MultiTool
 								switch (GUIRenderer.axis)
 								{
 									case "all":
-                                        GUIRenderer.selectedObject.transform.localScale = new Vector3(scale.x - scaleValue, scale.y - scaleValue, scale.z - scaleValue);
+										GUIRenderer.selectedObject.transform.localScale = new Vector3(scale.x - scaleValue, scale.y - scaleValue, scale.z - scaleValue);
 										break;
 									case "x":
 										scale.x -= scaleValue;
-                                        GUIRenderer.selectedObject.transform.localScale = scale;
+										GUIRenderer.selectedObject.transform.localScale = scale;
 										break;
 									case "y":
 										scale.y -= scaleValue;
-                                        GUIRenderer.selectedObject.transform.localScale = scale;
+										GUIRenderer.selectedObject.transform.localScale = scale;
 										break;
 									case "z":
 										scale.z -= scaleValue;
-                                        GUIRenderer.selectedObject.transform.localScale = scale;
+										GUIRenderer.selectedObject.transform.localScale = scale;
 										break;
 								}
 								update = true;
@@ -275,19 +274,19 @@ namespace MultiTool
 								switch (GUIRenderer.axis)
 								{
 									case "all":
-                                        GUIRenderer.selectedObject.transform.localScale = new Vector3(1, 1, 1);
+										GUIRenderer.selectedObject.transform.localScale = new Vector3(1, 1, 1);
 										break;
 									case "x":
 										scale.x = 1;
-                                        GUIRenderer.selectedObject.transform.localScale = scale;
+										GUIRenderer.selectedObject.transform.localScale = scale;
 										break;
 									case "y":
 										scale.y = 1;
-                                        GUIRenderer.selectedObject.transform.localScale = scale;
+										GUIRenderer.selectedObject.transform.localScale = scale;
 										break;
 									case "z":
 										scale.z = 1;
-                                        GUIRenderer.selectedObject.transform.localScale = scale;
+										GUIRenderer.selectedObject.transform.localScale = scale;
 										break;
 								}
 								update = true;
@@ -335,7 +334,7 @@ namespace MultiTool
 					// Select object.
 					if (Input.GetKeyDown(Binds.GetKeyByAction((int)Keybinds.Inputs.action1).key))
 					{
-						Physics.Raycast(mainscript.M.player.Cam.transform.position, mainscript.M.player.Cam.transform.forward, out var raycastHit, float.PositiveInfinity, mainscript.M.player.useLayer);
+						Physics.Raycast(mainscript.M.player.Cam.transform.position, mainscript.M.player.Cam.transform.forward, out RaycastHit raycastHit, float.PositiveInfinity, mainscript.M.player.useLayer);
 						if (raycastHit.collider != null && raycastHit.collider.gameObject != null)
 						{
 							GameObject hitGameObject = raycastHit.collider.transform.gameObject;
@@ -423,7 +422,7 @@ namespace MultiTool
 					// Select object.
 					if (Input.GetKeyDown(Binds.GetKeyByAction((int)Keybinds.Inputs.action1).key))
 					{
-						Physics.Raycast(mainscript.M.player.Cam.transform.position, mainscript.M.player.Cam.transform.forward, out var raycastHit, float.PositiveInfinity, mainscript.M.player.useLayer);
+						Physics.Raycast(mainscript.M.player.Cam.transform.position, mainscript.M.player.Cam.transform.forward, out RaycastHit raycastHit, float.PositiveInfinity, mainscript.M.player.useLayer);
 						if (raycastHit.collider != null && raycastHit.collider.gameObject != null)
 						{
 							GameObject hitGameObject = raycastHit.collider.transform.gameObject;

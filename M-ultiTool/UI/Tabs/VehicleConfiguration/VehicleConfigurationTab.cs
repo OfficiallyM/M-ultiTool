@@ -1,5 +1,4 @@
 ﻿using UnityEngine;
-using Logger = MultiTool.Services.Logger;
 
 namespace MultiTool.UI.Tabs.VehicleConfiguration
 {
@@ -9,11 +8,11 @@ namespace MultiTool.UI.Tabs.VehicleConfiguration
 
 		private TabController _tabs;
 
-        private Vector2 _position;
-        
-        private int lastCarId = 0;
+		private Vector2 _position;
 
-        public override void OnRegister()
+		private int _lastCarId = 0;
+
+		public override void OnRegister()
 		{
 			_tabs = new TabController(Services);
 			_tabs.AddTab(new BasicsTab());
@@ -35,9 +34,9 @@ namespace MultiTool.UI.Tabs.VehicleConfiguration
 
 		public override void RenderTab(Rect dimensions)
 		{
-            float tabX = dimensions.x + 10f;
-            float tabY = dimensions.y + 10f;
-            float tabWidth = (dimensions.width - 20f) * 0.11f;
+			float tabX = dimensions.x + 10f;
+			float tabY = dimensions.y + 10f;
+			float tabWidth = (dimensions.width - 20f) * 0.11f;
 
 			if (mainscript.M.player.Car == null)
 			{
@@ -52,9 +51,9 @@ namespace MultiTool.UI.Tabs.VehicleConfiguration
 			carscript car = mainscript.M.player.Car;
 			tosaveitemscript save = car.GetComponent<tosaveitemscript>();
 
-            // Reset any selections when changing car.
-            if (save.idInSave != lastCarId)
-            {
+			// Reset any selections when changing car.
+			if (save.idInSave != _lastCarId)
+			{
 				for (int tabIndex = 0; tabIndex < _tabs.GetCount(); tabIndex++)
 				{
 					UI.VehicleConfigurationTab tab = _tabs.GetByIndex<UI.VehicleConfigurationTab>(tabIndex);
@@ -62,8 +61,8 @@ namespace MultiTool.UI.Tabs.VehicleConfiguration
 				}
 			}
 
-            GUILayout.BeginArea(new Rect(tabX, tabY, tabWidth, dimensions.height - 20f));
-            GUILayout.BeginVertical("box");
+			GUILayout.BeginArea(new Rect(tabX, tabY, tabWidth, dimensions.height - 20f));
+			GUILayout.BeginVertical("box");
 
 			_position = GUILayout.BeginScrollView(_position);
 
@@ -83,13 +82,13 @@ namespace MultiTool.UI.Tabs.VehicleConfiguration
 
 				GUI.enabled = true;
 			}
-            GUILayout.EndScrollView();
-            GUILayout.EndVertical();
-            GUILayout.EndArea();
+			GUILayout.EndScrollView();
+			GUILayout.EndVertical();
+			GUILayout.EndArea();
 
 			_tabs.RenderTab(dimensions: new Rect(tabX + tabWidth + 10f, tabY, dimensions.width - tabWidth - 10f, dimensions.height - 20f));
 
-            lastCarId = save.idInSave;
+			_lastCarId = save.idInSave;
 		}
 	}
 }

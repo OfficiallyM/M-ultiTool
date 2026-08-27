@@ -1,11 +1,11 @@
-﻿using MultiTool.Utilities;
+﻿using MultiTool.Extensions;
+using MultiTool.Save;
+using MultiTool.Utilities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using static mainscript;
-using MultiTool.Extensions;
-using MultiTool.Save;
 
 namespace MultiTool.UI.Tabs.VehicleConfiguration
 {
@@ -470,7 +470,7 @@ namespace MultiTool.UI.Tabs.VehicleConfiguration
 
 				_sidebarPosition = GUILayout.BeginScrollView(_sidebarPosition);
 
-				foreach (var tune in SaveUtilities.GetTunesByType("engine"))
+				foreach (TuningSave tune in SaveUtilities.GetTunesByType("engine"))
 				{
 					GUILayout.BeginVertical("box");
 					GUILayout.Label(tune.name, "LabelSubHeader");

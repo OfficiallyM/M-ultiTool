@@ -1,39 +1,39 @@
-﻿using System;
+﻿using MultiTool.Database;
+using MultiTool.Extensions;
+using MultiTool.Save;
+using MultiTool.Services;
+using MultiTool.UI.Tabs.VehicleConfiguration;
+using MultiTool.Utilities;
+using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.RegularExpressions;
 using TLDLoader;
 using UnityEngine;
-using MultiTool.Extensions;
-using MultiTool.Utilities;
 using UnityEngine.Rendering;
-using System.Text.RegularExpressions;
-using MultiTool.Database;
-using MultiTool.UI.Tabs.VehicleConfiguration;
-using MultiTool.Services;
-using MultiTool.Save;
 using Logger = MultiTool.Services.Logger;
 
 namespace MultiTool.UI
 {
 	internal class GUIRenderer
 	{
-        // Modules.
-        private static ServiceContext _services;
-        internal static TabController Tabs;
+		// Modules.
+		private static ServiceContext _services;
+		internal static TabController Tabs;
 
-        public GUIRenderer(ServiceContext services)
-        {
-            _services = services;
-            Tabs = new TabController(services);
-        }
+		public GUIRenderer(ServiceContext services)
+		{
+			_services = services;
+			Tabs = new TabController(services);
+		}
 
 		// Menu control.
 		internal bool enabled = false;
 		internal bool show = false;
-		private bool menuKeyConsumed = false;
-		private bool loaded = false;
-        internal string settingsTabId = null;
-        internal string creditsTabId = null;
+		private bool _menuKeyConsumed = false;
+		private bool _loaded = false;
+		internal string settingsTabId = null;
+		internal string creditsTabId = null;
 		internal string themeTabId = null;
 		internal string debugTabId = null;
 
@@ -41,11 +41,11 @@ namespace MultiTool.UI
 		internal int resolutionY;
 
 		internal float mainMenuWidth;
-        internal float mainMenuHeight;
-        internal float mainMenuX;
-        internal float mainMenuY;
+		internal float mainMenuHeight;
+		internal float mainMenuX;
+		internal float mainMenuY;
 
-        // Styling.
+		// Styling.
 		internal static GUIStyle labelStyle = new GUIStyle();
 		internal static GUIStyle headerStyle = new GUIStyle()
 		{
@@ -57,16 +57,16 @@ namespace MultiTool.UI
 				textColor = Color.white,
 			}
 		};
-        internal static GUIStyle subHeaderStyle = new GUIStyle()
-        {
-            fontSize = 18,
-            alignment = TextAnchor.UpperLeft,
-            wordWrap = true,
-            normal = new GUIStyleState()
-            {
-                textColor = Color.white,
-            }
-        };
+		internal static GUIStyle subHeaderStyle = new GUIStyle()
+		{
+			fontSize = 18,
+			alignment = TextAnchor.UpperLeft,
+			wordWrap = true,
+			normal = new GUIStyleState()
+			{
+				textColor = Color.white,
+			}
+		};
 		internal static float scrollWidth = 10f;
 		internal static GUIStyle messageStyle = new GUIStyle()
 		{
@@ -78,7 +78,7 @@ namespace MultiTool.UI
 				textColor = Color.white,
 			}
 		};
-		private GUIStyle hudStyle = new GUIStyle()
+		private GUIStyle _hudStyle = new GUIStyle()
 		{
 			fontSize = 20,
 			alignment = TextAnchor.MiddleLeft,
@@ -102,15 +102,15 @@ namespace MultiTool.UI
 		internal static Dictionary<string, List<Type>> categories = new Dictionary<string, List<Type>>()
 		{
 			{ "Vehicle chassis", new List<Type>() { typeof(carscript) } },
-            { "Trailers", new List<Type>() { typeof(utanfutoscript) } },
-            { "Tanks", new List<Type>() { typeof(tankscript) } },
+			{ "Trailers", new List<Type>() { typeof(utanfutoscript) } },
+			{ "Tanks", new List<Type>() { typeof(tankscript) } },
 			{ "Lights", new List<Type>() { typeof(headlightscript) } },
-            { "Engines", new List<Type>() { typeof(enginescript) } },
-            { "Wheels", new List<Type>() { typeof(wheelscript) } },
-            { "Tires", new List<Type>() { typeof(gumiscript) } },
-            { "Dials", new List<Type>() { typeof(meterscript) } },
-            { "Attachables", new List<Type>() { typeof(attachablescript) } },
-            { "Other vehicle parts", new List<Type>() { typeof(attachablescript) } },
+			{ "Engines", new List<Type>() { typeof(enginescript) } },
+			{ "Wheels", new List<Type>() { typeof(wheelscript) } },
+			{ "Tires", new List<Type>() { typeof(gumiscript) } },
+			{ "Dials", new List<Type>() { typeof(meterscript) } },
+			{ "Attachables", new List<Type>() { typeof(attachablescript) } },
+			{ "Other vehicle parts", new List<Type>() { typeof(attachablescript) } },
 			{ "Guns", new List<Type>() { typeof(weaponscript) } },
 			{ "Melee weapons", new List<Type>() { typeof(meleeweaponscript) } },
 			{ "Cleaning", new List<Type>() { typeof(drotkefescript), typeof(spricniscript) } },
@@ -142,25 +142,25 @@ namespace MultiTool.UI
 		// Slot mover variables.
 		internal static GameObject selectedSlot;
 		internal static GameObject hoveredSlot;
-		private static int hoveredSlotIndex = 0;
-		private static int previousHoveredSlotIndex = 0;
-		private static bool slotMoverFirstRun = true;
-		private static Vector3 selectedSlotResetPosition;
-		private static Quaternion selectedSlotResetRotation;
-		private float[] moveOptions = new float[] { 10f, 1f, 0.1f, 0.01f, 0.001f };
-		private float moveValue = 0.1f;
-		private static List<GameObject> slots = new List<GameObject>();
+		private static int _hoveredSlotIndex = 0;
+		private static int _previousHoveredSlotIndex = 0;
+		private static bool _slotMoverFirstRun = true;
+		private static Vector3 _selectedSlotResetPosition;
+		private static Quaternion _selectedSlotResetRotation;
+		private float[] _moveOptions = new float[] { 10f, 1f, 0.1f, 0.01f, 0.001f };
+		private float _moveValue = 0.1f;
+		private static List<GameObject> _slots = new List<GameObject>();
 
 		// Object selection.
 		internal static tosaveitemscript selectedObject;
 
 		// Settings.
 		internal static float settingsScrollWidth;
-        internal static bool accessibilityShow = false;
-        internal static float noclipFastMoveFactor = 10f;
+		internal static bool accessibilityShow = false;
+		internal static float noclipFastMoveFactor = 10f;
 
 		// HUD variables.
-		private GameObject debugObject = null;
+		private GameObject _debugObject = null;
 		internal static string axis = "all";
 		internal static string[] axisOptions = new string[] { "all", "x", "y", "z" };
 		internal static float scaleValue = 0.1f;
@@ -168,48 +168,48 @@ namespace MultiTool.UI
 		internal static bool scaleHold = true;
 
 		internal static float weightValue = 0.1f;
-		internal static float[] weightOptions = new float[] { 100f, 10f, 1f, 0.1f, 0.01f};
+		internal static float[] weightOptions = new float[] { 100f, 10f, 1f, 0.1f, 0.01f };
 		internal static bool weightHold = true;
 
 		// Colour palettes.
 		internal static List<Color> palette = new List<Color>();
-		private static Dictionary<int, GUIStyle> paletteCache = new Dictionary<int, GUIStyle>();
+		private static Dictionary<int, GUIStyle> _paletteCache = new Dictionary<int, GUIStyle>();
 
 		// Main menu variables.
-		private bool mainMenuLoaded = false;
-		private bool stateChanged = false;
-		private Vector2 currentMainMenuPosition;
-		private static string[] mainMenuStages = new string[] { "distance", "vehicle", "basics", "color" };
-		private string mainMenuStage = mainMenuStages[1];
-		private Color? startVehicleColor = null;
-		private int startVehicleCondition = -1;
-		private string startVehiclePlate = string.Empty;
-		private bool appliedStartVehicleChanges = false;
-		private string[] largeVehicles = new string[]
+		private bool _mainMenuLoaded = false;
+		private bool _stateChanged = false;
+		private Vector2 _currentMainMenuPosition;
+		private static string[] _mainMenuStages = new string[] { "distance", "vehicle", "basics", "color" };
+		private string _mainMenuStage = _mainMenuStages[1];
+		private Color? _startVehicleColor = null;
+		private int _startVehicleCondition = -1;
+		private string _startVehiclePlate = string.Empty;
+		private bool _appliedStartVehicleChanges = false;
+		private string[] _largeVehicles = new string[]
 		{
 			"bus01",
 			"bus02",
 			"bus03",
 			"car07",
 			"car09T",
-            "car11",
+			"car11",
 		};
-		private string[] bikes = new string[]
+		private string[] _bikes = new string[]
 		{
 			"bike01",
 			"bike03",
 		};
-		private float distanceDriven;
+		private float _distanceDriven;
 
 		internal void OnGUI()
 		{
-            Styling.Bootstrap();
-            GUI.skin = Styling.GetActiveSkin();
+			Styling.Bootstrap();
+			GUI.skin = Styling.GetActiveSkin();
 
-            // Find screen resolution.
-            resolutionX = Screen.width;
+			// Find screen resolution.
+			resolutionX = Screen.width;
 			resolutionY = Screen.height;
-            int resX = settingsscript.s.S.IResolutionX;
+			int resX = settingsscript.s.S.IResolutionX;
 			int resY = settingsscript.s.S.IResolutionY;
 			if (resX != resolutionX)
 			{
@@ -225,15 +225,15 @@ namespace MultiTool.UI
 			// In game.
 			if (mainscript.M != null)
 			{
-				if (loaded)
-                {
-				    if (!show && !mainscript.M.menu.Menu.activeSelf)
-					    RenderHUD();
+				if (_loaded)
+				{
+					if (!show && !mainscript.M.menu.Menu.activeSelf)
+						RenderHUD();
 
-				    else if (!show && mainscript.M.menu.Menu.activeSelf)
-					    RenderPauseMenu();
+					else if (!show && mainscript.M.menu.Menu.activeSelf)
+						RenderPauseMenu();
 
-				    else if (show)
+					else if (show)
 					{
 						// Override to allow menu to close with text input focused.
 						Event e = Event.current;
@@ -241,12 +241,12 @@ namespace MultiTool.UI
 						{
 							ToggleMenu();
 							e.Use();
-							menuKeyConsumed = true;
+							_menuKeyConsumed = true;
 						}
 
 						MainMenu();
 					}
-                }
+				}
 			}
 			// Main menu.
 			else
@@ -256,23 +256,23 @@ namespace MultiTool.UI
 
 			// Render notifications last to ensure they show above anything else.
 			Notifications.Render();
-            
-            // Reset back to default Unity skin to avoid styling bleeding to other UI mods.
-            GUI.skin = null;
+
+			// Reset back to default Unity skin to avoid styling bleeding to other UI mods.
+			GUI.skin = null;
 		}
 
 		internal void OnLoad()
 		{
 			try
 			{
-				loaded = false;
+				_loaded = false;
 
-                // Unregister tabs so they re-register correctly if already loaded.
-                if (Tabs.GetCount() > 0)
-                    Tabs.UnregisterAll();
+				// Unregister tabs so they re-register correctly if already loaded.
+				if (Tabs.GetCount() > 0)
+					Tabs.UnregisterAll();
 
-                // Ensure UI loads hidden.
-                show = false;
+				// Ensure UI loads hidden.
+				show = false;
 
 				resolutionX = settingsscript.s.S.IResolutionX;
 				resolutionY = settingsscript.s.S.IResolutionY;
@@ -295,13 +295,13 @@ namespace MultiTool.UI
 
 				// Add default hidden tabs.
 				settingsTabId = Tabs.AddTab(new Tabs.SettingsTab());
-                creditsTabId = Tabs.AddTab(new Tabs.CreditsTab());
+				creditsTabId = Tabs.AddTab(new Tabs.CreditsTab());
 				themeTabId = Tabs.AddTab(new Tabs.ThemeTab());
 				debugTabId = Tabs.AddTab(new Tabs.DebugTab());
 
 				// Load data from database.
 				DatabaseUtilities.ClearCaches();
-                vehicles = DatabaseUtilities.LoadVehicles();
+				vehicles = DatabaseUtilities.LoadVehicles();
 				items = DatabaseUtilities.LoadItems();
 				POIs = DatabaseUtilities.LoadPOIs();
 
@@ -353,14 +353,14 @@ namespace MultiTool.UI
 				Notifications.Send(MultiTool.mod.Name, "Critical error occurred. Please report to M-.");
 			}
 
-			loaded = true;
+			_loaded = true;
 		}
 
 		internal void OnMenuLoad()
 		{
 			show = false;
-			loaded = false;
-			mainMenuLoaded = false;
+			_loaded = false;
+			_mainMenuLoaded = false;
 		}
 
 		internal void Update()
@@ -373,10 +373,10 @@ namespace MultiTool.UI
 				return;
 			}
 
-			if (!loaded) return;
+			if (!_loaded) return;
 
-            // Trigger update for tabs and notifications.
-            Tabs.Update();
+			// Trigger update for tabs and notifications.
+			Tabs.Update();
 
 			// Remove any null objects from the spawn history.
 			foreach (GameObject spawned in spawnedObjects)
@@ -388,13 +388,13 @@ namespace MultiTool.UI
 				}
 			}
 
-			if (!menuKeyConsumed && Input.GetKeyDown(MultiTool.Binds.GetKeyByAction((int)Keybinds.Inputs.menu).key) && !mainscript.M.menu.Menu.activeSelf && !mainscript.M.settingsOpen && !mainscript.M.menu.saveScreen.gameObject.activeSelf)
+			if (!_menuKeyConsumed && Input.GetKeyDown(MultiTool.Binds.GetKeyByAction((int)Keybinds.Inputs.menu).key) && !mainscript.M.menu.Menu.activeSelf && !mainscript.M.settingsOpen && !mainscript.M.menu.saveScreen.gameObject.activeSelf)
 				ToggleMenu();
 
 			if (show && !mainscript.M.menu.Menu.activeSelf && Input.GetButtonDown("Cancel"))
 				ToggleMenu(false);
 
-			menuKeyConsumed = false;
+			_menuKeyConsumed = false;
 
 			// Detect item when item debugging is enabled.
 			if (_services.State.ObjectDebug)
@@ -403,7 +403,7 @@ namespace MultiTool.UI
 				{
 					GameObject foundObject = null;
 					// Find object the player is looking at.
-					Physics.Raycast(mainscript.M.player.Cam.transform.position, mainscript.M.player.Cam.transform.forward, out var raycastHit, float.PositiveInfinity, mainscript.M.player.useLayer);
+					Physics.Raycast(mainscript.M.player.Cam.transform.position, mainscript.M.player.Cam.transform.forward, out RaycastHit raycastHit, float.PositiveInfinity, mainscript.M.player.useLayer);
 
 					tosaveitemscript save = raycastHit.transform.gameObject.GetComponent<tosaveitemscript>();
 					if (save != null)
@@ -419,7 +419,7 @@ namespace MultiTool.UI
 					if (mainscript.M.player.inHandP != null)
 						foundObject = mainscript.M.player.inHandP.gameObject;
 
-					debugObject = foundObject;
+					_debugObject = foundObject;
 				}
 				catch (Exception ex)
 				{
@@ -436,7 +436,7 @@ namespace MultiTool.UI
 					{
 						SlotMoverDispose();
 					}
-					else if (slots.Count == 0)
+					else if (_slots.Count == 0)
 					{
 						partslotscript[] partSlots = _services.State.Car.GetComponentsInChildren<partslotscript>();
 						foreach (partslotscript slot in partSlots)
@@ -452,7 +452,7 @@ namespace MultiTool.UI
 								obj = slot.transform.parent.gameObject;
 							}
 
-							slots.Add(obj);
+							_slots.Add(obj);
 						}
 
 						// Find anything that isn't an actual part.
@@ -460,41 +460,41 @@ namespace MultiTool.UI
 						{
 							string name = PrettifySlotName(child.name).ToLower();
 							GameObject parent = child.transform.parent.gameObject;
-                            string parentName = PrettifySlotName(parent.name).ToLower();
-                            string[] mufflers = new string[]
-                            {
-                                "muffler",
-                                "exhaust",
-                            };
+							string parentName = PrettifySlotName(parent.name).ToLower();
+							string[] mufflers = new string[]
+							{
+								"muffler",
+								"exhaust",
+							};
 
 							string[] parentNames = new string[]
 							{
 								"interiorlight",
 								"plate",
-                            };
+							};
 
-                            foreach (string muffler in mufflers)
-                            {
-                                if ((name.Contains(muffler) || parentName.Contains(muffler)) && child.gameObject.activeSelf)
-                                {
-                                    slots.Add(child.gameObject);
-                                }
-                            }
+							foreach (string muffler in mufflers)
+							{
+								if ((name.Contains(muffler) || parentName.Contains(muffler)) && child.gameObject.activeSelf)
+								{
+									_slots.Add(child.gameObject);
+								}
+							}
 
-                            foreach (string parentSlotName in parentNames)
-                            {
-							    if (parentName.Contains(parentSlotName) && parent.activeSelf)
-							    {
-								    slots.Add(parent);
-							    }
-                            }
+							foreach (string parentSlotName in parentNames)
+							{
+								if (parentName.Contains(parentSlotName) && parent.activeSelf)
+								{
+									_slots.Add(parent);
+								}
+							}
 						}
 
 						// Add seat positions.
 						foreach (seatscript seat in _services.State.Car.GetComponentsInChildren<seatscript>())
 						{
 							if (seat.GetComponent<BoxCollider>() == null || seat.name.ToLower().Contains("col")) continue;
-							slots.Add(seat.gameObject);
+							_slots.Add(seat.gameObject);
 						}
 					}
 
@@ -506,33 +506,33 @@ namespace MultiTool.UI
 							bool slotChanged = false;
 
 							// Render collider on first load.
-							if (slotMoverFirstRun)
+							if (_slotMoverFirstRun)
 							{
 								slotChanged = true;
-								hoveredSlot = slots[hoveredSlotIndex];
+								hoveredSlot = _slots[_hoveredSlotIndex];
 							}
 
 							// Move selector left.
 							if (Input.GetKeyDown(MultiTool.Binds.GetKeyByAction((int)Keybinds.Inputs.left).key))
 							{
-								previousHoveredSlotIndex = hoveredSlotIndex;
-								hoveredSlotIndex--;
-								if (hoveredSlotIndex < 0)
-									hoveredSlotIndex = slots.Count - 1;
+								_previousHoveredSlotIndex = _hoveredSlotIndex;
+								_hoveredSlotIndex--;
+								if (_hoveredSlotIndex < 0)
+									_hoveredSlotIndex = _slots.Count - 1;
 
-								hoveredSlot = slots[hoveredSlotIndex];
+								hoveredSlot = _slots[_hoveredSlotIndex];
 								slotChanged = true;
 							}
 
 							// Move selector right.
 							if (Input.GetKeyDown(MultiTool.Binds.GetKeyByAction((int)Keybinds.Inputs.right).key))
 							{
-								previousHoveredSlotIndex = hoveredSlotIndex;
-								hoveredSlotIndex++;
-								if (hoveredSlotIndex >= slots.Count)
-									hoveredSlotIndex = 0;
+								_previousHoveredSlotIndex = _hoveredSlotIndex;
+								_hoveredSlotIndex++;
+								if (_hoveredSlotIndex >= _slots.Count)
+									_hoveredSlotIndex = 0;
 
-								hoveredSlot = slots[hoveredSlotIndex];
+								hoveredSlot = _slots[_hoveredSlotIndex];
 								slotChanged = true;
 							}
 
@@ -542,15 +542,15 @@ namespace MultiTool.UI
 								_services.State.SlotStage = "move";
 								selectedSlot = hoveredSlot;
 
-								selectedSlotResetPosition = selectedSlot.transform.localPosition;
-								selectedSlotResetRotation = selectedSlot.transform.localRotation;
+								_selectedSlotResetPosition = selectedSlot.transform.localPosition;
+								_selectedSlotResetRotation = selectedSlot.transform.localRotation;
 
 								// Get reset positions from save data.
 								SlotData slotData = SaveUtilities.GetSlotData(carSave.idInSave, selectedSlot.name);
 								if (slotData != null)
 								{
-									selectedSlotResetPosition = slotData.resetPosition;
-									selectedSlotResetRotation = slotData.resetRotation;
+									_selectedSlotResetPosition = slotData.resetPosition;
+									_selectedSlotResetRotation = slotData.resetRotation;
 								}
 
 								SlotMoverSelectDispose();
@@ -562,13 +562,13 @@ namespace MultiTool.UI
 							{
 								ObjectUtilities.ShowColliders(hoveredSlot, Color.red);
 
-								if (!slotMoverFirstRun)
+								if (!_slotMoverFirstRun)
 								{
-									GameObject previousSlot = slots[previousHoveredSlotIndex];
+									GameObject previousSlot = _slots[_previousHoveredSlotIndex];
 
 									ObjectUtilities.DestroyColliders(previousSlot);
 								}
-								slotMoverFirstRun = false;
+								_slotMoverFirstRun = false;
 							}
 							break;
 						case "move":
@@ -576,7 +576,7 @@ namespace MultiTool.UI
 							if (Input.GetKeyDown(MultiTool.Binds.GetKeyByAction((int)Keybinds.Inputs.select).key))
 							{
 								_services.State.SlotStage = "slotSelect";
-								hoveredSlotIndex = Array.FindIndex(slots.ToArray(), s => s.name == selectedSlot.name);
+								_hoveredSlotIndex = Array.FindIndex(_slots.ToArray(), s => s.name == selectedSlot.name);
 								SlotMoverMoveDispose();
 								return;
 							}
@@ -590,11 +590,11 @@ namespace MultiTool.UI
 							// Change move amount.
 							if (Input.GetKeyDown(MultiTool.Binds.GetKeyByAction((int)Keybinds.Inputs.action5).key))
 							{
-								int currentIndex = Array.FindIndex(moveOptions, s => s == moveValue);
-								if (currentIndex == -1 || currentIndex == moveOptions.Length - 1)
-									moveValue = moveOptions[0];
+								int currentIndex = Array.FindIndex(_moveOptions, s => s == _moveValue);
+								if (currentIndex == -1 || currentIndex == _moveOptions.Length - 1)
+									_moveValue = _moveOptions[0];
 								else
-									moveValue = moveOptions[currentIndex + 1];
+									_moveValue = _moveOptions[currentIndex + 1];
 							}
 
 							Transform partTransform = selectedSlot.transform;
@@ -603,43 +603,43 @@ namespace MultiTool.UI
 							// Move forward.
 							if (Input.GetKeyDown(MultiTool.Binds.GetKeyByAction((int)Keybinds.Inputs.up).key))
 							{
-								partTransform.localPosition += Vector3.forward * moveValue;
+								partTransform.localPosition += Vector3.forward * _moveValue;
 							}
 
 							// Move backwards.
 							if (Input.GetKeyDown(MultiTool.Binds.GetKeyByAction((int)Keybinds.Inputs.down).key))
 							{
-								partTransform.localPosition += Vector3.back * moveValue;
+								partTransform.localPosition += Vector3.back * _moveValue;
 							}
 
 							// Move left.
 							if (Input.GetKeyDown(MultiTool.Binds.GetKeyByAction((int)Keybinds.Inputs.left).key))
 							{
-								partTransform.localPosition += Vector3.left * moveValue;
+								partTransform.localPosition += Vector3.left * _moveValue;
 							}
 
 							// Move right.
 							if (Input.GetKeyDown(MultiTool.Binds.GetKeyByAction((int)Keybinds.Inputs.right).key))
 							{
-								partTransform.localPosition += Vector3.right * moveValue;
+								partTransform.localPosition += Vector3.right * _moveValue;
 							}
 
 							// Move up.
 							if (Input.GetKeyDown(MultiTool.Binds.GetKeyByAction((int)Keybinds.Inputs.noclipSpeedUp).key))
 							{
-								partTransform.localPosition += Vector3.up * moveValue;
+								partTransform.localPosition += Vector3.up * _moveValue;
 							}
 
 							// Move down.
 							if (Input.GetKeyDown(MultiTool.Binds.GetKeyByAction((int)Keybinds.Inputs.noclipDown).key))
 							{
-								partTransform.localPosition += Vector3.down * moveValue;
+								partTransform.localPosition += Vector3.down * _moveValue;
 							}
 
 							// Reset position.
 							if (Input.GetKeyDown(MultiTool.Binds.GetKeyByAction((int)Keybinds.Inputs.action4).key))
 							{
-								partTransform.localPosition = selectedSlotResetPosition;
+								partTransform.localPosition = _selectedSlotResetPosition;
 							}
 
 							// Check if position has changed.
@@ -650,9 +650,9 @@ namespace MultiTool.UI
 									ID = carSave.idInSave,
 									slot = selectedSlot.name,
 									position = partTransform.localPosition,
-									resetPosition = selectedSlotResetPosition,
+									resetPosition = _selectedSlotResetPosition,
 									rotation = partTransform.localRotation,
-									resetRotation = selectedSlotResetRotation,
+									resetRotation = _selectedSlotResetRotation,
 								};
 								SaveUtilities.UpdateSlot(slotData);
 							}
@@ -663,7 +663,7 @@ namespace MultiTool.UI
 							if (Input.GetKeyDown(MultiTool.Binds.GetKeyByAction((int)Keybinds.Inputs.select).key))
 							{
 								_services.State.SlotStage = "slotSelect";
-								hoveredSlotIndex = Array.FindIndex(slots.ToArray(), s => s.name == selectedSlot.name);
+								_hoveredSlotIndex = Array.FindIndex(_slots.ToArray(), s => s.name == selectedSlot.name);
 								SlotMoverMoveDispose();
 								return;
 							}
@@ -677,11 +677,11 @@ namespace MultiTool.UI
 							// Change move amount.
 							if (Input.GetKeyDown(MultiTool.Binds.GetKeyByAction((int)Keybinds.Inputs.action5).key))
 							{
-								int currentIndex = Array.FindIndex(moveOptions, s => s == moveValue);
-								if (currentIndex == -1 || currentIndex == moveOptions.Length - 1)
-									moveValue = moveOptions[0];
+								int currentIndex = Array.FindIndex(_moveOptions, s => s == _moveValue);
+								if (currentIndex == -1 || currentIndex == _moveOptions.Length - 1)
+									_moveValue = _moveOptions[0];
 								else
-									moveValue = moveOptions[currentIndex + 1];
+									_moveValue = _moveOptions[currentIndex + 1];
 							}
 
 							Transform rotatePartTransform = selectedSlot.transform;
@@ -690,43 +690,43 @@ namespace MultiTool.UI
 							// Rotate forward.
 							if (Input.GetKeyDown(MultiTool.Binds.GetKeyByAction((int)Keybinds.Inputs.up).key))
 							{
-								rotatePartTransform.Rotate(Vector3.right, moveValue);
+								rotatePartTransform.Rotate(Vector3.right, _moveValue);
 							}
 
 							// Rotate backwards.
 							if (Input.GetKeyDown(MultiTool.Binds.GetKeyByAction((int)Keybinds.Inputs.down).key))
 							{
-								rotatePartTransform.Rotate(-Vector3.right, moveValue);
+								rotatePartTransform.Rotate(-Vector3.right, _moveValue);
 							}
 
 							// Rotate left.
 							if (Input.GetKeyDown(MultiTool.Binds.GetKeyByAction((int)Keybinds.Inputs.left).key))
 							{
-								rotatePartTransform.Rotate(-Vector3.forward, moveValue);
+								rotatePartTransform.Rotate(-Vector3.forward, _moveValue);
 							}
 
 							// Rotate right.
 							if (Input.GetKeyDown(MultiTool.Binds.GetKeyByAction((int)Keybinds.Inputs.right).key))
 							{
-								rotatePartTransform.Rotate(Vector3.forward, moveValue);
+								rotatePartTransform.Rotate(Vector3.forward, _moveValue);
 							}
 
 							// Rotate anticlockwise.
 							if (Input.GetKeyDown(MultiTool.Binds.GetKeyByAction((int)Keybinds.Inputs.noclipSpeedUp).key))
 							{
-								rotatePartTransform.Rotate(Vector3.up, moveValue);
+								rotatePartTransform.Rotate(Vector3.up, _moveValue);
 							}
 
 							// Rotate clockwise.
 							if (Input.GetKeyDown(MultiTool.Binds.GetKeyByAction((int)Keybinds.Inputs.noclipDown).key))
 							{
-								rotatePartTransform.Rotate(-Vector3.up, moveValue);
+								rotatePartTransform.Rotate(-Vector3.up, _moveValue);
 							}
 
 							// Reset position.
 							if (Input.GetKeyDown(MultiTool.Binds.GetKeyByAction((int)Keybinds.Inputs.action4).key))
 							{
-								rotatePartTransform.localRotation = selectedSlotResetRotation;
+								rotatePartTransform.localRotation = _selectedSlotResetRotation;
 							}
 
 							// Check if rotation has changed.
@@ -737,9 +737,9 @@ namespace MultiTool.UI
 									ID = carSave.idInSave,
 									slot = selectedSlot.name,
 									position = rotatePartTransform.localPosition,
-									resetPosition = selectedSlotResetPosition,
+									resetPosition = _selectedSlotResetPosition,
 									rotation = rotatePartTransform.localRotation,
-									resetRotation = selectedSlotResetRotation,
+									resetRotation = _selectedSlotResetRotation,
 								};
 								SaveUtilities.UpdateSlot(slotData);
 							}
@@ -829,9 +829,9 @@ namespace MultiTool.UI
 								Color color = MultiTool.Configuration.GetColliderColour("basic");
 								if (componentsInChild.isTrigger)
 									color = MultiTool.Configuration.GetColliderColour("trigger");
-                                if (componentsInChild.gameObject.GetComponent<interiorscript>() != null)
+								if (componentsInChild.gameObject.GetComponent<interiorscript>() != null)
 									color = MultiTool.Configuration.GetColliderColour("interior");
-                                source.SetColor("_Color", color);
+								source.SetColor("_Color", color);
 							}
 							catch
 							{
@@ -844,22 +844,22 @@ namespace MultiTool.UI
 
 			// Apply starter vehicle customisation here as OnLoad() is too early.
 			// Other mods that potentially modify paintable parts won't have loaded yet.
-			if (!appliedStartVehicleChanges && loaded && !ModLoader.loading.activeSelf)
+			if (!_appliedStartVehicleChanges && _loaded && !ModLoader.loading.activeSelf)
 			{
 				try
 				{
 					// Don't apply any new game changes when loading a save.
 					if (mainscript.M.menu.DFMS.load)
 					{
-						appliedStartVehicleChanges = true;
+						_appliedStartVehicleChanges = true;
 						return;
 					}
 
 					GameObject starterVehicle = null;
 					string starterVehicleName = mainscript.M.StartCar.ToString();
-					bool isLargeVehicle = largeVehicles.Contains(starterVehicleName);
-					bool isBike = bikes.Contains(starterVehicleName);
-					foreach (var car in mainscript.M.Cars)
+					bool isLargeVehicle = _largeVehicles.Contains(starterVehicleName);
+					bool isBike = _bikes.Contains(starterVehicleName);
+					foreach (carscript car in mainscript.M.Cars)
 					{
 						if ((isLargeVehicle || isBike) && !car.name.ToLower().Contains("bike"))
 						{
@@ -890,8 +890,8 @@ namespace MultiTool.UI
 						}
 
 						Color color = starterVehicle.GetComponent<partconditionscript>().color;
-						if (startVehicleColor.HasValue)
-							color = startVehicleColor.Value;
+						if (_startVehicleColor.HasValue)
+							color = _startVehicleColor.Value;
 
 						// Destroying the actual starter car doesn't want to cooperate
 						// so drop it out the map instead.
@@ -901,7 +901,7 @@ namespace MultiTool.UI
 						Vehicle vehicle = vehicles.Where(v => v.gameObject.name.ToLower().Contains(starterVehicleName.ToLower())).FirstOrDefault();
 						if (vehicle != null)
 						{
-							finalStarterVehicle = SpawnUtilities.Spawn(vehicle.gameObject, color, startVehicleCondition, -1, position, rotation);
+							finalStarterVehicle = SpawnUtilities.Spawn(vehicle.gameObject, color, _startVehicleCondition, -1, position, rotation);
 						}
 					}
 					else
@@ -909,28 +909,28 @@ namespace MultiTool.UI
 						finalStarterVehicle = starterVehicle;
 
 						// Set starter vehicle colour.
-						if (startVehicleColor.HasValue)
+						if (_startVehicleColor.HasValue)
 						{
 							partconditionscript partconditionscript = finalStarterVehicle.GetComponent<partconditionscript>();
-							GameUtilities.Paint(startVehicleColor.Value, partconditionscript);
+							GameUtilities.Paint(_startVehicleColor.Value, partconditionscript);
 						}
 
 						// Set starter vehicle condition.
-						if (startVehicleCondition != -1)
+						if (_startVehicleCondition != -1)
 						{
 							partconditionscript partconditionscript = finalStarterVehicle.GetComponent<partconditionscript>();
 							List<partconditionscript> children = GameUtilities.FindPartChildren(partconditionscript);
 
 							foreach (partconditionscript child in children)
 							{
-								child.state = startVehicleCondition;
+								child.state = _startVehicleCondition;
 								child.Refresh();
 							}
 						}
 					}
 
 					// Set starter vehicle plate.
-					if (startVehiclePlate != string.Empty)
+					if (_startVehiclePlate != string.Empty)
 					{
 						rendszamscript[] plateScripts = finalStarterVehicle.GetComponentsInChildren<rendszamscript>();
 						foreach (rendszamscript plateScript in plateScripts)
@@ -938,16 +938,16 @@ namespace MultiTool.UI
 							if (plateScript == null)
 								continue;
 
-							plateScript.Same(startVehiclePlate);
+							plateScript.Same(_startVehiclePlate);
 						}
 					}
 
-					appliedStartVehicleChanges = true;
+					_appliedStartVehicleChanges = true;
 				}
 				catch (Exception ex)
 				{
 					Logger.Log($"Error occurred during starter vehicle configuration - {ex}");
-					appliedStartVehicleChanges = true;
+					_appliedStartVehicleChanges = true;
 				}
 			}
 		}
@@ -968,7 +968,7 @@ namespace MultiTool.UI
 			mainscript.M.SetCursorVisible(show);
 			mainscript.M.menu.gameObject.SetActive(!show);
 			GUI.FocusControl(null);
-			menuKeyConsumed = false;
+			_menuKeyConsumed = false;
 		}
 
 		/// <summary>
@@ -978,7 +978,7 @@ namespace MultiTool.UI
 		{
 			// Use the first run of Update() to get any variables we need
 			// as OnMenuLoad() is called before anything is started.
-			if (!mainMenuLoaded)
+			if (!_mainMenuLoaded)
 			{
 				resolutionX = settingsscript.s.S.IResolutionX;
 				resolutionY = settingsscript.s.S.IResolutionY;
@@ -993,7 +993,7 @@ namespace MultiTool.UI
 				// Set default palette to all white.
 				palette.Clear();
 				palette = Enumerable.Repeat(Color.white, 60).ToList();
-				paletteCache.Clear();
+				_paletteCache.Clear();
 
 				// Load any configs needed for the main menu UI.
 				try
@@ -1006,10 +1006,10 @@ namespace MultiTool.UI
 					Logger.Log($"Config load error - {ex}", Logger.LogLevel.Error);
 				}
 
-				mainMenuLoaded = true;
+				_mainMenuLoaded = true;
 			}
 
-			if (stateChanged)
+			if (_stateChanged)
 			{
 				string[] toggles = new string[] { "ButtonLoad", "ButtonSettings", "ButtonExit", "ButtonDiscord", "ButtonNews" };
 				foreach (string toggle in toggles)
@@ -1017,7 +1017,7 @@ namespace MultiTool.UI
 					mainmenuscript.mainmenu.Canvas.Find($"GameObject/MainStuff/{toggle}").gameObject.SetActive(!show);
 				}
 
-				stateChanged = false;
+				_stateChanged = false;
 			}
 		}
 
@@ -1039,23 +1039,23 @@ namespace MultiTool.UI
 			float width = mainMenuWidth;
 			float height = mainMenuHeight;
 
-            GUILayout.BeginArea(new Rect(x, y, width, height), $"<color=#f87ffa><size=18><b>{MultiTool.mod.Name}</b></size>\n<size=16>v{MultiTool.mod.Version} - made with ❤️ by M-</size></color>", "box");
-            GUILayout.BeginVertical();
-            GUILayout.BeginHorizontal();
-            GUILayout.FlexibleSpace();
-            if (GUILayout.Button(Accessibility.GetAccessibleString("Settings", Tabs.GetActive() == settingsTabId), "ButtonSecondary", GUILayout.MinHeight(30)))
-            {
+			GUILayout.BeginArea(new Rect(x, y, width, height), $"<color=#f87ffa><size=18><b>{MultiTool.mod.Name}</b></size>\n<size=16>v{MultiTool.mod.Version} - made with ❤️ by M-</size></color>", "box");
+			GUILayout.BeginVertical();
+			GUILayout.BeginHorizontal();
+			GUILayout.FlexibleSpace();
+			if (GUILayout.Button(Accessibility.GetAccessibleString("Settings", Tabs.GetActive() == settingsTabId), "ButtonSecondary", GUILayout.MinHeight(30)))
+			{
 				Tabs.ToggleActive(settingsTabId);
 			}
 
-            GUILayout.Space(10);
+			GUILayout.Space(10);
 
-            if (GUILayout.Button(Accessibility.GetAccessibleString("Credits", Tabs.GetActive() == creditsTabId), "ButtonSecondary", GUILayout.MinHeight(30)))
-            {
+			if (GUILayout.Button(Accessibility.GetAccessibleString("Credits", Tabs.GetActive() == creditsTabId), "ButtonSecondary", GUILayout.MinHeight(30)))
+			{
 				Tabs.ToggleActive(creditsTabId);
 			}
-            GUILayout.EndHorizontal();
-            GUILayout.Space(20);
+			GUILayout.EndHorizontal();
+			GUILayout.Space(20);
 
 			// Render navigation bar.
 			if (Tabs.GetActive() == null || !Tabs.GetById(Tabs.GetActive()).IsFullScreen)
@@ -1082,11 +1082,11 @@ namespace MultiTool.UI
 				GUILayout.EndHorizontal();
 			}
 
-            // Render the active tab.
-            Tabs.RenderTab();
+			// Render the active tab.
+			Tabs.RenderTab();
 
-            GUILayout.EndVertical();
-            GUILayout.EndArea();
+			GUILayout.EndVertical();
+			GUILayout.EndArea();
 		}
 
 		/// <summary>
@@ -1102,117 +1102,118 @@ namespace MultiTool.UI
 			// Don't render the UI if any game menus are open.
 			if (mainmenuscript.mainmenu.SettingsScreenObj.activeSelf || mainmenuscript.mainmenu.SaveScreenObj.activeSelf) return;
 
-			if (!show) {
-                GUILayout.BeginArea(new Rect(resolutionX - 200f, resolutionY / 3 - 10f, 200f, 60f));
-                if (GUILayout.Button("M-ultiTool", "ButtonBlackTranslucent", GUILayout.MinHeight(60)))
-                {
-                    show = true;
-                    stateChanged = true;
-                }
-                GUILayout.EndArea();
+			if (!show)
+			{
+				GUILayout.BeginArea(new Rect(resolutionX - 200f, resolutionY / 3 - 10f, 200f, 60f));
+				if (GUILayout.Button("M-ultiTool", "ButtonBlackTranslucent", GUILayout.MinHeight(60)))
+				{
+					show = true;
+					_stateChanged = true;
+				}
+				GUILayout.EndArea();
 			}
 
 			if (!show)
 				return;
 
-			GUILayout.BeginArea(new Rect(x, y, width, height), $"<color=#f87ffa><size=18><b>{(mainMenuStage == "distance" ? "Change distance driven" : "New game settings")}</b></size></color>", "box");
-            GUILayout.BeginHorizontal();
-            GUILayout.FlexibleSpace();
+			GUILayout.BeginArea(new Rect(x, y, width, height), $"<color=#f87ffa><size=18><b>{(_mainMenuStage == "distance" ? "Change distance driven" : "New game settings")}</b></size></color>", "box");
+			GUILayout.BeginHorizontal();
+			GUILayout.FlexibleSpace();
 			if (GUILayout.Button("<size=30><color=#F00>X</color></size>", "ButtonBlack", GUILayout.MinWidth(40f)))
 			{
 				show = false;
-				stateChanged = true;
+				_stateChanged = true;
 			}
-            GUILayout.EndHorizontal();
+			GUILayout.EndHorizontal();
 
-            GUILayout.BeginVertical(GUILayout.MaxWidth(width - 15f));
-            currentMainMenuPosition = GUILayout.BeginScrollView(currentMainMenuPosition);
-            switch (mainMenuStage)
-            {
+			GUILayout.BeginVertical(GUILayout.MaxWidth(width - 15f));
+			_currentMainMenuPosition = GUILayout.BeginScrollView(_currentMainMenuPosition);
+			switch (_mainMenuStage)
+			{
 				case "distance":
-					float.TryParse(GUILayout.TextField(distanceDriven.ToString()), out distanceDriven);
+					float.TryParse(GUILayout.TextField(_distanceDriven.ToString()), out _distanceDriven);
 					GUILayout.BeginHorizontal();
 					if (GUILayout.Button("Get distance", GUILayout.MaxWidth(200)))
-						distanceDriven = mainscript.DistanceRead();
+						_distanceDriven = mainscript.DistanceRead();
 
 					GUILayout.Space(10);
 
 					if (GUILayout.Button("<color=#F00>Set distance</color>", "ButtonBlack", GUILayout.MaxWidth(200)))
 					{
-						PlayerPrefs.SetFloat("DistanceDriven", distanceDriven);
+						PlayerPrefs.SetFloat("DistanceDriven", _distanceDriven);
 						mainmenuscript.mainmenu.Refresh();
 					}
 					GUILayout.EndHorizontal();
 					break;
 
-                case "vehicle":
-                    int optionCount = (int)Enum.GetValues(typeof(itemdatabase.CarType)).Cast<itemdatabase.CarType>().Max();
-                    foreach (var car in Enum.GetValues(typeof(itemdatabase.CarType)))
-                    {
-                        string name = Translator.T(car.ToString(), "menuVehicles");
+				case "vehicle":
+					int optionCount = (int)Enum.GetValues(typeof(itemdatabase.CarType)).Cast<itemdatabase.CarType>().Max();
+					foreach (object car in Enum.GetValues(typeof(itemdatabase.CarType)))
+					{
+						string name = Translator.T(car.ToString(), "menuVehicles");
 
-                        if (GUILayout.Button(Accessibility.GetAccessibleString(name, mainmenuscript.mainmenu.DFMS.startcar == (itemdatabase.CarType)car)))
+						if (GUILayout.Button(Accessibility.GetAccessibleString(name, mainmenuscript.mainmenu.DFMS.startcar == (itemdatabase.CarType)car)))
 							mainmenuscript.mainmenu.DFMS.startcar = (itemdatabase.CarType)car;
 					}
-                    break;
+					break;
 
-                case "basics":
-                    // Condition.
-                    GUILayout.Label($"Condition: {(Database.Item.Condition)startVehicleCondition}");
-                    int maxCondition = (int)Enum.GetValues(typeof(Database.Item.Condition)).Cast<Database.Item.Condition>().Max();
-                    float rawCondition = GUILayout.HorizontalSlider(startVehicleCondition, -1, maxCondition);
-                    startVehicleCondition = Mathf.RoundToInt(rawCondition);
+				case "basics":
+					// Condition.
+					GUILayout.Label($"Condition: {(Database.Item.Condition)_startVehicleCondition}");
+					int maxCondition = (int)Enum.GetValues(typeof(Database.Item.Condition)).Cast<Database.Item.Condition>().Max();
+					float rawCondition = GUILayout.HorizontalSlider(_startVehicleCondition, -1, maxCondition);
+					_startVehicleCondition = Mathf.RoundToInt(rawCondition);
 
-                    GUILayout.Space(10);
+					GUILayout.Space(10);
 
-                    // License plate.
-                    GUILayout.Label("Plate (blank for random):");
-                    startVehiclePlate = GUILayout.TextField(startVehiclePlate, 7);
-                    break;
+					// License plate.
+					GUILayout.Label("Plate (blank for random):");
+					_startVehiclePlate = GUILayout.TextField(_startVehiclePlate, 7);
+					break;
 
-                case "color":
-                    if (GUILayout.Button($"Using {(startVehicleColor.HasValue ? "custom" : "random")} colour"))
-                    {
-                        if (startVehicleColor.HasValue)
-                            startVehicleColor = null;
-                        else
-                            startVehicleColor = Color.white;
-                    }
-                    GUILayout.Space(10);
+				case "color":
+					if (GUILayout.Button($"Using {(_startVehicleColor.HasValue ? "custom" : "random")} colour"))
+					{
+						if (_startVehicleColor.HasValue)
+							_startVehicleColor = null;
+						else
+							_startVehicleColor = Color.white;
+					}
+					GUILayout.Space(10);
 
-                    if (startVehicleColor.HasValue)
-                        startVehicleColor = Colour.RenderColourSliders(width - 20f, startVehicleColor.Value);
-                    break;
-            }
-            GUILayout.EndScrollView();
-            GUILayout.EndVertical();
-            GUILayout.FlexibleSpace();
-            GUILayout.BeginHorizontal();
-            // Back button.
-            if (mainMenuStage != mainMenuStages.First())
-            {
-                string previousStage = mainMenuStages[Array.FindIndex(mainMenuStages, s => s == mainMenuStage) - 1];
-                if (GUILayout.Button($"To {previousStage}", GUILayout.MinWidth(200), GUILayout.Height(20)))
-                {
-                    mainMenuStage = previousStage;
-                    currentMainMenuPosition = Vector2.zero;
-                }
-            }
+					if (_startVehicleColor.HasValue)
+						_startVehicleColor = Colour.RenderColourSliders(width - 20f, _startVehicleColor.Value);
+					break;
+			}
+			GUILayout.EndScrollView();
+			GUILayout.EndVertical();
+			GUILayout.FlexibleSpace();
+			GUILayout.BeginHorizontal();
+			// Back button.
+			if (_mainMenuStage != _mainMenuStages.First())
+			{
+				string previousStage = _mainMenuStages[Array.FindIndex(_mainMenuStages, s => s == _mainMenuStage) - 1];
+				if (GUILayout.Button($"To {previousStage}", GUILayout.MinWidth(200), GUILayout.Height(20)))
+				{
+					_mainMenuStage = previousStage;
+					_currentMainMenuPosition = Vector2.zero;
+				}
+			}
 
-            GUILayout.FlexibleSpace();
+			GUILayout.FlexibleSpace();
 
-            // Next button.
-            if (mainMenuStage != mainMenuStages.Last())
-            {
-                string nextStage = mainMenuStages[Array.FindIndex(mainMenuStages, s => s == mainMenuStage) + 1];
-                if (GUILayout.Button($"To {nextStage}", GUILayout.MinWidth(200), GUILayout.Height(20)))
-                {
-                    mainMenuStage = nextStage;
-                    currentMainMenuPosition = Vector2.zero;
-                }
-            }
-            GUILayout.EndHorizontal();
-            GUILayout.EndArea();			
+			// Next button.
+			if (_mainMenuStage != _mainMenuStages.Last())
+			{
+				string nextStage = _mainMenuStages[Array.FindIndex(_mainMenuStages, s => s == _mainMenuStage) + 1];
+				if (GUILayout.Button($"To {nextStage}", GUILayout.MinWidth(200), GUILayout.Height(20)))
+				{
+					_mainMenuStage = nextStage;
+					_currentMainMenuPosition = Vector2.zero;
+				}
+			}
+			GUILayout.EndHorizontal();
+			GUILayout.EndArea();
 		}
 
 		/// <summary>
@@ -1253,46 +1254,46 @@ namespace MultiTool.UI
 					GUI.skin.button = defaultStyle;
 					break;
 				case "scale":
-                    GUI.Button(new Rect(resolutionX / 2 - 250f, 10f, 500f, 30f), $"Selected object: {(selectedObject != null ? selectedObject.name: "None")} ({MultiTool.Binds.GetPrettyName((int)Keybinds.Inputs.action1)} to {(selectedObject != null ? "deselect" : "select")})");
-                    if (selectedObject != null)
-                    {
-                        width = 400f;
-                        height = 120f;
-                        x = 0;
-                        y = resolutionY / 2 - (height + 20f) / 2;
+					GUI.Button(new Rect(resolutionX / 2 - 250f, 10f, 500f, 30f), $"Selected object: {(selectedObject != null ? selectedObject.name : "None")} ({MultiTool.Binds.GetPrettyName((int)Keybinds.Inputs.action1)} to {(selectedObject != null ? "deselect" : "select")})");
+					if (selectedObject != null)
+					{
+						width = 400f;
+						height = 120f;
+						x = 0;
+						y = resolutionY / 2 - (height + 20f) / 2;
 
-                        GUI.Box(new Rect(x, y, width, height + 20f), string.Empty);
-                        int rows = 6;
-                        GUI.Button(new Rect(x, y, width / 2, height / rows), "Scale up");
-                        GUI.Button(new Rect(x, y + height / rows, width / 2, height / rows), "Scale down");
-                        GUI.Button(new Rect(x, y + height / rows * 2, width / 2, height / rows), $"Axis: {axis}");
-                        GUI.Button(new Rect(x, y + height / rows * 3, width / 2, height / rows), $"Scale amount: {scaleValue}");
-                        GUI.Button(new Rect(x, y + height / rows * 4, width / 2, height / rows), $"Toggle hold to scale ({(scaleHold ? "Hold" : "Click")})");
-                        GUI.Button(new Rect(x, y + height / rows * 5, width / 2, height / rows), "Reset");
+						GUI.Box(new Rect(x, y, width, height + 20f), string.Empty);
+						int rows = 6;
+						GUI.Button(new Rect(x, y, width / 2, height / rows), "Scale up");
+						GUI.Button(new Rect(x, y + height / rows, width / 2, height / rows), "Scale down");
+						GUI.Button(new Rect(x, y + height / rows * 2, width / 2, height / rows), $"Axis: {axis}");
+						GUI.Button(new Rect(x, y + height / rows * 3, width / 2, height / rows), $"Scale amount: {scaleValue}");
+						GUI.Button(new Rect(x, y + height / rows * 4, width / 2, height / rows), $"Toggle hold to scale ({(scaleHold ? "Hold" : "Click")})");
+						GUI.Button(new Rect(x, y + height / rows * 5, width / 2, height / rows), "Reset");
 
-                        GUI.Button(new Rect(x + width / 2, y, width / 2, height / rows), MultiTool.Binds.GetPrettyName((int)Keybinds.Inputs.up));
-                        GUI.Button(new Rect(x + width / 2, y + height / rows, width / 2, height / rows), MultiTool.Binds.GetPrettyName((int)Keybinds.Inputs.down));
-                        GUI.Button(new Rect(x + width / 2, y + height / rows * 2, width / 2, height / rows), MultiTool.Binds.GetPrettyName((int)Keybinds.Inputs.action3));
-                        GUI.Button(new Rect(x + width / 2, y + height / rows * 3, width / 2, height / rows), MultiTool.Binds.GetPrettyName((int)Keybinds.Inputs.action5));
-                        GUI.Button(new Rect(x + width / 2, y + height / rows * 4, width / 2, height / rows), MultiTool.Binds.GetPrettyName((int)Keybinds.Inputs.select));
-                        GUI.Button(new Rect(x + width / 2, y + height / rows * 5, width / 2, height / rows), MultiTool.Binds.GetPrettyName((int)Keybinds.Inputs.action4));
+						GUI.Button(new Rect(x + width / 2, y, width / 2, height / rows), MultiTool.Binds.GetPrettyName((int)Keybinds.Inputs.up));
+						GUI.Button(new Rect(x + width / 2, y + height / rows, width / 2, height / rows), MultiTool.Binds.GetPrettyName((int)Keybinds.Inputs.down));
+						GUI.Button(new Rect(x + width / 2, y + height / rows * 2, width / 2, height / rows), MultiTool.Binds.GetPrettyName((int)Keybinds.Inputs.action3));
+						GUI.Button(new Rect(x + width / 2, y + height / rows * 3, width / 2, height / rows), MultiTool.Binds.GetPrettyName((int)Keybinds.Inputs.action5));
+						GUI.Button(new Rect(x + width / 2, y + height / rows * 4, width / 2, height / rows), MultiTool.Binds.GetPrettyName((int)Keybinds.Inputs.select));
+						GUI.Button(new Rect(x + width / 2, y + height / rows * 5, width / 2, height / rows), MultiTool.Binds.GetPrettyName((int)Keybinds.Inputs.action4));
 
-                        Vector3 scale = selectedObject.transform.localScale;
-                        string scaleDisplay = scale.ToString();
-                        switch (axis)
-                        {
-                            case "x":
-                                scaleDisplay = scale.x.ToString();
-                                break;
-                            case "y":
-                                scaleDisplay = scale.y.ToString();
-                                break;
-                            case "z":
-                                scaleDisplay = scale.z.ToString();
-                                break;
-                        }
-                        GUI.Button(new Rect(x, y + height, width, 20f), $"Scale: {scaleDisplay}");
-                    }
+						Vector3 scale = selectedObject.transform.localScale;
+						string scaleDisplay = scale.ToString();
+						switch (axis)
+						{
+							case "x":
+								scaleDisplay = scale.x.ToString();
+								break;
+							case "y":
+								scaleDisplay = scale.y.ToString();
+								break;
+							case "z":
+								scaleDisplay = scale.z.ToString();
+								break;
+						}
+						GUI.Button(new Rect(x, y + height, width, 20f), $"Scale: {scaleDisplay}");
+					}
 					break;
 				case "slotControl":
 					width = resolutionX;
@@ -1308,10 +1309,10 @@ namespace MultiTool.UI
 							int upperHalf = Mathf.CeilToInt(displayedSlots / 2) + 1;
 
 							List<int> displayedIndexes = new List<int>();
-							int countFrom = hoveredSlotIndex - lowerHalf - 1;
+							int countFrom = _hoveredSlotIndex - lowerHalf - 1;
 							if (countFrom < 0)
-								countFrom = slots.Count - 1 - displayedSlots + upperHalf + hoveredSlotIndex;
-							else if (countFrom > slots.Count - 1)
+								countFrom = _slots.Count - 1 - displayedSlots + upperHalf + _hoveredSlotIndex;
+							else if (countFrom > _slots.Count - 1)
 								countFrom = 0;
 							for (int i = 1; i <= displayedSlots; i++)
 							{
@@ -1320,7 +1321,7 @@ namespace MultiTool.UI
 								if (i <= lowerHalf || i >= upperHalf)
 								{
 									nextIndex = countFrom + 1;
-									if (nextIndex > slots.Count - 1)
+									if (nextIndex > _slots.Count - 1)
 									{
 										nextIndex = 0;
 										countFrom = 0;
@@ -1334,18 +1335,18 @@ namespace MultiTool.UI
 								}
 								else
 								{
-									displayedIndexes.Add(hoveredSlotIndex);
-									countFrom = hoveredSlotIndex;
+									displayedIndexes.Add(_hoveredSlotIndex);
+									countFrom = _hoveredSlotIndex;
 								}
 							}
 
 							for (int index = 0; index < displayedIndexes.Count; index++)
 							{
 								int slotIndex = displayedIndexes[index];
-								GameObject slot = slots[slotIndex];
+								GameObject slot = _slots[slotIndex];
 								string name = $"{slotIndex + 1} - {PrettifySlotName(slot.name)}";
 
-                                if (slotIndex == hoveredSlotIndex)
+								if (slotIndex == _hoveredSlotIndex)
 								{
 									name = $"<b>{name}</b>";
 								}
@@ -1364,10 +1365,10 @@ namespace MultiTool.UI
 
 							// Movement control UI.
 							// Column 2.
-							GUI.Button(new Rect(x + width / moveControls, y, width / moveControls, 30f), $"Move by: {moveValue} ({MultiTool.Binds.GetPrettyName((int)Keybinds.Inputs.action5)})");
+							GUI.Button(new Rect(x + width / moveControls, y, width / moveControls, 30f), $"Move by: {_moveValue} ({MultiTool.Binds.GetPrettyName((int)Keybinds.Inputs.action5)})");
 							GUI.Button(new Rect(x + width / moveControls, y - 30f, width / moveControls, 30f), $"Left ({MultiTool.Binds.GetPrettyName((int)Keybinds.Inputs.left)})");
 							GUI.Button(new Rect(x + width / moveControls, y - 60f, width / moveControls, 30f), $"Up ({MultiTool.Binds.GetPrettyName((int)Keybinds.Inputs.noclipSpeedUp)})");
-							
+
 							// Column 3.
 							GUI.Button(new Rect(x + width / moveControls * 2, y, width / moveControls, 30f), $"Back ({MultiTool.Binds.GetPrettyName((int)Keybinds.Inputs.down)})");
 							GUI.Button(new Rect(x + width / moveControls * 2, y - 30f, width / moveControls, 30f), $"Reset ({MultiTool.Binds.GetPrettyName((int)Keybinds.Inputs.action4)})");
@@ -1386,7 +1387,7 @@ namespace MultiTool.UI
 
 							// Rotate control UI.
 							// Column 2.
-							GUI.Button(new Rect(x + width / rotateControls, y, width / rotateControls, 30f), $"Rotate by: {moveValue} ({MultiTool.Binds.GetPrettyName((int)Keybinds.Inputs.action5)})");
+							GUI.Button(new Rect(x + width / rotateControls, y, width / rotateControls, 30f), $"Rotate by: {_moveValue} ({MultiTool.Binds.GetPrettyName((int)Keybinds.Inputs.action5)})");
 							GUI.Button(new Rect(x + width / rotateControls, y - 30f, width / rotateControls, 30f), $"Left ({MultiTool.Binds.GetPrettyName((int)Keybinds.Inputs.left)})");
 							GUI.Button(new Rect(x + width / rotateControls, y - 60f, width / rotateControls, 30f), $"Anticlockwise ({MultiTool.Binds.GetPrettyName((int)Keybinds.Inputs.noclipSpeedUp)})");
 
@@ -1478,9 +1479,9 @@ namespace MultiTool.UI
 
 			if (_services.State.ShowCoords)
 			{
-				GUIExtensions.DrawOutline(new Rect(20f, 20f, 600f, 30f), $"Local position: {mainscript.M.player.transform.position}", hudStyle, Color.black);
-                GUIExtensions.DrawOutline(new Rect(20f, 50f, 600f, 30f), $"Global position: {GameUtilities.GetGlobalObjectPosition(mainscript.M.player.transform.position)}", hudStyle, Color.black);
-            }
+				GUIExtensions.DrawOutline(new Rect(20f, 20f, 600f, 30f), $"Local position: {mainscript.M.player.transform.position}", _hudStyle, Color.black);
+				GUIExtensions.DrawOutline(new Rect(20f, 50f, 600f, 30f), $"Global position: {GameUtilities.GetGlobalObjectPosition(mainscript.M.player.transform.position)}", _hudStyle, Color.black);
+			}
 
 			width = resolutionX / 4f;
 			height = resolutionY / 4;
@@ -1490,33 +1491,33 @@ namespace MultiTool.UI
 			y = 0;
 			float contentWidth = width - 20f;
 
-			if (_services.State.ObjectDebug && debugObject != null)
+			if (_services.State.ObjectDebug && _debugObject != null)
 			{
-				GUI.Box(new Rect(x, y, width, height), $"<color=#fff><size=18>Object: {debugObject.name.Replace("(Clone)", string.Empty)}</size></color>");
+				GUI.Box(new Rect(x, y, width, height), $"<color=#fff><size=18>Object: {_debugObject.name.Replace("(Clone)", string.Empty)}</size></color>");
 
 				x += 10f;
 				y += 30f;
 
 				// Basic object information.
-				GUI.Label(new Rect(x, y, contentWidth, 20f), $"Save ID: {debugObject.GetComponent<tosaveitemscript>()?.idInSave}", labelStyle);
+				GUI.Label(new Rect(x, y, contentWidth, 20f), $"Save ID: {_debugObject.GetComponent<tosaveitemscript>()?.idInSave}", labelStyle);
 				y += 22f;
-				GUI.Label(new Rect(x, y, contentWidth, 20f), $"Local position: {debugObject.transform.position}", labelStyle);
+				GUI.Label(new Rect(x, y, contentWidth, 20f), $"Local position: {_debugObject.transform.position}", labelStyle);
 				y += 22f;
-                GUI.Label(new Rect(x, y, contentWidth, 20f), $"Global position: {GameUtilities.GetGlobalObjectPosition(debugObject.transform.position)}", labelStyle);
-                y += 22f;
-                GUI.Label(new Rect(x, y, contentWidth, 20f), $"Rotation (Euler angles): {debugObject.transform.rotation.eulerAngles}", labelStyle);
-                y += 22f;
-                GUI.Label(new Rect(x, y, contentWidth, 20f), $"Rotation (Quaternion): {debugObject.transform.rotation}", labelStyle);
+				GUI.Label(new Rect(x, y, contentWidth, 20f), $"Global position: {GameUtilities.GetGlobalObjectPosition(_debugObject.transform.position)}", labelStyle);
+				y += 22f;
+				GUI.Label(new Rect(x, y, contentWidth, 20f), $"Rotation (Euler angles): {_debugObject.transform.rotation.eulerAngles}", labelStyle);
+				y += 22f;
+				GUI.Label(new Rect(x, y, contentWidth, 20f), $"Rotation (Quaternion): {_debugObject.transform.rotation}", labelStyle);
 
 				if (_services.State.AdvancedObjectDebug)
 				{
 					y += 35f;
 					GUI.Label(new Rect(x, y, contentWidth, 60f), "<color=#fff><size=18>Components</size>\nAssembly - Class</color>");
-                    y += 65f;
+					y += 65f;
 
-					Component[] components = debugObject.GetComponents(typeof(Component));
+					Component[] components = _debugObject.GetComponents(typeof(Component));
 					if (_services.State.ObjectDebugShowChildren)
-						components = debugObject.GetComponentsInChildren(typeof(Component));
+						components = _debugObject.GetComponentsInChildren(typeof(Component));
 					components = components.Distinct().ToArray();
 
 					foreach (Component component in components)
@@ -1535,9 +1536,9 @@ namespace MultiTool.UI
 						GUI.Label(new Rect(x, y, contentWidth, 20f), $"{assembly} - {type.Name} {(_services.State.ObjectDebugShowChildren && component.transform.parent != null ? "(Child of" + component.transform.parent.name + ")" : "")}");
 						y += 22f;
 					}
-                }
-            }
-			
+				}
+			}
+
 			if (_services.State.ShowColliders && _services.State.ShowColliderHelp)
 			{
 				width = resolutionX / 6;
@@ -1563,18 +1564,18 @@ namespace MultiTool.UI
 			GUILayout.EndArea();
 		}
 
-        /// <summary>
-        /// Make the vehicle slot name look prettier.
-        /// </summary>
-        /// <param name="name">Slot name</param>
-        /// <returns>Prettified slot name</returns>
-        private string PrettifySlotName(string name)
-        {
-            name = name.Replace("(Clone)", "");
-            name = Regex.Replace(name, "\\((.*?)\\)", "");
-            name = name.Trim();
-            return name.IsAllLower() ? name.ToSentenceCase() : name;
-        }
+		/// <summary>
+		/// Make the vehicle slot name look prettier.
+		/// </summary>
+		/// <param name="name">Slot name</param>
+		/// <returns>Prettified slot name</returns>
+		private string PrettifySlotName(string name)
+		{
+			name = name.Replace("(Clone)", "");
+			name = Regex.Replace(name, "\\((.*?)\\)", "");
+			name = name.Trim();
+			return name.IsAllLower() ? name.ToSentenceCase() : name;
+		}
 
 		/// <summary>
 		/// Dispose of anything pertaining to slot mover.
@@ -1585,7 +1586,7 @@ namespace MultiTool.UI
 			_services.State.Car = null;
 			_services.State.SlotStage = null;
 
-			slots.Clear();
+			_slots.Clear();
 
 			SlotMoverSelectDispose();
 			SlotMoverMoveDispose();
@@ -1602,9 +1603,9 @@ namespace MultiTool.UI
 					ObjectUtilities.DestroyColliders(hoveredSlot);
 
 				hoveredSlot = null;
-				hoveredSlotIndex = 0;
-				previousHoveredSlotIndex = 0;
-				slotMoverFirstRun = true;
+				_hoveredSlotIndex = 0;
+				_previousHoveredSlotIndex = 0;
+				_slotMoverFirstRun = true;
 			}
 			catch (Exception ex)
 			{
@@ -1617,14 +1618,14 @@ namespace MultiTool.UI
 		/// </summary>
 		internal static void SlotMoverMoveDispose()
 		{
-			try 
-			{ 
+			try
+			{
 				if (selectedSlot != null)
 					ObjectUtilities.DestroyColliders(selectedSlot);
 
 				selectedSlot = null;
-				selectedSlotResetPosition = Vector3.zero;
-				selectedSlotResetRotation.Set(0, 0, 0, 0);
+				_selectedSlotResetPosition = Vector3.zero;
+				_selectedSlotResetRotation.Set(0, 0, 0, 0);
 			}
 			catch (Exception ex)
 			{

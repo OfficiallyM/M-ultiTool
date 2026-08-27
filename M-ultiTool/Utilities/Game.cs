@@ -5,7 +5,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
-using Logger = MultiTool.Services.Logger;
 
 namespace MultiTool.Utilities
 {
@@ -42,9 +41,9 @@ namespace MultiTool.Utilities
 		public static int GetCategory(GameObject gameObject)
 		{
 			// Get all components, add types to list.
-			var components = gameObject.GetComponents<MonoBehaviour>();
+			MonoBehaviour[] components = gameObject.GetComponents<MonoBehaviour>();
 			Dictionary<Type, MonoBehaviour> types = new Dictionary<Type, MonoBehaviour>();
-			foreach (var component in components)
+			foreach (MonoBehaviour component in components)
 			{
 				if (!types.ContainsKey(component.GetType()))
 					types.Add(component.GetType(), component);
@@ -95,14 +94,14 @@ namespace MultiTool.Utilities
 		public static void Paint(Color c, partconditionscript root, bool useSlotChildren = false)
 		{
 			List<partconditionscript> parts = FindPartChildren(root);
-            if (useSlotChildren)
-                FindPartChildren(root, ref parts);
+			if (useSlotChildren)
+				FindPartChildren(root, ref parts);
 
 			foreach (partconditionscript part in parts)
 			{
-                if (!part.IsPaintable()) continue;
+				if (!part.IsPaintable()) continue;
 
-                part.Refresh(part.state, c);
+				part.Refresh(part.state, c);
 			}
 		}
 
@@ -257,37 +256,37 @@ namespace MultiTool.Utilities
 			return parts.Where(part => part.name.ToLower().Contains(name.ToLower())).ToList();
 		}
 
-        /// <summary>
-        /// Find specific conditionless part by name.
-        /// </summary>
-        /// <param name="vehicle">Vehicle to get part from</param>
-        /// <param name="name">Name of part to find</param>
-        /// <returns>Part mesh if exists, otherwise null</returns>
-        public static MeshRenderer GetConditionlessVehiclePartByName(GameObject vehicle, string name)
-        {
-            MeshRenderer[] meshes = vehicle.GetComponentsInChildren<MeshRenderer>();
-            return meshes.Where(m => m.name.ToLower() == name.ToLower()).FirstOrDefault();
-        }
+		/// <summary>
+		/// Find specific conditionless part by name.
+		/// </summary>
+		/// <param name="vehicle">Vehicle to get part from</param>
+		/// <param name="name">Name of part to find</param>
+		/// <returns>Part mesh if exists, otherwise null</returns>
+		public static MeshRenderer GetConditionlessVehiclePartByName(GameObject vehicle, string name)
+		{
+			MeshRenderer[] meshes = vehicle.GetComponentsInChildren<MeshRenderer>();
+			return meshes.Where(m => m.name.ToLower() == name.ToLower()).FirstOrDefault();
+		}
 
-        /// <summary>
-        /// Find conditionless parts by name.
-        /// </summary>
-        /// <param name="vehicle">Vehicle to get part from</param>
-        /// <param name="name">Name of part to find</param>
-        /// <returns>List of meshes if name matches any, otherwise empty list</returns>
-        public static List<MeshRenderer> GetConditionlessVehiclePartsByName(GameObject vehicle, string name)
-        {
-            MeshRenderer[] meshes = vehicle.GetComponentsInChildren<MeshRenderer>();
-            return meshes.Where(m => m.name.ToLower().Contains(name.ToLower())).ToList();
-        }
+		/// <summary>
+		/// Find conditionless parts by name.
+		/// </summary>
+		/// <param name="vehicle">Vehicle to get part from</param>
+		/// <param name="name">Name of part to find</param>
+		/// <returns>List of meshes if name matches any, otherwise empty list</returns>
+		public static List<MeshRenderer> GetConditionlessVehiclePartsByName(GameObject vehicle, string name)
+		{
+			MeshRenderer[] meshes = vehicle.GetComponentsInChildren<MeshRenderer>();
+			return meshes.Where(m => m.name.ToLower().Contains(name.ToLower())).ToList();
+		}
 
-        /// <summary>
-        /// Set material of a part.
-        /// </summary>
-        /// <param name="part">Part to set material for</param>
-        /// <param name="type">Material type to set</param>
-        /// <param name="color">Optional material colour</param>
-        public static void SetPartMaterial(partconditionscript part, string type, Color? color = null)
+		/// <summary>
+		/// Set material of a part.
+		/// </summary>
+		/// <param name="part">Part to set material for</param>
+		/// <param name="type">Material type to set</param>
+		/// <param name="color">Optional material colour</param>
+		public static void SetPartMaterial(partconditionscript part, string type, Color? color = null)
 		{
 			// Remove all existing materials.
 			part.mNew = null;
@@ -323,24 +322,24 @@ namespace MultiTool.Utilities
 			part.FStart();
 		}
 
-        /// <summary>
-        /// Set the material of a part without condition support.
-        /// </summary>
-        /// <param name="mesh">Mesh to set material on</param>
-        /// <param name="type">Material type</param>
-        /// <param name="color">Optional material colour</param>
-        public static void SetConditionlessPartMaterial(MeshRenderer mesh, string type, Color? color = null)
-        {
-            mainscript.conditionmaterial material = mainscript.M.conditionmaterials.Where(m => m.tipus == type).FirstOrDefault();
-            if (material == null) return;
-            // Default to new condition material for now.
-            // TODO: Make this user customisable?
-            mesh.material = material.New;
-            if (color != null)
-            {
-                mesh.material.color = color.Value;
-            }
-        }
+		/// <summary>
+		/// Set the material of a part without condition support.
+		/// </summary>
+		/// <param name="mesh">Mesh to set material on</param>
+		/// <param name="type">Material type</param>
+		/// <param name="color">Optional material colour</param>
+		public static void SetConditionlessPartMaterial(MeshRenderer mesh, string type, Color? color = null)
+		{
+			mainscript.conditionmaterial material = mainscript.M.conditionmaterials.Where(m => m.tipus == type).FirstOrDefault();
+			if (material == null) return;
+			// Default to new condition material for now.
+			// TODO: Make this user customisable?
+			mesh.material = material.New;
+			if (color != null)
+			{
+				mesh.material.color = color.Value;
+			}
+		}
 
 		/// <summary>
 		/// Set headlight color.
@@ -414,104 +413,104 @@ namespace MultiTool.Utilities
 		/// <param name="engine">Engine to tune</param>
 		/// <param name="engineTuning">Tuning settings</param>
 		internal static void ApplyEngineTuning(enginescript engine, EngineTuning engineTuning)
-        {
-            engine.rpmChangeModifier = engineTuning.rpmChangeModifier;
-            engine.startChance = engineTuning.startChance;
-            engine.motorBrakeModifier = engineTuning.motorBrakeModifier;
-            engine.minOptimalTemp2 = engineTuning.minOptimalTemp2;
-            engine.maxOptimalTemp2 = engineTuning.maxOptimalTemp2;
-            engine.engineHeatGainMin = engineTuning.engineHeatGainMin;
-            engine.engineHeatGainMax = engineTuning.engineHeatGainMax;
-            engine.consumptionM = engineTuning.consumptionModifier;
-            engine.noOverHeat = engineTuning.noOverheat;
-            engine.twostroke = engineTuning.twoStroke;
-            engine.Oilfluid = engineTuning.oilFluid;
-            engine.oilTolerationMin = engineTuning.oilTolerationMin;
-            engine.oilTolerationMax = engineTuning.oilTolerationMax;
-            engine.OilConsumptionModifier = engineTuning.oilConsumptionModifier;
-            engine.FuelConsumption.fluids.Clear();
+		{
+			engine.rpmChangeModifier = engineTuning.rpmChangeModifier;
+			engine.startChance = engineTuning.startChance;
+			engine.motorBrakeModifier = engineTuning.motorBrakeModifier;
+			engine.minOptimalTemp2 = engineTuning.minOptimalTemp2;
+			engine.maxOptimalTemp2 = engineTuning.maxOptimalTemp2;
+			engine.engineHeatGainMin = engineTuning.engineHeatGainMin;
+			engine.engineHeatGainMax = engineTuning.engineHeatGainMax;
+			engine.consumptionM = engineTuning.consumptionModifier;
+			engine.noOverHeat = engineTuning.noOverheat;
+			engine.twostroke = engineTuning.twoStroke;
+			engine.Oilfluid = engineTuning.oilFluid;
+			engine.oilTolerationMin = engineTuning.oilTolerationMin;
+			engine.oilTolerationMax = engineTuning.oilTolerationMax;
+			engine.OilConsumptionModifier = engineTuning.oilConsumptionModifier;
+			engine.FuelConsumption.fluids.Clear();
 
-            // Set fuel comsumption fluids.
-            foreach (Fluid fluid in engineTuning.consumption)
-                engine.FuelConsumption.fluids.Add(new mainscript.fluid() { type = fluid.type, amount = fluid.amount });
+			// Set fuel comsumption fluids.
+			foreach (Fluid fluid in engineTuning.consumption)
+				engine.FuelConsumption.fluids.Add(new mainscript.fluid() { type = fluid.type, amount = fluid.amount });
 
-            // Ensure engine torque curve count matches the new count.
-            List<Keyframe> curve = engine.torqueCurve.keys.ToList();
-            if (engineTuning.torqueCurve.Count > curve.Count)
-            {
-                int diff = engineTuning.torqueCurve.Count - curve.Count;
+			// Ensure engine torque curve count matches the new count.
+			List<Keyframe> curve = engine.torqueCurve.keys.ToList();
+			if (engineTuning.torqueCurve.Count > curve.Count)
+			{
+				int diff = engineTuning.torqueCurve.Count - curve.Count;
 
-                // Copy the second key as the first and last will often have different internal values.
-                Keyframe copy = curve[1];
+				// Copy the second key as the first and last will often have different internal values.
+				Keyframe copy = curve[1];
 
-                // Add new keyframes to reach the desired count.
-                for (int i = 0; i < diff; i++)
-                    curve.Insert(curve.Count - 2, copy);
-            }
-            else if (engineTuning.torqueCurve.Count < curve.Count)
-            {
-                int diff = curve.Count - engineTuning.torqueCurve.Count;
+				// Add new keyframes to reach the desired count.
+				for (int i = 0; i < diff; i++)
+					curve.Insert(curve.Count - 2, copy);
+			}
+			else if (engineTuning.torqueCurve.Count < curve.Count)
+			{
+				int diff = curve.Count - engineTuning.torqueCurve.Count;
 
-                // Store and remove the last key to add it back on later.
-                Keyframe last = curve[curve.Count - 1];
-                curve.Remove(last);
+				// Store and remove the last key to add it back on later.
+				Keyframe last = curve[curve.Count - 1];
+				curve.Remove(last);
 
-                // Remove keyframes to reach the desired count.
-                for (int i = 0; i < diff; i++)
-                    curve.RemoveAt(curve.Count - 1);
+				// Remove keyframes to reach the desired count.
+				for (int i = 0; i < diff; i++)
+					curve.RemoveAt(curve.Count - 1);
 
-                // Add the last keyframe back to the end.
-                curve.Add(last);
-                engine.torqueCurve.keys = curve.ToArray();
-            }
+				// Add the last keyframe back to the end.
+				curve.Add(last);
+				engine.torqueCurve.keys = curve.ToArray();
+			}
 
-            // Set new torque curve, find new maxRpm and maxNm.
-            float maxRpm = 0;
-            float maxNm = 0;
-            for (int i = 0; i < curve.Count; i++)
-            {
-                TorqueCurve torqueCurve = engineTuning.torqueCurve[i];
-                Keyframe frame = curve[i];
+			// Set new torque curve, find new maxRpm and maxNm.
+			float maxRpm = 0;
+			float maxNm = 0;
+			for (int i = 0; i < curve.Count; i++)
+			{
+				TorqueCurve torqueCurve = engineTuning.torqueCurve[i];
+				Keyframe frame = curve[i];
 
-                // Find new maxNm.
-                if (torqueCurve.torque > maxNm)
-                    maxNm = torqueCurve.torque;
+				// Find new maxNm.
+				if (torqueCurve.torque > maxNm)
+					maxNm = torqueCurve.torque;
 
-                // Find new maxRpm.
-                if (torqueCurve.rpm > maxRpm)
-                    maxRpm = torqueCurve.rpm;
+				// Find new maxRpm.
+				if (torqueCurve.rpm > maxRpm)
+					maxRpm = torqueCurve.rpm;
 
-                // Set the new curve values.
-                frame.value = torqueCurve.torque;
-                frame.time = torqueCurve.rpm;
-                curve[i] = frame;
-            }
+				// Set the new curve values.
+				frame.value = torqueCurve.torque;
+				frame.time = torqueCurve.rpm;
+				curve[i] = frame;
+			}
 
-            // Apply the new values.
-            engine.torqueCurve = new AnimationCurve(curve.ToArray());
-            engine.maxRpm = maxRpm;
-            engine.maxNm = maxNm;
-        }
+			// Apply the new values.
+			engine.torqueCurve = new AnimationCurve(curve.ToArray());
+			engine.maxRpm = maxRpm;
+			engine.maxNm = maxNm;
+		}
 
-        /// <summary>
-        /// Apply transmission tuning.
-        /// </summary>
-        /// <param name="car">Car to tune</param>
-        /// <param name="transmissionTuning">Tuning settings</param>
-        internal static void ApplyTransmissionTuning(carscript car, TransmissionTuning transmissionTuning)
-        {
-            // Apply gear ratios.
-            transmissionTuning.gears = transmissionTuning.gears.OrderBy(t => t.gear).ToList();
-            List<carscript.gearc> gears = new List<carscript.gearc>();
-            int gearIndex = 0;
-            foreach (Gear gear in transmissionTuning.gears)
-            {
-                carscript.gearc stockGear = car.gears.Last();
-                if (car.gears.Length > gearIndex)
-                    stockGear = car.gears[gearIndex];
-                gears.Add(new carscript.gearc() { ratio = gear.ratio, freeRun = gear.freeRun, Pos = stockGear.Pos, Path = stockGear.Path });
-                gearIndex++;
-            }
+		/// <summary>
+		/// Apply transmission tuning.
+		/// </summary>
+		/// <param name="car">Car to tune</param>
+		/// <param name="transmissionTuning">Tuning settings</param>
+		internal static void ApplyTransmissionTuning(carscript car, TransmissionTuning transmissionTuning)
+		{
+			// Apply gear ratios.
+			transmissionTuning.gears = transmissionTuning.gears.OrderBy(t => t.gear).ToList();
+			List<carscript.gearc> gears = new List<carscript.gearc>();
+			int gearIndex = 0;
+			foreach (Gear gear in transmissionTuning.gears)
+			{
+				carscript.gearc stockGear = car.gears.Last();
+				if (car.gears.Length > gearIndex)
+					stockGear = car.gears[gearIndex];
+				gears.Add(new carscript.gearc() { ratio = gear.ratio, freeRun = gear.freeRun, Pos = stockGear.Pos, Path = stockGear.Path });
+				gearIndex++;
+			}
 			car.gears = gears.ToArray();
 
 			// Apply diff tuning.
@@ -566,16 +565,16 @@ namespace MultiTool.Utilities
 			return drivetrain;
 		}
 
-        /// <summary>
-        /// Apply vehicle tuning.
-        /// </summary>
-        /// <param name="car">Car to tune</param>
-        /// <param name="vehicleTuning">Tuning settings</param>
-        internal static void ApplyVehicleTuning(carscript car, VehicleTuning vehicleTuning)
-        {
-            car.steerAngle = vehicleTuning.steerAngle;
-            car.brakePower = vehicleTuning.brakePower;
-        }
+		/// <summary>
+		/// Apply vehicle tuning.
+		/// </summary>
+		/// <param name="car">Car to tune</param>
+		/// <param name="vehicleTuning">Tuning settings</param>
+		internal static void ApplyVehicleTuning(carscript car, VehicleTuning vehicleTuning)
+		{
+			car.steerAngle = vehicleTuning.steerAngle;
+			car.brakePower = vehicleTuning.brakePower;
+		}
 
 		/// <summary>
 		/// Apply wheel tuning.
@@ -623,8 +622,8 @@ namespace MultiTool.Utilities
 		{
 			if (tuning == null) return;
 
-            // Remap save data to individual wheels.
-            wheelgraphicsscript[] wheelGraphics = save.GetComponentsInChildren<wheelgraphicsscript>(true);
+			// Remap save data to individual wheels.
+			wheelgraphicsscript[] wheelGraphics = save.GetComponentsInChildren<wheelgraphicsscript>(true);
 			foreach (wheelgraphicsscript wheelgraphic in wheelGraphics)
 			{
 				// Ignore non mounted wheels.
@@ -694,7 +693,7 @@ namespace MultiTool.Utilities
 				string[] blacklistBuildings = new string[] { "haz02", "kut", "post", "kertibudi" };
 				bool isBlackListed = blacklistBuildings.Any(building.name.ToLower().Contains);
 				bool isIgnored = ignoreList != null && ignoreList.Count > 0 && ignoreList.Contains(building);
-				if (isBlackListed || isIgnored || building.transform == null) 
+				if (isBlackListed || isIgnored || building.transform == null)
 					continue;
 
 				buildings.Add(building);
@@ -712,8 +711,8 @@ namespace MultiTool.Utilities
 				if (dist < 0)
 					dist *= -1f;
 
-                if (dist < closestDistance)
-                {
+				if (dist < closestDistance)
+				{
 					closestDistance = dist;
 					closestBuilding = building;
 				}

@@ -6,22 +6,22 @@ using UnityEngine;
 
 namespace MultiTool.UI.Tabs.VehicleConfiguration
 {
-    internal sealed class LightChangerTab : UI.VehicleConfigurationTab
+	internal sealed class LightChangerTab : UI.VehicleConfigurationTab
 	{
-        public override string Name => "Light Changer";
+		public override string Name => "Light Changer";
 		public override bool HasCache => true;
 
 		private Vector2 _position;
 
 		private bool _lightSelectorOpen = false;
 		private List<LightGroup> _selectedLights = new List<LightGroup>();
-		private List<LightGroup> lights = new List<LightGroup>();
+		private List<LightGroup> _lights = new List<LightGroup>();
 
 		public override void OnCacheRefresh()
 		{
 			if (mainscript.M.player == null || mainscript.M.player.Car == null) return;
 
-			lights.Clear();
+			_lights.Clear();
 			GameObject carObject = mainscript.M.player.Car.gameObject;
 
 			headlightscript[] headlights = carObject.GetComponentsInChildren<headlightscript>();
@@ -37,16 +37,16 @@ namespace MultiTool.UI.Tabs.VehicleConfiguration
 						name = $"{i + 1} - Interior light";
 						isInterior = true;
 					}
-					lights.Add(LightGroup.Create(name, headlight, isInterior));
+					_lights.Add(LightGroup.Create(name, headlight, isInterior));
 				}
 			}
 		}
 
 		public override void RenderTab(Rect dimensions)
-        {
-            GUILayout.BeginArea(dimensions);
-            GUILayout.BeginVertical();
-            _position = GUILayout.BeginScrollView(_position);
+		{
+			GUILayout.BeginArea(dimensions);
+			GUILayout.BeginVertical();
+			_position = GUILayout.BeginScrollView(_position);
 
 			carscript car = mainscript.M.player.Car;
 			tosaveitemscript save = car.GetComponent<tosaveitemscript>();
@@ -62,7 +62,7 @@ namespace MultiTool.UI.Tabs.VehicleConfiguration
 
 			if (_lightSelectorOpen)
 			{
-				foreach (LightGroup light in lights)
+				foreach (LightGroup light in _lights)
 				{
 					// Remove selected lights from selectable.
 					if (_selectedLights.Where(l => l.name == light.name).FirstOrDefault() != null) continue;
@@ -121,9 +121,9 @@ namespace MultiTool.UI.Tabs.VehicleConfiguration
 			}
 
 			GUILayout.EndScrollView();
-            GUILayout.EndVertical();
-            GUILayout.EndArea();
-        }
+			GUILayout.EndVertical();
+			GUILayout.EndArea();
+		}
 
 		/// <summary>
 		/// Make part name more user friendly.

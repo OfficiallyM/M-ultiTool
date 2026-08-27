@@ -1,14 +1,12 @@
-﻿using System;
-using UnityEngine;
-using Logger = MultiTool.Services.Logger;
+﻿using UnityEngine;
 
 namespace MultiTool.UI.Tabs
 {
 	internal class ThemeTab : Tab
 	{
 		public override string Name => "Theme";
-        public override bool ShowInNavigation => false;
-        internal override bool IsFullScreen => true;
+		public override bool ShowInNavigation => false;
+		internal override bool IsFullScreen => true;
 
 		private Vector2 _position;
 		private Theme _theme;
@@ -32,19 +30,19 @@ namespace MultiTool.UI.Tabs
 
 		public override void RenderTab(Rect dimensions)
 		{
-            GUILayout.BeginArea(dimensions);
+			GUILayout.BeginArea(dimensions);
 			GUILayout.Label(_isEditing ? $"Editing theme {_theme.Name}" : "Creating new theme", "LabelHeader");
 
 			GUILayout.BeginHorizontal();
 			_position = GUILayout.BeginScrollView(_position, GUILayout.MaxWidth(dimensions.width / 2));
 			float colourWidth = (dimensions.width / 2) - 20f;
-            GUILayout.BeginVertical();
+			GUILayout.BeginVertical();
 
 			bool nameExists = false;
 			if (!_isEditing)
 				foreach (string name in Styling.GetThemeNames())
-				if (name == _theme.Name)
-					nameExists = true;
+					if (name == _theme.Name)
+						nameExists = true;
 
 			GUILayout.Label("Theme name", "LabelSubHeader");
 			_theme.Name = GUILayout.TextField(_theme.Name, GUILayout.MaxWidth(200));
@@ -123,7 +121,7 @@ namespace MultiTool.UI.Tabs
 
 			GUILayout.EndHorizontal();
 			GUILayout.EndVertical();
-            GUILayout.EndScrollView();
+			GUILayout.EndScrollView();
 
 			// Theme preview.
 			if (_theme != null)
@@ -144,7 +142,7 @@ namespace MultiTool.UI.Tabs
 
 			GUILayout.EndHorizontal();
 			GUILayout.EndArea();
-        }
+		}
 
 		private void Exit()
 		{

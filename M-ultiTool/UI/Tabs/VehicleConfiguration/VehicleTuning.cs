@@ -5,9 +5,9 @@ using UnityEngine;
 
 namespace MultiTool.UI.Tabs.VehicleConfiguration
 {
-    internal sealed class VehicleTuningTab : UI.VehicleConfigurationTab
+	internal sealed class VehicleTuningTab : UI.VehicleConfigurationTab
 	{
-        public override string Name => "Vehicle Tuning";
+		public override string Name => "Vehicle Tuning";
 
 		private Vector2 _position;
 		private Vector2 _footerPosition;

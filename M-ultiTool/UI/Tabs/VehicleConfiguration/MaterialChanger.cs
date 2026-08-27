@@ -5,9 +5,9 @@ using UnityEngine;
 
 namespace MultiTool.UI.Tabs.VehicleConfiguration
 {
-    internal sealed class MaterialChangerTab : UI.VehicleConfigurationTab
+	internal sealed class MaterialChangerTab : UI.VehicleConfigurationTab
 	{
-        public override string Name => "Material Changer";
+		public override string Name => "Material Changer";
 		public override bool HasCache => true;
 
 		private Vector2 _position;
@@ -83,14 +83,14 @@ namespace MultiTool.UI.Tabs.VehicleConfiguration
 				PartGroupParent parentGroup = null;
 				foreach (PartGroupParent partParent in _materialParts)
 				{
-                    if (partParent.name == parent)
-                    {
+					if (partParent.name == parent)
+					{
 						parentGroup = partParent;
 						break;
-                    }
-                }
+					}
+				}
 
-				if (parentGroup == null) 
+				if (parentGroup == null)
 				{
 					_materialParts.Add(PartGroupParent.Create(parent));
 					parentGroup = _materialParts[_materialParts.Count - 1];
@@ -377,7 +377,7 @@ namespace MultiTool.UI.Tabs.VehicleConfiguration
 				return "Glove box";
 
 			return part;
-		}		
+		}
 
 		/// <summary>
 		/// Whether the part matches by exact name.

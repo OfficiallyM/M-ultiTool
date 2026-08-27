@@ -17,7 +17,7 @@ namespace MultiTool.UI.Tabs.VehicleConfiguration
 		{
 			return new PartGroupParent()
 			{
-				name = _name, 
+				name = _name,
 				parts = new List<PartGroup>(),
 			};
 		}
@@ -44,30 +44,30 @@ namespace MultiTool.UI.Tabs.VehicleConfiguration
 
 		public static PartGroup Create(string _name, partconditionscript _part, int _index, string _parent)
 		{
-            return Create(_name, new List<partconditionscript>() { _part }, _index, _parent);
+			return Create(_name, new List<partconditionscript>() { _part }, _index, _parent);
 		}
 
 		public static PartGroup Create(string _name, List<MeshRenderer> _meshes, int _index, string _parent)
-        {
-            return new PartGroup()
-            {
-                name = _name,
-                meshes = _meshes,
+		{
+			return new PartGroup()
+			{
+				name = _name,
+				meshes = _meshes,
 				index = _index,
 				parent = _parent,
 			};
-        }
+		}
 
 		public static PartGroup Create(string _name, MeshRenderer _mesh, int _index, string _parent)
-        {
-            return Create(_name, new List<MeshRenderer>() { _mesh }, _index, _parent);
-        }
+		{
+			return Create(_name, new List<MeshRenderer>() { _mesh }, _index, _parent);
+		}
 
 		public bool IsConditionless()
-        {
-            return meshes != null && meshes.Count > 0 && (parts == null || parts.Count == 0);
-        }
-    }
+		{
+			return meshes != null && meshes.Count > 0 && (parts == null || parts.Count == 0);
+		}
+	}
 
 	internal class LightGroup
 	{
@@ -93,24 +93,24 @@ namespace MultiTool.UI.Tabs.VehicleConfiguration
 
 	[DataContract]
 	internal class TorqueCurve
-    {
-        [DataMember] public float torque;
-        [DataMember] public float rpm;
+	{
+		[DataMember] public float torque;
+		[DataMember] public float rpm;
 
 		public TorqueCurve(float _torque, float _rpm)
-        {
-            torque = _torque;
-            rpm = _rpm;
-        }
-    }
+		{
+			torque = _torque;
+			rpm = _rpm;
+		}
+	}
 
-    // This is required to serialize the data in the existing save system.
-    [DataContract]
+	// This is required to serialize the data in the existing save system.
+	[DataContract]
 	internal class Fluid
-    {
-        [DataMember] public mainscript.fluidenum type;
-        [DataMember] public float amount;
-    }
+	{
+		[DataMember] public mainscript.fluidenum type;
+		[DataMember] public float amount;
+	}
 
 	internal class FluidPercentage
 	{
@@ -166,63 +166,63 @@ namespace MultiTool.UI.Tabs.VehicleConfiguration
 	}
 
 	internal class EngineStats
-    {
+	{
 		public float maxTorque;
 		public float maxRPM;
 		public float maxHp;
 		public Texture2D torqueGraph;
-    }
+	}
 
-    [DataContract(Namespace = "http://schemas.datacontract.org/2004/07/MultiTool.Core")]
+	[DataContract(Namespace = "http://schemas.datacontract.org/2004/07/MultiTool.Core")]
 	internal class EngineTuning : ITuning
-    {
-        [DataMember] public float rpmChangeModifier;
-        [DataMember] public float startChance;
-        [DataMember] public float motorBrakeModifier;
-        [DataMember] public float minOptimalTemp2;
-        [DataMember] public float maxOptimalTemp2;
-        [DataMember] public float engineHeatGainMin;
-        [DataMember] public float engineHeatGainMax;
-        [DataMember] public bool noOverheat;
-        [DataMember] public bool twoStroke;
-        [DataMember] public mainscript.fluidenum oilFluid;
-        [DataMember] public float oilTolerationMin;
-        [DataMember] public float oilTolerationMax;
-        [DataMember] public float oilConsumptionModifier;
-        [DataMember] public float consumptionModifier;
-        [DataMember] public List<Fluid> consumption = new List<Fluid>();
-        [DataMember] public List<TorqueCurve> torqueCurve = new List<TorqueCurve>();
-    }
+	{
+		[DataMember] public float rpmChangeModifier;
+		[DataMember] public float startChance;
+		[DataMember] public float motorBrakeModifier;
+		[DataMember] public float minOptimalTemp2;
+		[DataMember] public float maxOptimalTemp2;
+		[DataMember] public float engineHeatGainMin;
+		[DataMember] public float engineHeatGainMax;
+		[DataMember] public bool noOverheat;
+		[DataMember] public bool twoStroke;
+		[DataMember] public mainscript.fluidenum oilFluid;
+		[DataMember] public float oilTolerationMin;
+		[DataMember] public float oilTolerationMax;
+		[DataMember] public float oilConsumptionModifier;
+		[DataMember] public float consumptionModifier;
+		[DataMember] public List<Fluid> consumption = new List<Fluid>();
+		[DataMember] public List<TorqueCurve> torqueCurve = new List<TorqueCurve>();
+	}
 
-    [DataContract]
+	[DataContract]
 	internal class Gear
-    {
-        [DataMember] public int gear;
-        [DataMember] public float ratio;
-        [DataMember] public bool freeRun;
+	{
+		[DataMember] public int gear;
+		[DataMember] public float ratio;
+		[DataMember] public bool freeRun;
 
 		public Gear(int _gear, float _ratio, bool _freeRun)
-        {
-            gear = _gear;
-            ratio = _ratio;
-            freeRun = _freeRun;
-        }
-    }
+		{
+			gear = _gear;
+			ratio = _ratio;
+			freeRun = _freeRun;
+		}
+	}
 
-    [DataContract(Namespace = "http://schemas.datacontract.org/2004/07/MultiTool.Core")]
+	[DataContract(Namespace = "http://schemas.datacontract.org/2004/07/MultiTool.Core")]
 	internal class TransmissionTuning : ITuning
-    {
-        [DataMember] public List<Gear> gears = new List<Gear>();
+	{
+		[DataMember] public List<Gear> gears = new List<Gear>();
 		[DataMember] public float differentialRatio;
 		[DataMember] public Drivetrain driveTrain;
 	}
 
-    [DataContract(Namespace = "http://schemas.datacontract.org/2004/07/MultiTool.Core")]
+	[DataContract(Namespace = "http://schemas.datacontract.org/2004/07/MultiTool.Core")]
 	internal class VehicleTuning : ITuning
-    {
-        [DataMember] public float steerAngle;
-        [DataMember] public float brakePower;    
-    }
+	{
+		[DataMember] public float steerAngle;
+		[DataMember] public float brakePower;
+	}
 
 	internal enum Drivetrain
 	{
@@ -256,9 +256,9 @@ namespace MultiTool.UI.Tabs.VehicleConfiguration
 		[DataMember] public float verticalOffset = 0;
 	}
 
-    [DataContract(Namespace = "http://schemas.datacontract.org/2004/07/MultiTool.Core")]
-    internal class WheelTuning : ITuning
-    {
+	[DataContract(Namespace = "http://schemas.datacontract.org/2004/07/MultiTool.Core")]
+	internal class WheelTuning : ITuning
+	{
 		[DataMember] public bool applyToAll = true;
 		[DataMember] public List<Wheel> wheels = new List<Wheel>();
 	}

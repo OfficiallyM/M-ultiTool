@@ -1,8 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace MultiTool.Extensions
 {
@@ -20,14 +16,14 @@ namespace MultiTool.Extensions
 	internal class ArrayTraverse
 	{
 		public int[] Position;
-		private int[] maxLengths;
+		private int[] _maxLengths;
 
 		public ArrayTraverse(Array array)
 		{
-			maxLengths = new int[array.Rank];
+			_maxLengths = new int[array.Rank];
 			for (int i = 0; i < array.Rank; ++i)
 			{
-				maxLengths[i] = array.GetLength(i) - 1;
+				_maxLengths[i] = array.GetLength(i) - 1;
 			}
 			Position = new int[array.Rank];
 		}
@@ -36,7 +32,7 @@ namespace MultiTool.Extensions
 		{
 			for (int i = 0; i < Position.Length; ++i)
 			{
-				if (Position[i] < maxLengths[i])
+				if (Position[i] < _maxLengths[i])
 				{
 					Position[i]++;
 					for (int j = 0; j < i; j++)
