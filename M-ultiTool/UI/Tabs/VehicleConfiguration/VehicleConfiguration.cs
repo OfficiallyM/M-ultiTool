@@ -10,35 +10,35 @@ namespace MultiTool.UI.Tabs.VehicleConfiguration
 {
 	internal class PartGroupParent
 	{
-		public string name;
-		public List<PartGroup> parts;
+		public string Name;
+		public List<PartGroup> Parts;
 
 		public static PartGroupParent Create(string _name)
 		{
 			return new PartGroupParent()
 			{
-				name = _name,
-				parts = new List<PartGroup>(),
+				Name = _name,
+				Parts = new List<PartGroup>(),
 			};
 		}
 	}
 
 	internal class PartGroup
 	{
-		public string name;
-		public string parent;
-		public int index;
-		public List<partconditionscript> parts;
-		public List<MeshRenderer> meshes;
+		public string Name;
+		public string Parent;
+		public int Index;
+		public List<partconditionscript> Parts;
+		public List<MeshRenderer> Meshes;
 
 		public static PartGroup Create(string _name, List<partconditionscript> _parts, int _index, string _parent)
 		{
 			return new PartGroup()
 			{
-				name = _name,
-				parts = _parts,
-				index = _index,
-				parent = _parent,
+				Name = _name,
+				Parts = _parts,
+				Index = _index,
+				Parent = _parent,
 			};
 		}
 
@@ -51,10 +51,10 @@ namespace MultiTool.UI.Tabs.VehicleConfiguration
 		{
 			return new PartGroup()
 			{
-				name = _name,
-				meshes = _meshes,
-				index = _index,
-				parent = _parent,
+				Name = _name,
+				Meshes = _meshes,
+				Index = _index,
+				Parent = _parent,
 			};
 		}
 
@@ -65,23 +65,23 @@ namespace MultiTool.UI.Tabs.VehicleConfiguration
 
 		public bool IsConditionless()
 		{
-			return meshes != null && meshes.Count > 0 && (parts == null || parts.Count == 0);
+			return Meshes != null && Meshes.Count > 0 && (Parts == null || Parts.Count == 0);
 		}
 	}
 
 	internal class LightGroup
 	{
-		public string name;
-		public List<headlightscript> headlights;
-		public bool isInteriorLight;
+		public string Name;
+		public List<headlightscript> Headlights;
+		public bool IsInteriorLight;
 
 		public static LightGroup Create(string _name, List<headlightscript> _headlights = null, bool _isInteriorLight = false)
 		{
 			return new LightGroup()
 			{
-				name = _name,
-				headlights = _headlights,
-				isInteriorLight = _isInteriorLight
+				Name = _name,
+				Headlights = _headlights,
+				IsInteriorLight = _isInteriorLight
 			};
 		}
 
@@ -94,13 +94,13 @@ namespace MultiTool.UI.Tabs.VehicleConfiguration
 	[DataContract]
 	internal class TorqueCurve
 	{
-		[DataMember] public float torque;
-		[DataMember] public float rpm;
+		[DataMember(Name = "torque")] public float Torque;
+		[DataMember(Name = "rpm")] public float Rpm;
 
 		public TorqueCurve(float _torque, float _rpm)
 		{
-			torque = _torque;
-			rpm = _rpm;
+			Torque = _torque;
+			Rpm = _rpm;
 		}
 	}
 
@@ -108,36 +108,36 @@ namespace MultiTool.UI.Tabs.VehicleConfiguration
 	[DataContract]
 	internal class Fluid
 	{
-		[DataMember] public mainscript.fluidenum type;
-		[DataMember] public float amount;
+		[DataMember(Name = "type")] public mainscript.fluidenum Type;
+		[DataMember(Name = "amount")] public float Amount;
 	}
 
 	internal class FluidPercentage
 	{
-		public mainscript.fluidenum type;
-		public float percentage;
+		public mainscript.fluidenum Type;
+		public float Percentage;
 
 		public FluidPercentage Clone()
 		{
 			return new FluidPercentage()
 			{
-				type = type,
-				percentage = percentage
+				Type = Type,
+				Percentage = Percentage
 			};
 		}
 	}
 
 	internal class FluidMix
 	{
-		public tankscript tank;
-		public List<FluidPercentage> fluids;
+		public tankscript Tank;
+		public List<FluidPercentage> Fluids;
 	}
 
 	internal class TankCapacity
 	{
-		public tankscript tank;
-		public float max;
-		public float defaultMax;
+		public tankscript Tank;
+		public float Max;
+		public float DefaultMax;
 	}
 
 	// Placeholder interface to allow for generic tuning saving.
@@ -147,11 +147,11 @@ namespace MultiTool.UI.Tabs.VehicleConfiguration
 	[KnownType("GetKnownTypes")]
 	internal class TuningSave
 	{
-		[DataMember] public string name;
-		[DataMember] public string part;
-		[DataMember] public string type;
-		[DataMember] public string car;
-		[DataMember] public ITuning tuning;
+		[DataMember(Name = "name")] public string Name;
+		[DataMember(Name = "part")] public string Part;
+		[DataMember(Name = "type")] public string Type;
+		[DataMember(Name = "car")] public string Car;
+		[DataMember(Name = "tuning")] public ITuning Tuning;
 
 		private static IEnumerable<Type> _knownTypes;
 		private static IEnumerable<Type> GetKnownTypes()
@@ -167,61 +167,61 @@ namespace MultiTool.UI.Tabs.VehicleConfiguration
 
 	internal class EngineStats
 	{
-		public float maxTorque;
-		public float maxRPM;
-		public float maxHp;
-		public Texture2D torqueGraph;
+		public float MaxTorque;
+		public float MaxRPM;
+		public float MaxHp;
+		public Texture2D TorqueGraph;
 	}
 
 	[DataContract(Namespace = "http://schemas.datacontract.org/2004/07/MultiTool.Core")]
 	internal class EngineTuning : ITuning
 	{
-		[DataMember] public float rpmChangeModifier;
-		[DataMember] public float startChance;
-		[DataMember] public float motorBrakeModifier;
-		[DataMember] public float minOptimalTemp2;
-		[DataMember] public float maxOptimalTemp2;
-		[DataMember] public float engineHeatGainMin;
-		[DataMember] public float engineHeatGainMax;
-		[DataMember] public bool noOverheat;
-		[DataMember] public bool twoStroke;
-		[DataMember] public mainscript.fluidenum oilFluid;
-		[DataMember] public float oilTolerationMin;
-		[DataMember] public float oilTolerationMax;
-		[DataMember] public float oilConsumptionModifier;
-		[DataMember] public float consumptionModifier;
-		[DataMember] public List<Fluid> consumption = new List<Fluid>();
-		[DataMember] public List<TorqueCurve> torqueCurve = new List<TorqueCurve>();
+		[DataMember(Name = "rpmChangeModifier")] public float RpmChangeModifier;
+		[DataMember(Name = "startChance")] public float StartChance;
+		[DataMember(Name = "motorBrakeModifier")] public float MotorBrakeModifier;
+		[DataMember(Name = "minOptimalTemp2")] public float MinOptimalTemp2;
+		[DataMember(Name = "maxOptimalTemp2")] public float MaxOptimalTemp2;
+		[DataMember(Name = "engineHeatGainMin")] public float EngineHeatGainMin;
+		[DataMember(Name = "engineHeatGainMax")] public float EngineHeatGainMax;
+		[DataMember(Name = "noOverheat")] public bool NoOverheat;
+		[DataMember(Name = "twoStroke")] public bool TwoStroke;
+		[DataMember(Name = "oilFluid")] public mainscript.fluidenum OilFluid;
+		[DataMember(Name = "oilTolerationMin")] public float OilTolerationMin;
+		[DataMember(Name = "oilTolerationMax")] public float OilTolerationMax;
+		[DataMember(Name = "oilConsumptionModifier")] public float OilConsumptionModifier;
+		[DataMember(Name = "consumptionModifier")] public float ConsumptionModifier;
+		[DataMember(Name = "consumption")] public List<Fluid> Consumption = new List<Fluid>();
+		[DataMember(Name = "torqueCurve")] public List<TorqueCurve> TorqueCurve = new List<TorqueCurve>();
 	}
 
 	[DataContract]
 	internal class Gear
 	{
-		[DataMember] public int gear;
-		[DataMember] public float ratio;
-		[DataMember] public bool freeRun;
+		[DataMember(Name = "gear")] public int GearNumber;
+		[DataMember(Name = "ratio")] public float Ratio;
+		[DataMember(Name = "freeRun")] public bool FreeRun;
 
 		public Gear(int _gear, float _ratio, bool _freeRun)
 		{
-			gear = _gear;
-			ratio = _ratio;
-			freeRun = _freeRun;
+			GearNumber = _gear;
+			Ratio = _ratio;
+			FreeRun = _freeRun;
 		}
 	}
 
 	[DataContract(Namespace = "http://schemas.datacontract.org/2004/07/MultiTool.Core")]
 	internal class TransmissionTuning : ITuning
 	{
-		[DataMember] public List<Gear> gears = new List<Gear>();
-		[DataMember] public float differentialRatio;
-		[DataMember] public Drivetrain driveTrain;
+		[DataMember(Name = "gears")] public List<Gear> Gears = new List<Gear>();
+		[DataMember(Name = "differentialRatio")] public float DifferentialRatio;
+		[DataMember(Name = "driveTrain")] public Drivetrain DriveTrain;
 	}
 
 	[DataContract(Namespace = "http://schemas.datacontract.org/2004/07/MultiTool.Core")]
 	internal class VehicleTuning : ITuning
 	{
-		[DataMember] public float steerAngle;
-		[DataMember] public float brakePower;
+		[DataMember(Name = "steerAngle")] public float SteerAngle;
+		[DataMember(Name = "brakePower")] public float BrakePower;
 	}
 
 	internal enum Drivetrain
@@ -234,32 +234,32 @@ namespace MultiTool.UI.Tabs.VehicleConfiguration
 	[DataContract]
 	internal class Wheel
 	{
-		[JsonIgnore] public tosaveitemscript save;
-		[JsonIgnore] public wheelgraphicsscript graphics;
-		[DataMember] public string slot;
+		[JsonIgnore] public tosaveitemscript Save;
+		[JsonIgnore] public wheelgraphicsscript Graphics;
+		[DataMember(Name = "slot")] public string Slot;
 
 		// Grip.
-		[DataMember] public float? forwardSlip;
-		[DataMember] public float? sideSlip;
-		[DataMember] public float wheelDamping;
+		[DataMember(Name = "forwardSlip")] public float? ForwardSlip;
+		[DataMember(Name = "sideSlip")] public float? SideSlip;
+		[DataMember(Name = "wheelDamping")] public float WheelDamping;
 
 		// Suspension.
-		[DataMember] public float distance;
-		[DataMember] public float stiffness;
-		[DataMember] public float damper;
-		[DataMember] public float targetPosition;
+		[DataMember(Name = "distance")] public float Distance;
+		[DataMember(Name = "stiffness")] public float Stiffness;
+		[DataMember(Name = "damper")] public float Damper;
+		[DataMember(Name = "targetPosition")] public float TargetPosition;
 
 		// Position.
-		[DataMember] public Vector3 position;
-		[DataMember] public float outwardOffset = 0;
-		[DataMember] public float forwardOffset = 0;
-		[DataMember] public float verticalOffset = 0;
+		[DataMember(Name = "position")] public Vector3 Position;
+		[DataMember(Name = "outwardOffset")] public float OutwardOffset = 0;
+		[DataMember(Name = "forwardOffset")] public float ForwardOffset = 0;
+		[DataMember(Name = "verticalOffset")] public float VerticalOffset = 0;
 	}
 
 	[DataContract(Namespace = "http://schemas.datacontract.org/2004/07/MultiTool.Core")]
 	internal class WheelTuning : ITuning
 	{
-		[DataMember] public bool applyToAll = true;
-		[DataMember] public List<Wheel> wheels = new List<Wheel>();
+		[DataMember(Name = "applyToAll")] public bool ApplyToAll = true;
+		[DataMember(Name = "wheels")] public List<Wheel> Wheels = new List<Wheel>();
 	}
 }

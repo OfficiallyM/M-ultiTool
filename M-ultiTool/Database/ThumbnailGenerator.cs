@@ -19,7 +19,7 @@ namespace MultiTool.Database
 
 		public static void Init()
 		{
-			string configDir = Path.Combine(ModLoader.ModsFolder, "Config", "Mod Settings", MultiTool.mod.ID);
+			string configDir = Path.Combine(ModLoader.ModsFolder, "Config", "Mod Settings", MultiTool.ModInstance.ID);
 			DirectoryInfo dir = Directory.CreateDirectory(Path.Combine(configDir, "Cache"));
 			_cacheDir = dir.FullName;
 		}

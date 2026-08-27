@@ -64,7 +64,7 @@ namespace MultiTool.UI.Tabs.VehicleConfiguration
 					}
 				}
 
-				SaveUtilities.UpdateGlass(new GlassData() { ID = save.idInSave, color = _color, type = "windows" });
+				SaveUtilities.UpdateGlass(new GlassData() { ID = save.idInSave, Color = _color, Type = "windows" });
 			}
 			GUILayout.EndHorizontal();
 
@@ -96,7 +96,7 @@ namespace MultiTool.UI.Tabs.VehicleConfiguration
 					{
 						meshRenderer.material.color = _color;
 
-						SaveUtilities.UpdateGlass(new GlassData() { ID = save.idInSave, color = _color, type = "sunroof" });
+						SaveUtilities.UpdateGlass(new GlassData() { ID = save.idInSave, Color = _color, Type = "sunroof" });
 					}
 					GUILayout.EndHorizontal();
 				}

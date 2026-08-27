@@ -5,9 +5,9 @@ namespace MultiTool.UI.Tabs.ComponentBrowser
 {
 	internal class SceneObject
 	{
-		public GameObject gameObject;
-		public SceneObject parent;
-		public List<SceneObject> children = new List<SceneObject>();
+		public GameObject GameObject;
+		public SceneObject Parent;
+		public List<SceneObject> Children = new List<SceneObject>();
 	}
 
 	internal class TrackedSceneObject
@@ -17,7 +17,7 @@ namespace MultiTool.UI.Tabs.ComponentBrowser
 
 		public TrackedSceneObject(int instanceId, SceneObject sceneObject)
 		{
-			if (sceneObject?.gameObject == null) return;
+			if (sceneObject?.GameObject == null) return;
 			this.instanceId = instanceId;
 			this.sceneObject = sceneObject;
 		}
@@ -32,10 +32,10 @@ namespace MultiTool.UI.Tabs.ComponentBrowser
 		{
 			foreach (SceneObject obj in roots)
 			{
-				if (obj.gameObject?.GetInstanceID() == id)
+				if (obj.GameObject?.GetInstanceID() == id)
 					return obj;
 
-				SceneObject found = FindByInstanceId(obj.children, id);
+				SceneObject found = FindByInstanceId(obj.Children, id);
 				if (found != null)
 					return found;
 			}
@@ -72,10 +72,10 @@ namespace MultiTool.UI.Tabs.ComponentBrowser
 		{
 			foreach (SceneObject obj in roots)
 			{
-				if (obj.gameObject?.GetInstanceID() == id)
+				if (obj.GameObject?.GetInstanceID() == id)
 					return obj;
 
-				SceneObject found = FindByInstanceId(obj.children, id);
+				SceneObject found = FindByInstanceId(obj.Children, id);
 				if (found != null)
 					return found;
 			}

@@ -43,14 +43,14 @@ namespace MultiTool.UI.Tabs.VehicleConfiguration
 				{
 					_vehicleTuning = new VehicleTuning()
 					{
-						steerAngle = car.steerAngle,
-						brakePower = car.brakePower,
+						SteerAngle = car.steerAngle,
+						BrakePower = car.brakePower,
 					};
 
 					_defaultTuning = new VehicleTuning()
 					{
-						steerAngle = car.steerAngle,
-						brakePower = car.brakePower,
+						SteerAngle = car.steerAngle,
+						BrakePower = car.brakePower,
 					};
 				}
 			}
@@ -61,10 +61,10 @@ namespace MultiTool.UI.Tabs.VehicleConfiguration
 			GUILayout.Label("Steering", "LabelHeader");
 			GUILayout.BeginVertical();
 			GUILayout.Label("Steering angle");
-			_vehicleTuning.steerAngle = GUILayout.HorizontalSlider(_vehicleTuning.steerAngle, 0f, 90f);
-			float.TryParse(GUILayout.TextField(_vehicleTuning.steerAngle.ToString("F2"), GUILayout.MaxWidth(200)), out _vehicleTuning.steerAngle);
+			_vehicleTuning.SteerAngle = GUILayout.HorizontalSlider(_vehicleTuning.SteerAngle, 0f, 90f);
+			float.TryParse(GUILayout.TextField(_vehicleTuning.SteerAngle.ToString("F2"), GUILayout.MaxWidth(200)), out _vehicleTuning.SteerAngle);
 			if (GUILayout.Button("Reset", GUILayout.MaxWidth(200)))
-				_vehicleTuning.steerAngle = _defaultTuning.steerAngle;
+				_vehicleTuning.SteerAngle = _defaultTuning.SteerAngle;
 			GUILayout.EndVertical();
 
 			GUILayout.Space(10);
@@ -72,10 +72,10 @@ namespace MultiTool.UI.Tabs.VehicleConfiguration
 			GUILayout.Label("Braking", "LabelHeader");
 			GUILayout.BeginVertical();
 			GUILayout.Label("Brake power");
-			_vehicleTuning.brakePower = GUILayout.HorizontalSlider(_vehicleTuning.brakePower, 0f, 10000f);
-			float.TryParse(GUILayout.TextField(_vehicleTuning.brakePower.ToString("F2"), GUILayout.MaxWidth(200)), out _vehicleTuning.brakePower);
+			_vehicleTuning.BrakePower = GUILayout.HorizontalSlider(_vehicleTuning.BrakePower, 0f, 10000f);
+			float.TryParse(GUILayout.TextField(_vehicleTuning.BrakePower.ToString("F2"), GUILayout.MaxWidth(200)), out _vehicleTuning.BrakePower);
 			if (GUILayout.Button("Reset", GUILayout.MaxWidth(200)))
-				_vehicleTuning.brakePower = _defaultTuning.brakePower;
+				_vehicleTuning.BrakePower = _defaultTuning.BrakePower;
 			GUILayout.EndVertical();
 
 			GUILayout.EndScrollView();
@@ -91,10 +91,10 @@ namespace MultiTool.UI.Tabs.VehicleConfiguration
 				if (GUILayout.Button("Export current tuning", GUILayout.MaxWidth(200)))
 					_export = new TuningSave()
 					{
-						part = car.name,
-						type = "vehicle",
-						car = car.name,
-						tuning = _vehicleTuning,
+						Part = car.name,
+						Type = "vehicle",
+						Car = car.name,
+						Tuning = _vehicleTuning,
 					}
 					.ToExportString();
 				if (!string.IsNullOrEmpty(_export))
@@ -113,17 +113,17 @@ namespace MultiTool.UI.Tabs.VehicleConfiguration
 				}
 				if (_saved != null)
 				{
-					if (_saved.type != "vehicle")
+					if (_saved.Type != "vehicle")
 					{
 						Notifications.SendError("Import failed", "Not a valid vehicle tune.");
 						_saved = null;
 					}
-					else if (_saved.part != car.name)
+					else if (_saved.Part != car.name)
 					{
 						GUILayout.Label("This tune is not designed for this vehicle, import anyway?");
 						if (GUILayout.Button("Import anyway", GUILayout.MaxWidth(200)))
 						{
-							_vehicleTuning = _saved.tuning as VehicleTuning;
+							_vehicleTuning = _saved.Tuning as VehicleTuning;
 							_saved = null;
 							_import = null;
 							Notifications.SendSuccess("Vehicle tuning", "Tuning imported");
@@ -131,7 +131,7 @@ namespace MultiTool.UI.Tabs.VehicleConfiguration
 					}
 					else
 					{
-						_vehicleTuning = _saved.tuning as VehicleTuning;
+						_vehicleTuning = _saved.Tuning as VehicleTuning;
 						_saved = null;
 						_import = null;
 						Notifications.SendSuccess("Vehicle tuning", "Tuning imported");
@@ -144,7 +144,7 @@ namespace MultiTool.UI.Tabs.VehicleConfiguration
 			GUILayout.BeginHorizontal();
 			if (GUILayout.Button("Apply", GUILayout.MaxWidth(200)))
 			{
-				SaveUtilities.UpdateVehicleTuning(new VehicleTuningData() { ID = save.idInSave, tuning = _vehicleTuning, defaultTuning = _defaultTuning });
+				SaveUtilities.UpdateVehicleTuning(new VehicleTuningData() { ID = save.idInSave, Tuning = _vehicleTuning, DefaultTuning = _defaultTuning });
 				GameUtilities.ApplyVehicleTuning(car, _vehicleTuning);
 				_lastSavedTuning = _vehicleTuning.DeepCopy();
 			}
@@ -157,8 +157,8 @@ namespace MultiTool.UI.Tabs.VehicleConfiguration
 
 			if (GUILayout.Button("Reset tuning to stock", GUILayout.MaxWidth(200)))
 			{
-				_vehicleTuning.steerAngle = _defaultTuning.steerAngle;
-				_vehicleTuning.brakePower = _defaultTuning.brakePower;
+				_vehicleTuning.SteerAngle = _defaultTuning.SteerAngle;
+				_vehicleTuning.BrakePower = _defaultTuning.BrakePower;
 			}
 
 			GUILayout.FlexibleSpace();

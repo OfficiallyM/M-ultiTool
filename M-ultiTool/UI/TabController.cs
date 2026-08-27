@@ -59,7 +59,7 @@ namespace MultiTool.UI
 			Assembly caller = Assembly.GetCallingAssembly();
 			Mod callerMod = ModLoader.LoadedMods.Where(m => m.GetType().Assembly.GetName().Name == caller.GetName().Name).FirstOrDefault();
 
-			if (MultiTool.isOnMainMenu)
+			if (MultiTool.IsOnMainMenu)
 			{
 				Logger.Log($"Mod {callerMod.Name} attempted to register a tab too early. Tabs should be registered during OnLoad().", Logger.LogLevel.Error);
 				return null;
@@ -186,10 +186,10 @@ namespace MultiTool.UI
 
 			Rect tabDimensions = new Rect()
 			{
-				x = MultiTool.Renderer.mainMenuX - 30f,
-				y = MultiTool.Renderer.mainMenuX + (tab.IsFullScreen ? 20f : 60f),
-				width = MultiTool.Renderer.mainMenuWidth - 20f,
-				height = MultiTool.Renderer.mainMenuHeight - (tab.IsFullScreen ? 70f : 110f),
+				x = MultiTool.Renderer.MainMenuX - 30f,
+				y = MultiTool.Renderer.MainMenuX + (tab.IsFullScreen ? 20f : 60f),
+				width = MultiTool.Renderer.MainMenuWidth - 20f,
+				height = MultiTool.Renderer.MainMenuHeight - (tab.IsFullScreen ? 70f : 110f),
 			};
 
 			if (dimensions != null)

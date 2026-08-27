@@ -56,7 +56,7 @@ namespace MultiTool.Config
 		/// </summary>
 		public void UpdateVersion()
 		{
-			_config.Version = MultiTool.mod.Version;
+			_config.Version = MultiTool.ModInstance.Version;
 			Commit();
 		}
 
@@ -177,7 +177,7 @@ namespace MultiTool.Config
 			else if (_config.Keybinds.Count < defaultBinds.Count)
 			{
 				// Config is missing binds, update missing ones with defaults.
-				List<Keybinds.Key> missing = defaultBinds.Where(k => !_config.Keybinds.Any(x => x.action == k.action)).ToList();
+				List<Keybinds.Key> missing = defaultBinds.Where(k => !_config.Keybinds.Any(x => x.Action == k.Action)).ToList();
 				foreach (Keybinds.Key key in missing)
 				{
 					_config.Keybinds.Add(key);

@@ -53,7 +53,7 @@ namespace MultiTool.UI.Tabs
 					if (GUILayout.Button("Edit theme", GUILayout.MaxWidth(200)))
 					{
 						Styling.SetEditingTheme(theme);
-						GUIRenderer.Tabs.SetActive(MultiTool.Renderer.themeTabId, false);
+						GUIRenderer.Tabs.SetActive(MultiTool.Renderer.ThemeTabId, false);
 					}
 					GUILayout.Space(5);
 
@@ -77,7 +77,7 @@ namespace MultiTool.UI.Tabs
 
 			if (GUILayout.Button("Create new theme", "ButtonSecondary", GUILayout.MaxWidth(200)))
 			{
-				GUIRenderer.Tabs.SetActive(MultiTool.Renderer.themeTabId, false);
+				GUIRenderer.Tabs.SetActive(MultiTool.Renderer.ThemeTabId, false);
 			}
 
 			GUILayout.Space(10);
@@ -101,38 +101,38 @@ namespace MultiTool.UI.Tabs
 			}
 			GUILayout.Space(10);
 
-			GUILayout.Label($"Scroll bar width: {GUIRenderer.settingsScrollWidth.ToString()}", GUIRenderer.labelStyle);
-			float tempScrollWidth = GUILayout.HorizontalSlider(GUIRenderer.settingsScrollWidth, 5f, 30f);
-			GUIRenderer.settingsScrollWidth = Mathf.Round(tempScrollWidth);
+			GUILayout.Label($"Scroll bar width: {GUIRenderer.SettingsScrollWidth.ToString()}", GUIRenderer.LabelStyle);
+			float tempScrollWidth = GUILayout.HorizontalSlider(GUIRenderer.SettingsScrollWidth, 5f, 30f);
+			GUIRenderer.SettingsScrollWidth = Mathf.Round(tempScrollWidth);
 
 			GUILayout.BeginHorizontal();
 			if (GUILayout.Button("Apply", GUILayout.MaxWidth(200)))
 			{
-				GUIRenderer.scrollWidth = GUIRenderer.settingsScrollWidth;
-				MultiTool.Configuration.UpdateScrollWidth(GUIRenderer.scrollWidth);
+				GUIRenderer.ScrollWidth = GUIRenderer.SettingsScrollWidth;
+				MultiTool.Configuration.UpdateScrollWidth(GUIRenderer.ScrollWidth);
 			}
 
 			GUILayout.Space(10);
 
 			if (GUILayout.Button("Reset", "ButtonSecondary", GUILayout.MaxWidth(200)))
 			{
-				GUIRenderer.scrollWidth = 10f;
-				GUIRenderer.settingsScrollWidth = GUIRenderer.scrollWidth;
-				MultiTool.Configuration.UpdateScrollWidth(GUIRenderer.scrollWidth);
+				GUIRenderer.ScrollWidth = 10f;
+				GUIRenderer.SettingsScrollWidth = GUIRenderer.ScrollWidth;
+				MultiTool.Configuration.UpdateScrollWidth(GUIRenderer.ScrollWidth);
 			}
 			GUILayout.EndHorizontal();
 
-			GUILayout.Label("Noclip speed increase factor:", GUIRenderer.labelStyle);
-			float factor = GUILayout.HorizontalSlider(GUIRenderer.noclipFastMoveFactor, 2f, 100f);
-			GUIRenderer.noclipFastMoveFactor = Mathf.Round(factor);
-			MultiTool.Configuration.UpdateNoclipFastMoveFactor(GUIRenderer.noclipFastMoveFactor);
-			GUILayout.Label(GUIRenderer.noclipFastMoveFactor.ToString());
+			GUILayout.Label("Noclip speed increase factor:", GUIRenderer.LabelStyle);
+			float factor = GUILayout.HorizontalSlider(GUIRenderer.NoclipFastMoveFactor, 2f, 100f);
+			GUIRenderer.NoclipFastMoveFactor = Mathf.Round(factor);
+			MultiTool.Configuration.UpdateNoclipFastMoveFactor(GUIRenderer.NoclipFastMoveFactor);
+			GUILayout.Label(GUIRenderer.NoclipFastMoveFactor.ToString());
 
 			if (GUILayout.Button("Accessibility mode", GUILayout.MaxWidth(200)))
 			{
-				GUIRenderer.accessibilityShow = !GUIRenderer.accessibilityShow;
+				GUIRenderer.AccessibilityShow = !GUIRenderer.AccessibilityShow;
 			}
-			if (GUIRenderer.accessibilityShow)
+			if (GUIRenderer.AccessibilityShow)
 			{
 				for (int i = 0; i <= Accessibility.GetAccessibilityModeCount(); i++)
 				{
@@ -144,7 +144,7 @@ namespace MultiTool.UI.Tabs
 				}
 			}
 
-			GUILayout.Label("Accessibility mode affects color slider labels:", GUIRenderer.labelStyle);
+			GUILayout.Label("Accessibility mode affects color slider labels:", GUIRenderer.LabelStyle);
 			bool doesAffectColors = Accessibility.GetDoesAffectColors();
 
 			if (GUILayout.Button(Accessibility.GetAccessibleString("On", "Off", doesAffectColors), GUILayout.MaxWidth(200)))
@@ -154,7 +154,7 @@ namespace MultiTool.UI.Tabs
 				MultiTool.Configuration.UpdateAccessibilityModeAffectsColor(doesAffectColors);
 			}
 
-			GUILayout.Label("Basic collider colour", GUIRenderer.labelStyle);
+			GUILayout.Label("Basic collider colour", GUIRenderer.LabelStyle);
 
 			Color basicCollider = MultiTool.Configuration.GetColliderColour("basic");
 
@@ -167,7 +167,7 @@ namespace MultiTool.UI.Tabs
 				MultiTool.Configuration.UpdateColliderColour(basicCollider, "basic");
 			}
 
-			GUILayout.Label("Trigger collider colour", GUIRenderer.labelStyle);
+			GUILayout.Label("Trigger collider colour", GUIRenderer.LabelStyle);
 
 			Color triggerCollider = MultiTool.Configuration.GetColliderColour("trigger");
 
@@ -180,7 +180,7 @@ namespace MultiTool.UI.Tabs
 				MultiTool.Configuration.UpdateColliderColour(triggerCollider, "trigger");
 			}
 
-			GUILayout.Label("Interior collider colour", GUIRenderer.labelStyle);
+			GUILayout.Label("Interior collider colour", GUIRenderer.LabelStyle);
 
 			Color interiorCollider = MultiTool.Configuration.GetColliderColour("interior");
 
@@ -195,7 +195,7 @@ namespace MultiTool.UI.Tabs
 			GUILayout.Space(10);
 
 			if (GUILayout.Button("Go to mod debug", GUILayout.MaxWidth(200)))
-				GUIRenderer.Tabs.SetActive(MultiTool.Renderer.debugTabId, false);
+				GUIRenderer.Tabs.SetActive(MultiTool.Renderer.DebugTabId, false);
 
 			GUILayout.EndVertical();
 			GUILayout.EndScrollView();

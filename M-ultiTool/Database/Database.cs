@@ -89,7 +89,7 @@ namespace MultiTool.Database
 								spawnMethod = spawn,
 							};
 
-							amtVehicles.Add(new Vehicle() { gameObject = gameObject, name = key, thumbnail = ThumbnailGenerator.GetThumbnail(gameObject), amt = data });
+							amtVehicles.Add(new Vehicle() { GameObject = gameObject, Name = key, Thumbnail = ThumbnailGenerator.GetThumbnail(gameObject), Amt = data });
 						}
 					}
 					catch (Exception ex)
@@ -111,7 +111,7 @@ namespace MultiTool.Database
 			List<Item> items = new List<Item>();
 			if (AMTSetup())
 			{
-				int category = GUIRenderer.categories.Keys.ToList().IndexOf("Mod items");
+				int category = GUIRenderer.Categories.Keys.ToList().IndexOf("Mod items");
 
 				foreach (object item in amtItems)
 				{
@@ -132,7 +132,7 @@ namespace MultiTool.Database
 								spawnMethod = spawn,
 							};
 
-							items.Add(new Item() { gameObject = gameObject, thumbnail = ThumbnailGenerator.GetThumbnail(gameObject), amt = data, category = category });
+							items.Add(new Item() { GameObject = gameObject, Thumbnail = ThumbnailGenerator.GetThumbnail(gameObject), Amt = data, Category = category });
 						}
 					}
 					catch (Exception ex)
@@ -172,11 +172,11 @@ namespace MultiTool.Database
 							{
 								Vehicle vehicle = new Vehicle()
 								{
-									gameObject = gameObject,
+									GameObject = gameObject,
 									//variant = i + 1,
-									variant = i,
-									thumbnail = ThumbnailGenerator.GetThumbnail(gameObject, i),
-									name = Translator.T(gameObject.name, "vehicle", i),
+									Variant = i,
+									Thumbnail = ThumbnailGenerator.GetThumbnail(gameObject, i),
+									Name = Translator.T(gameObject.name, "vehicle", i),
 								};
 								vehiclesCache.Add(vehicle);
 							}
@@ -185,10 +185,10 @@ namespace MultiTool.Database
 						{
 							Vehicle vehicle = new Vehicle()
 							{
-								gameObject = gameObject,
-								variant = -1,
-								thumbnail = ThumbnailGenerator.GetThumbnail(gameObject),
-								name = Translator.T(gameObject.name, "vehicle", -1),
+								GameObject = gameObject,
+								Variant = -1,
+								Thumbnail = ThumbnailGenerator.GetThumbnail(gameObject),
+								Name = Translator.T(gameObject.name, "vehicle", -1),
 							};
 							vehiclesCache.Add(vehicle);
 						}
@@ -223,7 +223,7 @@ namespace MultiTool.Database
 					// Remove vehicles and trailers from items array.
 					if (item && !GameUtilities.IsVehicleOrTrailer(item) && item.name != null && item.name != "ErrorPrefab")
 					{
-						itemsCache.Add(new Item() { gameObject = item, thumbnail = ThumbnailGenerator.GetThumbnail(item), category = GameUtilities.GetCategory(item) });
+						itemsCache.Add(new Item() { GameObject = item, Thumbnail = ThumbnailGenerator.GetThumbnail(item), Category = GameUtilities.GetCategory(item) });
 					}
 				}
 				catch (Exception ex)
@@ -244,13 +244,13 @@ namespace MultiTool.Database
 		internal static List<Item> LoadModItems()
 		{
 			List<Item> items = new List<Item>();
-			int category = GUIRenderer.categories.Keys.ToList().IndexOf("Mod items");
+			int category = GUIRenderer.Categories.Keys.ToList().IndexOf("Mod items");
 
 			foreach (GameObject item in ModLoader.Database.GetAllItems())
 			{
 				try
 				{
-					itemsCache.Add(new Item() { gameObject = item, thumbnail = ThumbnailGenerator.GetThumbnail(item), category = category });
+					itemsCache.Add(new Item() { GameObject = item, Thumbnail = ThumbnailGenerator.GetThumbnail(item), Category = category });
 				}
 				catch (Exception ex)
 				{
@@ -281,9 +281,9 @@ namespace MultiTool.Database
 					// TODO: Some building thumbnails are a bit fucked.
 					POIsCache.Add(new POI()
 					{
-						poi = POI,
-						thumbnail = ThumbnailGenerator.GetThumbnail(POI, POI: true),
-						name = Translator.T(POI.name, "POI"),
+						Poi = POI,
+						Thumbnail = ThumbnailGenerator.GetThumbnail(POI, POI: true),
+						Name = Translator.T(POI.name, "POI"),
 					});
 				}
 				catch (Exception ex)
@@ -297,9 +297,9 @@ namespace MultiTool.Database
 			{
 				POIsCache.Add(new POI()
 				{
-					poi = objClass.prefab,
-					thumbnail = ThumbnailGenerator.GetThumbnail(objClass.prefab, POI: true),
-					name = Translator.T(objClass.prefab.name, "POI"),
+					Poi = objClass.prefab,
+					Thumbnail = ThumbnailGenerator.GetThumbnail(objClass.prefab, POI: true),
+					Name = Translator.T(objClass.prefab.name, "POI"),
 				});
 			}
 
@@ -307,13 +307,13 @@ namespace MultiTool.Database
 			foreach (ObjClass objClass in mainscript.M.terrainGenerationSettings.desertTowerGeneration.objTypes)
 			{
 				// Exclude POIs already loaded.
-				if (POIsCache.Where(p => p.poi.name == objClass.prefab.name).ToList().Count() > 0) continue;
+				if (POIsCache.Where(p => p.Poi.name == objClass.prefab.name).ToList().Count() > 0) continue;
 
 				POIsCache.Add(new POI()
 				{
-					poi = objClass.prefab,
-					thumbnail = ThumbnailGenerator.GetThumbnail(objClass.prefab, POI: true),
-					name = Translator.T(objClass.prefab.name, "POI"),
+					Poi = objClass.prefab,
+					Thumbnail = ThumbnailGenerator.GetThumbnail(objClass.prefab, POI: true),
+					Name = Translator.T(objClass.prefab.name, "POI"),
 				});
 			}
 
@@ -331,9 +331,9 @@ namespace MultiTool.Database
 				{
 					POIsCache.Add(new POI()
 					{
-						poi = obj,
-						thumbnail = ThumbnailGenerator.GetThumbnail(obj, POI: true),
-						name = Translator.T(obj.name, "POI"),
+						Poi = obj,
+						Thumbnail = ThumbnailGenerator.GetThumbnail(obj, POI: true),
+						Name = Translator.T(obj.name, "POI"),
 					});
 				}
 			}

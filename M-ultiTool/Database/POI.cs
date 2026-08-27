@@ -4,15 +4,15 @@ namespace MultiTool.Database
 {
 	internal class POI
 	{
-		public GameObject poi;
-		public string name;
-		public Texture2D thumbnail;
+		public GameObject Poi;
+		public string Name;
+		public Texture2D Thumbnail;
 	}
 
 	internal class SpawnedPOI
 	{
 		public int? ID;
-		public GameObject poiObject;
-		public POI poi;
+		public GameObject PoiObject;
+		public POI Poi;
 	}
 }

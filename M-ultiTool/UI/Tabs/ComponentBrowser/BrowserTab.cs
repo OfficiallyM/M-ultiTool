@@ -62,7 +62,7 @@ namespace MultiTool.UI.Tabs.ComponentBrowser
 
 		// Help modal.
 		private bool _showHelpModal = false;
-		private Rect _helpModalRect = new Rect(100, 100, MultiTool.Renderer.resolutionX / 3, MultiTool.Renderer.resolutionY / 3);
+		private Rect _helpModalRect = new Rect(100, 100, MultiTool.Renderer.ResolutionX / 3, MultiTool.Renderer.ResolutionY / 3);
 
 		// Configuration.
 		private Dictionary<int, string> _layers = new Dictionary<int, string>();
@@ -204,8 +204,8 @@ namespace MultiTool.UI.Tabs.ComponentBrowser
 			string title = "Select object to edit";
 			if (_selected.trackedComponent != null)
 				title = _selected.trackedComponent.component.GetType().Name;
-			else if (_selected.trackedSceneObject?.sceneObject?.gameObject != null)
-				title = _selected.trackedSceneObject?.sceneObject?.gameObject?.name;
+			else if (_selected.trackedSceneObject?.sceneObject?.GameObject != null)
+				title = _selected.trackedSceneObject?.sceneObject?.GameObject?.name;
 			else if (_parentChangingObject != null)
 				title = _parentChangingObject.name;
 			return title;
@@ -359,14 +359,14 @@ namespace MultiTool.UI.Tabs.ComponentBrowser
 
 			try
 			{
-				if (obj.gameObject == null) return null;
+				if (obj.GameObject == null) return null;
 				if (_searchDepth > -1 && depth > _searchDepth) return null;
-				if (!_searchInactive && !obj.gameObject.activeInHierarchy) return null;
+				if (!_searchInactive && !obj.GameObject.activeInHierarchy) return null;
 
-				bool selfMatch = MatchesConditions(obj.gameObject, filter.Conditions[SearchScope.Self]);
+				bool selfMatch = MatchesConditions(obj.GameObject, filter.Conditions[SearchScope.Self]);
 
 				List<SceneObject> matchedChildren = new List<SceneObject>();
-				foreach (SceneObject child in obj.children)
+				foreach (SceneObject child in obj.Children)
 				{
 					SceneObject match = FilterAndBuildTree(child, filter, expandedPaths, depth + 1, token);
 					if (match != null)
@@ -374,14 +374,14 @@ namespace MultiTool.UI.Tabs.ComponentBrowser
 				}
 
 				// Evaluate root and parent conditions.
-				if (filter.Conditions[SearchScope.Parent].Count > 0 && obj.gameObject.transform.parent != null)
+				if (filter.Conditions[SearchScope.Parent].Count > 0 && obj.GameObject.transform.parent != null)
 				{
-					GameObject parentObj = obj.gameObject.transform.parent.gameObject;
+					GameObject parentObj = obj.GameObject.transform.parent.gameObject;
 					if (!MatchesConditions(parentObj, filter.Conditions[SearchScope.Parent])) return null;
 				}
 				if (filter.Conditions[SearchScope.Root].Count > 0)
 				{
-					GameObject rootObj = obj.gameObject.transform.root.gameObject;
+					GameObject rootObj = obj.GameObject.transform.root.gameObject;
 					if (!MatchesConditions(rootObj, filter.Conditions[SearchScope.Root])) return null;
 				}
 
@@ -392,16 +392,16 @@ namespace MultiTool.UI.Tabs.ComponentBrowser
 				else
 				{
 					if (!selfMatch) return null;
-					matchedChildren = obj.children;
+					matchedChildren = obj.Children;
 				}
 
-				if (_expandChildren && matchedChildren.Count > 0 && obj.gameObject?.transform != null)
-					expandedPaths.Add(obj.gameObject.transform.GetPath());
+				if (_expandChildren && matchedChildren.Count > 0 && obj.GameObject?.transform != null)
+					expandedPaths.Add(obj.GameObject.transform.GetPath());
 
 				return new SceneObject
 				{
-					gameObject = obj.gameObject,
-					children = matchedChildren
+					GameObject = obj.GameObject,
+					Children = matchedChildren
 				};
 			}
 			catch (OperationCanceledException)
@@ -590,18 +590,18 @@ namespace MultiTool.UI.Tabs.ComponentBrowser
 							_bookmarksPosition = GUILayout.BeginScrollView(_bookmarksPosition);
 							foreach (TrackedSceneObject bookmark in _bookmarks)
 							{
-								if (bookmark.sceneObject == null || bookmark.sceneObject.gameObject == null) continue;
+								if (bookmark.sceneObject == null || bookmark.sceneObject.GameObject == null) continue;
 
 								GUILayout.BeginHorizontal("box");
 								string name = "Unknown";
 								try
 								{
-									name = bookmark.sceneObject.gameObject.name;
+									name = bookmark.sceneObject.GameObject.name;
 								}
 								catch { }
 								if (GUILayout.Button(name, "ButtonPrimaryTextLeft"))
 								{
-									_selected.trackedSceneObject = new TrackedSceneObject(bookmark.sceneObject.gameObject.GetInstanceID(), bookmark.sceneObject);
+									_selected.trackedSceneObject = new TrackedSceneObject(bookmark.sceneObject.GameObject.GetInstanceID(), bookmark.sceneObject);
 									_selected.trackedComponent = null;
 									ScrollToObject(bookmark.sceneObject);
 								}
@@ -693,18 +693,18 @@ namespace MultiTool.UI.Tabs.ComponentBrowser
 			if (objects == null) return;
 			foreach (SceneObject obj in objects)
 			{
-				if (obj.gameObject == null) continue;
+				if (obj.GameObject == null) continue;
 
 				GUILayout.BeginHorizontal(_selected?.trackedSceneObject?.sceneObject == obj ? "BoxGrey" : "box");
 				GUILayout.Space(indent * 34f);
 
-				bool expanded = IsExpanded(obj.gameObject);
+				bool expanded = IsExpanded(obj.GameObject);
 
-				if (obj.children.Count > 0)
+				if (obj.Children.Count > 0)
 				{
 					if (GUILayout.Button(expanded ? "-" : "+", GUILayout.Width(30)))
 					{
-						ToggleExpand(obj.gameObject);
+						ToggleExpand(obj.GameObject);
 					}
 				}
 				else
@@ -713,15 +713,15 @@ namespace MultiTool.UI.Tabs.ComponentBrowser
 					GUILayout.Space(34);
 				}
 
-				if (GUILayout.Button("", obj.gameObject.activeSelf ? "BoxGreen" : "BoxGrey", GUILayout.Width(25)))
+				if (GUILayout.Button("", obj.GameObject.activeSelf ? "BoxGreen" : "BoxGrey", GUILayout.Width(25)))
 				{
-					obj.gameObject.SetActive(!obj.gameObject.activeSelf);
+					obj.GameObject.SetActive(!obj.GameObject.activeSelf);
 				}
 
 				string name = "Unknown";
 				try
 				{
-					name = obj.gameObject.name;
+					name = obj.GameObject.name;
 				}
 				catch { }
 				if (GUILayout.Button(name, "ButtonPrimaryTextLeft"))
@@ -732,7 +732,7 @@ namespace MultiTool.UI.Tabs.ComponentBrowser
 							if (_selected.trackedSceneObject != null && _selected.trackedSceneObject?.sceneObject == obj)
 								_selected.trackedSceneObject = null;
 							else
-								_selected.trackedSceneObject = new TrackedSceneObject(obj.gameObject.GetInstanceID(), obj);
+								_selected.trackedSceneObject = new TrackedSceneObject(obj.GameObject.GetInstanceID(), obj);
 							_selected.trackedComponent = null;
 							break;
 						case HierarchySelectionMode.ChangeParent:
@@ -746,13 +746,13 @@ namespace MultiTool.UI.Tabs.ComponentBrowser
 					if (IsInBookmarks(obj))
 						RemoveBookmark(obj);
 					else
-						_bookmarks.Add(new TrackedSceneObject(obj.gameObject.GetInstanceID(), obj));
+						_bookmarks.Add(new TrackedSceneObject(obj.GameObject.GetInstanceID(), obj));
 				}
 
 				GUILayout.EndHorizontal();
 
 				if (expanded)
-					RenderHierarchy(obj.children, indent + 1);
+					RenderHierarchy(obj.Children, indent + 1);
 			}
 		}
 
@@ -810,9 +810,9 @@ namespace MultiTool.UI.Tabs.ComponentBrowser
 			if (obj == null) return;
 
 			// Expand parent if collapsed to ensure we can scroll to it.
-			SceneObject parent = obj.parent;
-			if (parent != null && !IsExpanded(parent.gameObject))
-				ToggleExpand(parent.gameObject);
+			SceneObject parent = obj.Parent;
+			if (parent != null && !IsExpanded(parent.GameObject))
+				ToggleExpand(parent.GameObject);
 
 			float offset = 0f;
 			if (TryGetScrollOffset(_cachedObjects, obj, ref offset))
@@ -832,8 +832,8 @@ namespace MultiTool.UI.Tabs.ComponentBrowser
 		{
 			foreach (SceneObject obj in objects)
 			{
-				if (obj.gameObject == null) continue;
-				bool isExpanded = _expandedPaths.Contains(obj.gameObject.transform.GetPath());
+				if (obj.GameObject == null) continue;
+				bool isExpanded = _expandedPaths.Contains(obj.GameObject.transform.GetPath());
 
 				if (obj == target)
 					return true;
@@ -841,9 +841,9 @@ namespace MultiTool.UI.Tabs.ComponentBrowser
 				// Offset by row height.
 				offset += 37.5f;
 
-				if (isExpanded && obj.children.Count > 0)
+				if (isExpanded && obj.Children.Count > 0)
 				{
-					if (TryGetScrollOffset(obj.children, target, ref offset))
+					if (TryGetScrollOffset(obj.Children, target, ref offset))
 						return true;
 				}
 			}
@@ -880,10 +880,10 @@ namespace MultiTool.UI.Tabs.ComponentBrowser
 		{
 			if (current == null) return null;
 
-			if (current.gameObject == target)
+			if (current.GameObject == target)
 				return current;
 
-			foreach (SceneObject child in current.children)
+			foreach (SceneObject child in current.Children)
 			{
 				SceneObject found = FindSceneObjectRecursive(child, target);
 				if (found != null)
@@ -930,7 +930,7 @@ namespace MultiTool.UI.Tabs.ComponentBrowser
 		/// <param name="targetObj">New parent object</param>
 		private void ChangeParent(SceneObject targetObj)
 		{
-			GameObject targetGameObject = targetObj.gameObject;
+			GameObject targetGameObject = targetObj.GameObject;
 
 			if (_parentChangingObject == null) return;
 
@@ -1027,7 +1027,7 @@ namespace MultiTool.UI.Tabs.ComponentBrowser
 		private void RenderObjectConfig()
 		{
 			SceneObject sceneObject = _selected.trackedSceneObject.sceneObject;
-			GameObject gameObject = sceneObject.gameObject;
+			GameObject gameObject = sceneObject.GameObject;
 			if (gameObject == null) return;
 			Transform transform = gameObject.transform;
 

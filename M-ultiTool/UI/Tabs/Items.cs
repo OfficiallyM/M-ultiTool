@@ -59,10 +59,10 @@ namespace MultiTool.UI.Tabs
 
 		public override void Update()
 		{
-			List<Item> items = GUIRenderer.items;
+			List<Item> items = GUIRenderer.Items;
 			if (_search != _lastSearch)
 			{
-				items = GUIRenderer.items.Where(i => i.gameObject.name.ToLower().Contains(_search.ToLower())).ToList();
+				items = GUIRenderer.Items.Where(i => i.GameObject.name.ToLower().Contains(_search.ToLower())).ToList();
 				_rechunk = true;
 				_lastSearch = _search;
 				_itemScrollPosition = new Vector2(0, 0);
@@ -70,7 +70,7 @@ namespace MultiTool.UI.Tabs
 
 			if (_filters.Count > 0 && _rechunk)
 			{
-				items = items.Where(v => _filters.Contains(v.category)).ToList();
+				items = items.Where(v => _filters.Contains(v.Category)).ToList();
 				_rechunk = true;
 				_itemScrollPosition = new Vector2(0, 0);
 			}
@@ -114,7 +114,7 @@ namespace MultiTool.UI.Tabs
 			GUILayout.FlexibleSpace();
 
 			// Delete mode.
-			if (GUILayout.Button(Accessibility.GetAccessibleString("Delete mode", Services.State.DeleteMode) + $" (Press {MultiTool.Binds.GetKeyByAction((int)Keybinds.Inputs.deleteMode).key})", GUILayout.MaxWidth(250)))
+			if (GUILayout.Button(Accessibility.GetAccessibleString("Delete mode", Services.State.DeleteMode) + $" (Press {MultiTool.Binds.GetKeyByAction((int)Keybinds.Inputs.deleteMode).AssignedKey})", GUILayout.MaxWidth(250)))
 			{
 				Services.State.DeleteMode = !Services.State.DeleteMode;
 			}
@@ -140,33 +140,33 @@ namespace MultiTool.UI.Tabs
 				{
 					// An item is broken, remove it from the list and trigger a rechunk
 					// to avoid gaps in the layout.
-					if (item.gameObject == null)
+					if (item.GameObject == null)
 					{
-						GUIRenderer.items.Remove(item);
+						GUIRenderer.Items.Remove(item);
 						_rechunk = true;
 						break;
 					}
 
 					GUILayout.Box("", "button", GUILayout.Width(140), GUILayout.Height(140));
 					Rect boxRect = GUILayoutUtility.GetLastRect();
-					bool buttonImage = GUI.Button(new Rect(boxRect.x + 10f, boxRect.y - 10f, boxRect.width - 20f, boxRect.height - 20f), item.thumbnail, "ButtonTransparent");
-					bool buttonText = GUI.Button(new Rect(boxRect.x, boxRect.y + (boxRect.height / 2), boxRect.width, boxRect.height / 2), item.gameObject?.name ?? "Unknown", "ButtonTransparent");
+					bool buttonImage = GUI.Button(new Rect(boxRect.x + 10f, boxRect.y - 10f, boxRect.width - 20f, boxRect.height - 20f), item.Thumbnail, "ButtonTransparent");
+					bool buttonText = GUI.Button(new Rect(boxRect.x, boxRect.y + (boxRect.height / 2), boxRect.width, boxRect.height / 2), item.GameObject?.name ?? "Unknown", "ButtonTransparent");
 					if (buttonImage || buttonText)
 					{
 						GameObject spawned = SpawnUtilities.Spawn(new Item()
 						{
-							gameObject = item.gameObject,
-							conditionInt = _condition,
-							fuelMixes = _fuelMixes,
-							fuelValues = _fuelValues,
-							fuelTypeInts = _fuelTypes,
-							color = Colour.GetColour(),
-							plate = _plate,
-							amt = item.amt,
+							GameObject = item.GameObject,
+							ConditionInt = _condition,
+							FuelMixes = _fuelMixes,
+							FuelValues = _fuelValues,
+							FuelTypeInts = _fuelTypes,
+							Color = Colour.GetColour(),
+							Plate = _plate,
+							Amt = item.Amt,
 						}, spawnWithFuel: Services.State.SpawnWithFuel);
 
 						if (spawned != null)
-							GUIRenderer.spawnedObjects.Add(spawned);
+							GUIRenderer.SpawnedObjects.Add(spawned);
 					}
 					GUILayout.Space(5);
 				}
@@ -180,9 +180,9 @@ namespace MultiTool.UI.Tabs
 				GUILayout.FlexibleSpace();
 				GUILayout.BeginVertical(GUILayout.MaxWidth(205));
 				_filterScrollPosition = GUILayout.BeginScrollView(_filterScrollPosition);
-				for (int i = 0; i < GUIRenderer.categories.Count; i++)
+				for (int i = 0; i < GUIRenderer.Categories.Count; i++)
 				{
-					string name = GUIRenderer.categories.ElementAt(i).Key;
+					string name = GUIRenderer.Categories.ElementAt(i).Key;
 					if (GUILayout.Button(Accessibility.GetAccessibleString(name, _filters.Contains(i))))
 					{
 						if (_filters.Contains(i))
@@ -218,7 +218,7 @@ namespace MultiTool.UI.Tabs
 				}
 				GUILayout.Space(10);
 
-				if (GUIRenderer.spawnedObjects.Count == 0)
+				if (GUIRenderer.SpawnedObjects.Count == 0)
 				{
 					GUILayout.BeginHorizontal();
 					GUILayout.FlexibleSpace();
@@ -227,7 +227,7 @@ namespace MultiTool.UI.Tabs
 					GUILayout.EndHorizontal();
 				}
 
-				foreach (GameObject obj in GUIRenderer.spawnedObjects)
+				foreach (GameObject obj in GUIRenderer.SpawnedObjects)
 				{
 					try
 					{
@@ -273,7 +273,7 @@ namespace MultiTool.UI.Tabs
 									component.removeFromMemory = true;
 								}
 								UnityEngine.Object.Destroy(obj);
-								GUIRenderer.spawnedObjects.Remove(obj);
+								GUIRenderer.SpawnedObjects.Remove(obj);
 								break;
 							}
 						}
@@ -283,7 +283,7 @@ namespace MultiTool.UI.Tabs
 					catch (Exception ex)
 					{
 						Logger.Log($"Spawn history error for item {obj.name ?? "Unknown"}. Details: {ex}");
-						GUIRenderer.spawnedObjects.Remove(obj);
+						GUIRenderer.SpawnedObjects.Remove(obj);
 						break;
 					}
 				}
