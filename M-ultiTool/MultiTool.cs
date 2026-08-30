@@ -10,6 +10,7 @@ using System.IO;
 using System.Linq;
 using TLDLoader;
 using UnityEngine;
+using static MultiTool.Services.Keybinds;
 
 namespace MultiTool
 {
@@ -35,7 +36,6 @@ namespace MultiTool
 		internal static Configuration Configuration => Context.Configuration;
 
 		internal static Mod ModInstance;
-		internal static string ConfigVersion;
 		internal static bool IsOnMainMenu = true;
 
 		public MultiTool()
@@ -49,6 +49,9 @@ namespace MultiTool
 				ThumbnailGenerator.Init();
 
 				Context = new ServiceContext(new Configuration(), new Keybinds(), new ModState());
+				// Bootstrap the configuration with a manually constructed 
+				// path because the mod hasn't fully initialised yet.
+				Configuration.Bootstrap(Path.Combine(ModLoader.ModsFolder, "Config", "Mod Settings", ID, "Config.json"));
 				Renderer = new GUIRenderer(Context);
 			}
 			catch (Exception ex)
@@ -60,11 +63,7 @@ namespace MultiTool
 		// Override functions.
 		public override void OnMenuLoad()
 		{
-			// Set the configuration path.
-			Configuration.SetConfigPath(Path.Combine(ModLoader.GetModConfigFolder(this), "Config.json"));
-
-			ConfigVersion = Configuration.GetVersion();
-			Configuration.UpdateVersion();
+			Configuration.Update(c => { c.Version = Version; });
 			IsOnMainMenu = true;
 
 			Renderer.OnMenuLoad();

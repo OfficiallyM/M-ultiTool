@@ -337,7 +337,7 @@ namespace MultiTool.UI
 				try
 				{
 					SettingsScrollWidth = ScrollWidth;
-					NoclipFastMoveFactor = MultiTool.Configuration.GetNoclipFastMoveFactor(NoclipFastMoveFactor);
+					NoclipFastMoveFactor = MultiTool.Configuration.Config.NoclipFastMoveFactor;
 				}
 				catch (Exception ex)
 				{
@@ -826,11 +826,11 @@ namespace MultiTool.UI
 							try
 							{
 								source = new Material(source);
-								Color color = MultiTool.Configuration.GetColliderColour("basic");
+								Color color = MultiTool.Configuration.Config.BasicColliderColor;
 								if (componentsInChild.isTrigger)
-									color = MultiTool.Configuration.GetColliderColour("trigger");
+									color = MultiTool.Configuration.Config.TriggerColliderColor;
 								if (componentsInChild.gameObject.GetComponent<interiorscript>() != null)
-									color = MultiTool.Configuration.GetColliderColour("interior");
+									color = MultiTool.Configuration.Config.InteriorColliderColor;
 								source.SetColor("_Color", color);
 							}
 							catch
@@ -998,8 +998,8 @@ namespace MultiTool.UI
 				// Load any configs needed for the main menu UI.
 				try
 				{
-					ScrollWidth = MultiTool.Configuration.GetScrollWidth(ScrollWidth);
-					Palette = MultiTool.Configuration.GetPalette(Palette);
+					ScrollWidth = MultiTool.Configuration.Config.ScrollWidth;
+					Palette = MultiTool.Configuration.Config.Palette;
 				}
 				catch (Exception ex)
 				{

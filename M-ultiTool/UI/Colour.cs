@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using static MultiTool.Services.Keybinds;
 using Logger = MultiTool.Services.Logger;
 
 namespace MultiTool.UI
@@ -29,7 +30,7 @@ namespace MultiTool.UI
 
 			try
 			{
-				_palette = MultiTool.Configuration.GetPalette(_palette);
+				_palette = MultiTool.Configuration.Config.Palette;
 				PopulatePaletteCache();
 			}
 			catch (Exception ex)
@@ -150,7 +151,7 @@ namespace MultiTool.UI
 
 								// Update palette index colour.
 								_palette[index] = selectedColour;
-								MultiTool.Configuration.UpdatePalette(_palette);
+								MultiTool.Configuration.Update(c => { c.Palette = _palette; });
 
 								// Update texture cache.
 								UpdateCacheIndex(index, selectedColour);

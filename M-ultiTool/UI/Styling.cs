@@ -4,6 +4,7 @@ using System.Runtime.Serialization.Json;
 using System.Text;
 using TLDLoader;
 using UnityEngine;
+using static MultiTool.Services.Keybinds;
 using Logger = MultiTool.Services.Logger;
 
 namespace MultiTool.UI
@@ -132,7 +133,7 @@ namespace MultiTool.UI
 			_activeTheme = theme;
 
 			// Save in config.
-			MultiTool.Configuration.UpdateTheme(_activeTheme.Name);
+			MultiTool.Configuration.Update(c => { c.Theme = _activeTheme.Name; });
 
 			_skin = CreateSkinForTheme(_activeTheme);
 		}
@@ -521,12 +522,12 @@ namespace MultiTool.UI
 		/// </summary>
 		private static void LoadSelectedTheme()
 		{
-			string name = MultiTool.Configuration.GetTheme("Greyscale");
+			string name = MultiTool.Configuration.Config.Theme;
 			Theme theme = _themes.GetByName(name);
 			// Selected theme doesn't exist, fallback to greyscale.
 			if (theme == null)
 			{
-				MultiTool.Configuration.UpdateTheme("Greyscale");
+				MultiTool.Configuration.Update(c => { c.Theme = "Greyscale"; });
 				theme = _themes.GetByName("Greyscale");
 			}
 
