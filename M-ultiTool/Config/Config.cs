@@ -85,7 +85,6 @@ namespace MultiTool.Config
 		/// </summary>
 		private void Commit()
 		{
-			Logger.Log("[Config] Commit called");
 			if (_configPath == string.Empty)
 			{
 				Logger.Log("Config path not found", Logger.LogLevel.Error);
