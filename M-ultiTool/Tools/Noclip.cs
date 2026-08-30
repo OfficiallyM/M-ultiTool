@@ -7,7 +7,6 @@ namespace MultiTool.Tools
 	{
 		private float _climbSpeed = 10f;
 		private float _normalMoveSpeed = 10f;
-		private float _fastMoveFactor = 10f;
 
 		private ladderscript _ladder = new ladderscript();
 
@@ -28,8 +27,8 @@ namespace MultiTool.Tools
 			float climbSpeed = this._climbSpeed;
 			if (Input.GetKey(MultiTool.Binds.GetKeyByAction((int)Keybinds.Inputs.noclipSpeedUp).AssignedKey))
 			{
-				speed *= MultiTool.Configuration.GetNoclipFastMoveFactor(_fastMoveFactor);
-				climbSpeed *= MultiTool.Configuration.GetNoclipFastMoveFactor(_fastMoveFactor);
+				speed *= MultiTool.Configuration.Config.NoclipFastMoveFactor;
+				climbSpeed *= MultiTool.Configuration.Config.NoclipFastMoveFactor;
 			}
 
 			if (Input.GetButton("forward"))
