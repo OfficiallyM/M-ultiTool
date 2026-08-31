@@ -10,7 +10,7 @@ namespace MultiTool.UI
 		// services - this is only populated for MultiTool's built-in tabs.
 		internal ServiceContext Services { get; set; }
 
-		public virtual string Name { get; set; }
+		public abstract string Name { get; }
 		public virtual bool HasConfigPane { get { return false; } }
 		public virtual string ConfigTitle { get; set; }
 		public virtual bool HasCache { get { return false; } }

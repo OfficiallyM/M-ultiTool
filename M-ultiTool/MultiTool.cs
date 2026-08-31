@@ -2,6 +2,7 @@
 using MultiTool.Database;
 using MultiTool.Save;
 using MultiTool.Services;
+using MultiTool.Tools;
 using MultiTool.UI;
 using MultiTool.UI.Tabs.ComponentBrowser;
 using MultiTool.Utilities;
@@ -10,7 +11,6 @@ using System.IO;
 using System.Linq;
 using TLDLoader;
 using UnityEngine;
-using static MultiTool.Services.Keybinds;
 
 namespace MultiTool
 {
@@ -25,6 +25,7 @@ namespace MultiTool
 
 		// Modules.
 		internal static GUIRenderer Renderer;
+		internal static ToolController Tools;
 
 		// Named Context, not Services - "Services" already resolves to the MultiTool.Services
 		// namespace from inside this class (see the Services.Logger.* calls below), so a field
@@ -53,6 +54,7 @@ namespace MultiTool
 				// path because the mod hasn't fully initialised yet.
 				Configuration.Bootstrap(Path.Combine(ModLoader.ModsFolder, "Config", "Mod Settings", ID, "Config.json"));
 				Renderer = new GUIRenderer(Context);
+				Tools = new ToolController(Context);
 			}
 			catch (Exception ex)
 			{
@@ -65,6 +67,9 @@ namespace MultiTool
 		{
 			Configuration.Update(c => { c.Version = Version; });
 			IsOnMainMenu = true;
+
+			// Register tools.
+			Tools.Register(new Noclip());
 
 			Renderer.OnMenuLoad();
 		}
@@ -89,6 +94,7 @@ namespace MultiTool
 		public override void Update()
 		{
 			Renderer.Update();
+			Tools.Update();
 
 			// Delete mode.
 			if (Context.State.DeleteMode)
@@ -529,6 +535,7 @@ namespace MultiTool
 		public override void FixedUpdate()
 		{
 			Renderer.FixedUpdate();
+			Tools.FixedUpdate();
 		}
 	}
 }

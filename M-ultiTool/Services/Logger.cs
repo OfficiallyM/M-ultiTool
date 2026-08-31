@@ -36,10 +36,12 @@ namespace MultiTool.Services
 		/// Log messages to a file.
 		/// </summary>
 		/// <param name="msg">The message to log</param>
-		public static void Log(string msg, LogLevel logLevel = LogLevel.Info)
+		public static void Log(string msg, LogLevel logLevel = LogLevel.Info, string sender = null)
 		{
+			if (sender != null)
+				sender = $"[{sender}]";
 			if (_logFile != string.Empty)
-				File.AppendAllText(_logFile, $"{DateTime.Now.ToString("s")} [{logLevel}] {msg}\r\n");
+				File.AppendAllText(_logFile, $"{DateTime.Now.ToString("s")} [{logLevel}] {(sender ?? "")} {msg}\r\n");
 		}
 	}
 }

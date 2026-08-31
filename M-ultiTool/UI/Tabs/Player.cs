@@ -67,35 +67,7 @@ namespace MultiTool.UI.Tabs
 			}
 			GUILayout.Space(10);
 
-			if (GUILayout.Button(Accessibility.GetAccessibleString("Noclip", Services.State.Noclip), GUILayout.MaxWidth(200)))
-			{
-				Services.State.Noclip = !Services.State.Noclip;
-
-				if (Services.State.Noclip)
-				{
-					Noclip noclip = mainscript.M.player.gameObject.AddComponent<Noclip>();
-
-					// Disable colliders.
-					foreach (Collider collider in mainscript.M.player.C)
-					{
-						collider.enabled = false;
-					}
-				}
-				else
-				{
-					Noclip noclip = mainscript.M.player.gameObject.GetComponent<Noclip>();
-					if (noclip != null)
-					{
-						UnityEngine.Object.Destroy(noclip);
-
-						// Re-enable colliders.
-						foreach (Collider collider in mainscript.M.player.C)
-						{
-							collider.enabled = true;
-						}
-					}
-				}
-			}
+			MultiTool.Tools.RenderControl("noclip");
 			GUILayout.EndHorizontal();
 			GUILayout.Space(10);
 
