@@ -228,7 +228,10 @@ namespace MultiTool.UI
 				if (_loaded)
 				{
 					if (!Show && !mainscript.M.menu.Menu.activeSelf)
+					{
 						RenderHUD();
+						MultiTool.Tools.RenderHud();
+					}
 
 					else if (!Show && mainscript.M.menu.Menu.activeSelf)
 						RenderPauseMenu();
