@@ -21,10 +21,19 @@ namespace MultiTool.Tools
 		public virtual void HudRender() { }
 		public virtual void ControlRender() { }
 
-		internal virtual string Source { get; set; }
-		internal virtual string Id { get; set; }
+		public virtual string Source { get; set; }
+		public virtual string Id { get; set; }
 
-		private float _nextCacheUpdate = 0;
-		internal virtual float NextCacheUpdate { get => _nextCacheUpdate; set => _nextCacheUpdate = value; }
+		public virtual bool IsDisabled { get; set; }
+		public virtual int Errors { get; set; }
+		public virtual float NextCacheUpdate { get; set; }
+
+		public void IncrementErrors()
+		{
+			Errors++;
+
+			if (Errors >= 5)
+				IsDisabled = true;
+		}
 	}
 }
