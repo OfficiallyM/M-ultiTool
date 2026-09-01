@@ -1,5 +1,6 @@
 ﻿using MultiTool.Services;
 using MultiTool.UI;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
@@ -24,15 +25,31 @@ namespace MultiTool.Tools
 
 		public void Update()
 		{
-			_active?.Update();
+			try
+			{
+				_active?.Update();
+			}
+			catch (Exception ex)
+			{
+				Logger.Log($"{_active.Name} - error during Update(). Details: {ex}", Logger.LogLevel.Error, "ToolController");
+				_active.IncrementErrors();
+			}
 
 			foreach (Tool tool in _cacheTools)
 			{
-				if (!tool.HasCache) continue;
+				if (!tool.HasCache || tool.IsDisabled) continue;
 				tool.NextCacheUpdate -= Time.unscaledDeltaTime;
 				if (tool.NextCacheUpdate <= 0)
 				{
-					tool.OnCacheRefresh();
+					try
+					{
+						tool.OnCacheRefresh();
+					}
+					catch (Exception ex)
+					{
+						Logger.Log($"{tool.Name} - error during OnCacheRefresh(). Details: {ex}", Logger.LogLevel.Error, "ToolController");
+						tool.IncrementErrors();
+					}
 					tool.NextCacheUpdate = tool.CacheRefreshTime;
 				}
 			}
@@ -40,7 +57,15 @@ namespace MultiTool.Tools
 
 		public void FixedUpdate()
 		{
-			_active?.FixedUpdate();
+			try
+			{
+				_active?.FixedUpdate();
+			}
+			catch (Exception ex)
+			{
+				Logger.Log($"{_active.Name} - error during FixedUpdate(). Details: {ex}", Logger.LogLevel.Error, "ToolController");
+				_active.IncrementErrors();
+			}
 		}
 
 		/// <summary>
@@ -130,7 +155,15 @@ namespace MultiTool.Tools
 			if (_active == null) return;
 
 			GUILayout.BeginArea(new Rect(0, 0, Screen.width, Screen.height));
-			_active.HudRender();
+			try
+			{
+				_active.HudRender();
+			}
+			catch (Exception ex)
+			{
+				Logger.Log($"{_active.Name} - error during HudRender(). Details: {ex}", Logger.LogLevel.Error, "ToolController");
+				_active.IncrementErrors();
+			}
 			GUILayout.EndArea();
 		}
 
@@ -139,7 +172,15 @@ namespace MultiTool.Tools
 			var tool = GetById(id);
 			if (tool == null) return;
 
-			tool.ControlRender();
+			try
+			{
+				tool.ControlRender();
+			}
+			catch (Exception ex)
+			{
+				Logger.Log($"{tool.Name} - error during ControlRender(). Details: {ex}", Logger.LogLevel.Error, "ToolController");
+				tool.IncrementErrors();
+			}
 		}
 	}
 }
