@@ -217,14 +217,7 @@ namespace MultiTool.UI.Tabs
 			}
 			GUILayout.Space(10);
 
-			if (GUILayout.Button(Accessibility.GetAccessibleString("Toggle object scale mode", Services.State.Mode == "scale"), GUILayout.MaxWidth(200)))
-			{
-				if (Services.State.Mode == "scale")
-					Services.State.Mode = null;
-				else
-					Services.State.Mode = "scale";
-			}
-			GUILayout.Space(10);
+			MultiTool.Tools.RenderControl("object_scale");
 
 			if (GUILayout.Button(Accessibility.GetAccessibleString("Toggle object regenerator", Services.State.Mode == "objectRegenerator"), GUILayout.MaxWidth(200)))
 			{

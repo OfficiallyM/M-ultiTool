@@ -14,7 +14,7 @@ namespace MultiTool.Tools
 	{
 		private readonly ServiceContext _services;
 
-		private Tool _active = null;
+		private Tool _active;
 		private List<Tool> _tools = new List<Tool>();
 		private List<Tool> _cacheTools = new List<Tool>();
 
@@ -25,6 +25,32 @@ namespace MultiTool.Tools
 
 		public void Update()
 		{
+			if (MultiTool.Renderer.Show) return;
+
+			// Handle object selection if tool calls for it.
+			if (_active != null && _active.UsesObjectSelection)
+			{
+				if (Input.GetKeyDown(_services.Keybinds.GetKeyByAction((int)Keybinds.Inputs.action1).AssignedKey))
+				{
+					Physics.Raycast(mainscript.M.player.Cam.transform.position, mainscript.M.player.Cam.transform.forward, out RaycastHit raycastHit, float.PositiveInfinity, mainscript.M.player.useLayer);
+					if (raycastHit.collider?.transform?.gameObject != null)
+					{
+						GameObject hitGameObject = raycastHit.collider.transform.gameObject;
+						tosaveitemscript save = hitGameObject?.GetComponentInParent<tosaveitemscript>();
+						bool isTerrain = save?.GetComponent<terrainscript>() != null;
+
+						if (save != null && !isTerrain)
+							_active.SelectedObject = save;
+						else
+							_active.SelectedObject = null;
+					}
+					else
+					{
+						_active.SelectedObject = null;
+					}
+				}
+			}
+
 			try
 			{
 				_active?.Update();
@@ -57,6 +83,8 @@ namespace MultiTool.Tools
 
 		public void FixedUpdate()
 		{
+			if (MultiTool.Renderer.Show) return;
+
 			try
 			{
 				_active?.FixedUpdate();
@@ -103,7 +131,7 @@ namespace MultiTool.Tools
 		/// <param name="id">Tool ID</param>
 		public void Activate(string id)
 		{
-			_active?.OnDeactivate();
+			Deactivate();
 			_active = GetById(id);
 			_active.OnActivate();
 		}
@@ -113,7 +141,9 @@ namespace MultiTool.Tools
 		/// </summary>
 		public void Deactivate()
 		{
-			_active?.OnDeactivate();
+			if (_active == null) return;
+			_active.OnDeactivate();
+			_active.SelectedObject = null;
 			_active = null;
 		}
 
@@ -152,11 +182,25 @@ namespace MultiTool.Tools
 
 		public void RenderHud()
 		{
-			if (_active == null) return;
+			if (_active == null || MultiTool.Renderer.Show) return;
 
 			GUILayout.BeginArea(new Rect(0, 0, Screen.width, Screen.height));
 			try
 			{
+				if (_active.UsesDefaultObjectSelectionUI)
+				{
+					GUILayout.BeginVertical();
+					GUILayout.Space(Screen.height * 0.05f);
+					GUILayout.BeginHorizontal();
+					GUILayout.FlexibleSpace();
+					GUILayout.Button(
+						$"Selected object: {(_active.SelectedObject != null ? _active.SelectedObject.name : "None")}\n{_services.Keybinds.GetPrettyName((int)Keybinds.Inputs.action1)} to {(_active.SelectedObject != null ? "deselect" : "select")}",
+						GUILayout.MinHeight(50f)
+					);
+					GUILayout.FlexibleSpace();
+					GUILayout.EndHorizontal();
+					GUILayout.EndVertical();
+				}
 				_active.HudRender();
 			}
 			catch (Exception ex)

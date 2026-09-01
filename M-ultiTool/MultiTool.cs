@@ -23,7 +23,6 @@ namespace MultiTool
 		public override string Version => "5.0.0-DEV";
 		public override bool LoadInMenu => true;
 
-		// Modules.
 		internal static GUIRenderer Renderer;
 		internal static ToolController Tools;
 
@@ -33,6 +32,7 @@ namespace MultiTool
 		internal static ServiceContext Context;
 
 		// Shorthand access for widely used services.
+		// TODO: Remove these once the stuff in this file is ported to tools.
 		internal static Keybinds Binds => Context.Keybinds;
 		internal static Configuration Configuration => Context.Configuration;
 
@@ -69,7 +69,8 @@ namespace MultiTool
 			IsOnMainMenu = true;
 
 			// Register tools.
-			Tools.Register(new Noclip());
+			Tools.Register(new NoclipTool());
+			Tools.Register(new ScaleTool());
 
 			Renderer.OnMenuLoad();
 		}
@@ -178,161 +179,6 @@ namespace MultiTool
 						}
 						else
 							GameUtilities.Paint(Colour.GetColour(), part);
-					}
-					break;
-				case "scale":
-					if (!Renderer.Show)
-					{
-						// Select object.
-						if (Input.GetKeyDown(Binds.GetKeyByAction((int)Keybinds.Inputs.action1).AssignedKey))
-						{
-							Physics.Raycast(mainscript.M.player.Cam.transform.position, mainscript.M.player.Cam.transform.forward, out RaycastHit raycastHit, float.PositiveInfinity, mainscript.M.player.useLayer);
-							if (raycastHit.collider != null && raycastHit.collider.gameObject != null)
-							{
-								GameObject hitGameObject = raycastHit.collider.transform.gameObject;
-
-								// Recurse upwards to find a tosaveitemscript.
-								tosaveitemscript save = hitGameObject.GetComponentInParent<tosaveitemscript>();
-
-								// Can't find the tosaveitemscript, return early.
-								if (save == null)
-								{
-									GUIRenderer.SelectedObject = null;
-									return;
-								}
-
-								GUIRenderer.SelectedObject = save;
-								return;
-							}
-							GUIRenderer.SelectedObject = null;
-						}
-
-						if (GUIRenderer.SelectedObject != null)
-						{
-							// Return early if looking at terrain.
-							if (GUIRenderer.SelectedObject.GetComponent<terrainscript>() != null)
-								return;
-
-							tosaveitemscript save = GUIRenderer.SelectedObject.GetComponent<tosaveitemscript>();
-							bool update = false;
-
-							Vector3 scale = GUIRenderer.SelectedObject.transform.localScale;
-							float scaleValue = GUIRenderer.ScaleValue;
-							// Scale up.
-							bool scaleUp = Input.GetKey(Binds.GetKeyByAction((int)Keybinds.Inputs.up).AssignedKey);
-							if (!GUIRenderer.ScaleHold)
-								scaleUp = Input.GetKeyDown(Binds.GetKeyByAction((int)Keybinds.Inputs.up).AssignedKey);
-							if (scaleUp)
-							{
-								switch (GUIRenderer.Axis)
-								{
-									case "all":
-										GUIRenderer.SelectedObject.transform.localScale = new Vector3(scale.x + scaleValue, scale.y + scaleValue, scale.z + scaleValue);
-										break;
-									case "x":
-										scale.x += scaleValue;
-										GUIRenderer.SelectedObject.transform.localScale = scale;
-										break;
-									case "y":
-										scale.y += scaleValue;
-										GUIRenderer.SelectedObject.transform.localScale = scale;
-										break;
-									case "z":
-										scale.z += scaleValue;
-										GUIRenderer.SelectedObject.transform.localScale = scale;
-										break;
-								}
-								update = true;
-							}
-
-							// Scale down.
-							bool scaleDown = Input.GetKey(Binds.GetKeyByAction((int)Keybinds.Inputs.down).AssignedKey);
-							if (!GUIRenderer.ScaleHold)
-								scaleDown = Input.GetKeyDown(Binds.GetKeyByAction((int)Keybinds.Inputs.down).AssignedKey);
-							if (scaleDown)
-							{
-								switch (GUIRenderer.Axis)
-								{
-									case "all":
-										GUIRenderer.SelectedObject.transform.localScale = new Vector3(scale.x - scaleValue, scale.y - scaleValue, scale.z - scaleValue);
-										break;
-									case "x":
-										scale.x -= scaleValue;
-										GUIRenderer.SelectedObject.transform.localScale = scale;
-										break;
-									case "y":
-										scale.y -= scaleValue;
-										GUIRenderer.SelectedObject.transform.localScale = scale;
-										break;
-									case "z":
-										scale.z -= scaleValue;
-										GUIRenderer.SelectedObject.transform.localScale = scale;
-										break;
-								}
-								update = true;
-							}
-
-							// Reset scale to default.
-							if (Input.GetKeyDown(Binds.GetKeyByAction((int)Keybinds.Inputs.action4).AssignedKey))
-							{
-								// No easy way to store default, just assume it's 1.
-								switch (GUIRenderer.Axis)
-								{
-									case "all":
-										GUIRenderer.SelectedObject.transform.localScale = new Vector3(1, 1, 1);
-										break;
-									case "x":
-										scale.x = 1;
-										GUIRenderer.SelectedObject.transform.localScale = scale;
-										break;
-									case "y":
-										scale.y = 1;
-										GUIRenderer.SelectedObject.transform.localScale = scale;
-										break;
-									case "z":
-										scale.z = 1;
-										GUIRenderer.SelectedObject.transform.localScale = scale;
-										break;
-								}
-								update = true;
-							}
-
-
-							// Trigger scale save if available.
-							if (save != null && update)
-							{
-								SaveUtilities.UpdateScale(new ScaleData()
-								{
-									ID = save.idInSave,
-									Scale = GUIRenderer.SelectedObject.transform.localScale
-								});
-							}
-						}
-
-						// Axis selection control.
-						if (Input.GetKeyDown(Binds.GetKeyByAction((int)Keybinds.Inputs.action3).AssignedKey))
-						{
-							int currentIndex = Array.FindIndex(GUIRenderer.AxisOptions, a => a == GUIRenderer.Axis);
-							if (currentIndex == -1 || currentIndex == GUIRenderer.AxisOptions.Length - 1)
-								GUIRenderer.Axis = GUIRenderer.AxisOptions[0];
-							else
-								GUIRenderer.Axis = GUIRenderer.AxisOptions[currentIndex + 1];
-						}
-
-						// Scale value selection control.
-						if (Input.GetKeyDown(Binds.GetKeyByAction((int)Keybinds.Inputs.action5).AssignedKey))
-						{
-							int currentIndex = Array.FindIndex(GUIRenderer.ScaleOptions, s => s == GUIRenderer.ScaleValue);
-							if (currentIndex == -1 || currentIndex == GUIRenderer.ScaleOptions.Length - 1)
-								GUIRenderer.ScaleValue = GUIRenderer.ScaleOptions[0];
-							else
-								GUIRenderer.ScaleValue = GUIRenderer.ScaleOptions[currentIndex + 1];
-						}
-
-						if (Input.GetKeyDown(Binds.GetKeyByAction((int)Keybinds.Inputs.select).AssignedKey))
-						{
-							GUIRenderer.ScaleHold = !GUIRenderer.ScaleHold;
-						}
 					}
 					break;
 				case "objectRegenerator":

@@ -4,13 +4,16 @@ namespace MultiTool.Tools
 {
 	internal abstract class Tool
 	{
-		internal ServiceContext Services { get; set; }
-		internal ToolController Tools { get; set; }
+		public ServiceContext Services { get; set; }
+		public ToolController Tools { get; set; }
+		public tosaveitemscript SelectedObject { get; set; }
 
 		
 		public abstract string Name { get; }
 		public virtual bool HasCache { get { return false; } }
 		public virtual int CacheRefreshTime { get { return 1; } }
+		public virtual bool UsesObjectSelection { get { return false; } }
+		public virtual bool UsesDefaultObjectSelectionUI { get { return false; } }
 		public virtual void OnRegister() { }
 		public virtual void OnUnregister() { }
 		public virtual void OnActivate() { }
