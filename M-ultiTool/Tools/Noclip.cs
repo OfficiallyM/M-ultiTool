@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace MultiTool.Tools
 {
-	internal class Noclip : Tool
+	internal class NoclipTool : Tool
 	{
 		public override string Name => "Noclip";
 
@@ -47,17 +47,17 @@ namespace MultiTool.Tools
 
 			float speed = _normalMoveSpeed;
 			float climbSpeed = this._climbSpeed;
-			if (Input.GetKey(MultiTool.Binds.GetKeyByAction((int)Keybinds.Inputs.noclipSpeedUp).AssignedKey))
+			if (Input.GetKey(Services.Keybinds.GetKeyByAction((int)Keybinds.Inputs.noclipSpeedUp).AssignedKey))
 			{
-				speed *= MultiTool.Configuration.Config.NoclipFastMoveFactor;
-				climbSpeed *= MultiTool.Configuration.Config.NoclipFastMoveFactor;
+				speed *= Services.Configuration.Config.NoclipFastMoveFactor;
+				climbSpeed *= Services.Configuration.Config.NoclipFastMoveFactor;
 			}
 
 			if (Input.GetButton("forward"))
 				mainscript.M.player.transform.root.position += Vector3.ProjectOnPlane(mainscript.M.player.Tb.forward, Vector3.up) * speed * Time.deltaTime;
-			if (Input.GetKey(MultiTool.Binds.GetKeyByAction((int)Keybinds.Inputs.noclipUp).AssignedKey))
+			if (Input.GetKey(Services.Keybinds.GetKeyByAction((int)Keybinds.Inputs.noclipUp).AssignedKey))
 				mainscript.M.player.transform.root.position += Vector3.up * climbSpeed * Time.deltaTime;
-			if (Input.GetKey(MultiTool.Binds.GetKeyByAction((int)Keybinds.Inputs.noclipDown).AssignedKey))
+			if (Input.GetKey(Services.Keybinds.GetKeyByAction((int)Keybinds.Inputs.noclipDown).AssignedKey))
 				mainscript.M.player.transform.root.position += -Vector3.up * climbSpeed * Time.deltaTime;
 			if (Input.GetButton("backward"))
 				mainscript.M.player.transform.root.position += Vector3.ProjectOnPlane(-mainscript.M.player.Tb.forward, Vector3.up) * speed * Time.deltaTime;

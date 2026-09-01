@@ -1256,48 +1256,6 @@ namespace MultiTool.UI
 					GUI.Button(new Rect(x, y + height, width, height / 2), "");
 					GUI.skin.button = defaultStyle;
 					break;
-				case "scale":
-					GUI.Button(new Rect(ResolutionX / 2 - 250f, 10f, 500f, 30f), $"Selected object: {(SelectedObject != null ? SelectedObject.name : "None")} ({MultiTool.Binds.GetPrettyName((int)Keybinds.Inputs.action1)} to {(SelectedObject != null ? "deselect" : "select")})");
-					if (SelectedObject != null)
-					{
-						width = 400f;
-						height = 120f;
-						x = 0;
-						y = ResolutionY / 2 - (height + 20f) / 2;
-
-						GUI.Box(new Rect(x, y, width, height + 20f), string.Empty);
-						int rows = 6;
-						GUI.Button(new Rect(x, y, width / 2, height / rows), "Scale up");
-						GUI.Button(new Rect(x, y + height / rows, width / 2, height / rows), "Scale down");
-						GUI.Button(new Rect(x, y + height / rows * 2, width / 2, height / rows), $"Axis: {Axis}");
-						GUI.Button(new Rect(x, y + height / rows * 3, width / 2, height / rows), $"Scale amount: {ScaleValue}");
-						GUI.Button(new Rect(x, y + height / rows * 4, width / 2, height / rows), $"Toggle hold to scale ({(ScaleHold ? "Hold" : "Click")})");
-						GUI.Button(new Rect(x, y + height / rows * 5, width / 2, height / rows), "Reset");
-
-						GUI.Button(new Rect(x + width / 2, y, width / 2, height / rows), MultiTool.Binds.GetPrettyName((int)Keybinds.Inputs.up));
-						GUI.Button(new Rect(x + width / 2, y + height / rows, width / 2, height / rows), MultiTool.Binds.GetPrettyName((int)Keybinds.Inputs.down));
-						GUI.Button(new Rect(x + width / 2, y + height / rows * 2, width / 2, height / rows), MultiTool.Binds.GetPrettyName((int)Keybinds.Inputs.action3));
-						GUI.Button(new Rect(x + width / 2, y + height / rows * 3, width / 2, height / rows), MultiTool.Binds.GetPrettyName((int)Keybinds.Inputs.action5));
-						GUI.Button(new Rect(x + width / 2, y + height / rows * 4, width / 2, height / rows), MultiTool.Binds.GetPrettyName((int)Keybinds.Inputs.select));
-						GUI.Button(new Rect(x + width / 2, y + height / rows * 5, width / 2, height / rows), MultiTool.Binds.GetPrettyName((int)Keybinds.Inputs.action4));
-
-						Vector3 scale = SelectedObject.transform.localScale;
-						string scaleDisplay = scale.ToString();
-						switch (Axis)
-						{
-							case "x":
-								scaleDisplay = scale.x.ToString();
-								break;
-							case "y":
-								scaleDisplay = scale.y.ToString();
-								break;
-							case "z":
-								scaleDisplay = scale.z.ToString();
-								break;
-						}
-						GUI.Button(new Rect(x, y + height, width, 20f), $"Scale: {scaleDisplay}");
-					}
-					break;
 				case "slotControl":
 					width = ResolutionX;
 					x = 0;
