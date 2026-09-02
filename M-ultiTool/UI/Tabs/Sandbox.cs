@@ -218,18 +218,7 @@ namespace MultiTool.UI.Tabs
 			GUILayout.Space(10);
 
 			MultiTool.Tools.RenderControl("object_scale");
-
-			if (GUILayout.Button(Accessibility.GetAccessibleString("Toggle object regenerator", Services.State.Mode == "objectRegenerator"), GUILayout.MaxWidth(200)))
-			{
-				if (Services.State.Mode == "objectRegenerator")
-				{
-					Services.State.Mode = null;
-					GUIRenderer.SelectedObject = null;
-				}
-				else
-					Services.State.Mode = "objectRegenerator";
-			}
-			GUILayout.Space(10);
+			MultiTool.Tools.RenderControl("object_regenerator");
 
 			if (GUILayout.Button(Accessibility.GetAccessibleString("Toggle weight changer", Services.State.Mode == "weightChanger"), GUILayout.MaxWidth(200)))
 			{
