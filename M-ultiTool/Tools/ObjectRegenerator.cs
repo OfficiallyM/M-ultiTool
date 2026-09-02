@@ -22,7 +22,6 @@ namespace MultiTool.Tools
 
 		public override void HudRender()
 		{
-			if (SelectedObject == null) return;
 
 			// Deliberately not using the default selection UI so we
 			// can show the object ID.
@@ -37,6 +36,8 @@ namespace MultiTool.Tools
 			GUILayout.FlexibleSpace();
 			GUILayout.EndHorizontal();
 			GUILayout.EndVertical();
+
+			if (SelectedObject == null) return;
 
 			float fullWidth = Screen.width * 0.2f;
 			float halfWidth = fullWidth / 2;

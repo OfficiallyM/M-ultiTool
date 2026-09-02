@@ -28,7 +28,6 @@ namespace MultiTool.UI
 		}
 
 		// Menu control.
-		internal bool Enabled = false;
 		internal bool Show = false;
 		private bool _menuKeyConsumed = false;
 		private bool _loaded = false;
@@ -47,37 +46,7 @@ namespace MultiTool.UI
 
 		// Styling.
 		internal static GUIStyle LabelStyle = new GUIStyle();
-		internal static GUIStyle HeaderStyle = new GUIStyle()
-		{
-			fontSize = 24,
-			alignment = TextAnchor.UpperLeft,
-			wordWrap = true,
-			normal = new GUIStyleState()
-			{
-				textColor = Color.white,
-			}
-		};
-		internal static GUIStyle SubHeaderStyle = new GUIStyle()
-		{
-			fontSize = 18,
-			alignment = TextAnchor.UpperLeft,
-			wordWrap = true,
-			normal = new GUIStyleState()
-			{
-				textColor = Color.white,
-			}
-		};
 		internal static float ScrollWidth = 10f;
-		internal static GUIStyle MessageStyle = new GUIStyle()
-		{
-			fontSize = 40,
-			alignment = TextAnchor.MiddleCenter,
-			wordWrap = true,
-			normal = new GUIStyleState()
-			{
-				textColor = Color.white,
-			}
-		};
 		private GUIStyle _hudStyle = new GUIStyle()
 		{
 			fontSize = 20,
@@ -88,12 +57,8 @@ namespace MultiTool.UI
 			}
 		};
 
-		// General variables.
-		internal static string Search = string.Empty;
-
 		// Vehicle-related variables.
 		internal static List<Vehicle> Vehicles = new List<Vehicle>();
-		internal static Color Color = new Color(255f / 255f, 255f / 255f, 255f / 255f);
 		internal static int ConditionInt = 0;
 		internal static bool ApplyConditionToAttached = false;
 
@@ -127,9 +92,6 @@ namespace MultiTool.UI
 		// POI variables.
 		internal static List<POI> POIs = new List<POI>();
 
-		// Shape variables.
-		internal static Vector3 Scale = Vector3.one;
-
 		// Player variables.
 		internal static Dictionary<mainscript.fluidenum, int> Piss = new Dictionary<mainscript.fluidenum, int>();
 
@@ -151,9 +113,6 @@ namespace MultiTool.UI
 		private float _moveValue = 0.1f;
 		private static List<GameObject> _slots = new List<GameObject>();
 
-		// Object selection.
-		internal static tosaveitemscript SelectedObject;
-
 		// Settings.
 		internal static float SettingsScrollWidth;
 		internal static bool AccessibilityShow = false;
@@ -161,15 +120,6 @@ namespace MultiTool.UI
 
 		// HUD variables.
 		private GameObject _debugObject = null;
-		internal static string Axis = "all";
-		internal static string[] AxisOptions = new string[] { "all", "x", "y", "z" };
-		internal static float ScaleValue = 0.1f;
-		internal static float[] ScaleOptions = new float[] { 10f, 1f, 0.1f, 0.01f, 0.001f };
-		internal static bool ScaleHold = true;
-
-		internal static float WeightValue = 0.1f;
-		internal static float[] WeightOptions = new float[] { 100f, 10f, 1f, 0.1f, 0.01f };
-		internal static bool WeightHold = true;
 
 		// Colour palettes.
 		internal static List<Color> Palette = new List<Color>();
@@ -1361,64 +1311,6 @@ namespace MultiTool.UI
 							GUI.Button(new Rect(x + width / rotateControls * 3, y - 30f, width / rotateControls, 30f), $"Right ({MultiTool.Binds.GetPrettyName((int)Keybinds.Inputs.right)})");
 							GUI.Button(new Rect(x + width / rotateControls * 3, y - 60f, width / rotateControls, 30f), $"Clockwise ({MultiTool.Binds.GetPrettyName((int)Keybinds.Inputs.noclipDown)})");
 							break;
-					}
-					break;
-				case "weightChanger":
-					GUILayout.BeginVertical();
-					GUILayout.Space(10);
-					GUILayout.BeginHorizontal();
-					GUILayout.FlexibleSpace();
-					GUILayout.BeginVertical("box");
-					GUILayout.Button($"Selected object: {(SelectedObject != null ? SelectedObject.name : "None")} ({MultiTool.Binds.GetPrettyName((int)Keybinds.Inputs.action1)} to {(SelectedObject != null ? "deselect" : "select")})", GUILayout.MaxHeight(30));
-					if (SelectedObject != null)
-					{
-						GUILayout.Space(5);
-						GUILayout.Button($"Base weight: {SelectedObject.GetComponent<massScript>()?.OwnMass().ToString("F2")} kg", GUILayout.MaxHeight(30));
-						GUILayout.Button($"Total weight: {SelectedObject.GetComponent<massScript>()?.Mass().ToString("F2")} kg", GUILayout.MaxHeight(30));
-					}
-					GUILayout.EndVertical();
-					GUILayout.FlexibleSpace();
-					GUILayout.EndHorizontal();
-					GUILayout.EndVertical();
-
-					if (SelectedObject != null)
-					{
-						float boxWidth = ResolutionX / 5;
-						float buttonWidth = boxWidth / 2f;
-						GUILayout.BeginVertical(GUILayout.MinWidth(boxWidth));
-						GUILayout.FlexibleSpace();
-						GUILayout.BeginVertical("box");
-						GUILayout.BeginHorizontal();
-						GUILayout.Button("Weight up", "ButtonPrimaryWrap", GUILayout.Width(buttonWidth));
-						GUILayout.Button(MultiTool.Binds.GetPrettyName((int)Keybinds.Inputs.up), "ButtonPrimaryWrap", GUILayout.Width(buttonWidth));
-						GUILayout.EndHorizontal();
-						GUILayout.Space(5);
-
-						GUILayout.BeginHorizontal();
-						GUILayout.Button($"Weight down", "ButtonPrimaryWrap", GUILayout.Width(buttonWidth));
-						GUILayout.Button(MultiTool.Binds.GetPrettyName((int)Keybinds.Inputs.down), "ButtonPrimaryWrap", GUILayout.Width(buttonWidth));
-						GUILayout.EndHorizontal();
-						GUILayout.Space(5);
-
-						GUILayout.BeginHorizontal();
-						GUILayout.Button($"Change amount: {WeightValue} kg", "ButtonPrimaryWrap", GUILayout.Width(buttonWidth));
-						GUILayout.Button(MultiTool.Binds.GetPrettyName((int)Keybinds.Inputs.action5), "ButtonPrimaryWrap", GUILayout.Width(buttonWidth));
-						GUILayout.EndHorizontal();
-						GUILayout.Space(5);
-
-						GUILayout.BeginHorizontal();
-						GUILayout.Button($"Toggle hold to change ({(WeightHold ? "Hold" : "Click")})", "ButtonPrimaryWrap", GUILayout.Width(buttonWidth));
-						GUILayout.Button(MultiTool.Binds.GetPrettyName((int)Keybinds.Inputs.select), "ButtonPrimaryWrap", GUILayout.Width(buttonWidth));
-						GUILayout.EndHorizontal();
-						GUILayout.Space(5);
-
-						GUILayout.BeginHorizontal();
-						GUILayout.Button("Reset", "ButtonPrimaryWrap", GUILayout.Width(buttonWidth));
-						GUILayout.Button(MultiTool.Binds.GetPrettyName((int)Keybinds.Inputs.action4), "ButtonPrimaryWrap", GUILayout.Width(buttonWidth));
-						GUILayout.EndHorizontal();
-						GUILayout.EndVertical();
-						GUILayout.FlexibleSpace();
-						GUILayout.EndVertical();
 					}
 					break;
 			}
