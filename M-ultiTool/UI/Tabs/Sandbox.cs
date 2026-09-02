@@ -208,15 +208,7 @@ namespace MultiTool.UI.Tabs
 			GUILayout.Space(10);
 
 			GUILayout.Label("Tools", "LabelHeader");
-			if (GUILayout.Button(Accessibility.GetAccessibleString("Toggle color picker", Services.State.Mode == "colorPicker"), GUILayout.MaxWidth(200)))
-			{
-				if (Services.State.Mode == "colorPicker")
-					Services.State.Mode = null;
-				else
-					Services.State.Mode = "colorPicker";
-			}
-			GUILayout.Space(10);
-
+			MultiTool.Tools.RenderControl("colour_picker");
 			MultiTool.Tools.RenderControl("object_scale");
 			MultiTool.Tools.RenderControl("object_regenerator");
 			MultiTool.Tools.RenderControl("weight_changer");

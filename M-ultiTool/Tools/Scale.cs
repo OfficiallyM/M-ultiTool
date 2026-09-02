@@ -81,7 +81,7 @@ namespace MultiTool.Tools
 					scaleDisplay = scale.z.ToString();
 					break;
 			}
-			GUILayout.Button($"Scale: {scaleDisplay}", GUILayout.Width(fullWidth));
+			GUILayout.Button($"Scale: {scaleDisplay}");
 			GUILayout.EndVertical();
 
 			GUILayout.FlexibleSpace();
