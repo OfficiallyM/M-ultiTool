@@ -73,6 +73,7 @@ namespace MultiTool
 			Tools.Register(new ScaleTool());
 			Tools.Register(new ObjectRegeneratorTool());
 			Tools.Register(new WeightChangerTool());
+			Tools.Register(new ColourPickerTool());
 
 			Renderer.OnMenuLoad();
 		}
@@ -128,61 +129,6 @@ namespace MultiTool
 				{
 					Services.Logger.Log($"Failed to delete entity - {ex}", Services.Logger.LogLevel.Warning);
 				}
-			}
-
-			switch (Context.State.Mode)
-			{
-				case "colorPicker":
-					if (Input.GetKeyDown(Binds.GetKeyByAction((int)Keybinds.Inputs.action1).AssignedKey) && !Renderer.Show)
-					{
-						Physics.Raycast(mainscript.M.player.Cam.transform.position, mainscript.M.player.Cam.transform.forward, out RaycastHit raycastHit, float.PositiveInfinity, mainscript.M.player.useLayer);
-						GameObject hitGameObject = raycastHit.transform.gameObject;
-						partconditionscript part = hitGameObject.GetComponent<partconditionscript>();
-						sprayscript spray = hitGameObject.GetComponent<sprayscript>();
-
-						// Return early if hit GameObject has no partconditionscript or sprayscript.
-						if (part == null && spray == null)
-							return;
-
-						Color objectColor = new Color();
-						if (spray != null)
-						{
-							objectColor = spray.color.color;
-						}
-						else
-						{
-							foreach (Renderer Renderer in part.renderers)
-							{
-								if (Renderer.material == null)
-									continue;
-
-								objectColor = Renderer.material.color;
-							}
-						}
-
-						objectColor.a = 1;
-						Colour.SetColour(objectColor);
-					}
-
-					if (Input.GetKeyDown(Binds.GetKeyByAction((int)Keybinds.Inputs.action2).AssignedKey) && !Renderer.Show)
-					{
-						Physics.Raycast(mainscript.M.player.Cam.transform.position, mainscript.M.player.Cam.transform.forward, out RaycastHit raycastHit, float.PositiveInfinity, mainscript.M.player.useLayer);
-						GameObject hitGameObject = raycastHit.transform.gameObject;
-						partconditionscript part = hitGameObject.transform.root.GetComponent<partconditionscript>();
-						sprayscript spray = hitGameObject.transform.root.GetComponent<sprayscript>();
-
-						// Return early if hit GameObject has no partconditionscript or sprayscript.
-						if (part == null && spray == null)
-							return;
-
-						if (spray != null)
-						{
-							spray.color.color = Colour.GetColour();
-						}
-						else
-							GameUtilities.Paint(Colour.GetColour(), part);
-					}
-					break;
 			}
 		}
 

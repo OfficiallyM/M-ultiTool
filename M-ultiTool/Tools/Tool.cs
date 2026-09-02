@@ -1,4 +1,6 @@
 ﻿using MultiTool.Services;
+using UnityEngine;
+using Logger = MultiTool.Services.Logger;
 
 namespace MultiTool.Tools
 {
@@ -41,6 +43,12 @@ namespace MultiTool.Tools
 				Logger.Log($"{Name} has been disabled for throwing too many errors.", Logger.LogLevel.Error, "ToolController");
 				MultiTool.Tools.Deactivate();
 			}
+		}
+
+		public GameObject Raycast()
+		{
+			Physics.Raycast(mainscript.M.player.Cam.transform.position, mainscript.M.player.Cam.transform.forward, out RaycastHit raycastHit, float.PositiveInfinity, mainscript.M.player.useLayer);
+			return raycastHit.collider?.transform?.gameObject;
 		}
 	}
 }

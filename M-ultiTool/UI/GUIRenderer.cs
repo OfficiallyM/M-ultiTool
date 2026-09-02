@@ -30,6 +30,7 @@ namespace MultiTool.UI
 		// Menu control.
 		internal bool Show = false;
 		private bool _menuKeyConsumed = false;
+		public static event Action<bool> OnMenuToggle;
 		private bool _loaded = false;
 		internal string SettingsTabId = null;
 		internal string CreditsTabId = null;
@@ -917,6 +918,8 @@ namespace MultiTool.UI
 			else
 				Show = !Show;
 
+			OnMenuToggle?.Invoke(Show);
+
 			mainscript.M.crsrLocked = !Show;
 			mainscript.M.SetCursorVisible(Show);
 			mainscript.M.menu.gameObject.SetActive(!Show);
@@ -1183,29 +1186,6 @@ namespace MultiTool.UI
 			float y = ResolutionY * 0.90f;
 			switch (_services.State.Mode)
 			{
-				case "colorPicker":
-					GUI.Box(new Rect(x, y, width, height), string.Empty);
-					GUI.Button(new Rect(x, y, width / 2, height / 2), "Copy");
-					GUI.Button(new Rect(x + width / 2, y, width / 2, height / 2), "Paste");
-
-					GUI.Button(new Rect(x, y + height / 2, width / 2, height / 2), MultiTool.Binds.GetPrettyName((int)Keybinds.Inputs.action1));
-					GUI.Button(new Rect(x + width / 2, y + height / 2, width / 2, height / 2), MultiTool.Binds.GetPrettyName((int)Keybinds.Inputs.action2));
-
-					// Colour preview.
-					GUIStyle defaultStyle = GUI.skin.button;
-					GUIStyle previewStyle = new GUIStyle(defaultStyle);
-					Texture2D previewTexture = new Texture2D(1, 1);
-					Color[] pixels = new Color[] { Colour.GetColour() };
-					previewTexture.SetPixels(pixels);
-					previewTexture.Apply();
-					previewStyle.normal.background = previewTexture;
-					previewStyle.active.background = previewTexture;
-					previewStyle.hover.background = previewTexture;
-					previewStyle.margin = new RectOffset(0, 0, 0, 0);
-					GUI.skin.button = previewStyle;
-					GUI.Button(new Rect(x, y + height, width, height / 2), "");
-					GUI.skin.button = defaultStyle;
-					break;
 				case "slotControl":
 					width = ResolutionX;
 					x = 0;
