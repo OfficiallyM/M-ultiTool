@@ -36,7 +36,11 @@ namespace MultiTool.Tools
 			Errors++;
 
 			if (Errors >= 5)
+			{
 				IsDisabled = true;
+				Logger.Log($"{Name} has been disabled for throwing too many errors.", Logger.LogLevel.Error, "ToolController");
+				MultiTool.Tools.Deactivate();
+			}
 		}
 	}
 }

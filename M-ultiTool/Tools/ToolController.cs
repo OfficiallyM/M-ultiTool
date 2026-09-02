@@ -28,7 +28,7 @@ namespace MultiTool.Tools
 			if (MultiTool.Renderer.Show) return;
 
 			// Handle object selection if tool calls for it.
-			if (_active != null && _active.UsesObjectSelection)
+			if (_active != null && !_active.IsDisabled && _active.UsesObjectSelection)
 			{
 				if (Input.GetKeyDown(_services.Keybinds.GetKeyByAction((int)Keybinds.Inputs.action1).AssignedKey))
 				{
@@ -53,7 +53,8 @@ namespace MultiTool.Tools
 
 			try
 			{
-				_active?.Update();
+				if (_active != null && !_active.IsDisabled)
+					_active.Update();
 			}
 			catch (Exception ex)
 			{
@@ -87,7 +88,8 @@ namespace MultiTool.Tools
 
 			try
 			{
-				_active?.FixedUpdate();
+				if (_active != null && !_active.IsDisabled)
+					_active.FixedUpdate();
 			}
 			catch (Exception ex)
 			{
@@ -133,6 +135,7 @@ namespace MultiTool.Tools
 		{
 			Deactivate();
 			_active = GetById(id);
+			if (_active.IsDisabled) return;
 			_active.OnActivate();
 		}
 
@@ -182,7 +185,7 @@ namespace MultiTool.Tools
 
 		public void RenderHud()
 		{
-			if (_active == null || MultiTool.Renderer.Show) return;
+			if (_active == null || _active.IsDisabled || MultiTool.Renderer.Show) return;
 
 			GUILayout.BeginArea(new Rect(0, 0, Screen.width, Screen.height));
 			try
@@ -214,7 +217,7 @@ namespace MultiTool.Tools
 		public void RenderControl(string id)
 		{
 			var tool = GetById(id);
-			if (tool == null) return;
+			if (tool == null || tool.IsDisabled) return;
 
 			try
 			{
