@@ -72,6 +72,7 @@ namespace MultiTool
 			Tools.Register(new NoclipTool());
 			Tools.Register(new ScaleTool());
 			Tools.Register(new ObjectRegeneratorTool());
+			Tools.Register(new WeightChangerTool());
 
 			Renderer.OnMenuLoad();
 		}
@@ -180,112 +181,6 @@ namespace MultiTool
 						}
 						else
 							GameUtilities.Paint(Colour.GetColour(), part);
-					}
-					break;
-				case "weightChanger":
-					// Select object.
-					if (Input.GetKeyDown(Binds.GetKeyByAction((int)Keybinds.Inputs.action1).AssignedKey))
-					{
-						Physics.Raycast(mainscript.M.player.Cam.transform.position, mainscript.M.player.Cam.transform.forward, out RaycastHit raycastHit, float.PositiveInfinity, mainscript.M.player.useLayer);
-						if (raycastHit.collider != null && raycastHit.collider.gameObject != null)
-						{
-							GameObject hitGameObject = raycastHit.collider.transform.gameObject;
-
-							// Recurse upwards to find a tosaveitemscript.
-							tosaveitemscript save = hitGameObject.GetComponentInParent<tosaveitemscript>();
-
-							// Can't find the tosaveitemscript, return early.
-							if (save == null)
-							{
-								GUIRenderer.SelectedObject = null;
-								return;
-							}
-
-							// Object doesn't have mass, return early.
-							if (save.GetComponent<massScript>() == null)
-							{
-								GUIRenderer.SelectedObject = null;
-								return;
-							}
-
-							GUIRenderer.SelectedObject = save;
-							return;
-						}
-						GUIRenderer.SelectedObject = null;
-					}
-
-					// Weight value selection control.
-					if (Input.GetKeyDown(Binds.GetKeyByAction((int)Keybinds.Inputs.action5).AssignedKey))
-					{
-						int currentIndex = Array.FindIndex(GUIRenderer.WeightOptions, s => s == GUIRenderer.WeightValue);
-						if (currentIndex == -1 || currentIndex == GUIRenderer.WeightOptions.Length - 1)
-							GUIRenderer.WeightValue = GUIRenderer.WeightOptions[0];
-						else
-							GUIRenderer.WeightValue = GUIRenderer.WeightOptions[currentIndex + 1];
-					}
-
-					if (Input.GetKeyDown(Binds.GetKeyByAction((int)Keybinds.Inputs.select).AssignedKey))
-					{
-						GUIRenderer.WeightHold = !GUIRenderer.WeightHold;
-					}
-
-					if (GUIRenderer.SelectedObject != null)
-					{
-						tosaveitemscript save = GUIRenderer.SelectedObject.GetComponent<tosaveitemscript>();
-						massScript mass = GUIRenderer.SelectedObject.GetComponent<massScript>();
-						bool update = false;
-
-						float currentMass = mass.OwnMass();
-
-						// Mass increase.
-						bool massUp = Input.GetKey(Binds.GetKeyByAction((int)Keybinds.Inputs.up).AssignedKey);
-						if (!GUIRenderer.WeightHold)
-							massUp = Input.GetKeyDown(Binds.GetKeyByAction((int)Keybinds.Inputs.up).AssignedKey);
-						if (massUp)
-						{
-							mass.SetMass(currentMass + GUIRenderer.WeightValue);
-
-							update = true;
-						}
-
-						// Mass decrease.
-						bool massDown = Input.GetKey(Binds.GetKeyByAction((int)Keybinds.Inputs.down).AssignedKey);
-						if (!GUIRenderer.WeightHold)
-							massDown = Input.GetKeyDown(Binds.GetKeyByAction((int)Keybinds.Inputs.down).AssignedKey);
-						if (massDown)
-						{
-							mass.SetMass(currentMass - GUIRenderer.WeightValue);
-
-							update = true;
-						}
-
-						// Reset weight to default.
-						if (Input.GetKeyDown(Binds.GetKeyByAction((int)Keybinds.Inputs.action4).AssignedKey))
-						{
-							WeightData weight = SaveUtilities.GetWeight(save.idInSave);
-
-							if (weight == null)
-							{
-								Notifications.SendWarning("Weight Changer", "Unable to reset - no default available");
-								return;
-							}
-							else
-							{
-								mass.SetMass(weight.DefaultMass);
-								update = true;
-							}
-						}
-
-						// Trigger mass save if available.
-						if (save != null && update)
-						{
-							SaveUtilities.UpdateWeight(new WeightData()
-							{
-								ID = save.idInSave,
-								Mass = mass.OwnMass(),
-								DefaultMass = currentMass,
-							});
-						}
 					}
 					break;
 			}
