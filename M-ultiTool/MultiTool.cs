@@ -71,6 +71,7 @@ namespace MultiTool
 			// Register tools.
 			Tools.Register(new NoclipTool());
 			Tools.Register(new ScaleTool());
+			Tools.Register(new ObjectRegeneratorTool());
 
 			Renderer.OnMenuLoad();
 		}
@@ -179,94 +180,6 @@ namespace MultiTool
 						}
 						else
 							GameUtilities.Paint(Colour.GetColour(), part);
-					}
-					break;
-				case "objectRegenerator":
-					// Select object.
-					if (Input.GetKeyDown(Binds.GetKeyByAction((int)Keybinds.Inputs.action1).AssignedKey))
-					{
-						Physics.Raycast(mainscript.M.player.Cam.transform.position, mainscript.M.player.Cam.transform.forward, out RaycastHit raycastHit, float.PositiveInfinity, mainscript.M.player.useLayer);
-						if (raycastHit.collider != null && raycastHit.collider.gameObject != null)
-						{
-							GameObject hitGameObject = raycastHit.collider.transform.gameObject;
-
-							// Recurse upwards to find a tosaveitemscript.
-							tosaveitemscript save = hitGameObject.GetComponentInParent<tosaveitemscript>();
-
-							// Can't find the tosaveitemscript, return early.
-							if (save == null) return;
-
-							GUIRenderer.SelectedObject = save;
-							return;
-						}
-						GUIRenderer.SelectedObject = null;
-					}
-
-					// Regenerate object.
-					if (Input.GetKeyDown(Binds.GetKeyByAction((int)Keybinds.Inputs.action4).AssignedKey))
-					{
-						if (GUIRenderer.SelectedObject != null)
-						{
-							tosaveitemscript save = GUIRenderer.SelectedObject;
-							GameObject gameObject = save.gameObject;
-							Database.Item prefab = GUIRenderer.Items.Where(i => i.GameObject.name == gameObject.name.Replace("(Clone)", "")).FirstOrDefault();
-							if (prefab == null)
-								return;
-
-							Vector3 position = gameObject.transform.position;
-							Quaternion rotation = gameObject.transform.rotation;
-
-							// Recreate object.
-							GameObject spawned = SpawnUtilities.Spawn(prefab, position, rotation, Context.State.SpawnWithFuel);
-							GUIRenderer.SelectedObject = spawned.GetComponent<tosaveitemscript>();
-
-							// Handle attached children.
-							foreach (attachablescript attached in gameObject.GetComponentsInChildren<attachablescript>())
-							{
-								if (attached.targetTosave == null || attached.targetTosave.gameObject != gameObject) continue;
-
-								attached.Detach();
-								attached.targetTosave = spawned.GetComponent<tosaveitemscript>();
-								attached.Load(attached.pointLocalPos);
-							}
-
-							// Re-Set object parent if required.
-							attachablescript attach = gameObject.GetComponent<attachablescript>();
-							if (attach != null && attach.targetTosave != null)
-							{
-								attachablescript newAttach = spawned.GetComponent<attachablescript>();
-								if (newAttach != null)
-								{
-									tosaveitemscript attachSave = attach.targetTosave;
-									attach.Detach();
-									newAttach.targetTosave = attachSave;
-									newAttach.Load(attach.pointLocalPos);
-								}
-							}
-
-							partslotscript oldSlot = gameObject.GetComponent<partscript>()?.slot;
-
-							// Destroy the old object.
-							save.removeFromMemory = true;
-							foreach (tosaveitemscript component in gameObject.GetComponentsInChildren<tosaveitemscript>())
-							{
-								component.removeFromMemory = true;
-							}
-							UnityEngine.Object.Destroy(gameObject);
-
-							// Mount the new part if it was previously mounted.
-							// TODO: Doesn't actually mount.
-							// Also, anything mounted to something you're regenerating gets destroyed.
-							if (oldSlot != null)
-							{
-								partscript part = spawned.GetComponent<partscript>();
-								if (oldSlot != null)
-								{
-									oldSlot.Craft(part);
-									part.tosaveitem.Claim(false);
-								}
-							}
-						}
 					}
 					break;
 				case "weightChanger":

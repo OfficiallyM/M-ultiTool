@@ -1363,21 +1363,6 @@ namespace MultiTool.UI
 							break;
 					}
 					break;
-				case "objectRegenerator":
-					width = 400f;
-					height = 40f;
-					x = ResolutionX / 2 - 200f;
-					y = ResolutionY * 0.90f;
-					GUI.Box(new Rect(x, y, width, height), string.Empty);
-					GUI.Button(new Rect(x, y, width / 2, height / 2), "Select object");
-					GUI.Button(new Rect(x + width / 2, y, width / 2, height / 2), "Regenerate object");
-
-					GUI.Button(new Rect(x, y + height / 2, width / 2, height / 2), MultiTool.Binds.GetPrettyName((int)Keybinds.Inputs.action1));
-					GUI.Button(new Rect(x + width / 2, y + height / 2, width / 2, height / 2), MultiTool.Binds.GetPrettyName((int)Keybinds.Inputs.action4));
-
-					if (SelectedObject != null)
-						GUI.Button(new Rect(ResolutionX / 2 - 250f, 10f, 500f, 30f), $"Selected object: {SelectedObject.name} (ID: {SelectedObject.idInSave})");
-					break;
 				case "weightChanger":
 					GUILayout.BeginVertical();
 					GUILayout.Space(10);
