@@ -1,9 +1,7 @@
-﻿using MultiTool.Database;
-using MultiTool.Save;
+﻿using MultiTool.Save;
 using MultiTool.Services;
 using MultiTool.UI;
 using System;
-using System.Linq;
 using UnityEngine;
 
 namespace MultiTool.Tools
@@ -21,8 +19,8 @@ namespace MultiTool.Tools
 		public override void ControlRender()
 		{
 			string name = Name.ToLowerInvariant();
-			if (GUILayout.Button(Accessibility.GetAccessibleString($"Toggle {name} mode", MultiTool.Tools.IsActive(Id)), GUILayout.MaxWidth(200)))
-				MultiTool.Tools.Toggle(Id);
+			if (GUILayout.Button(Accessibility.GetAccessibleString($"Toggle {name} mode", Tools.IsActive(Id)), GUILayout.MaxWidth(200)))
+				Tools.Toggle(Id);
 			GUILayout.Space(10);
 		}
 
