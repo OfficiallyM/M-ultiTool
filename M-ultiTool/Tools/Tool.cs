@@ -12,6 +12,12 @@ namespace MultiTool.Tools
 
 		
 		public abstract string Name { get; }
+		/// <summary>
+		/// Set to false to allow the tool to run in the background
+		/// with other tools or true to replace the current exclusive tool
+		/// when activated.
+		/// </summary>
+		public virtual bool IsExclusive { get { return true; } }
 		public virtual bool HasCache { get { return false; } }
 		public virtual int CacheRefreshTime { get { return 1; } }
 		public virtual bool UsesObjectSelection { get { return false; } }
@@ -41,7 +47,7 @@ namespace MultiTool.Tools
 			{
 				IsDisabled = true;
 				Logger.Log($"{Name} has been disabled for throwing too many errors.", Logger.LogLevel.Error, "ToolController");
-				MultiTool.Tools.Deactivate();
+				MultiTool.Tools.Deactivate(Id);
 			}
 		}
 

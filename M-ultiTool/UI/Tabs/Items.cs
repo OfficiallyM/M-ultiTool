@@ -111,13 +111,7 @@ namespace MultiTool.UI.Tabs
 			}
 			GUILayout.FlexibleSpace();
 
-			GUILayout.FlexibleSpace();
-
-			// Delete mode.
-			if (GUILayout.Button(Accessibility.GetAccessibleString("Delete mode", Services.State.DeleteMode) + $" (Press {MultiTool.Binds.GetKeyByAction((int)Keybinds.Inputs.deleteMode).AssignedKey})", GUILayout.MaxWidth(250)))
-			{
-				Services.State.DeleteMode = !Services.State.DeleteMode;
-			}
+			MultiTool.Tools.RenderControl("delete_mode");
 
 			GUILayout.Space(10);
 

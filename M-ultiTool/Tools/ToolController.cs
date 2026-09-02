@@ -15,8 +15,11 @@ namespace MultiTool.Tools
 		private readonly ServiceContext _services;
 
 		private Tool _active;
+		private List<Tool> _backgroundActive = new List<Tool>();
 		private List<Tool> _tools = new List<Tool>();
 		private List<Tool> _cacheTools = new List<Tool>();
+		private List<Tool> _processingTools = new List<Tool>();
+		private bool _processObjectSelection = false;
 
 		public ToolController(ServiceContext services)
 		{
@@ -27,8 +30,8 @@ namespace MultiTool.Tools
 		{
 			if (MultiTool.Renderer.Show) return;
 
-			// Handle object selection if tool calls for it.
-			if (_active != null && !_active.IsDisabled && _active.UsesObjectSelection)
+			tosaveitemscript selectedObject = null;
+			if (_processObjectSelection)
 			{
 				if (Input.GetKeyDown(_services.Keybinds.GetKeyByAction((int)Keybinds.Inputs.action1).AssignedKey))
 				{
@@ -40,26 +43,32 @@ namespace MultiTool.Tools
 						bool isTerrain = save?.GetComponent<terrainscript>() != null;
 
 						if (save != null && !isTerrain)
-							_active.SelectedObject = save;
+							selectedObject = save;
 						else
-							_active.SelectedObject = null;
+							selectedObject = null;
 					}
 					else
 					{
-						_active.SelectedObject = null;
+						selectedObject = null;
 					}
 				}
 			}
 
-			try
+			foreach (var tool in _processingTools)
 			{
-				if (_active != null && !_active.IsDisabled)
-					_active.Update();
-			}
-			catch (Exception ex)
-			{
-				Logger.Log($"{_active.Name} - error during Update(). Details: {ex}", Logger.LogLevel.Error, "ToolController");
-				_active.IncrementErrors();
+				if (tool.IsDisabled) continue;
+				if (tool.UsesObjectSelection)
+					tool.SelectedObject = selectedObject;
+
+				try
+				{
+					tool.Update();
+				}
+				catch (Exception ex)
+				{
+					Logger.Log($"{tool.Name} - error during Update(). Details: {ex}", Logger.LogLevel.Error, "ToolController");
+					tool.IncrementErrors();
+				}
 			}
 
 			foreach (Tool tool in _cacheTools)
@@ -86,15 +95,19 @@ namespace MultiTool.Tools
 		{
 			if (MultiTool.Renderer.Show) return;
 
-			try
+			foreach (var tool in _processingTools)
 			{
-				if (_active != null && !_active.IsDisabled)
-					_active.FixedUpdate();
-			}
-			catch (Exception ex)
-			{
-				Logger.Log($"{_active.Name} - error during FixedUpdate(). Details: {ex}", Logger.LogLevel.Error, "ToolController");
-				_active.IncrementErrors();
+				if (tool.IsDisabled) continue;
+
+				try
+				{
+					tool.FixedUpdate();
+				}
+				catch (Exception ex)
+				{
+					Logger.Log($"{tool.Name} - error during FixedUpdate(). Details: {ex}", Logger.LogLevel.Error, "ToolController");
+					tool.IncrementErrors();
+				}
 			}
 		}
 
@@ -110,7 +123,7 @@ namespace MultiTool.Tools
 			Mod callerMod = ModLoader.LoadedMods.FirstOrDefault(m => m.GetType().Assembly.GetName().Name == caller.GetName().Name);
 
 			tool.Source = callerMod.Name;
-			tool.Id = tool.Name.ToLower().Replace(' ', '_');
+			tool.Id = tool.Name.ToLowerInvariant().Replace(' ', '_');
 			tool.Services = _services;
 			tool.Tools = this;
 
@@ -133,21 +146,39 @@ namespace MultiTool.Tools
 		/// <param name="id">Tool ID</param>
 		public void Activate(string id)
 		{
-			Deactivate();
-			_active = GetById(id);
-			if (_active.IsDisabled) return;
-			_active.OnActivate();
+			var tool = GetById(id);
+			if (tool == null || tool.IsDisabled) return;
+			if (tool.IsExclusive)
+			{
+				Deactivate(id);
+				_active = tool;
+			}
+			else
+			{
+				_backgroundActive.Add(tool);
+			}
+			tool.OnActivate();
+			BuildProcessingTools();
 		}
 
 		/// <summary>
 		/// Deactivate current tool.
 		/// </summary>
-		public void Deactivate()
+		public void Deactivate(string id)
 		{
-			if (_active == null) return;
-			_active.OnDeactivate();
-			_active.SelectedObject = null;
-			_active = null;
+			var tool = GetById(id);
+			if (tool == null) return;
+			if (tool.IsExclusive)
+			{
+				_active.OnDeactivate();
+				_active.SelectedObject = null;
+				_active = null;
+			}
+			else
+			{
+				_backgroundActive.Remove(tool);
+			}
+			BuildProcessingTools();
 		}
 
 		/// <summary>
@@ -157,14 +188,14 @@ namespace MultiTool.Tools
 		public void Toggle(string id)
 		{
 			if (IsActive(id))
-				Deactivate();
+				Deactivate(id);
 			else
 				Activate(id);
 		}
 
 		public bool IsActive(string id)
 		{
-			return _active?.Id == id;
+			return _active?.Id == id || _backgroundActive.FirstOrDefault(t => t.Id == id) != null;
 		}
 
 		/// <summary>
@@ -185,31 +216,36 @@ namespace MultiTool.Tools
 
 		public void RenderHud()
 		{
-			if (_active == null || _active.IsDisabled || MultiTool.Renderer.Show) return;
+			if (_processingTools.Count <= 0 || MultiTool.Renderer.Show) return;
 
 			GUILayout.BeginArea(new Rect(0, 0, Screen.width, Screen.height));
-			try
+			bool selectUiDrawn = false;
+			foreach (var tool in _processingTools)
 			{
-				if (_active.UsesDefaultObjectSelectionUI)
+				try
 				{
-					GUILayout.BeginVertical();
-					GUILayout.Space(Screen.height * 0.05f);
-					GUILayout.BeginHorizontal();
-					GUILayout.FlexibleSpace();
-					GUILayout.Button(
-						$"Selected object: {(_active.SelectedObject != null ? _active.SelectedObject.name : "None")}\n{_services.Keybinds.GetPrettyName((int)Keybinds.Inputs.action1)} to {(_active.SelectedObject != null ? "deselect" : "select")}",
-						GUILayout.MinHeight(50f)
-					);
-					GUILayout.FlexibleSpace();
-					GUILayout.EndHorizontal();
-					GUILayout.EndVertical();
+					if (tool.UsesDefaultObjectSelectionUI && !selectUiDrawn)
+					{
+						GUILayout.BeginVertical();
+						GUILayout.Space(Screen.height * 0.05f);
+						GUILayout.BeginHorizontal();
+						GUILayout.FlexibleSpace();
+						GUILayout.Button(
+							$"Selected object: {(tool.SelectedObject != null ? tool.SelectedObject.name : "None")}\n{_services.Keybinds.GetPrettyName((int)Keybinds.Inputs.action1)} to {(tool.SelectedObject != null ? "deselect" : "select")}",
+							GUILayout.MinHeight(50f)
+						);
+						GUILayout.FlexibleSpace();
+						GUILayout.EndHorizontal();
+						GUILayout.EndVertical();
+						selectUiDrawn = true;
+					}
+					tool.HudRender();
 				}
-				_active.HudRender();
-			}
-			catch (Exception ex)
-			{
-				Logger.Log($"{_active.Name} - error during HudRender(). Details: {ex}", Logger.LogLevel.Error, "ToolController");
-				_active.IncrementErrors();
+				catch (Exception ex)
+				{
+					Logger.Log($"{tool.Name} - error during HudRender(). Details: {ex}", Logger.LogLevel.Error, "ToolController");
+					tool.IncrementErrors();
+				}
 			}
 			GUILayout.EndArea();
 		}
@@ -227,6 +263,21 @@ namespace MultiTool.Tools
 			{
 				Logger.Log($"{tool.Name} - error during ControlRender(). Details: {ex}", Logger.LogLevel.Error, "ToolController");
 				tool.IncrementErrors();
+			}
+		}
+
+		private void BuildProcessingTools()
+		{
+			_processObjectSelection = false;
+			_processingTools = new List<Tool>();
+			if (_active != null)
+				_processingTools.Add(_active);
+			_processingTools.AddRange(_backgroundActive);
+
+			foreach (var tool in _processingTools)
+			{
+				if (tool.UsesObjectSelection)
+					_processObjectSelection = true;
 			}
 		}
 	}

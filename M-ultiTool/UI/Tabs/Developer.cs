@@ -15,11 +15,7 @@ namespace MultiTool.UI.Tabs
 			GUILayout.BeginVertical();
 			_position = GUILayout.BeginScrollView(_position);
 
-			// Toggle show coords.
-			if (GUILayout.Button(Accessibility.GetAccessibleString("Show coords", Services.State.ShowCoords), GUILayout.MaxWidth(200)))
-			{
-				Services.State.ShowCoords = !Services.State.ShowCoords;
-			}
+			MultiTool.Tools.RenderControl("show_coords");
 
 			// Toggle show object debug.
 			if (GUILayout.Button(Accessibility.GetAccessibleString("Object debug mode", Services.State.ObjectDebug), GUILayout.MaxWidth(200)))
