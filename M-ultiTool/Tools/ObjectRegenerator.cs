@@ -22,7 +22,6 @@ namespace MultiTool.Tools
 
 		public override void HudRender()
 		{
-
 			// Deliberately not using the default selection UI so we
 			// can show the object ID.
 			GUILayout.BeginVertical();
