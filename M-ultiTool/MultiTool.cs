@@ -76,6 +76,7 @@ namespace MultiTool
 			Tools.Register(new DeleteModeTool());
 			Tools.Register(new CoordsTool());
 			Tools.Register(new ObjectDebugTool());
+			Tools.Register(new ShowCollidersTool());
 
 			Renderer.OnMenuLoad();
 		}
