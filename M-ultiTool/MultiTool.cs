@@ -1,14 +1,11 @@
 ﻿using MultiTool.Config;
 using MultiTool.Database;
-using MultiTool.Save;
 using MultiTool.Services;
 using MultiTool.Tools;
 using MultiTool.UI;
 using MultiTool.UI.Tabs.ComponentBrowser;
-using MultiTool.Utilities;
 using System;
 using System.IO;
-using System.Linq;
 using TLDLoader;
 using UnityEngine;
 
@@ -78,6 +75,7 @@ namespace MultiTool
 			// Register background tools.
 			Tools.Register(new DeleteModeTool());
 			Tools.Register(new CoordsTool());
+			Tools.Register(new ObjectDebugTool());
 
 			Renderer.OnMenuLoad();
 		}

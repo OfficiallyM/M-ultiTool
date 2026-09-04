@@ -110,9 +110,6 @@ namespace MultiTool.UI
 		internal static bool AccessibilityShow = false;
 		internal static float NoclipFastMoveFactor = 10f;
 
-		// HUD variables.
-		private GameObject _debugObject = null;
-
 		// Colour palettes.
 		internal static List<Color> Palette = new List<Color>();
 		private static Dictionary<int, GUIStyle> _paletteCache = new Dictionary<int, GUIStyle>();
@@ -340,37 +337,6 @@ namespace MultiTool.UI
 				ToggleMenu(false);
 
 			_menuKeyConsumed = false;
-
-			// Detect item when item debugging is enabled.
-			if (_services.State.ObjectDebug)
-			{
-				try
-				{
-					GameObject foundObject = null;
-					// Find object the player is looking at.
-					Physics.Raycast(mainscript.M.player.Cam.transform.position, mainscript.M.player.Cam.transform.forward, out RaycastHit raycastHit, float.PositiveInfinity, mainscript.M.player.useLayer);
-
-					tosaveitemscript save = raycastHit.transform.gameObject.GetComponent<tosaveitemscript>();
-					if (save != null)
-					{
-						foundObject = raycastHit.transform.gameObject;
-					}
-
-					// Debug picked up if player is holding something.
-					if (mainscript.M.player.pickedUp != null)
-						foundObject = mainscript.M.player.pickedUp.gameObject;
-
-					// Debug held item if something is equipped.
-					if (mainscript.M.player.inHandP != null)
-						foundObject = mainscript.M.player.inHandP.gameObject;
-
-					_debugObject = foundObject;
-				}
-				catch (Exception ex)
-				{
-					Logger.Log($"Error determining debug object - {ex}", Logger.LogLevel.Error);
-				}
-			}
 
 			if (_services.State.Mode == "slotControl")
 			{
@@ -1288,59 +1254,9 @@ namespace MultiTool.UI
 
 			width = ResolutionX / 4f;
 			height = ResolutionY / 4;
-			if (_services.State.AdvancedObjectDebug)
-				height = ResolutionY;
 			x = ResolutionX - width;
 			y = 0;
 			float contentWidth = width - 20f;
-
-			if (_services.State.ObjectDebug && _debugObject != null)
-			{
-				GUI.Box(new Rect(x, y, width, height), $"<color=#fff><size=18>Object: {_debugObject.name.Replace("(Clone)", string.Empty)}</size></color>");
-
-				x += 10f;
-				y += 30f;
-
-				// Basic object information.
-				GUI.Label(new Rect(x, y, contentWidth, 20f), $"Save ID: {_debugObject.GetComponent<tosaveitemscript>()?.idInSave}", LabelStyle);
-				y += 22f;
-				GUI.Label(new Rect(x, y, contentWidth, 20f), $"Local position: {_debugObject.transform.position}", LabelStyle);
-				y += 22f;
-				GUI.Label(new Rect(x, y, contentWidth, 20f), $"Global position: {GameUtilities.GetGlobalObjectPosition(_debugObject.transform.position)}", LabelStyle);
-				y += 22f;
-				GUI.Label(new Rect(x, y, contentWidth, 20f), $"Rotation (Euler angles): {_debugObject.transform.rotation.eulerAngles}", LabelStyle);
-				y += 22f;
-				GUI.Label(new Rect(x, y, contentWidth, 20f), $"Rotation (Quaternion): {_debugObject.transform.rotation}", LabelStyle);
-
-				if (_services.State.AdvancedObjectDebug)
-				{
-					y += 35f;
-					GUI.Label(new Rect(x, y, contentWidth, 60f), "<color=#fff><size=18>Components</size>\nAssembly - Class</color>");
-					y += 65f;
-
-					Component[] components = _debugObject.GetComponents(typeof(Component));
-					if (_services.State.ObjectDebugShowChildren)
-						components = _debugObject.GetComponentsInChildren(typeof(Component));
-					components = components.Distinct().ToArray();
-
-					foreach (Component component in components)
-					{
-						Type type = component.GetType();
-						string assembly = type.Assembly.GetName().Name;
-
-						// Skip core components if hidden.
-						if (!_services.State.ObjectDebugShowCore && assembly == "Assembly-CSharp")
-							continue;
-
-						// Skip Unity components if hidden.
-						if (!_services.State.ObjectDebugShowUnity && assembly.Contains("UnityEngine"))
-							continue;
-
-						GUI.Label(new Rect(x, y, contentWidth, 20f), $"{assembly} - {type.Name} {(_services.State.ObjectDebugShowChildren && component.transform.parent != null ? "(Child of" + component.transform.parent.name + ")" : "")}");
-						y += 22f;
-					}
-				}
-			}
 
 			if (_services.State.ShowColliders && _services.State.ShowColliderHelp)
 			{

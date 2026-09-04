@@ -23,6 +23,7 @@ namespace MultiTool.Tools
 		{
 			if (GUILayout.Button(Tools.GetAccessibleName(Id), GUILayout.MaxWidth(200)))
 				Tools.Toggle(Id);
+			GUILayout.Space(10);
 		}
 
 		public override void HudRender()
