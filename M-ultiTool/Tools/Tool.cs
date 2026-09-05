@@ -32,7 +32,6 @@ namespace MultiTool.Tools
 		public virtual void HudRender() { }
 		public virtual void ControlRender() { }
 
-		public virtual string Source { get; set; }
 		public virtual string Id { get; set; }
 
 		public virtual bool IsDisabled { get; set; }

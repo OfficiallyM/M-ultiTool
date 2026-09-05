@@ -24,6 +24,20 @@ namespace MultiTool.Tools
 		public ToolController(ServiceContext services)
 		{
 			_services = services;
+
+			// Register exclusive tools.
+			Register(new NoclipTool());
+			Register(new ScaleTool());
+			Register(new ObjectRegeneratorTool());
+			Register(new WeightChangerTool());
+			Register(new ColourPickerTool());
+			Register(new ObjectDebugTool());
+			Register(new ShowCollidersTool());
+			Register(new SlotMoverTool());
+
+			// Register background tools.
+			Register(new DeleteModeTool());
+			Register(new CoordsTool());
 		}
 
 		public void Update()
@@ -120,9 +134,7 @@ namespace MultiTool.Tools
 		{
 			// Find caller mod name.
 			Assembly caller = Assembly.GetCallingAssembly();
-			Mod callerMod = ModLoader.LoadedMods.FirstOrDefault(m => m.GetType().Assembly.GetName().Name == caller.GetName().Name);
 
-			tool.Source = callerMod.Name;
 			tool.Id = tool.Name.ToLowerInvariant().Replace(' ', '_');
 			tool.Services = _services;
 			tool.Tools = this;

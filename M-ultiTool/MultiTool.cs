@@ -64,20 +64,6 @@ namespace MultiTool
 		{
 			Configuration.Update(c => { c.Version = Version; });
 			IsOnMainMenu = true;
-
-			// Register exclusive tools.
-			Tools.Register(new NoclipTool());
-			Tools.Register(new ScaleTool());
-			Tools.Register(new ObjectRegeneratorTool());
-			Tools.Register(new WeightChangerTool());
-			Tools.Register(new ColourPickerTool());
-
-			// Register background tools.
-			Tools.Register(new DeleteModeTool());
-			Tools.Register(new CoordsTool());
-			Tools.Register(new ObjectDebugTool());
-			Tools.Register(new ShowCollidersTool());
-
 			Renderer.OnMenuLoad();
 		}
 
