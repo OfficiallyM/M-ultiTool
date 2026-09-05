@@ -30,7 +30,8 @@ namespace MultiTool.UI
 
 			try
 			{
-				_palette = MultiTool.Configuration.Config.Palette;
+				if (MultiTool.Configuration.Config.Palette.Count > 0)
+					_palette = MultiTool.Configuration.Config.Palette;
 				PopulatePaletteCache();
 			}
 			catch (Exception ex)

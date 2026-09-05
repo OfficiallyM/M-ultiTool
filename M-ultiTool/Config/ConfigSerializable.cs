@@ -14,7 +14,7 @@ namespace MultiTool.Config
 		public int Accessibility { get; set; }
 		public bool AccessibilityModeAffectsColor { get; set; } = true;
 		public float NoclipFastMoveFactor { get; set; } = 10f;
-		public List<Color> Palette { get; set; } = Enumerable.Repeat(Color.white, 60).ToList();
+		public List<Color> Palette { get; set; } = new List<Color>();
 		public Color BasicColliderColor { get; set; } = new Color(1f, 0.0f, 0.0f, 0.8f);
 		public Color TriggerColliderColor { get; set; } = new Color(0.0f, 1f, 0.0f, 0.8f);
 		public Color InteriorColliderColor { get; set; } = new Color(0f, 0f, 1f, 0.8f);
