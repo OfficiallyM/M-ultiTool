@@ -170,8 +170,11 @@ namespace MultiTool.Tools
 			if (tool == null) return;
 			if (tool.IsExclusive)
 			{
-				_active.OnDeactivate();
-				_active.SelectedObject = null;
+				if (_active != null)
+				{
+					_active.OnDeactivate();
+					_active.SelectedObject = null;
+				}
 				_active = null;
 			}
 			else
