@@ -36,21 +36,7 @@ namespace MultiTool.UI.Tabs.VehicleConfiguration
 			GUILayout.Space(10);
 
 			// Toggle slot mover.
-			if (GUILayout.Button(Accessibility.GetAccessibleString("Toggle slot mover", Services.State.Mode == "slotControl"), GUILayout.MaxWidth(200)))
-			{
-				if (Services.State.Mode == "slotControl")
-				{
-					GUIRenderer.SlotMoverDispose();
-				}
-				else
-				{
-					Services.State.Mode = "slotControl";
-					Services.State.Car = car;
-					Services.State.SlotStage = "slotSelect";
-				}
-			}
-
-			GUILayout.Space(10);
+			MultiTool.Tools.RenderControl("slot_mover");
 
 			// Condition.
 			GUILayout.Label("Condition", "LabelHeader");
