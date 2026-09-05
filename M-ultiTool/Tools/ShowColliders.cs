@@ -10,7 +10,6 @@ namespace MultiTool.Tools
 	internal class ShowCollidersTool : Tool
 	{
 		public override string Name => "Show colliders";
-		public override bool IsExclusive => false;
 
 		public override void ControlRender()
 		{

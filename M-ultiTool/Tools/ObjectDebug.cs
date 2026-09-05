@@ -12,7 +12,6 @@ namespace MultiTool.Tools
 	internal class ObjectDebugTool : Tool
 	{
 		public override string Name => "Object debug";
-		public override bool IsExclusive => false;
 
 		private Vector2 _scroll;
 		private GameObject _selected;
