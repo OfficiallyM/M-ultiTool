@@ -1,5 +1,6 @@
-﻿using MultiTool.Database;
+﻿using MultiTool.Data;
 using MultiTool.Extensions;
+using MultiTool.Services;
 using MultiTool.UI.Tabs.VehicleConfiguration;
 using MultiTool.Utilities;
 using System;
@@ -19,8 +20,14 @@ namespace MultiTool.Save
 	/// </summary>
 	internal static class SaveUtilities
 	{
+		private static ServiceContext _services;
 		private static GlobalSave _globalData;
 		private static Save _cachedData;
+
+		public static void Bootstrap(ServiceContext services)
+		{
+			_services = services;
+		}
 
 		/// <summary>
 		/// Read/write data to game save
@@ -535,7 +542,6 @@ namespace MultiTool.Save
 		/// <returns>List of newly spawned POIs</returns>
 		public static List<SpawnedPOI> LoadPOIs()
 		{
-			List<POI> POIs = DatabaseUtilities.LoadPOIs();
 			List<SpawnedPOI> spawnedPOIs = new List<SpawnedPOI>();
 			// Load and spawn saved POIs.
 			try
@@ -545,11 +551,11 @@ namespace MultiTool.Save
 				{
 					foreach (POIData poi in data.Pois)
 					{
-						GameObject gameObject = POIs.Where(p => p.Poi.name == poi.Poi.Replace("(Clone)", "")).FirstOrDefault().Poi;
+						GameObject gameObject = _services.Database.Pois.Where(p => p.Obj.name == poi.Poi.Replace("(Clone)", "")).FirstOrDefault().Obj;
 						if (gameObject != null)
 						{
 							Vector3 position = GameUtilities.GetLocalObjectPosition(poi.Position);
-							spawnedPOIs.Add(SpawnUtilities.Spawn(new POI() { Poi = gameObject }, false, position, poi.Rotation));
+							spawnedPOIs.Add(SpawnUtilities.Spawn(new Poi() { Obj = gameObject }, false, position, poi.Rotation));
 						}
 					}
 				}

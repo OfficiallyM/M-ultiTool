@@ -17,7 +17,7 @@ namespace MultiTool.Services
 			Critical
 		}
 
-		public static void Init()
+		public static void Bootstrap()
 		{
 			if (!_initialised)
 			{

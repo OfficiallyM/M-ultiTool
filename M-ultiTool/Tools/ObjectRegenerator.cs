@@ -1,4 +1,4 @@
-﻿using MultiTool.Database;
+﻿using MultiTool.Data;
 using MultiTool.Services;
 using MultiTool.UI;
 using System.Linq;
@@ -67,7 +67,7 @@ namespace MultiTool.Tools
 			if (Input.GetKeyDown(Services.Keybinds.GetKeyByAction((int)Keybinds.Inputs.action4).AssignedKey))
 			{
 				GameObject gameObject = SelectedObject.gameObject;
-				Item prefab = GUIRenderer.Items.FirstOrDefault(i => i.GameObject.name == gameObject.name.Replace("(Clone)", ""));
+				Item prefab = Services.Database.Items.FirstOrDefault(i => i.GameObject.name == gameObject.name.Replace("(Clone)", ""));
 				if (prefab == null)
 					return;
 

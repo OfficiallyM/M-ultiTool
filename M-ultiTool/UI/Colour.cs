@@ -3,7 +3,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
-using static MultiTool.Services.Keybinds;
 using Logger = MultiTool.Services.Logger;
 
 namespace MultiTool.UI

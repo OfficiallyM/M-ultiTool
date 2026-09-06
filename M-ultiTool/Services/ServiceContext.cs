@@ -1,4 +1,5 @@
 ﻿using MultiTool.Config;
+using MultiTool.Data;
 
 namespace MultiTool.Services
 {
@@ -14,12 +15,14 @@ namespace MultiTool.Services
 		public Configuration Configuration { get; }
 		public Keybinds Keybinds { get; }
 		public ModState State { get; }
+		public Database Database { get; }
 
-		public ServiceContext(Configuration configuration, Keybinds keybinds, ModState state)
+		public ServiceContext(Configuration configuration, Keybinds keybinds, ModState state, Database database)
 		{
 			Configuration = configuration;
 			Keybinds = keybinds;
 			State = state;
+			Database = database;
 		}
 	}
 }

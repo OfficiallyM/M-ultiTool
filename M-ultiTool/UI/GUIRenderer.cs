@@ -1,4 +1,4 @@
-﻿using MultiTool.Database;
+﻿using MultiTool.Data;
 using MultiTool.Extensions;
 using MultiTool.Save;
 using MultiTool.Services;
@@ -49,12 +49,10 @@ namespace MultiTool.UI
 		internal static float ScrollWidth = 10f;
 
 		// Vehicle-related variables.
-		internal static List<Vehicle> Vehicles = new List<Vehicle>();
 		internal static int ConditionInt = 0;
 		internal static bool ApplyConditionToAttached = false;
 
 		// Item menu variables.
-		internal static List<Database.Item> Items = new List<Database.Item>();
 		internal static Dictionary<string, List<Type>> Categories = new Dictionary<string, List<Type>>()
 		{
 			{ "Vehicle chassis", new List<Type>() { typeof(carscript) } },
@@ -79,9 +77,6 @@ namespace MultiTool.UI
 		};
 
 		internal static List<GameObject> SpawnedObjects = new List<GameObject>();
-
-		// POI variables.
-		internal static List<POI> POIs = new List<POI>();
 
 		// Player variables.
 		internal static Dictionary<mainscript.fluidenum, int> Piss = new Dictionary<mainscript.fluidenum, int>();
@@ -224,12 +219,6 @@ namespace MultiTool.UI
 				CreditsTabId = Tabs.AddTab(new Tabs.CreditsTab());
 				ThemeTabId = Tabs.AddTab(new Tabs.ThemeTab());
 				DebugTabId = Tabs.AddTab(new Tabs.DebugTab());
-
-				// Load data from database.
-				DatabaseUtilities.ClearCaches();
-				Vehicles = DatabaseUtilities.LoadVehicles();
-				Items = DatabaseUtilities.LoadItems();
-				POIs = DatabaseUtilities.LoadPOIs();
 
 				// Load save data.
 				SaveUtilities.LoadSaveData();
@@ -378,7 +367,7 @@ namespace MultiTool.UI
 						UnityEngine.Object.Destroy(starterVehicle.gameObject);
 						starterVehicle.transform.position += Vector3.down * 15f;
 
-						Vehicle vehicle = Vehicles.Where(v => v.GameObject.name.ToLower().Contains(starterVehicleName.ToLower())).FirstOrDefault();
+						Vehicle vehicle = _services.Database.Vehicles.Where(v => v.GameObject.name.ToLower().Contains(starterVehicleName.ToLower())).FirstOrDefault();
 						if (vehicle != null)
 						{
 							finalStarterVehicle = SpawnUtilities.Spawn(vehicle.GameObject, color, _startVehicleCondition, -1, position, rotation);
@@ -641,8 +630,8 @@ namespace MultiTool.UI
 
 				case "basics":
 					// Condition.
-					GUILayout.Label($"Condition: {(Database.Item.Condition)_startVehicleCondition}");
-					int maxCondition = (int)Enum.GetValues(typeof(Database.Item.Condition)).Cast<Database.Item.Condition>().Max();
+					GUILayout.Label($"Condition: {(Data.Item.Condition)_startVehicleCondition}");
+					int maxCondition = (int)Enum.GetValues(typeof(Data.Item.Condition)).Cast<Data.Item.Condition>().Max();
 					float rawCondition = GUILayout.HorizontalSlider(_startVehicleCondition, -1, maxCondition);
 					_startVehicleCondition = Mathf.RoundToInt(rawCondition);
 

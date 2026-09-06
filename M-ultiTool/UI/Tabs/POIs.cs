@@ -1,4 +1,4 @@
-﻿using MultiTool.Database;
+﻿using MultiTool.Data;
 using MultiTool.Extensions;
 using MultiTool.Save;
 using MultiTool.Utilities;
@@ -25,7 +25,7 @@ namespace MultiTool.UI.Tabs
 		private string _search = string.Empty;
 		private string _lastSearch = string.Empty;
 		private float _lastWidth = 0;
-		private List<List<POI>> _poisChunked = new List<List<POI>>();
+		private List<List<Poi>> _poisChunked = new List<List<Poi>>();
 		private bool _rechunk = false;
 
 		public override void OnRegister()
@@ -35,10 +35,10 @@ namespace MultiTool.UI.Tabs
 
 		public override void Update()
 		{
-			List<POI> pois = GUIRenderer.POIs;
+			List<Poi> pois = Services.Database.Pois;
 			if (_search != _lastSearch)
 			{
-				pois = GUIRenderer.POIs.Where(v => v.Name.ToLower().Contains(_search.ToLower()) || v.Poi.name.ToLower().Contains(_search.ToLower())).ToList();
+				pois = Services.Database.Pois.Where(v => v.Name.ToLower().Contains(_search.ToLower()) || v.Obj.name.ToLower().Contains(_search.ToLower())).ToList();
 				_rechunk = true;
 				_lastSearch = _search;
 				_poiScrollPosition = new Vector2(0, 0);
@@ -93,10 +93,10 @@ namespace MultiTool.UI.Tabs
 			GUILayout.Space(10);
 
 			_poiScrollPosition = GUILayout.BeginScrollView(_poiScrollPosition);
-			foreach (List<POI> poisRow in _poisChunked)
+			foreach (List<Poi> poisRow in _poisChunked)
 			{
 				GUILayout.BeginHorizontal();
-				foreach (POI poi in poisRow)
+				foreach (Poi poi in poisRow)
 				{
 					GUILayout.Box("", "button", GUILayout.Width(140), GUILayout.Height(140));
 					Rect boxRect = GUILayoutUtility.GetLastRect();
@@ -135,7 +135,7 @@ namespace MultiTool.UI.Tabs
 
 			foreach (SpawnedPOI poi in _spawnedPOIs)
 			{
-				GUILayout.Label(poi.Poi.Name);
+				GUILayout.Label(poi.Data.Name);
 				GUILayout.Space(2);
 				GUILayout.BeginHorizontal();
 				if (GUILayout.Button("Teleport to", GUILayout.MaxWidth(100)))

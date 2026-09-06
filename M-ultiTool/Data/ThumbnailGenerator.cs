@@ -1,10 +1,11 @@
-﻿using MultiTool.Utilities;
+﻿using MultiTool.Services;
+using MultiTool.Utilities;
 using System;
 using System.IO;
 using TLDLoader;
 using UnityEngine;
 
-namespace MultiTool.Database
+namespace MultiTool.Data
 {
 	// TODO: Dogshit. Replace with modloader generator.
 	// Needs to keep 200x200 and support for variants and conditions.
@@ -14,11 +15,14 @@ namespace MultiTool.Database
 	// so needs doing in a coroutine.
 	internal static class ThumbnailGenerator
 	{
+		private static ServiceContext _services;
 		private static string _cacheDir = null;
 		private static bool _regenerateCache = false;
 
-		public static void Init()
+		public static void Bootstrap(ServiceContext services)
 		{
+			_services = services;
+
 			string configDir = Path.Combine(ModLoader.ModsFolder, "Config", "Mod Settings", MultiTool.ModInstance.ID);
 			DirectoryInfo dir = Directory.CreateDirectory(Path.Combine(configDir, "Cache"));
 			_cacheDir = dir.FullName;
@@ -45,7 +49,7 @@ namespace MultiTool.Database
 				file.Delete();
 			}
 
-			DatabaseUtilities.RebuildCaches();
+			_services.Database.FetchData();
 
 			Services.Logger.Log($"Successfully rebuilt thumbnail cache ({cacheDirectory.GetFiles().Length} thumbnails cached)");
 		}

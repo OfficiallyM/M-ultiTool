@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using UnityEngine;
 
-namespace MultiTool.Database
+namespace MultiTool.Data
 {
 	internal class Item
 	{

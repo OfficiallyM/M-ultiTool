@@ -14,7 +14,7 @@ namespace MultiTool.Services
 		private static Dictionary<string, Translate> _translations = new Dictionary<string, Translate>();
 		private static string _translationDir;
 
-		public static void Init()
+		public static void Bootstrap()
 		{
 			DirectoryInfo dir = Directory.CreateDirectory(Path.Combine(ModLoader.GetModConfigFolder(MultiTool.ModInstance), "Translations"));
 			_translationDir = dir.FullName;

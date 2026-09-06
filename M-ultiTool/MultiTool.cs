@@ -1,5 +1,6 @@
 ﻿using MultiTool.Config;
-using MultiTool.Database;
+using MultiTool.Data;
+using MultiTool.Save;
 using MultiTool.Services;
 using MultiTool.Tools;
 using MultiTool.UI;
@@ -42,11 +43,19 @@ namespace MultiTool
 
 			try
 			{
-				Services.Logger.Init();
-				Translator.Init();
-				ThumbnailGenerator.Init();
+				Services.Logger.Bootstrap();
 
-				Context = new ServiceContext(new Configuration(), new Keybinds(), new ModState());
+				Context = new ServiceContext(
+					new Configuration(),
+					new Keybinds(),
+					new ModState(),
+					new Database()
+				);
+
+				Translator.Bootstrap();
+				ThumbnailGenerator.Bootstrap(Context);
+				SaveUtilities.Bootstrap(Context);
+
 				// Bootstrap the configuration with a manually constructed 
 				// path because the mod hasn't fully initialised yet.
 				Configuration.Bootstrap(Path.Combine(ModLoader.ModsFolder, "Config", "Mod Settings", ID, "Config.json"));
@@ -55,7 +64,7 @@ namespace MultiTool
 			}
 			catch (Exception ex)
 			{
-				Services.Logger.Log($"Bootstrap failed - {ex}", Services.Logger.LogLevel.Critical);
+				Services.Logger.Log($"Bootstrap failed. Details: {ex}", Services.Logger.LogLevel.Critical);
 			}
 		}
 
@@ -75,6 +84,7 @@ namespace MultiTool
 		public override void OnLoad()
 		{
 			Translator.SetLanguage(mainscript.M.menu.language.languageNames[mainscript.M.menu.language.selectedLanguage]);
+			Context.Database.FetchData();
 			IsOnMainMenu = false;
 
 			GameObject controller = new GameObject("M-ultiTool");
