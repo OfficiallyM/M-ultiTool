@@ -41,5 +41,26 @@
 			}
 			return true;
 		}
+
+		/// <summary>
+		/// Removes the "(Clone)" suffix from a string.
+		/// </summary>
+		/// <param name="s">String to prettify</param>
+		/// <returns>String with "(Clone)" removed</returns>
+		public static string Prettify(this string s)
+			=> s.Replace("(Clone)", string.Empty);
+
+		/// <summary>
+		/// Converts a string to a key format by removing "(Clone)", converting to lowercase, and replacing spaces with underscores.
+		/// </summary>
+		/// <param name="s">String to convert to key format</param>
+		/// <returns>String formatted as a key</returns>
+		public static string ToKey(this string s)
+		{
+			return s
+				.Prettify()
+				.ToLowerInvariant()
+				.Replace(" ", "_");
+		}
 	}
 }

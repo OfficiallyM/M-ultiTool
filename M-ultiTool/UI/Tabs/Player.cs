@@ -411,7 +411,7 @@ namespace MultiTool.UI.Tabs
 				{
 					GameUtilities.TeleportPlayerWithParent(closestBuilding.transform.position + Vector3.up * 2f);
 					_previousBuildingTeleports.Add(closestBuilding);
-					Notifications.Send("Teleport", $"Teleported to {Translator.T(closestBuilding.name.Replace("(Clone)", string.Empty), "POI")}");
+					Notifications.Send("Teleport", $"Teleported to {Services.Translator.T($"poi.{closestBuilding.name.ToKey()}", closestBuilding.name.Prettify())}");
 				}
 				else
 					Notifications.Send("Teleport", "No valid building found to teleport to", Notification.NotificationType.Warning);

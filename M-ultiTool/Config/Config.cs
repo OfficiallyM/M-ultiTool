@@ -3,6 +3,7 @@ using System;
 using System.IO;
 using System.Runtime.Serialization.Json;
 using System.Text;
+using TLDLoader;
 using UnityEngine;
 using Logger = MultiTool.Services.Logger;
 
@@ -17,9 +18,9 @@ namespace MultiTool.Config
 		/// <summary>
 		/// Load the config from the config file.
 		/// </summary>
-		public void Bootstrap(string path)
+		public void Bootstrap()
 		{
-			_configPath = path;
+			_configPath = Path.Combine(ModLoader.GetModConfigFolder(MultiTool.ModInstance), "Config.json");
 
 			try
 			{

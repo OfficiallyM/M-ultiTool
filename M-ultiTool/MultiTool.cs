@@ -45,20 +45,10 @@ namespace MultiTool
 			{
 				Services.Logger.Bootstrap();
 
-				Context = new ServiceContext(
-					new Configuration(),
-					new Keybinds(),
-					new ModState(),
-					new Database()
-				);
-
-				Translator.Bootstrap();
+				Context = new ServiceContext();
 				ThumbnailGenerator.Bootstrap(Context);
 				SaveUtilities.Bootstrap(Context);
-
-				// Bootstrap the configuration with a manually constructed 
-				// path because the mod hasn't fully initialised yet.
-				Configuration.Bootstrap(Path.Combine(ModLoader.ModsFolder, "Config", "Mod Settings", ID, "Config.json"));
+				Configuration.Bootstrap();
 				Renderer = new GUIRenderer(Context);
 				Tools = new ToolController(Context);
 			}
@@ -83,7 +73,7 @@ namespace MultiTool
 
 		public override void OnLoad()
 		{
-			Translator.SetLanguage(mainscript.M.menu.language.languageNames[mainscript.M.menu.language.selectedLanguage]);
+			Context.Translator.SetLanguage(mainscript.M.menu.language.languageNames[mainscript.M.menu.language.selectedLanguage]);
 			Context.Database.FetchData();
 			IsOnMainMenu = false;
 

@@ -1,4 +1,5 @@
-﻿using MultiTool.Services;
+﻿using MultiTool.Extensions;
+using MultiTool.Services;
 using MultiTool.UI;
 using MultiTool.Utilities;
 using System;
@@ -14,6 +15,8 @@ namespace MultiTool.Data
 {
 	internal class Database
 	{
+		private ServiceContext _services;
+
 		public List<Vehicle> Vehicles { get; private set; } = new List<Vehicle>();
 		public List<Item> Items { get; private set; } = new List<Item>();
 		public List<Poi> Pois { get; private set; } = new List<Poi>();
@@ -21,6 +24,11 @@ namespace MultiTool.Data
 		private Assembly _amtAssembly;
 		private IEnumerable _amtItems;
 		private bool _hasAmtSetupRan = false;
+
+		public Database(ServiceContext services)
+		{
+			_services = services;
+		}
 
 		public void FetchData()
 		{
@@ -55,10 +63,9 @@ namespace MultiTool.Data
 								Vehicle vehicle = new Vehicle()
 								{
 									GameObject = gameObject,
-									//variant = i + 1,
 									Variant = i,
 									Thumbnail = ThumbnailGenerator.GetThumbnail(gameObject, i),
-									Name = Translator.T(gameObject.name, "vehicle", i),
+									Name = _services.Translator.T($"vehicle.{gameObject.name.ToKey()}.{i}", gameObject.name),
 								};
 								Vehicles.Add(vehicle);
 							}
@@ -70,7 +77,7 @@ namespace MultiTool.Data
 								GameObject = gameObject,
 								Variant = -1,
 								Thumbnail = ThumbnailGenerator.GetThumbnail(gameObject),
-								Name = Translator.T(gameObject.name, "vehicle", -1),
+								Name = _services.Translator.T($"vehicle.{gameObject.name.ToKey()}", gameObject.name),
 							};
 							Vehicles.Add(vehicle);
 						}
@@ -120,18 +127,18 @@ namespace MultiTool.Data
 		/// <returns>List of POIs</returns>
 		private void LoadPOIs()
 		{
-			foreach (GameObject POI in itemdatabase.d.buildings)
+			foreach (GameObject building in itemdatabase.d.buildings)
 			{
-				if (POI.name == "ErrorPrefab" || POI.name == "Falu01") continue;
+				if (building.name == "ErrorPrefab" || building.name == "Falu01") continue;
 
 				try
 				{
 					// TODO: Some building thumbnails are a bit fucked.
 					Pois.Add(new Poi()
 					{
-						Obj = POI,
-						Thumbnail = ThumbnailGenerator.GetThumbnail(POI, POI: true),
-						Name = Translator.T(POI.name, "POI"),
+						Obj = building,
+						Thumbnail = ThumbnailGenerator.GetThumbnail(building, POI: true),
+						Name = _services.Translator.T($"poi.{building.name.ToKey()}", building.name),
 					});
 				}
 				catch (Exception ex)
@@ -147,7 +154,7 @@ namespace MultiTool.Data
 				{
 					Obj = objClass.prefab,
 					Thumbnail = ThumbnailGenerator.GetThumbnail(objClass.prefab, POI: true),
-					Name = Translator.T(objClass.prefab.name, "POI"),
+					Name = _services.Translator.T($"poi.{objClass.prefab.name.ToKey()}", objClass.prefab.name),
 				});
 			}
 
@@ -161,7 +168,7 @@ namespace MultiTool.Data
 				{
 					Obj = objClass.prefab,
 					Thumbnail = ThumbnailGenerator.GetThumbnail(objClass.prefab, POI: true),
-					Name = Translator.T(objClass.prefab.name, "POI"),
+					Name = _services.Translator.T($"poi.{objClass.prefab.name.ToKey()}", objClass.prefab.name),
 				});
 			}
 
@@ -181,7 +188,7 @@ namespace MultiTool.Data
 					{
 						Obj = obj,
 						Thumbnail = ThumbnailGenerator.GetThumbnail(obj, POI: true),
-						Name = Translator.T(obj.name, "POI"),
+						Name = _services.Translator.T($"poi.{obj.name.ToKey()}", obj.name),
 					});
 				}
 			}
