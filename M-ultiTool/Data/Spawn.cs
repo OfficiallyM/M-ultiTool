@@ -7,7 +7,7 @@ using System.Reflection;
 using UnityEngine;
 using Logger = MultiTool.Services.Logger;
 
-namespace MultiTool.Database
+namespace MultiTool.Data
 {
 	/// <summary>
 	/// Spawn-related utilities.
@@ -273,7 +273,7 @@ namespace MultiTool.Database
 		/// <param name="position">Position override</param>
 		/// <param name="rotation">Rotation override</param>
 		/// <returns>The spawned point of interest</returns>
-		internal static SpawnedPOI Spawn(POI POI, bool spawnItems, Vector3? position = null, Quaternion? rotation = null)
+		internal static SpawnedPOI Spawn(Poi poi, bool spawnItems, Vector3? position = null, Quaternion? rotation = null)
 		{
 			GameObject gameObject = null;
 			int ID = -1;
@@ -288,9 +288,9 @@ namespace MultiTool.Database
 				pos.y = mainscript.M.player.gameObject.transform.position.y;
 
 				// Starter house and pyramid needs a different offset.
-				if (POI.Poi.name == "haz02")
+				if (poi.Obj.name == "haz02")
 					pos += Vector3.up * 0.18f;
-				else if (POI.Poi.name == "Pyramid1")
+				else if (poi.Obj.name == "Pyramid1")
 					pos -= Vector3.up * 4f;
 				else
 					pos -= Vector3.up * 0.85f;
@@ -304,7 +304,7 @@ namespace MultiTool.Database
 					save = false;
 				}
 
-				gameObject = UnityEngine.Object.Instantiate(POI.Poi, pos, rot, mainscript.M.terrainGenerationSettings.roadBuildingGeneration.parent);
+				gameObject = UnityEngine.Object.Instantiate(poi.Obj, pos, rot, mainscript.M.terrainGenerationSettings.roadBuildingGeneration.parent);
 				gameObject.SetActive(true);
 
 				// Some unused buildings need a custom rotation.
@@ -313,7 +313,7 @@ namespace MultiTool.Database
 					"toalettarium",
 					"ROADSIGNS1"
 				};
-				if (rotateBuildings.Contains(POI.Poi.name))
+				if (rotateBuildings.Contains(poi.Obj.name))
 				{
 					Transform transform = gameObject.transform;
 					Vector3 angle = transform.localEulerAngles;
@@ -350,7 +350,7 @@ namespace MultiTool.Database
 			{
 				ID = ID,
 				PoiObject = gameObject,
-				Poi = POI,
+				Data = poi,
 			};
 		}
 

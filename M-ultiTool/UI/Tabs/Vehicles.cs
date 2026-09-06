@@ -1,4 +1,4 @@
-﻿using MultiTool.Database;
+﻿using MultiTool.Data;
 using MultiTool.Extensions;
 using MultiTool.Services;
 using MultiTool.Utilities;
@@ -55,10 +55,10 @@ namespace MultiTool.UI.Tabs
 
 		public override void Update()
 		{
-			List<Vehicle> vehicles = GUIRenderer.Vehicles;
+			List<Vehicle> vehicles = Services.Database.Vehicles;
 			if (_search != _lastSearch)
 			{
-				vehicles = GUIRenderer.Vehicles.Where(v => v.Name.ToLower().Contains(_search.ToLower()) || v.GameObject.name.ToLower().Contains(_search.ToLower())).ToList();
+				vehicles = Services.Database.Vehicles.Where(v => v.Name.ToLower().Contains(_search.ToLower()) || v.GameObject.name.ToLower().Contains(_search.ToLower())).ToList();
 				_rechunk = true;
 				_lastSearch = _search;
 				_vehicleScrollPosition = new Vector2(0, 0);

@@ -1,10 +1,10 @@
 ﻿using UnityEngine;
 
-namespace MultiTool.Database
+namespace MultiTool.Data
 {
-	internal class POI
+	internal class Poi
 	{
-		public GameObject Poi;
+		public GameObject Obj;
 		public string Name;
 		public Texture2D Thumbnail;
 	}
@@ -13,6 +13,6 @@ namespace MultiTool.Database
 	{
 		public int? ID;
 		public GameObject PoiObject;
-		public POI Poi;
+		public Poi Data;
 	}
 }

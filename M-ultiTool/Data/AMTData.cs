@@ -1,6 +1,6 @@
 ﻿using System.Reflection;
 
-namespace MultiTool.Database
+namespace MultiTool.Data
 {
 	internal class AMTData
 	{

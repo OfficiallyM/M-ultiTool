@@ -1,4 +1,4 @@
-﻿using MultiTool.Database;
+﻿using MultiTool.Data;
 using MultiTool.Extensions;
 using MultiTool.Services;
 using MultiTool.Utilities;
@@ -59,10 +59,10 @@ namespace MultiTool.UI.Tabs
 
 		public override void Update()
 		{
-			List<Item> items = GUIRenderer.Items;
+			List<Item> items = Services.Database.Items;
 			if (_search != _lastSearch)
 			{
-				items = GUIRenderer.Items.Where(i => i.GameObject.name.ToLower().Contains(_search.ToLower())).ToList();
+				items = Services.Database.Items.Where(i => i.GameObject.name.ToLower().Contains(_search.ToLower())).ToList();
 				_rechunk = true;
 				_lastSearch = _search;
 				_itemScrollPosition = new Vector2(0, 0);
@@ -136,7 +136,7 @@ namespace MultiTool.UI.Tabs
 					// to avoid gaps in the layout.
 					if (item.GameObject == null)
 					{
-						GUIRenderer.Items.Remove(item);
+						Services.Database.Items.Remove(item);
 						_rechunk = true;
 						break;
 					}
