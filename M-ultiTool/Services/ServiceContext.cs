@@ -16,13 +16,15 @@ namespace MultiTool.Services
 		public Keybinds Keybinds { get; }
 		public ModState State { get; }
 		public Database Database { get; }
+		public Translator Translator { get; }
 
-		public ServiceContext(Configuration configuration, Keybinds keybinds, ModState state, Database database)
+		public ServiceContext()
 		{
-			Configuration = configuration;
-			Keybinds = keybinds;
-			State = state;
-			Database = database;
+			Configuration = new Configuration();
+			Keybinds = new Keybinds();
+			State = new ModState();
+			Translator = new Translator();
+			Database = new Database(this);
 		}
 	}
 }

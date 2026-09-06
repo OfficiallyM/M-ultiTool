@@ -1,20 +1,18 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Runtime.Serialization.Json;
-using System.Text;
 using TLDLoader;
 
 namespace MultiTool.Services
 {
-	internal static class Translator
+	internal class Translator
 	{
-		// Translation-related variables.
-		private static string _language;
-		private static Dictionary<string, Translate> _translations = new Dictionary<string, Translate>();
-		private static string _translationDir;
+		private string _language;
+		private Dictionary<string, Dictionary<string, string>> _translations = new Dictionary<string, Dictionary<string, string>>();
+		private string _translationDir;
 
-		public static void Bootstrap()
+		public Translator()
 		{
 			DirectoryInfo dir = Directory.CreateDirectory(Path.Combine(ModLoader.GetModConfigFolder(MultiTool.ModInstance), "Translations"));
 			_translationDir = dir.FullName;
@@ -23,18 +21,35 @@ namespace MultiTool.Services
 		}
 
 		/// <summary>
-		/// Set translator language
+		/// Set translator language.
 		/// </summary>
-		/// <param name="_language">The language to set the translator to</param>
-		public static void SetLanguage(string language)
+		/// <param name="language">The language to set the translator to</param>
+		public void SetLanguage(string language)
 		{
 			_language = language;
 		}
 
 		/// <summary>
+		/// Translate a key into the current language.
+		/// </summary>
+		/// <param name="key">The translation key to look up</param>
+		/// <param name="defaultValue">The value to return if the key has no translation</param>
+		/// <returns>Translated value, or defaultValue if no translation is found</returns>
+		public string T(string key, string defaultValue)
+		{
+			// Fallback to English if the current language isn't supported.
+			if (!_translations.ContainsKey(_language))
+				_language = "English";
+
+			return _translations.ContainsKey(_language) && _translations[_language].TryGetValue(key, out string translated)
+				? translated
+				: defaultValue;
+		}
+
+		/// <summary>
 		/// Load translation JSON files from mod config folder.
 		/// </summary>
-		private static void LoadTranslationFiles()
+		private void LoadTranslationFiles()
 		{
 			// Return early if translations are already loaded.
 			if (_translations.Count > 0)
@@ -51,86 +66,15 @@ namespace MultiTool.Services
 				try
 				{
 					string json = File.ReadAllText(file);
-					MemoryStream ms = new MemoryStream(Encoding.UTF8.GetBytes(json));
-					DataContractJsonSerializer jsonSerializer = new DataContractJsonSerializer(typeof(Translate));
-					Translate config = jsonSerializer.ReadObject(ms) as Translate;
-					ms.Close();
+					Dictionary<string, string> translations = JsonConvert.DeserializeObject<Dictionary<string, string>>(json);
 
-					_translations.Add(Path.GetFileNameWithoutExtension(file), config);
+					_translations.Add(Path.GetFileNameWithoutExtension(file), translations);
 				}
 				catch (Exception ex)
 				{
 					Logger.Log($"Failed loading translation file {Path.GetFileNameWithoutExtension(file)} - error:\n{ex}", Logger.LogLevel.Error);
 				}
 			}
-		}
-
-		/// <summary>
-		/// 
-		/// </summary>
-		/// <param name="objectName">The object name to translate</param>
-		/// <param name="variant">The vehicle variant (optional)</param>
-		/// <returns>Translated object name or untranslated name if no translation is found</returns>
-		public static string T(string objectName, string type, int? variant = null)
-		{
-			string defaultObjectName = objectName;
-
-			// Fallback to English if the current language isn't supported.
-			if (!_translations.ContainsKey(_language))
-			{
-				_language = "English";
-			}
-
-			if (_translations.ContainsKey(_language))
-			{
-				Translate config = _translations[_language];
-				List<Translatable> translate = null;
-
-				// Find translation list for type.
-				switch (type)
-				{
-					case "vehicle":
-						translate = config.vehicles;
-						break;
-					case "POI":
-						translate = config.POIs;
-						break;
-					case "menuVehicles":
-						translate = config.menuVehicles;
-						break;
-				}
-
-				// Attempt to find the translation.
-				if (translate != null)
-				{
-					foreach (Translatable translatable in translate)
-					{
-						if (translatable.objectName == objectName)
-						{
-							if (variant != null && variant != -1)
-							{
-								if (translatable.variant == variant)
-								{
-									objectName = translatable.name;
-									break;
-								}
-							}
-							else
-							{
-								objectName = translatable.name;
-								break;
-							}
-						}
-					}
-				}
-			}
-
-			// No translation and has a variant, just append the variant number.
-			if (defaultObjectName == objectName && variant != null && variant != -1)
-			{
-				objectName += $" (Variant {variant.GetValueOrDefault()})";
-			}
-			return objectName;
 		}
 	}
 }

@@ -455,7 +455,7 @@ namespace MultiTool.UI
 				ResolutionY = settingsscript.s.S.IResolutionY;
 
 				// Default language to English until we can pull it from mainscript.
-				Translator.SetLanguage("English");
+				_services.Translator.SetLanguage("English");
 
 				// Set label styling.
 				LabelStyle.alignment = TextAnchor.UpperLeft;
@@ -621,7 +621,7 @@ namespace MultiTool.UI
 					int optionCount = (int)Enum.GetValues(typeof(itemdatabase.CarType)).Cast<itemdatabase.CarType>().Max();
 					foreach (object car in Enum.GetValues(typeof(itemdatabase.CarType)))
 					{
-						string name = Translator.T(car.ToString(), "menuVehicles");
+						string name = _services.Translator.T($"vehicle.{car.ToString().ToKey()}", car.ToString());
 
 						if (GUILayout.Button(Accessibility.GetAccessibleString(name, mainmenuscript.mainmenu.DFMS.startcar == (itemdatabase.CarType)car)))
 							mainmenuscript.mainmenu.DFMS.startcar = (itemdatabase.CarType)car;

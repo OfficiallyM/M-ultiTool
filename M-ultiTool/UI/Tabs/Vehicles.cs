@@ -177,8 +177,8 @@ namespace MultiTool.UI.Tabs
 
 						if (!isVehicle) continue;
 
-						string name = obj.name.Replace("(Clone)", string.Empty);
-						name = Translator.T(name, "vehicle");
+						string name = obj.name.Prettify();
+						name = Services.Translator.T($"vehicle.{name.ToKey()}", name);
 
 						GUILayout.Label(name);
 						GUILayout.BeginHorizontal();
