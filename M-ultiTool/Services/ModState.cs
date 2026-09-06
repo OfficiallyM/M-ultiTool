@@ -9,10 +9,5 @@
 	{
 		public bool GodMode { get; set; } = false;
 		public bool SpawnWithFuel { get; set; } = true;
-		public string Mode { get; set; } = null;
-		public carscript Car { get; set; } = null;
-		public string SlotStage { get; set; } = null;
-		public bool ShowColliders { get; set; } = false;
-		public bool ShowColliderHelp { get; set; } = false;
 	}
 }
