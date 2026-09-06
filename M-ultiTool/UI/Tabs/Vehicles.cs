@@ -40,6 +40,7 @@ namespace MultiTool.UI.Tabs
 		private string _plate = string.Empty;
 
 		private bool _showSpawnHistory = false;
+		private List<GameObject> _spawnedObjects = new List<GameObject>();
 
 		public override void OnRegister()
 		{
@@ -127,7 +128,7 @@ namespace MultiTool.UI.Tabs
 						}, spawnWithFuel: Services.State.SpawnWithFuel);
 
 						if (spawned != null)
-							GUIRenderer.SpawnedObjects.Add(spawned);
+							_spawnedObjects.Add(spawned);
 					}
 					GUILayout.Space(5);
 				}
@@ -155,7 +156,7 @@ namespace MultiTool.UI.Tabs
 				}
 				GUILayout.Space(10);
 
-				if (GUIRenderer.SpawnedObjects.Count == 0)
+				if (_spawnedObjects.Count == 0)
 				{
 					GUILayout.BeginHorizontal();
 					GUILayout.FlexibleSpace();
@@ -164,7 +165,7 @@ namespace MultiTool.UI.Tabs
 					GUILayout.EndHorizontal();
 				}
 
-				foreach (GameObject obj in GUIRenderer.SpawnedObjects)
+				foreach (GameObject obj in _spawnedObjects)
 				{
 					try
 					{
@@ -217,7 +218,7 @@ namespace MultiTool.UI.Tabs
 										component.removeFromMemory = true;
 									}
 									UnityEngine.Object.Destroy(obj);
-									GUIRenderer.SpawnedObjects.Remove(obj);
+									_spawnedObjects.Remove(obj);
 									break;
 								}
 							}
@@ -226,10 +227,9 @@ namespace MultiTool.UI.Tabs
 						GUILayout.EndHorizontal();
 						GUILayout.Space(10);
 					}
-					catch (Exception ex)
+					catch
 					{
-						Logger.Log($"Spawn history error for item {obj.name ?? "Unknown"}. Details: {ex}");
-						GUIRenderer.SpawnedObjects.Remove(obj);
+						_spawnedObjects.Remove(obj);
 						break;
 					}
 				}

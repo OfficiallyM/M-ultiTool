@@ -25,6 +25,29 @@ namespace MultiTool.Data
 		private IEnumerable _amtItems;
 		private bool _hasAmtSetupRan = false;
 
+		private Dictionary<string, List<Type>> _categories = new Dictionary<string, List<Type>>()
+		{
+			{ "Vehicle chassis", new List<Type>() { typeof(carscript) } },
+			{ "Trailers", new List<Type>() { typeof(utanfutoscript) } },
+			{ "Tanks", new List<Type>() { typeof(tankscript) } },
+			{ "Lights", new List<Type>() { typeof(headlightscript) } },
+			{ "Engines", new List<Type>() { typeof(enginescript) } },
+			{ "Wheels", new List<Type>() { typeof(wheelscript) } },
+			{ "Tires", new List<Type>() { typeof(gumiscript) } },
+			{ "Dials", new List<Type>() { typeof(meterscript) } },
+			{ "Attachables", new List<Type>() { typeof(attachablescript) } },
+			{ "Other vehicle parts", new List<Type>() { typeof(attachablescript) } },
+			{ "Guns", new List<Type>() { typeof(weaponscript) } },
+			{ "Melee weapons", new List<Type>() { typeof(meleeweaponscript) } },
+			{ "Cleaning", new List<Type>() { typeof(drotkefescript), typeof(spricniscript) } },
+			{ "Refillables", new List<Type>() { typeof(ammoscript) } },
+			{ "Food", new List<Type>() { typeof(ediblescript) } },
+			{ "Wearables", new List<Type>() { typeof(wearable) } },
+			{ "Usables", new List<Type>() { typeof(pickupable) } },
+			{ "Mod items", new List<Type>() { typeof(tosaveitemscript) } },
+			{ "Other", new List<Type>() { typeof(MonoBehaviour) } },
+		};
+
 		public Database(ServiceContext services)
 		{
 			_services = services;
@@ -40,6 +63,9 @@ namespace MultiTool.Data
 			LoadItems();
 			LoadPOIs();
 		}
+
+		public List<string> GetCategories()
+			=> _categories.Keys.ToList();
 
 		/// <summary>
 		/// Load vehicles from database and generate thumbnails.
@@ -105,7 +131,7 @@ namespace MultiTool.Data
 					// Remove vehicles and trailers from items array.
 					if (item && !GameUtilities.IsVehicleOrTrailer(item) && item.name != null && item.name != "ErrorPrefab")
 					{
-						Items.Add(new Item() { GameObject = item, Thumbnail = ThumbnailGenerator.GetThumbnail(item), Category = GameUtilities.GetCategory(item) });
+						Items.Add(new Item() { GameObject = item, Thumbnail = ThumbnailGenerator.GetThumbnail(item), Category = GetCategory(item) });
 					}
 				}
 				catch (Exception ex)
@@ -284,7 +310,7 @@ namespace MultiTool.Data
 			List<Item> items = new List<Item>();
 			if (AMTSetup())
 			{
-				int category = GUIRenderer.Categories.Keys.ToList().IndexOf("Mod items");
+				int category = _categories.Keys.ToList().IndexOf("Mod items");
 
 				foreach (object item in _amtItems)
 				{
@@ -321,7 +347,7 @@ namespace MultiTool.Data
 		private List<Item> LoadModItems()
 		{
 			List<Item> items = new List<Item>();
-			int category = GUIRenderer.Categories.Keys.ToList().IndexOf("Mod items");
+			int category = _categories.Keys.ToList().IndexOf("Mod items");
 
 			foreach (GameObject item in ModLoader.Database.GetAllItems())
 			{
@@ -336,6 +362,59 @@ namespace MultiTool.Data
 			}
 
 			return items;
+		}
+
+		/// <summary>
+		/// Get the category for a given item.
+		/// </summary>
+		/// <param name="gameObject">The item to get the category for</param>
+		/// <returns>The category index</returns>
+		private int GetCategory(GameObject gameObject)
+		{
+			// Get all components, add types to list.
+			MonoBehaviour[] components = gameObject.GetComponents<MonoBehaviour>();
+			Dictionary<Type, MonoBehaviour> types = new Dictionary<Type, MonoBehaviour>();
+			foreach (MonoBehaviour component in components)
+			{
+				if (!types.ContainsKey(component.GetType()))
+					types.Add(component.GetType(), component);
+			}
+
+			// Convert keys to list to get the index later.
+			List<string> names = _categories.Keys.ToList();
+
+			int databaseLength = Enum.GetNames(typeof(itemdatabase.i)).Length;
+
+			// Categories will be located in order.
+			foreach (KeyValuePair<string, List<Type>> category in _categories)
+			{
+				foreach (Type type in category.Value)
+				{
+					// Use tosaveitemscript as a throwaway category for mod items as they
+					// can't be found in the usual way.
+					if (type == typeof(tosaveitemscript))
+					{
+						// Check if object index is outside the bounds of the regular itemdatabase.
+						int index = Array.FindIndex(itemdatabase.d.items, i => i == gameObject);
+						if (index >= databaseLength)
+							return names.IndexOf("Mod items");
+					}
+					else if (types.ContainsKey(type))
+					{
+						MonoBehaviour component = types[type];
+						if (type == typeof(pickupable))
+						{
+							pickupable pickupable = component as pickupable;
+							if (pickupable.usable != null)
+								return names.IndexOf(category.Key);
+						}
+						else
+							return names.IndexOf(category.Key);
+					}
+				}
+			}
+
+			return names.IndexOf("Other");
 		}
 	}
 }

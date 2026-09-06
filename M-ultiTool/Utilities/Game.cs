@@ -33,60 +33,6 @@ namespace MultiTool.Utilities
 		}
 
 		/// <summary>
-		/// Get the category for a given item.
-		/// </summary>
-		/// <param name="gameObject">The item to get the category for</param>
-		/// <param name="categories">The categories to sort into</param>
-		/// <returns>The category index</returns>
-		public static int GetCategory(GameObject gameObject)
-		{
-			// Get all components, add types to list.
-			MonoBehaviour[] components = gameObject.GetComponents<MonoBehaviour>();
-			Dictionary<Type, MonoBehaviour> types = new Dictionary<Type, MonoBehaviour>();
-			foreach (MonoBehaviour component in components)
-			{
-				if (!types.ContainsKey(component.GetType()))
-					types.Add(component.GetType(), component);
-			}
-
-			// Convert keys to list to get the index later.
-			List<string> names = GUIRenderer.Categories.Keys.ToList();
-
-			int databaseLength = Enum.GetNames(typeof(itemdatabase.i)).Length;
-
-			// Categories will be located in order.
-			foreach (KeyValuePair<string, List<Type>> category in GUIRenderer.Categories)
-			{
-				foreach (Type type in category.Value)
-				{
-					// Use tosaveitemscript as a throwaway category for mod items as they
-					// can't be found in the usual way.
-					if (type == typeof(tosaveitemscript))
-					{
-						// Check if object index is outside the bounds of the regular itemdatabase.
-						int index = Array.FindIndex(itemdatabase.d.items, i => i == gameObject);
-						if (index >= databaseLength)
-							return names.IndexOf("Mod items");
-					}
-					else if (types.ContainsKey(type))
-					{
-						MonoBehaviour component = types[type];
-						if (type == typeof(pickupable))
-						{
-							pickupable pickupable = component as pickupable;
-							if (pickupable.usable != null)
-								return names.IndexOf(category.Key);
-						}
-						else
-							return names.IndexOf(category.Key);
-					}
-				}
-			}
-
-			return names.IndexOf("Other");
-		}
-
-		/// <summary>
 		/// Paint all child parts of a vehicle.
 		/// </summary>
 		/// <param name="c">The colour to paint</param>

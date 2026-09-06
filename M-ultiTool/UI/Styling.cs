@@ -4,7 +4,6 @@ using System.Runtime.Serialization.Json;
 using System.Text;
 using TLDLoader;
 using UnityEngine;
-using static MultiTool.Services.Keybinds;
 using Logger = MultiTool.Services.Logger;
 
 namespace MultiTool.UI
@@ -327,10 +326,10 @@ namespace MultiTool.UI
 			_blue = GUIExtensions.ColorTexture(1, 1, new Color(0, 0.38f, 0.77f));
 
 			// Override scrollbar width and height.
-			skin.verticalScrollbar.fixedWidth = GUIRenderer.ScrollWidth;
-			skin.verticalScrollbarThumb.fixedWidth = GUIRenderer.ScrollWidth;
-			skin.horizontalScrollbar.fixedHeight = GUIRenderer.ScrollWidth;
-			skin.horizontalScrollbarThumb.fixedHeight = GUIRenderer.ScrollWidth;
+			skin.verticalScrollbar.fixedWidth = MultiTool.Context.Configuration.Config.ScrollWidth;
+			skin.verticalScrollbarThumb.fixedWidth = MultiTool.Context.Configuration.Config.ScrollWidth;
+			skin.horizontalScrollbar.fixedHeight = MultiTool.Context.Configuration.Config.ScrollWidth;
+			skin.horizontalScrollbarThumb.fixedHeight = MultiTool.Context.Configuration.Config.ScrollWidth;
 
 			// Button styling.
 			_buttonStyle = new GUIStyle(skin.button);

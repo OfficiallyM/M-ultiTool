@@ -1,6 +1,8 @@
 ﻿using MultiTool.Extensions;
 using MultiTool.Save;
+using System;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using static mainscript;
 
@@ -12,9 +14,19 @@ namespace MultiTool.UI.Tabs.VehicleConfiguration
 		public override bool HasCache => true;
 
 		private Vector2 _position;
+		private List<FluidPercentage> _fluidDefaults = new List<FluidPercentage>();
 		private List<FluidMix> _fluids = new List<FluidMix>();
 		private List<TankCapacity> _tanks = new List<TankCapacity>();
 		private carscript _lastVehicle = null;
+
+		public override void OnRegister()
+		{
+			int maxFuelType = (int)Enum.GetValues(typeof(mainscript.fluidenum)).Cast<mainscript.fluidenum>().Max();
+			for (int i = 0; i <= maxFuelType; i++)
+			{
+				_fluidDefaults.Add(new FluidPercentage() { Type = (mainscript.fluidenum)i, Percentage = 0 });
+			}
+		}
 
 		public override void OnCacheRefresh()
 		{
@@ -46,7 +58,7 @@ namespace MultiTool.UI.Tabs.VehicleConfiguration
 				if (createMix)
 				{
 					List<FluidPercentage> defaults = new List<FluidPercentage>();
-					foreach (FluidPercentage fluidDefault in GUIRenderer.FluidDefaults)
+					foreach (FluidPercentage fluidDefault in _fluidDefaults)
 					{
 						defaults.Add(fluidDefault.Clone());
 					}
