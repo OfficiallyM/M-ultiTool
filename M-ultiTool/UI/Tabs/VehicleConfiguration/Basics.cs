@@ -11,6 +11,8 @@ namespace MultiTool.UI.Tabs.VehicleConfiguration
 		public override string Name => "Basics";
 
 		private Vector2 _position;
+		private int _conditionInt = 0;
+		private bool _applyConditionToAttached = false;
 
 		public override void RenderTab(Rect dimensions)
 		{
@@ -41,15 +43,15 @@ namespace MultiTool.UI.Tabs.VehicleConfiguration
 			// Condition.
 			GUILayout.Label("Condition", "LabelHeader");
 			int maxCondition = (int)Enum.GetValues(typeof(Item.Condition)).Cast<Item.Condition>().Max();
-			float rawCondition = GUILayout.HorizontalSlider(GUIRenderer.ConditionInt, 0, maxCondition);
-			GUIRenderer.ConditionInt = Mathf.RoundToInt(rawCondition);
-			GUILayout.Label(((Item.Condition)GUIRenderer.ConditionInt).ToString(), GUIRenderer.LabelStyle);
+			float rawCondition = GUILayout.HorizontalSlider(_conditionInt, 0, maxCondition);
+			_conditionInt = Mathf.RoundToInt(rawCondition);
+			GUILayout.Label(((Item.Condition)_conditionInt).ToString());
 
-			GUIRenderer.ApplyConditionToAttached = GUILayout.Toggle(GUIRenderer.ApplyConditionToAttached, "Apply to attached");
+			_applyConditionToAttached = GUILayout.Toggle(_applyConditionToAttached, "Apply to attached");
 
 			if (GUILayout.Button("Apply", GUILayout.MaxWidth(200)))
 			{
-				GameUtilities.SetCondition(GUIRenderer.ConditionInt, GUIRenderer.ApplyConditionToAttached, partconditionscript);
+				GameUtilities.SetCondition(_conditionInt, _applyConditionToAttached, partconditionscript);
 			}
 
 			GUILayout.Space(10);

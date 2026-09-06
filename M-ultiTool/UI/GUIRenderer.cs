@@ -2,12 +2,10 @@
 using MultiTool.Extensions;
 using MultiTool.Save;
 using MultiTool.Services;
-using MultiTool.UI.Tabs.VehicleConfiguration;
 using MultiTool.Utilities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text.RegularExpressions;
 using TLDLoader;
 using UnityEngine;
 using Logger = MultiTool.Services.Logger;
@@ -16,7 +14,6 @@ namespace MultiTool.UI
 {
 	internal class GUIRenderer
 	{
-		// Modules.
 		private static ServiceContext _services;
 		internal static TabController Tabs;
 
@@ -43,58 +40,6 @@ namespace MultiTool.UI
 		internal float MainMenuHeight;
 		internal float MainMenuX;
 		internal float MainMenuY;
-
-		// Styling.
-		internal static GUIStyle LabelStyle = new GUIStyle();
-		internal static float ScrollWidth = 10f;
-
-		// Vehicle-related variables.
-		internal static int ConditionInt = 0;
-		internal static bool ApplyConditionToAttached = false;
-
-		// Item menu variables.
-		internal static Dictionary<string, List<Type>> Categories = new Dictionary<string, List<Type>>()
-		{
-			{ "Vehicle chassis", new List<Type>() { typeof(carscript) } },
-			{ "Trailers", new List<Type>() { typeof(utanfutoscript) } },
-			{ "Tanks", new List<Type>() { typeof(tankscript) } },
-			{ "Lights", new List<Type>() { typeof(headlightscript) } },
-			{ "Engines", new List<Type>() { typeof(enginescript) } },
-			{ "Wheels", new List<Type>() { typeof(wheelscript) } },
-			{ "Tires", new List<Type>() { typeof(gumiscript) } },
-			{ "Dials", new List<Type>() { typeof(meterscript) } },
-			{ "Attachables", new List<Type>() { typeof(attachablescript) } },
-			{ "Other vehicle parts", new List<Type>() { typeof(attachablescript) } },
-			{ "Guns", new List<Type>() { typeof(weaponscript) } },
-			{ "Melee weapons", new List<Type>() { typeof(meleeweaponscript) } },
-			{ "Cleaning", new List<Type>() { typeof(drotkefescript), typeof(spricniscript) } },
-			{ "Refillables", new List<Type>() { typeof(ammoscript) } },
-			{ "Food", new List<Type>() { typeof(ediblescript) } },
-			{ "Wearables", new List<Type>() { typeof(wearable) } },
-			{ "Usables", new List<Type>() { typeof(pickupable) } },
-			{ "Mod items", new List<Type>() { typeof(tosaveitemscript) } },
-			{ "Other", new List<Type>() { typeof(MonoBehaviour) } },
-		};
-
-		internal static List<GameObject> SpawnedObjects = new List<GameObject>();
-
-		// Player variables.
-		internal static Dictionary<mainscript.fluidenum, int> Piss = new Dictionary<mainscript.fluidenum, int>();
-
-		// Vehicle configuration variables.
-		internal static List<FluidPercentage> FluidDefaults = new List<FluidPercentage>();
-		internal static Dictionary<mainscript.fluidenum, int> Coolants = new Dictionary<mainscript.fluidenum, int>();
-		internal static Dictionary<mainscript.fluidenum, int> Oils = new Dictionary<mainscript.fluidenum, int>();
-		internal static Dictionary<mainscript.fluidenum, int> Fuels = new Dictionary<mainscript.fluidenum, int>();
-
-		// Settings.
-		internal static float SettingsScrollWidth;
-		internal static bool AccessibilityShow = false;
-		internal static float NoclipFastMoveFactor = 10f;
-
-		// Colour palettes.
-		internal static List<Color> Palette = new List<Color>();
-		private static Dictionary<int, GUIStyle> _paletteCache = new Dictionary<int, GUIStyle>();
 
 		// Main menu variables.
 		private bool _mainMenuLoaded = false;
@@ -230,35 +175,6 @@ namespace MultiTool.UI
 						obj.AddComponent<SaveDataLoader>();
 				}
 
-				// Clear any existing static values.
-				FluidDefaults.Clear();
-				Coolants.Clear();
-				Oils.Clear();
-				Fuels.Clear();
-				Piss.Clear();
-
-				// Prepopulate any variables that use the fluidenum.
-				int maxFuelType = (int)Enum.GetValues(typeof(mainscript.fluidenum)).Cast<mainscript.fluidenum>().Max();
-				for (int i = 0; i <= maxFuelType; i++)
-				{
-					FluidDefaults.Add(new FluidPercentage() { Type = (mainscript.fluidenum)i, Percentage = 0 });
-					Coolants.Add((mainscript.fluidenum)i, 0);
-					Oils.Add((mainscript.fluidenum)i, 0);
-					Fuels.Add((mainscript.fluidenum)i, 0);
-					Piss.Add((mainscript.fluidenum)i, 0);
-				}
-
-				// Load any configs not loaded on the main menu.
-				try
-				{
-					SettingsScrollWidth = ScrollWidth;
-					NoclipFastMoveFactor = MultiTool.Configuration.Config.NoclipFastMoveFactor;
-				}
-				catch (Exception ex)
-				{
-					Logger.Log($"Config load error - {ex}", Logger.LogLevel.Error);
-				}
-
 				// Load keybinds.
 				MultiTool.Binds.OnLoad();
 			}
@@ -292,16 +208,6 @@ namespace MultiTool.UI
 
 			// Trigger update for tabs and notifications.
 			Tabs.Update();
-
-			// Remove any null objects from the spawn history.
-			foreach (GameObject spawned in SpawnedObjects)
-			{
-				if (spawned == null)
-				{
-					SpawnedObjects.Remove(spawned);
-					break;
-				}
-			}
 
 			if (!_menuKeyConsumed && Input.GetKeyDown(MultiTool.Binds.GetKeyByAction((int)Keybinds.Inputs.menu).AssignedKey) && !mainscript.M.menu.Menu.activeSelf && !mainscript.M.settingsOpen && !mainscript.M.menu.saveScreen.gameObject.activeSelf)
 				ToggleMenu();
@@ -456,26 +362,6 @@ namespace MultiTool.UI
 
 				// Default language to English until we can pull it from mainscript.
 				_services.Translator.SetLanguage("English");
-
-				// Set label styling.
-				LabelStyle.alignment = TextAnchor.UpperLeft;
-				LabelStyle.normal.textColor = Color.white;
-
-				// Set default palette to all white.
-				Palette.Clear();
-				Palette = Enumerable.Repeat(Color.white, 60).ToList();
-				_paletteCache.Clear();
-
-				// Load any configs needed for the main menu UI.
-				try
-				{
-					ScrollWidth = MultiTool.Configuration.Config.ScrollWidth;
-					Palette = MultiTool.Configuration.Config.Palette;
-				}
-				catch (Exception ex)
-				{
-					Logger.Log($"Config load error - {ex}", Logger.LogLevel.Error);
-				}
 
 				_mainMenuLoaded = true;
 			}

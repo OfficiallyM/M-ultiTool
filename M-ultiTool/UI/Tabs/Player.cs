@@ -2,6 +2,7 @@
 using MultiTool.Save;
 using MultiTool.Services;
 using MultiTool.Tools;
+using MultiTool.UI.Tabs.VehicleConfiguration;
 using MultiTool.Utilities;
 using System;
 using System.Collections.Generic;
@@ -23,6 +24,7 @@ namespace MultiTool.UI.Tabs
 		private bool _isPerSave = false;
 
 		private List<buildingscript> _previousBuildingTeleports = new List<buildingscript>();
+		private Dictionary<mainscript.fluidenum, int> _piss = new Dictionary<mainscript.fluidenum, int>();
 
 		public override void OnRegister()
 		{
@@ -48,6 +50,12 @@ namespace MultiTool.UI.Tabs
 			_globalPlayerData = SaveUtilities.LoadGlobalPlayerData(_defaultPlayerData);
 			_isPerSave = SaveUtilities.LoadIsPlayerDataPerSave();
 			ApplyPlayerData();
+
+			int maxFuelType = (int)Enum.GetValues(typeof(mainscript.fluidenum)).Cast<mainscript.fluidenum>().Max();
+			for (int i = 0; i <= maxFuelType; i++)
+			{
+				_piss.Add((mainscript.fluidenum)i, 0);
+			}
 		}
 
 		public override void RenderTab(Rect dimensions)
@@ -329,7 +337,7 @@ namespace MultiTool.UI.Tabs
 			float pissMax = mainscript.M.player.piss.Tank.F.maxC;
 			int pissPercentage = 0;
 
-			foreach (KeyValuePair<mainscript.fluidenum, int> fluid in GUIRenderer.Piss)
+			foreach (KeyValuePair<mainscript.fluidenum, int> fluid in _piss)
 			{
 				pissPercentage += fluid.Value;
 			}
@@ -340,9 +348,9 @@ namespace MultiTool.UI.Tabs
 			bool changed = false;
 
 			// Deep copy piss dictionary.
-			Dictionary<mainscript.fluidenum, int> tempPiss = GUIRenderer.Piss.ToDictionary(fluid => fluid.Key, fluid => fluid.Value);
+			Dictionary<mainscript.fluidenum, int> tempPiss = _piss.ToDictionary(fluid => fluid.Key, fluid => fluid.Value);
 
-			foreach (KeyValuePair<mainscript.fluidenum, int> fluid in GUIRenderer.Piss)
+			foreach (KeyValuePair<mainscript.fluidenum, int> fluid in _piss)
 			{
 				GUILayout.BeginHorizontal();
 				GUILayout.Label(fluid.Key.ToString().ToSentenceCase(), GUILayout.MaxWidth(100));
@@ -358,7 +366,7 @@ namespace MultiTool.UI.Tabs
 			}
 
 			if (changed)
-				GUIRenderer.Piss = tempPiss;
+				_piss = tempPiss;
 
 			GUILayout.BeginHorizontal();
 			if (GUILayout.Button("Get current", GUILayout.MaxWidth(200)))
@@ -366,17 +374,17 @@ namespace MultiTool.UI.Tabs
 				tankscript tank = mainscript.M.player.piss.Tank;
 
 				tempPiss = new Dictionary<mainscript.fluidenum, int>();
-				foreach (KeyValuePair<mainscript.fluidenum, int> fluid in GUIRenderer.Piss)
+				foreach (KeyValuePair<mainscript.fluidenum, int> fluid in _piss)
 				{
 					tempPiss[fluid.Key] = 0;
 				}
 
-				GUIRenderer.Piss = tempPiss;
+				_piss = tempPiss;
 
 				foreach (mainscript.fluid fluid in tank.F.fluids)
 				{
 					int percentage = (int)(fluid.amount / tank.F.maxC * 100);
-					GUIRenderer.Piss[fluid.type] = percentage;
+					_piss[fluid.type] = percentage;
 				}
 			}
 
@@ -384,7 +392,7 @@ namespace MultiTool.UI.Tabs
 			{
 				tankscript tank = mainscript.M.player.piss.Tank;
 				tank.F.fluids.Clear();
-				foreach (KeyValuePair<mainscript.fluidenum, int> fluid in GUIRenderer.Piss)
+				foreach (KeyValuePair<mainscript.fluidenum, int> fluid in _piss)
 				{
 					if (fluid.Value > 0)
 					{
