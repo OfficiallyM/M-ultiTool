@@ -6,7 +6,6 @@ using MultiTool.Tools;
 using MultiTool.UI;
 using MultiTool.UI.Tabs.ComponentBrowser;
 using System;
-using System.IO;
 using TLDLoader;
 using UnityEngine;
 
@@ -37,6 +36,8 @@ namespace MultiTool
 		internal static Mod ModInstance;
 		internal static bool IsOnMainMenu = true;
 
+		private bool _hasBootstrapFailed = false;
+
 		public MultiTool()
 		{
 			ModInstance = this;
@@ -55,12 +56,14 @@ namespace MultiTool
 			catch (Exception ex)
 			{
 				Services.Logger.Log($"Bootstrap failed. Details: {ex}", Services.Logger.LogLevel.Critical);
+				_hasBootstrapFailed = true;
 			}
 		}
 
 		// Override functions.
 		public override void OnMenuLoad()
 		{
+			if (_hasBootstrapFailed) return;
 			Configuration.Update(c => { c.Version = Version; });
 			IsOnMainMenu = true;
 			Renderer.OnMenuLoad();
@@ -68,17 +71,28 @@ namespace MultiTool
 
 		public override void OnGUI()
 		{
+			if (_hasBootstrapFailed) return;
 			Renderer.OnGUI();
 		}
 
 		public override void OnLoad()
 		{
+			if (_hasBootstrapFailed) return;
 			Context.Translator.SetLanguage(mainscript.M.menu.language.languageNames[mainscript.M.menu.language.selectedLanguage]);
 			Context.Database.FetchData();
 			IsOnMainMenu = false;
+			SaveCache.InvalidateCache();
+			SaveUtilities.LoadSceneSaveData();
 
 			GameObject controller = new GameObject("M-ultiTool");
 			controller.AddComponent<DataFetcher>();
+
+			// Attach any components to database objects.
+			foreach (GameObject obj in itemdatabase.d.items)
+			{
+				if (obj.GetComponent<SaveDataLoader>() == null)
+					obj.AddComponent<SaveDataLoader>();
+			}
 
 			// Load the GUI Renderer.
 			Renderer.OnLoad();
@@ -86,12 +100,15 @@ namespace MultiTool
 
 		public override void Update()
 		{
+			if (_hasBootstrapFailed) return;
 			Renderer.Update();
 			Tools.Update();
+			SaveCache.Tick();
 		}
 
 		public override void FixedUpdate()
 		{
+			if (_hasBootstrapFailed) return;
 			Renderer.FixedUpdate();
 			Tools.FixedUpdate();
 		}

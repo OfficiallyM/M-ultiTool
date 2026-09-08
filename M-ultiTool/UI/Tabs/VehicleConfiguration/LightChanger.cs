@@ -1,6 +1,8 @@
 ﻿using MultiTool.Save;
+using MultiTool.Save.Records;
 using MultiTool.Utilities;
 using System.Collections.Generic;
+using System.Drawing;
 using System.Linq;
 using UnityEngine;
 
@@ -114,7 +116,10 @@ namespace MultiTool.UI.Tabs.VehicleConfiguration
 								name = "interior";
 
 							if (id.HasValue)
-								SaveUtilities.UpdateLight(new LightData() { ID = id.Value, Name = name, Color = Colour.GetColour() });
+							{
+								LightRecord record = new LightRecord { ID = id.Value, Name = name, Color = Colour.GetColour() };
+								SaveRepository.Upsert(record, r => r.ID == record.ID && r.Name == record.Name);
+							}
 						}
 					}
 				}

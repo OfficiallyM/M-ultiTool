@@ -147,10 +147,7 @@ namespace MultiTool.UI.Tabs
 				{
 					// Remove POI from save.
 					if (poi.ID != null)
-						SaveUtilities.UpdatePOISaveData(new POIData()
-						{
-							ID = poi.ID.Value,
-						}, "delete");
+						SaveUtilities.DeletePOI(poi.ID);
 
 					_spawnedPOIs.Remove(poi);
 					GameObject.Destroy(poi.PoiObject);

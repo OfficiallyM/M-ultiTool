@@ -276,7 +276,7 @@ namespace MultiTool.Data
 		internal static SpawnedPOI Spawn(Poi poi, bool spawnItems, Vector3? position = null, Quaternion? rotation = null)
 		{
 			GameObject gameObject = null;
-			int ID = -1;
+			string id = string.Empty;
 			try
 			{
 				bool save = true;
@@ -333,12 +333,7 @@ namespace MultiTool.Data
 				// Save the POI.
 				if (save)
 				{
-					ID = SaveUtilities.UpdatePOISaveData(new POIData()
-					{
-						Poi = gameObject.name,
-						Position = pos,
-						Rotation = rot,
-					});
+					id = SaveUtilities.InsertPOI(gameObject.name, pos, rot);
 				}
 			}
 			catch (Exception ex)
@@ -348,7 +343,7 @@ namespace MultiTool.Data
 
 			return new SpawnedPOI()
 			{
-				ID = ID,
+				ID = id,
 				PoiObject = gameObject,
 				Data = poi,
 			};

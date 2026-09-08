@@ -1,5 +1,6 @@
 ﻿using MultiTool.Extensions;
 using MultiTool.Save;
+using MultiTool.Save.Records;
 using MultiTool.Utilities;
 using System.Collections.Generic;
 using System.Linq;
@@ -61,8 +62,10 @@ namespace MultiTool.UI.Tabs.VehicleConfiguration
 			if (_tuning == null || _defaultTuning == null)
 			{
 				// Attempt to load data from save.
-				_tuning = SaveUtilities.GetWheelTuning(save);
-				_defaultTuning = SaveUtilities.GetDefaultWheelTuning(save);
+				WheelTuningRecord existing = SaveRepository.Get<WheelTuningRecord>(e => e.ID == save.idInSave);
+				_tuning = existing?.Tuning;
+				_defaultTuning = existing?.DefaultTuning;
+				GameUtilities.RemapWheelTuning(save, _tuning);
 
 				// Reset any invalid tuning data.
 				if (_tuning != null && _tuning.Wheels[0].Slot == null)
@@ -266,7 +269,8 @@ namespace MultiTool.UI.Tabs.VehicleConfiguration
 			GUILayout.BeginHorizontal();
 			if (GUILayout.Button("Apply", GUILayout.MaxWidth(200)))
 			{
-				SaveUtilities.UpdateWheelTuning(new WheelTuningData() { ID = save.idInSave, Tuning = _tuning, DefaultTuning = _defaultTuning });
+				WheelTuningRecord record = new WheelTuningRecord { ID = save.idInSave, Tuning = _tuning, DefaultTuning = _defaultTuning };
+				SaveRepository.Upsert(record, r => r.ID == record.ID);
 				GameUtilities.ApplyWheelTuning(_tuning);
 				_lastSavedTuning = _tuning.DeepCopy();
 			}

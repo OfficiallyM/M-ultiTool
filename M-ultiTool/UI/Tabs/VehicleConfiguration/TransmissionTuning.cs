@@ -1,5 +1,6 @@
 ﻿using MultiTool.Extensions;
 using MultiTool.Save;
+using MultiTool.Save.Records;
 using MultiTool.Utilities;
 using System;
 using System.Collections.Generic;
@@ -39,8 +40,9 @@ namespace MultiTool.UI.Tabs.VehicleConfiguration
 			if (_transmissionTuning == null || _defaultTuning == null)
 			{
 				// Attempt to load data from save.
-				_transmissionTuning = SaveUtilities.GetTransmissionTuning(save.idInSave);
-				_defaultTuning = SaveUtilities.GetDefaultTransmissionTuning(save.idInSave);
+				TransmissionTuningRecord existing = SaveRepository.Get<TransmissionTuningRecord>(e => e.ID == save.idInSave);
+				_transmissionTuning = existing?.Tuning;
+				_defaultTuning = existing?.DefaultTuning;
 
 				// Save has no data for this transmission, load defaults.
 				if (_transmissionTuning == null || _defaultTuning == null)
@@ -231,7 +233,8 @@ namespace MultiTool.UI.Tabs.VehicleConfiguration
 			GUILayout.BeginHorizontal();
 			if (GUILayout.Button("Apply", GUILayout.MaxWidth(200)))
 			{
-				SaveUtilities.UpdateTransmissionTuning(new TransmissionTuningData() { ID = save.idInSave, Tuning = _transmissionTuning, DefaultTuning = _defaultTuning });
+				TransmissionTuningRecord record = new TransmissionTuningRecord { ID = save.idInSave, Tuning = _transmissionTuning, DefaultTuning = _defaultTuning };
+				SaveRepository.Upsert(record, r => r.ID == record.ID);
 				GameUtilities.ApplyTransmissionTuning(car, _transmissionTuning);
 				_lastSavedTuning = _transmissionTuning.DeepCopy();
 			}

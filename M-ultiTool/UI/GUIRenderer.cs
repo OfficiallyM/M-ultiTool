@@ -165,16 +165,6 @@ namespace MultiTool.UI
 				ThemeTabId = Tabs.AddTab(new Tabs.ThemeTab());
 				DebugTabId = Tabs.AddTab(new Tabs.DebugTab());
 
-				// Load save data.
-				SaveUtilities.LoadSaveData();
-
-				// Attach any components to database objects.
-				foreach (GameObject obj in itemdatabase.d.items)
-				{
-					if (obj.GetComponent<SaveDataLoader>() == null)
-						obj.AddComponent<SaveDataLoader>();
-				}
-
 				// Load keybinds.
 				MultiTool.Binds.OnLoad();
 			}

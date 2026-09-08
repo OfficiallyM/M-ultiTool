@@ -1,4 +1,6 @@
-﻿namespace MultiTool.Extensions
+﻿using System;
+
+namespace MultiTool.Extensions
 {
 	public static class StringExtensions
 	{
@@ -61,6 +63,20 @@
 				.Prettify()
 				.ToLowerInvariant()
 				.Replace(" ", "_");
+		}
+
+		/// <summary>
+		/// Sanitise name for data storage.
+		/// </summary>
+		public static string SanitiseName(this string name)
+		{
+			name = name.Replace("(Clone)", string.Empty);
+			string last = name.ToLower().Substring(Math.Max(0, name.Length - 4));
+			if (last == "full")
+				name = name.Remove(name.Length - 4);
+			name = name.Trim();
+
+			return name;
 		}
 	}
 }

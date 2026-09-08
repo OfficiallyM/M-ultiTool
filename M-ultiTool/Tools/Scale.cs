@@ -1,4 +1,5 @@
 ﻿using MultiTool.Save;
+using MultiTool.Save.Records;
 using MultiTool.Services;
 using MultiTool.UI;
 using System;
@@ -95,6 +96,7 @@ namespace MultiTool.Tools
 			bool update = false;
 
 			Vector3 scale = SelectedObject.transform.localScale;
+			Vector3 defaultScale = SaveRepository.Get<ScaleRecord>(r => r.ID == SelectedObject.idInSave)?.DefaultScale ?? Vector3.one;
 
 			// Scale up.
 			bool scaleUp = Input.GetKey(Services.Keybinds.GetKeyByAction((int)Keybinds.Inputs.up).AssignedKey);
@@ -204,11 +206,8 @@ namespace MultiTool.Tools
 			// Update saved scale.
 			if (update)
 			{
-				SaveUtilities.UpdateScale(new ScaleData()
-				{
-					ID = SelectedObject.idInSave,
-					Scale = SelectedObject.transform.localScale
-				});
+				ScaleRecord record = new ScaleRecord { ID = SelectedObject.idInSave, Scale = SelectedObject.transform.localScale, DefaultScale = defaultScale };
+				SaveRepository.Upsert(record, r => r.ID == record.ID);
 			}
 		}
 	}
