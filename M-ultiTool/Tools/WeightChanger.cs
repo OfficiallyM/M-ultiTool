@@ -1,4 +1,5 @@
 ﻿using MultiTool.Save;
+using MultiTool.Save.Records;
 using MultiTool.Services;
 using MultiTool.UI;
 using System;
@@ -118,6 +119,7 @@ namespace MultiTool.Tools
 			bool update = false;
 
 			float currentMass = mass.OwnMass();
+			float defaultMass = SaveRepository.Get<WeightRecord>(r => r.ID == SelectedObject.idInSave)?.DefaultMass ?? 1;
 
 			// Mass increase.
 			bool massUp = Input.GetKey(Services.Keybinds.GetKeyByAction((int)Keybinds.Inputs.up).AssignedKey);
@@ -144,28 +146,14 @@ namespace MultiTool.Tools
 			// Reset weight to default.
 			if (Input.GetKeyDown(Services.Keybinds.GetKeyByAction((int)Keybinds.Inputs.action4).AssignedKey))
 			{
-				WeightData weight = SaveUtilities.GetWeight(SelectedObject.idInSave);
-
-				if (weight == null)
-				{
-					Notifications.SendWarning("Weight Changer", "Unable to reset - no default available");
-					return;
-				}
-				else
-				{
-					mass.SetMass(weight.DefaultMass);
-					update = true;
-				}
+				mass.SetMass(defaultMass);
+				update = true;
 			}
 
 			if (update)
 			{
-				SaveUtilities.UpdateWeight(new WeightData()
-				{
-					ID = SelectedObject.idInSave,
-					Mass = mass.OwnMass(),
-					DefaultMass = currentMass,
-				});
+				WeightRecord record = new WeightRecord { ID = SelectedObject.idInSave, Mass = mass.OwnMass(), DefaultMass = defaultMass };
+				SaveRepository.Upsert(record, r => r.ID == record.ID);
 			}
 		}
 	}

@@ -1,5 +1,6 @@
 ﻿using MultiTool.Extensions;
 using MultiTool.Save;
+using MultiTool.Save.Records;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -87,7 +88,7 @@ namespace MultiTool.UI.Tabs.VehicleConfiguration
 
 				if (createTank)
 				{
-					TankData tankData = SaveUtilities.GetTank(save.idInSave);
+					var tankData = SaveRepository.Get<TankRecord>(r => r.ID == save.idInSave);
 					_tanks.Add(new TankCapacity()
 					{
 						Tank = tank,
@@ -388,12 +389,8 @@ namespace MultiTool.UI.Tabs.VehicleConfiguration
 			tank.F.maxC = capacity.Max;
 			tosaveitemscript save = tank.GetComponentInParent<tosaveitemscript>();
 			if (save == null) return;
-			SaveUtilities.UpdateTank(new TankData()
-			{
-				ID = save.idInSave,
-				Capacity = capacity.Max,
-				DefaultCapacity = capacity.DefaultMax,
-			});
+			TankRecord record = new TankRecord { ID = save.idInSave, Capacity = capacity.Max, DefaultCapacity = capacity.DefaultMax };
+			SaveRepository.Upsert(record, r => r.ID == record.ID);
 		}
 	}
 }

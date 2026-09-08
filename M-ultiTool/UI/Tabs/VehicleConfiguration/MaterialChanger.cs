@@ -1,4 +1,6 @@
-﻿using MultiTool.Save;
+﻿using MultiTool.Extensions;
+using MultiTool.Save;
+using MultiTool.Save.Records;
 using MultiTool.Utilities;
 using System.Collections.Generic;
 using UnityEngine;
@@ -75,10 +77,10 @@ namespace MultiTool.UI.Tabs.VehicleConfiguration
 			foreach (partconditionscript part in _car.GetComponentsInChildren<partconditionscript>())
 			{
 				if (mainParent == null)
-					mainParent = SaveUtilities.SanitiseName(part.gameObject.name);
+					mainParent = part.gameObject.name.SanitiseName();
 
 				string parent = part.transform.parent?.name ?? mainParent;
-				parent = SaveUtilities.SanitiseName(parent);
+				parent = parent.SanitiseName();
 
 				PartGroupParent parentGroup = null;
 				foreach (PartGroupParent partParent in _materialParts)
@@ -98,7 +100,7 @@ namespace MultiTool.UI.Tabs.VehicleConfiguration
 						mainParentGroup = parentGroup;
 				}
 
-				parentGroup.Parts.Add(PartGroup.Create(SaveUtilities.SanitiseName(part.name), part, index, parentGroup.Name));
+				parentGroup.Parts.Add(PartGroup.Create(part.name.SanitiseName(), part, index, parentGroup.Name));
 
 				index++;
 			}
@@ -238,7 +240,7 @@ namespace MultiTool.UI.Tabs.VehicleConfiguration
 							foreach (MeshRenderer mesh in selectedPart.Meshes)
 							{
 								GameUtilities.SetConditionlessPartMaterial(mesh, _selectedMaterial, materialColor);
-								SaveUtilities.UpdateMaterials(new MaterialData()
+								MaterialRecord record = new MaterialRecord
 								{
 									ID = save.idInSave,
 									Part = selectedPart.Name,
@@ -246,8 +248,9 @@ namespace MultiTool.UI.Tabs.VehicleConfiguration
 									IsConditionless = true,
 									Exact = true,
 									Type = _selectedMaterial,
-									Color = materialColor
-								});
+									Color = materialColor,
+								};
+								SaveRepository.Upsert(record, r => r.ID == record.ID && r.Part == record.Part && r.Parent == record.Parent);
 							}
 						}
 						else
@@ -255,7 +258,7 @@ namespace MultiTool.UI.Tabs.VehicleConfiguration
 							foreach (partconditionscript part in selectedPart.Parts)
 							{
 								GameUtilities.SetPartMaterial(part, _selectedMaterial, materialColor);
-								SaveUtilities.UpdateMaterials(new MaterialData()
+								MaterialRecord record = new MaterialRecord
 								{
 									ID = save.idInSave,
 									Part = selectedPart.Name,
@@ -263,7 +266,8 @@ namespace MultiTool.UI.Tabs.VehicleConfiguration
 									Exact = IsExact(selectedPart.Name),
 									Type = _selectedMaterial,
 									Color = materialColor
-								});
+								};
+								SaveRepository.Upsert(record, r => r.ID == record.ID && r.Part == record.Part && r.Parent == record.Parent);
 							}
 						}
 					}

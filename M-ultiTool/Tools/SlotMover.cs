@@ -1,5 +1,6 @@
 ﻿using MultiTool.Extensions;
 using MultiTool.Save;
+using MultiTool.Save.Records;
 using MultiTool.Services;
 using MultiTool.UI;
 using MultiTool.Utilities;
@@ -97,7 +98,7 @@ namespace MultiTool.Tools
 							_selectedSlotResetRotation = _selectedSlot.transform.localRotation;
 
 							// Get reset positions from save data.
-							SlotData slotData = SaveUtilities.GetSlotData(_carSave.idInSave, _selectedSlot.name);
+							var slotData = SaveRepository.Get<SlotRecord>(r => r.ID == _carSave.idInSave && r.Slot == _selectedSlot.name);
 							if (slotData != null)
 							{
 								_selectedSlotResetPosition = slotData.ResetPosition;
@@ -196,7 +197,7 @@ namespace MultiTool.Tools
 						// Check if position has changed.
 						if (oldPos != partTransform.localPosition)
 						{
-							SlotData slotData = new SlotData()
+							SlotRecord record = new SlotRecord
 							{
 								ID = _carSave.idInSave,
 								Slot = _selectedSlot.name,
@@ -205,7 +206,7 @@ namespace MultiTool.Tools
 								Rotation = partTransform.localRotation,
 								ResetRotation = _selectedSlotResetRotation,
 							};
-							SaveUtilities.UpdateSlot(slotData);
+							SaveRepository.Upsert(record, r => r.ID == record.ID && r.Slot == record.Slot);
 						}
 
 						break;
@@ -283,7 +284,7 @@ namespace MultiTool.Tools
 						// Check if rotation has changed.
 						if (oldRot != rotatePartTransform.localRotation)
 						{
-							SlotData slotData = new SlotData()
+							SlotRecord record = new SlotRecord
 							{
 								ID = _carSave.idInSave,
 								Slot = _selectedSlot.name,
@@ -292,7 +293,7 @@ namespace MultiTool.Tools
 								Rotation = rotatePartTransform.localRotation,
 								ResetRotation = _selectedSlotResetRotation,
 							};
-							SaveUtilities.UpdateSlot(slotData);
+							SaveRepository.Upsert(record, r => r.ID == record.ID && r.Slot == record.Slot);
 						}
 						break;
 				}

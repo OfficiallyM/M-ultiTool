@@ -1,5 +1,6 @@
 ﻿using MultiTool.Extensions;
 using MultiTool.Save;
+using MultiTool.Save.Records;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
@@ -64,7 +65,8 @@ namespace MultiTool.UI.Tabs.VehicleConfiguration
 					}
 				}
 
-				SaveUtilities.UpdateGlass(new GlassData() { ID = save.idInSave, Color = _color, Type = "windows" });
+				GlassRecord record = new GlassRecord { ID = save.idInSave, Color = _color, Type = "windows" };
+				SaveRepository.Upsert(record, r => r.ID == record.ID && r.Type == record.Type);
 			}
 			GUILayout.EndHorizontal();
 
@@ -96,7 +98,8 @@ namespace MultiTool.UI.Tabs.VehicleConfiguration
 					{
 						meshRenderer.material.color = _color;
 
-						SaveUtilities.UpdateGlass(new GlassData() { ID = save.idInSave, Color = _color, Type = "sunroof" });
+						GlassRecord record = new GlassRecord { ID = save.idInSave, Color = _color, Type = "sunroof" };
+						SaveRepository.Upsert(record, r => r.ID == record.ID && r.Type == record.Type);
 					}
 					GUILayout.EndHorizontal();
 				}

@@ -1,5 +1,6 @@
 ﻿using MultiTool.Extensions;
 using MultiTool.Save;
+using MultiTool.Save.Records;
 using MultiTool.Utilities;
 using System;
 using System.Collections.Generic;
@@ -70,8 +71,9 @@ namespace MultiTool.UI.Tabs.VehicleConfiguration
 			if (_engineTuning == null || _defaultTuning == null)
 			{
 				// Attempt to load data from save.
-				_engineTuning = SaveUtilities.GetEngineTuning(engineSave.idInSave);
-				_defaultTuning = SaveUtilities.GetDefaultEngineTuning(engineSave.idInSave);
+				EngineTuningRecord existing = SaveRepository.Get<EngineTuningRecord>(e => e.ID == engineSave.idInSave);
+				_engineTuning = existing?.Tuning;
+				_defaultTuning = existing?.DefaultTuning;
 
 				// Save has no data for this engine, load defaults.
 				if (_engineTuning == null || _defaultTuning == null)
@@ -584,7 +586,8 @@ namespace MultiTool.UI.Tabs.VehicleConfiguration
 			GUILayout.BeginHorizontal();
 			if (GUILayout.Button("Apply", GUILayout.MaxWidth(200)))
 			{
-				SaveUtilities.UpdateEngineTuning(new EngineTuningData() { ID = engineSave.idInSave, Tuning = _engineTuning, DefaultTuning = _defaultTuning });
+				EngineTuningRecord record = new EngineTuningRecord { ID = engineSave.idInSave, Tuning = _engineTuning, DefaultTuning = _defaultTuning };
+				SaveRepository.Upsert(record, r => r.ID == record.ID);
 				GameUtilities.ApplyEngineTuning(engine, _engineTuning);
 				_lastSavedTuning = _engineTuning.DeepCopy();
 			}

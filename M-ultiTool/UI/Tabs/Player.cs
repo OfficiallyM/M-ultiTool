@@ -46,9 +46,9 @@ namespace MultiTool.UI.Tabs
 					InfiniteAmmo = false,
 				};
 			}
-			_playerData = SaveUtilities.LoadPlayerData(_defaultPlayerData);
+			_playerData = SaveUtilities.GetPlayerData(_defaultPlayerData);
 			_globalPlayerData = SaveUtilities.LoadGlobalPlayerData(_defaultPlayerData);
-			_isPerSave = SaveUtilities.LoadIsPlayerDataPerSave();
+			_isPerSave = SaveUtilities.GetIsPlayerDataPerSave();
 			ApplyPlayerData();
 
 			int maxFuelType = (int)Enum.GetValues(typeof(mainscript.fluidenum)).Cast<mainscript.fluidenum>().Max();

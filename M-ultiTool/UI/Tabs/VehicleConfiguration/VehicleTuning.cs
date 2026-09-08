@@ -1,5 +1,6 @@
 ﻿using MultiTool.Extensions;
 using MultiTool.Save;
+using MultiTool.Save.Records;
 using MultiTool.Utilities;
 using UnityEngine;
 
@@ -35,8 +36,9 @@ namespace MultiTool.UI.Tabs.VehicleConfiguration
 			if (_vehicleTuning == null || _defaultTuning == null)
 			{
 				// Attempt to load data from save.
-				_vehicleTuning = SaveUtilities.GetVehicleTuning(save.idInSave);
-				_defaultTuning = SaveUtilities.GetDefaultVehicleTuning(save.idInSave);
+				VehicleTuningRecord existing = SaveRepository.Get<VehicleTuningRecord>(e => e.ID == save.idInSave);
+				_vehicleTuning = existing?.Tuning;
+				_defaultTuning = existing?.DefaultTuning;
 
 				// Save has no data for this vehicle, load defaults.
 				if (_vehicleTuning == null || _defaultTuning == null)
@@ -144,7 +146,8 @@ namespace MultiTool.UI.Tabs.VehicleConfiguration
 			GUILayout.BeginHorizontal();
 			if (GUILayout.Button("Apply", GUILayout.MaxWidth(200)))
 			{
-				SaveUtilities.UpdateVehicleTuning(new VehicleTuningData() { ID = save.idInSave, Tuning = _vehicleTuning, DefaultTuning = _defaultTuning });
+				VehicleTuningRecord record = new VehicleTuningRecord { ID = save.idInSave, Tuning = _vehicleTuning, DefaultTuning = _defaultTuning };
+				SaveRepository.Upsert(record, r => r.ID == record.ID);
 				GameUtilities.ApplyVehicleTuning(car, _vehicleTuning);
 				_lastSavedTuning = _vehicleTuning.DeepCopy();
 			}
