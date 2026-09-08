@@ -1,8 +1,9 @@
 ﻿using MultiTool.Save;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using System.IO;
 using System.Runtime.Serialization.Json;
 using System.Text;
-using System.Xml;
 using UnityEngine;
 
 namespace MultiTool.UI.Tabs
@@ -19,7 +20,7 @@ namespace MultiTool.UI.Tabs
 		{
 			if (string.IsNullOrEmpty(_data))
 			{
-				_data = PrettifyJson<Save.Save>(SaveUtilities.GetRawSaveData());
+				_data = JToken.Parse(SaveUtilities.GetRawSaveData()).ToString(Formatting.Indented);
 			}
 
 			GUILayout.BeginArea(dimensions);
@@ -34,7 +35,7 @@ namespace MultiTool.UI.Tabs
 
 			if (GUILayout.Button("Refresh", GUILayout.MaxWidth(200)))
 			{
-				_data = PrettifyJson<Save.Save>(SaveUtilities.GetRawSaveData());
+				_data = JToken.Parse(SaveUtilities.GetRawSaveData()).ToString(Formatting.Indented);
 			}
 			GUILayout.EndHorizontal();
 			GUILayout.Space(10);
@@ -45,33 +46,6 @@ namespace MultiTool.UI.Tabs
 
 			GUILayout.EndVertical();
 			GUILayout.EndArea();
-		}
-
-		private static string PrettifyJson<T>(string json)
-		{
-			DataContractJsonSerializer serializer = new DataContractJsonSerializer(typeof(T));
-			MemoryStream msRead = null;
-			MemoryStream msWrite = null;
-			XmlDictionaryWriter writer = null;
-
-			try
-			{
-				msRead = new MemoryStream(Encoding.UTF8.GetBytes(json));
-				T obj = (T)serializer.ReadObject(msRead);
-
-				msWrite = new MemoryStream();
-				writer = JsonReaderWriterFactory.CreateJsonWriter(msWrite, Encoding.UTF8, ownsStream: false, indent: true, indentChars: "  ");
-				serializer.WriteObject(writer, obj);
-				writer.Flush();
-
-				return Encoding.UTF8.GetString(msWrite.ToArray());
-			}
-			finally
-			{
-				if (writer != null) writer.Close();
-				if (msRead != null) msRead.Dispose();
-				if (msWrite != null) msWrite.Dispose();
-			}
 		}
 	}
 }
