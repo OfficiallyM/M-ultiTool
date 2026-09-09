@@ -1,11 +1,14 @@
 ﻿<Weavers xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="FodyWeavers.xsd">
   <Costura IncludeDebugSymbols='false'>
     <ExcludeAssemblies>
+      System.*
       Unity.*
       UnityEngine.*
       Assembly-CSharp
       assembly-csharp-firstpass
       TLDLoader
+      naudio
+      0harmony
     </ExcludeAssemblies>
   </Costura>
 </Weavers>
