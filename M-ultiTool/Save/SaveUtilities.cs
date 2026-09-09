@@ -1,6 +1,7 @@
 ﻿using MultiTool.Data;
 using MultiTool.Save.Records;
 using MultiTool.Services;
+using MultiTool.UI;
 using MultiTool.UI.Tabs.VehicleConfiguration;
 using MultiTool.Utilities;
 using Newtonsoft.Json;
@@ -36,6 +37,10 @@ namespace MultiTool.Save
 		public static void Bootstrap(ServiceContext services)
 		{
 			_services = services;
+
+			// Flush the save cache on menu toggle to try and
+			// ensure any data is committed prior to a game save.
+			GUIRenderer.OnMenuToggle += _ => SaveCache.Flush();
 		}
 
 		/// <summary>
