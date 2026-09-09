@@ -3,6 +3,8 @@ using MultiTool.Save.Records;
 using MultiTool.Services;
 using MultiTool.UI.Tabs.VehicleConfiguration;
 using MultiTool.Utilities;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -22,6 +24,14 @@ namespace MultiTool.Save
 	{
 		private static ServiceContext _services;
 		private static GlobalSave _globalData;
+
+		private static readonly Dictionary<string, Type> _tuningTypes = new Dictionary<string, Type>
+		{
+			{ "engine", typeof(EngineTuning) },
+			{ "transmission", typeof(TransmissionTuning) },
+			{ "vehicle", typeof(VehicleTuning) },
+			{ "wheel", typeof(WheelTuning) },
+		};
 
 		public static void Bootstrap(ServiceContext services)
 		{
@@ -221,9 +231,6 @@ namespace MultiTool.Save
 			return SaveCache.Get().TimeData;
 		}
 
-		// GlobalSave/tunes below are unchanged from the pre-rewrite Save system and still on
-		// DataContractJsonSerializer until the new pattern is locked in.
-
 		/// <summary>
 		/// Write the global save data to the JSON file.
 		/// </summary>
@@ -231,47 +238,113 @@ namespace MultiTool.Save
 		{
 			try
 			{
-				MemoryStream ms = new MemoryStream();
-				DataContractJsonSerializer jsonSerializer = new DataContractJsonSerializer(typeof(GlobalSave));
-				jsonSerializer.WriteObject(ms, _globalData);
-				using (FileStream file = new FileStream(Path.Combine(ModLoader.GetModConfigFolder(MultiTool.ModInstance), "globalData.json"), FileMode.Create, FileAccess.Write))
+				string dataPath = Path.Combine(ModLoader.GetModConfigFolder(MultiTool.ModInstance), "GlobalData.json");
+				using (StreamWriter file = File.CreateText(dataPath))
 				{
-					ms.WriteTo(file);
-					ms.Dispose();
+					JsonSerializer serializer = new JsonSerializer
+					{
+						ReferenceLoopHandling = ReferenceLoopHandling.Ignore,
+					};
+					serializer.Serialize(file, _globalData);
 				}
 			}
 			catch (Exception ex)
 			{
-				Logger.Log($"Config write error: {ex}", Logger.LogLevel.Error);
+				Logger.Log($"Global data write error: {ex}", Logger.LogLevel.Error);
 			}
 		}
 
 		/// <summary>
-		/// Read the global save data from the JSON file.
+		/// Read the global save data from the JSON file, migrating it from the legacy shape if
+		/// needed. Cached in memory for the rest of the session once loaded.
 		/// </summary>
 		private static void ReadGlobalData()
 		{
-			// Attempt to load the config file.
+			// Already loaded this session.
+			if (_globalData != null) return;
+
 			try
 			{
-				// Config already loaded, return early.
-				if (_globalData == new GlobalSave()) return;
-				if (_globalData == null)
-					_globalData = new GlobalSave();
-
 				string dataPath = Path.Combine(ModLoader.GetModConfigFolder(MultiTool.ModInstance), "GlobalData.json");
-				if (File.Exists(dataPath))
+				if (!File.Exists(dataPath))
 				{
-					string json = File.ReadAllText(dataPath);
-					MemoryStream ms = new MemoryStream(Encoding.UTF8.GetBytes(json));
-					DataContractJsonSerializer jsonSerializer = new DataContractJsonSerializer(typeof(GlobalSave));
-					_globalData = jsonSerializer.ReadObject(ms) as GlobalSave;
-					ms.Close();
+					_globalData = new GlobalSave();
+					return;
+				}
+
+				string json = File.ReadAllText(dataPath);
+				JObject root = JObject.Parse(json);
+
+				bool isLegacyShape = root["PlayerData"] == null && root["Tunes"] == null &&
+					(root["playerData"] != null || root["tunes"] != null);
+
+				if (isLegacyShape)
+				{
+					_globalData = MigrateLegacyGlobalData(json);
+					// Commit the migration immediately, don't leave it in-memory only.
+					WriteGlobalData();
+					return;
+				}
+
+				_globalData = new GlobalSave
+				{
+					PlayerData = root["PlayerData"]?.ToObject<PlayerData>(),
+					Tunes = new List<TuningSave>(),
+				};
+
+				if (root["Tunes"] is JArray tunes)
+				{
+					foreach (JToken token in tunes)
+					{
+						TuningSave tune = ReadTune(token as JObject);
+						if (tune != null)
+							_globalData.Tunes.Add(tune);
+					}
 				}
 			}
 			catch (Exception ex)
 			{
 				Logger.Log($"Error loading global save data: {ex}", Logger.LogLevel.Error);
+				_globalData = new GlobalSave();
+			}
+		}
+
+		// Reads a single tune, resolving Tuning's concrete ITuning type from Type via
+		// _tuningTypes rather than any Newtonsoft type-name metadata.
+		private static TuningSave ReadTune(JObject obj)
+		{
+			if (obj == null) return null;
+
+			TuningSave tune = new TuningSave
+			{
+				Name = obj["Name"]?.ToString(),
+				Part = obj["Part"]?.ToString(),
+				Type = obj["Type"]?.ToString(),
+				Car = obj["Car"]?.ToString(),
+			};
+
+			if (tune.Type != null && _tuningTypes.TryGetValue(tune.Type, out Type tuningType) && obj["Tuning"] is JObject tuningData)
+				tune.Tuning = tuningData.ToObject(tuningType) as ITuning;
+
+			return tune;
+		}
+
+		// Port the old data into the new save shape.
+		private static GlobalSave MigrateLegacyGlobalData(string json)
+		{
+			try
+			{
+				MemoryStream ms = new MemoryStream(Encoding.UTF8.GetBytes(json));
+				DataContractJsonSerializer serializer = new DataContractJsonSerializer(typeof(GlobalSave));
+				GlobalSave legacy = serializer.ReadObject(ms) as GlobalSave;
+				ms.Close();
+
+				return legacy ?? new GlobalSave();
+			}
+			catch (Exception ex)
+			{
+				Logger.Log($"Global data migration error - {ex}", Logger.LogLevel.Error);
+				return new GlobalSave();
 			}
 		}
 
@@ -280,6 +353,7 @@ namespace MultiTool.Save
 		/// </summary>
 		public static void UpdateGlobalPlayerData(PlayerData playerData)
 		{
+			ReadGlobalData();
 			_globalData.PlayerData = playerData;
 			WriteGlobalData();
 		}
@@ -355,5 +429,6 @@ namespace MultiTool.Save
 
 			return tunes;
 		}
+
 	}
 }
