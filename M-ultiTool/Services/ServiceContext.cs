@@ -14,7 +14,6 @@ namespace MultiTool.Services
 	{
 		public Configuration Configuration { get; }
 		public Keybinds Keybinds { get; }
-		public ModState State { get; }
 		public Database Database { get; }
 		public Translator Translator { get; }
 
@@ -22,7 +21,6 @@ namespace MultiTool.Services
 		{
 			Configuration = new Configuration();
 			Keybinds = new Keybinds();
-			State = new ModState();
 			Translator = new Translator();
 			Database = new Database(this);
 		}

@@ -68,10 +68,9 @@ namespace MultiTool.UI.Tabs
 			GUILayout.BeginVertical();
 			_currentPosition = GUILayout.BeginScrollView(_currentPosition);
 			GUILayout.BeginHorizontal();
-			if (GUILayout.Button(Accessibility.GetAccessibleString("God mode", Services.State.GodMode), GUILayout.MaxWidth(200)))
+			if (GUILayout.Button(Accessibility.GetAccessibleString("God mode", mainscript.M.godmode), GUILayout.MaxWidth(200)))
 			{
-				Services.State.GodMode = !Services.State.GodMode;
-				mainscript.M.ChGodMode(Services.State.GodMode);
+				mainscript.M.ChGodMode(!mainscript.M.godmode);
 			}
 			GUILayout.Space(10);
 
