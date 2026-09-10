@@ -1,6 +1,7 @@
-﻿using System;
+﻿using MultiTool.Extensions;
+using Newtonsoft.Json;
+using System;
 using System.IO;
-using System.Runtime.Serialization.Json;
 using System.Text;
 using TLDLoader;
 using UnityEngine;
@@ -33,6 +34,11 @@ namespace MultiTool.UI
 		private static Texture2D _orange;
 		private static Texture2D _red;
 		private static Texture2D _blue;
+
+		private static readonly JsonSerializerSettings _serializerSettings = new JsonSerializerSettings
+		{
+			Converters = { new ColorJsonConverter() },
+		};
 
 		public static GUISkin GetActiveSkin() => _skin;
 		public static Theme GetActiveTheme() => _activeTheme;
@@ -201,19 +207,8 @@ namespace MultiTool.UI
 		/// <returns>Exported theme string</returns>
 		public static string Export(Theme theme)
 		{
-			MemoryStream ms = new MemoryStream();
-			DataContractJsonSerializer jsonSerializer = new DataContractJsonSerializer(typeof(Theme));
-			jsonSerializer.WriteObject(ms, theme);
-
-			// Rewind stream.
-			ms.Seek(0, SeekOrigin.Begin);
-
-			// Convert stream to a string.
-			StreamReader reader = new StreamReader(ms);
-			string jsonString = reader.ReadToEnd();
-
-			// Convert JSON to base64.
-			byte[] bytes = Encoding.UTF8.GetBytes(jsonString);
+			string json = JsonConvert.SerializeObject(theme, _serializerSettings);
+			byte[] bytes = Encoding.UTF8.GetBytes(json);
 			return Convert.ToBase64String(bytes);
 		}
 
@@ -225,14 +220,9 @@ namespace MultiTool.UI
 		{
 			try
 			{
-				// Decode base64.
 				byte[] bytes = Convert.FromBase64String(data);
 				string json = Encoding.UTF8.GetString(bytes);
-
-				// Convert JSON string back to an object.
-				MemoryStream ms = new MemoryStream(Encoding.UTF8.GetBytes(json));
-				DataContractJsonSerializer jsonSerializer = new DataContractJsonSerializer(typeof(Theme));
-				Theme importTheme = jsonSerializer.ReadObject(ms) as Theme;
+				Theme importTheme = JsonConvert.DeserializeObject<Theme>(json, _serializerSettings);
 
 				Theme existingTheme = null;
 				foreach (Theme theme in _themes.Data)
@@ -533,22 +523,15 @@ namespace MultiTool.UI
 			SetActiveTheme(theme.Name);
 		}
 
-		/// <summary>
-		/// Load the theme from file.
-		/// </summary>
 		private static Themes LoadFromFile()
 		{
 			Themes fileThemes = new Themes();
-			// Attempt to load the config file.
 			try
 			{
 				if (File.Exists(_path))
 				{
 					string json = File.ReadAllText(_path);
-					MemoryStream ms = new MemoryStream(Encoding.UTF8.GetBytes(json));
-					DataContractJsonSerializer jsonSerializer = new DataContractJsonSerializer(typeof(Themes));
-					fileThemes = jsonSerializer.ReadObject(ms) as Themes;
-					ms.Close();
+					fileThemes = JsonConvert.DeserializeObject<Themes>(json, _serializerSettings) ?? new Themes();
 				}
 			}
 			catch (Exception ex)
@@ -570,13 +553,10 @@ namespace MultiTool.UI
 
 			try
 			{
-				MemoryStream ms = new MemoryStream();
-				DataContractJsonSerializer jsonSerializer = new DataContractJsonSerializer(typeof(Themes));
-				jsonSerializer.WriteObject(ms, fileThemes);
-				using (FileStream file = new FileStream(_path, FileMode.Create, FileAccess.Write))
+				using (StreamWriter file = File.CreateText(_path))
+				using (JsonTextWriter writer = new JsonTextWriter(file))
 				{
-					ms.WriteTo(file);
-					ms.Dispose();
+					JsonSerializer.CreateDefault(_serializerSettings).Serialize(writer, fileThemes);
 				}
 			}
 			catch (Exception ex)

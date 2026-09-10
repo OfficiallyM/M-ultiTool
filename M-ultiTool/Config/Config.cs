@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json;
+﻿using MultiTool.Extensions;
+using Newtonsoft.Json;
 using System;
 using System.IO;
 using System.Runtime.Serialization.Json;
@@ -14,6 +15,10 @@ namespace MultiTool.Config
 		public ConfigSerializable Config { get; private set; }
 
 		private string _configPath = string.Empty;
+		private static readonly JsonSerializerSettings _serializerSettings = new JsonSerializerSettings
+		{
+			Converters = { new ColorJsonConverter() },
+		};
 
 		/// <summary>
 		/// Load the config from the config file.
@@ -58,7 +63,7 @@ namespace MultiTool.Config
 					// Normal load flow.
 					else
 					{
-						Config = JsonConvert.DeserializeObject<ConfigSerializable>(json);
+						Config = JsonConvert.DeserializeObject<ConfigSerializable>(json, _serializerSettings);
 					}
 				}
 			}
@@ -96,13 +101,10 @@ namespace MultiTool.Config
 			{
 				using (var file = File.CreateText(_configPath))
 				{
-					var serializer = new JsonSerializer
-					{
-						ReferenceLoopHandling = ReferenceLoopHandling.Ignore
-					};
+					var serializer = JsonSerializer.CreateDefault(_serializerSettings);
+					serializer.ReferenceLoopHandling = ReferenceLoopHandling.Ignore;
 					serializer.Serialize(file, Config);
 				}
-
 			}
 			catch (Exception ex)
 			{
