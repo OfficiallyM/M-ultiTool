@@ -1,4 +1,5 @@
-﻿using MultiTool.Save.Records;
+﻿using MultiTool.Extensions;
+using MultiTool.Save.Records;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
@@ -25,30 +26,10 @@ namespace MultiTool.Save
 		private static readonly JsonSerializerSettings _settings = new JsonSerializerSettings
 		{
 			NullValueHandling = NullValueHandling.Ignore,
-			ReferenceLoopHandling = ReferenceLoopHandling.Ignore,
+			TypeNameHandling = TypeNameHandling.Auto,
+			SerializationBinder = new SaveSerializationBinder(),
+			Converters = { new ColorJsonConverter() },
 		};
-
-		// Map of record types - wire name -> Type for the read side.
-		private static readonly Dictionary<string, Type> _recordTypes = new Dictionary<string, Type>
-		{
-			{ "poi", typeof(PoiRecord) },
-			{ "glass", typeof(GlassRecord) },
-			{ "material", typeof(MaterialRecord) },
-			{ "scale", typeof(ScaleRecord) },
-			{ "slot", typeof(SlotRecord) },
-			{ "light", typeof(LightRecord) },
-			{ "engineTuning", typeof(EngineTuningRecord) },
-			{ "transmissionTuning", typeof(TransmissionTuningRecord) },
-			{ "vehicleTuning", typeof(VehicleTuningRecord) },
-			{ "wheelTuning", typeof(WheelTuningRecord) },
-			{ "weight", typeof(WeightRecord) },
-			{ "tank", typeof(TankRecord) },
-		};
-
-		// Derived from _recordTypes - Type -> wire name for the write side.
-		private static readonly Dictionary<Type, string> _recordTypeNames =
-			_recordTypes.ToDictionary(kv => kv.Value, kv => kv.Key);
-
 
 		/// <summary>
 		/// Get the current save data, reading and migrating it from the game save if this
@@ -119,28 +100,11 @@ namespace MultiTool.Save
 				{
 					Save migrated = SaveMigration.MigrateLegacy(raw);
 					// Commit the migration immediately to ensure it persists.
-					Serialize(migrated); 
+					Serialize(migrated);
 					return migrated;
 				}
 
-				Save data = new Save
-				{
-					PlayerData = root["PlayerData"]?.ToObject<PlayerData>(),
-					IsPlayerDataPerSave = root["IsPlayerDataPerSave"]?.ToObject<bool>() ?? false,
-					TimeData = root["TimeData"]?.ToObject<TimeData>(),
-				};
-
-				if (root["Records"] is JArray records)
-				{
-					foreach (JToken token in records)
-					{
-						SaveRecord record = ReadRecord(token as JObject);
-						if (record != null)
-							data.Records.Add(record);
-					}
-				}
-
-				return data;
+				return JsonConvert.DeserializeObject<Save>(raw, _settings) ?? new Save();
 			}
 			catch (Exception ex)
 			{
@@ -149,53 +113,12 @@ namespace MultiTool.Save
 			}
 		}
 
-		// Unwrap a { RecordType, Data } envelope into the concrete record it describes.
-		private static SaveRecord ReadRecord(JObject wrapper)
-		{
-			if (wrapper == null) return null;
-
-			string recordType = wrapper["RecordType"]?.ToString();
-			JObject recordData = wrapper["Data"] as JObject;
-			if (recordData == null) return null;
-
-			if (recordType == null || !_recordTypes.TryGetValue(recordType, out Type type))
-			{
-				Logger.Log($"Unknown save record type '{recordType}' - skipped.", Logger.LogLevel.Warning);
-				return null;
-			}
-
-			return recordData.ToObject(type) as SaveRecord;
-		}
-
 		private static void Serialize(Save data)
 		{
 			try
 			{
-				JObject root = new JObject
-				{
-					["PlayerData"] = data.PlayerData != null ? JObject.FromObject(data.PlayerData) : null,
-					["IsPlayerDataPerSave"] = data.IsPlayerDataPerSave,
-					["TimeData"] = data.TimeData != null ? JObject.FromObject(data.TimeData) : null,
-				};
-
-				JArray records = new JArray();
-				foreach (SaveRecord record in data.Records)
-				{
-					if (!_recordTypeNames.TryGetValue(record.GetType(), out string recordType))
-					{
-						Logger.Log($"Save write error - unknown record type '{record.GetType().Name}', skipped.", Logger.LogLevel.Error);
-						continue;
-					}
-
-					records.Add(new JObject
-					{
-						["RecordType"] = recordType,
-						["Data"] = JObject.FromObject(record, JsonSerializer.Create(_settings)),
-					});
-				}
-				root["Records"] = records;
-
-				SaveUtilities.ReadWriteToGameSave(root.ToString(Formatting.None));
+				string json = JsonConvert.SerializeObject(data, _settings);
+				SaveUtilities.ReadWriteToGameSave(json);
 			}
 			catch (Exception ex)
 			{
