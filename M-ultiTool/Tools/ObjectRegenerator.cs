@@ -75,7 +75,7 @@ namespace MultiTool.Tools
 				Quaternion rotation = gameObject.transform.rotation;
 
 				// Recreate object.
-				GameObject spawned = SpawnUtilities.Spawn(prefab, position, rotation, Services.State.SpawnWithFuel);
+				GameObject spawned = SpawnUtilities.Spawn(prefab, new ItemSpawnConfig(), position, rotation);
 				SelectedObject = spawned.GetComponent<tosaveitemscript>();
 
 				// Handle attached children.

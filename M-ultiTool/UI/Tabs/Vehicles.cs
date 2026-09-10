@@ -16,7 +16,8 @@ namespace MultiTool.UI.Tabs
 		public override bool HasConfigPane => true;
 		private string _configTitle = "Configuration";
 		public override string ConfigTitle => _configTitle;
-
+		private ItemSpawnConfig _spawnConfig = new ItemSpawnConfig();
+		public override ISpawnConfig SpawnConfig => _spawnConfig;
 
 		// Scroll vectors.
 		private Vector2 _vehicleScrollPosition;
@@ -27,36 +28,27 @@ namespace MultiTool.UI.Tabs
 		private string _search = string.Empty;
 		private string _lastSearch = string.Empty;
 		private float _lastWidth = 0;
-		private List<List<Vehicle>> _vehiclesChunked = new List<List<Vehicle>>();
+		private List<List<Item>> _vehiclesChunked = new List<List<Item>>();
 		private bool _rechunk = false;
-
-		// Config variables.
-		private int _maxFuelType = 0;
-		private int _maxCondition = 0;
-		private int _condition = 0;
-		private int _fuelMixes = 1;
-		private List<float> _fuelValues = new List<float> { -1f };
-		private List<int> _fuelTypes = new List<int> { -1 };
-		private string _plate = string.Empty;
 
 		private bool _showSpawnHistory = false;
 		private List<GameObject> _spawnedObjects = new List<GameObject>();
 
 		public override void OnRegister()
 		{
-			_maxFuelType = (int)Enum.GetValues(typeof(mainscript.fluidenum)).Cast<mainscript.fluidenum>().Max();
-			_maxCondition = (int)Enum.GetValues(typeof(Item.Condition)).Cast<Item.Condition>().Max();
+			_spawnConfig.MaxFuelType = (int)Enum.GetValues(typeof(mainscript.fluidenum)).Cast<mainscript.fluidenum>().Max();
+			_spawnConfig.MaxCondition = (int)Enum.GetValues(typeof(Condition)).Cast<Condition>().Max();
 		}
 
 		public override void OnUnregister()
 		{
-			_fuelValues.Clear();
-			_fuelTypes.Clear();
+			_spawnConfig.FuelValues.Clear();
+			_spawnConfig.FuelTypes.Clear();
 		}
 
 		public override void Update()
 		{
-			List<Vehicle> vehicles = Services.Database.Vehicles;
+			List<Item> vehicles = Services.Database.Vehicles;
 			if (_search != _lastSearch)
 			{
 				vehicles = Services.Database.Vehicles.Where(v => v.Name.ToLower().Contains(_search.ToLower()) || v.GameObject.name.ToLower().Contains(_search.ToLower())).ToList();
@@ -103,10 +95,10 @@ namespace MultiTool.UI.Tabs
 			GUILayout.Space(10);
 
 			_vehicleScrollPosition = GUILayout.BeginScrollView(_vehicleScrollPosition);
-			foreach (List<Vehicle> vehiclesRow in _vehiclesChunked)
+			foreach (List<Item> vehiclesRow in _vehiclesChunked)
 			{
 				GUILayout.BeginHorizontal();
-				foreach (Vehicle vehicle in vehiclesRow)
+				foreach (Item vehicle in vehiclesRow)
 				{
 					GUILayout.Box("", "button", GUILayout.Width(140), GUILayout.Height(140));
 					Rect boxRect = GUILayoutUtility.GetLastRect();
@@ -114,18 +106,7 @@ namespace MultiTool.UI.Tabs
 					bool buttonText = GUI.Button(new Rect(boxRect.x, boxRect.y + (boxRect.height / 2), boxRect.width, boxRect.height / 2), vehicle.Name, "ButtonTransparent");
 					if (buttonImage || buttonText)
 					{
-						GameObject spawned = SpawnUtilities.Spawn(new Vehicle()
-						{
-							GameObject = vehicle.GameObject,
-							Variant = vehicle.Variant,
-							ConditionInt = _condition,
-							FuelMixes = _fuelMixes,
-							FuelValues = _fuelValues,
-							FuelTypeInts = _fuelTypes,
-							Color = Colour.GetColour(),
-							Plate = _plate,
-							Amt = vehicle.Amt,
-						}, spawnWithFuel: Services.State.SpawnWithFuel);
+						GameObject spawned = SpawnUtilities.Spawn(vehicle, _spawnConfig);
 
 						if (spawned != null)
 							_spawnedObjects.Add(spawned);
@@ -243,79 +224,7 @@ namespace MultiTool.UI.Tabs
 				}
 				GUILayout.Space(10);
 
-				// Condition.
-				GUILayout.Label($"Condition: {(Item.Condition)_condition}");
-				_condition = Mathf.RoundToInt(GUILayout.HorizontalSlider(_condition, -1, _maxCondition));
-				GUILayout.Space(10);
-
-				// Plate.
-				GUILayout.Label("Plate (blank for random):");
-				_plate = GUILayout.TextField(_plate);
-				GUILayout.Space(10);
-
-				// Spawn with fuel.
-				if (GUILayout.Button(Accessibility.GetAccessibleString("Spawn with fuel", Services.State.SpawnWithFuel)))
-					Services.State.SpawnWithFuel = !Services.State.SpawnWithFuel;
-				GUILayout.Space(10);
-
-				// Fuel mixes.
-				for (int i = 0; i < _fuelMixes; i++)
-				{
-					GUILayout.BeginVertical($"Fluid {i + 1}", "box");
-					GUILayout.Space(10);
-
-					// Fluid type.
-					string fuelType = ((mainscript.fluidenum)_fuelTypes[i]).ToString();
-					if (_fuelTypes[i] == -1)
-						fuelType = "Default";
-					else
-						fuelType = fuelType[0].ToString().ToUpper() + fuelType.Substring(1);
-					GUILayout.Label($"Fluid type: {fuelType}");
-					_fuelTypes[i] = Mathf.RoundToInt(GUILayout.HorizontalSlider(_fuelTypes[i], -1, _maxFuelType));
-
-					GUILayout.Space(10);
-
-					// Fluid amount.
-					GUILayout.Label($"Fuel amount: {_fuelValues[i]}");
-					_fuelValues[i] = GUILayout.HorizontalSlider(_fuelValues[i], -1f, 1000f);
-
-					bool fuelValueParse = float.TryParse(GUILayout.TextField(_fuelValues[i].ToString()), out float tempFuelValue);
-					if (fuelValueParse)
-						_fuelValues[i] = tempFuelValue;
-
-					GUILayout.EndVertical();
-					GUILayout.Space(5);
-				}
-				GUILayout.Space(5);
-
-				GUILayout.BeginHorizontal();
-				if (_fuelMixes <= _maxFuelType && GUILayout.Button("Add fluid"))
-				{
-					_fuelMixes++;
-					_fuelTypes.Add(0);
-					_fuelValues.Add(0);
-				}
-				GUILayout.Space(10);
-
-				if (_fuelMixes > 1 && GUILayout.Button("Remove last fluid"))
-				{
-					_fuelMixes--;
-					_fuelTypes.RemoveAt(_fuelTypes.Count - 1);
-					_fuelValues.RemoveAt(_fuelValues.Count - 1);
-				}
-				GUILayout.EndHorizontal();
-				GUILayout.Space(10);
-
-				Colour.RenderColourSliders(dimensions.width);
-				if (GUILayout.Button("Randomise colour", GUILayout.MaxWidth(200)))
-				{
-					Color color = Colour.GetColour();
-					color.r = UnityEngine.Random.Range(0f, 255f) / 255f;
-					color.g = UnityEngine.Random.Range(0f, 255f) / 255f;
-					color.b = UnityEngine.Random.Range(0f, 255f) / 255f;
-					Colour.SetColour(color);
-				}
-				GUILayout.Space(10);
+				SpawnConfig?.Render(dimensions);
 			}
 
 			GUILayout.EndScrollView();

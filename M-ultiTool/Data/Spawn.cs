@@ -1,4 +1,5 @@
 ﻿using MultiTool.Save;
+using MultiTool.UI;
 using MultiTool.Utilities;
 using System;
 using System.Collections.Generic;
@@ -18,13 +19,36 @@ namespace MultiTool.Data
 		/// Wrapper around the default spawn function to handle condition and fuel for items.
 		/// </summary>
 		/// <param name="item">The object to spawn</param>
+		/// /// <param name="spawnConfig">Configuration for the spawned item</param>
 		/// <param name="position"></param>
 		/// <param name="rotation"></param>
-		/// <param name="spawnWithFuel">Whether to spawn with the item's default fuel - from ModState.SpawnWithFuel at the call site</param>
-		internal static GameObject Spawn(Item item, Vector3? position = null, Quaternion? rotation = null, bool spawnWithFuel = true)
+		/// <returns>Spawned GameObject</returns>
+		internal static GameObject Spawn(Item item, ItemSpawnConfig spawnConfig, Vector3? position = null, Quaternion? rotation = null)
 		{
 			try
 			{
+				GameObject spawned = null;
+
+				int spawnCondition = spawnConfig.Condition;
+				// Temporarily override the spawn condition when using random
+				// to fully randomise it post-spawn.
+				if (spawnCondition == -1)
+					spawnCondition = 0;
+
+				// Set license plate text on the prefab as GetComponentsInChildren()
+				// doesn't find the plate of the spawned item.
+				if (spawnConfig.Plate != string.Empty)
+				{
+					rendszamscript[] plateScripts = item.GameObject.GetComponentsInChildren<rendszamscript>();
+					foreach (rendszamscript plateScript in plateScripts)
+					{
+						if (plateScript == null)
+							continue;
+
+						plateScript.Same(spawnConfig.Plate);
+					}
+				}
+
 				bool amt = false;
 				// AMT support.
 				if (item.Amt != null)
@@ -35,26 +59,43 @@ namespace MultiTool.Data
 					if (rotation == null)
 						rotation = Quaternion.FromToRotation(Vector3.forward, -mainscript.M.player.transform.right);
 
-					item.GameObject = item.Amt.spawnMethod.Invoke(item.Amt.modItem, new object[] { position, rotation, item.ConditionInt, item.Color }) as GameObject;
+					spawned = item.Amt.spawnMethod.Invoke(item.Amt.modItem, new object[] { position, rotation, spawnConfig.Condition, Colour.GetColour() }) as GameObject;
 				}
+				else
+					spawned = Spawn(item.GameObject, Colour.GetColour(), spawnCondition, item.Variant ?? -1, position, rotation);
 
-				int selectedCondition = item.ConditionInt;
-				if (selectedCondition == -1 && item.GameObject.GetComponent<partconditionscript>() != null)
+				// Return early if object spawning failed.
+				if (spawned == null) return null;
+
+				// Randomise item condition.
+				if (spawnConfig.Condition == -1)
 				{
-					// Randomise item condition.
-					int maxCondition = (int)Enum.GetValues(typeof(Item.Condition)).Cast<Item.Condition>().Max();
-					item.GameObject.GetComponent<partconditionscript>().StartFullRandom(0, maxCondition);
-					selectedCondition = UnityEngine.Random.Range(0, maxCondition);
+					var partconditionscript = spawned.GetComponent<partconditionscript>();
+					if (partconditionscript != null)
+						GameUtilities.RandomiseCondition(partconditionscript);
 				}
 
-				tankscript fuelTank = item.GameObject.GetComponent<tankscript>();
+				// Reset prefab plate so it doesn't persist between spawns when unset.
+				if (spawnConfig.Plate != string.Empty)
+				{
+					rendszamscript[] plateScripts = item.GameObject.GetComponentsInChildren<rendszamscript>();
+					foreach (rendszamscript plateScript in plateScripts)
+					{
+						if (plateScript == null)
+							continue;
+
+						plateScript.same = false;
+					}
+				}
+
+				tankscript fuelTank = spawned.GetComponent<tankscript>();
 				bool amtTank = false;
 
 				// AMT fluid support.
 				if (amt)
 				{
 					Type propertiesType = item.Amt.modItem.GetType().Assembly.GetType("Amt.Vehicles.VehicleProperties");
-					Component properties = item.GameObject.GetComponent(propertiesType);
+					Component properties = spawned.GetComponent(propertiesType);
 					mainscript.fluidcontainer container = properties.GetType().GetField("fuelContainer", BindingFlags.Instance | BindingFlags.Public).GetValue(properties) as mainscript.fluidcontainer;
 					if (container != null)
 					{
@@ -67,18 +108,18 @@ namespace MultiTool.Data
 				}
 				else if (fuelTank == null)
 					// Find fuel tank objects.
-					fuelTank = item.GameObject.GetComponentInChildren<tankscript>();
+					fuelTank = spawned.GetComponentInChildren<tankscript>();
 
 				if (fuelTank != null || amtTank)
 				{
 
 					// Fuel type and value are default, just spawn the item.
 					bool alterFluids = false;
-					if (item.FuelMixes >= 1 && (item.FuelTypeInts[0] != -1 || item.FuelValues[0] != -1f))
+					if (spawnConfig.FuelMixCount >= 1 && (spawnConfig.FuelTypes[0] != -1 || spawnConfig.FuelValues[0] != -1f))
 						alterFluids = true;
 
 					// Support for spawning without any fuel.
-					if (!spawnWithFuel)
+					if (!spawnConfig.SpawnWithFuel)
 					{
 						fuelTank.F.fluids.Clear();
 						alterFluids = false;
@@ -97,38 +138,21 @@ namespace MultiTool.Data
 
 						fuelTank.F.fluids.Clear();
 
-						for (int i = 0; i < item.FuelMixes; i++)
+						for (int i = 0; i < spawnConfig.FuelMixCount; i++)
 						{
 							float amount = currentFuelAmounts.Count > i ? currentFuelAmounts[i] : 0;
 							mainscript.fluidenum type = currentFuelTypes.Count > i ? currentFuelTypes[i] : mainscript.fluidenum.gas;
 
-							if (item.FuelValues[i] > -1)
-								amount = item.FuelValues[i];
+							if (spawnConfig.FuelValues[i] > -1)
+								amount = spawnConfig.FuelValues[i];
 
-							if (item.FuelTypeInts[i] > -1)
-								type = (mainscript.fluidenum)item.FuelTypeInts[i];
+							if (spawnConfig.FuelTypes[i] > -1)
+								type = (mainscript.fluidenum)spawnConfig.FuelTypes[i];
 
 							fuelTank.F.ChangeOne(amount, type);
 						}
 					}
-				}
-
-				// Set plate text.
-				rendszamscript[] plateScripts = item.GameObject.GetComponentsInChildren<rendszamscript>();
-				foreach (rendszamscript plateScript in plateScripts)
-				{
-					if (plateScript == null)
-						continue;
-					if (item.Plate != string.Empty)
-						plateScript.Same(item.Plate);
-					else
-						plateScript.same = false;
-				}
-
-				if (amt)
-					return item.GameObject;
-				else
-					return Spawn(item.GameObject, item.Color, selectedCondition, -1, position, rotation);
+				}				
 			}
 			catch (Exception ex)
 			{
@@ -139,136 +163,9 @@ namespace MultiTool.Data
 		}
 
 		/// <summary>
-		/// Wrapper around the default spawn function to extend vehicle functionality
-		/// </summary>
-		/// <param name="vehicle">The vehicle to spawn</param>
-		/// <param name="spawnWithFuel">Whether to spawn with the vehicle's default fuel - from ModState.SpawnWithFuel at the call site</param>
-		internal static GameObject Spawn(Vehicle vehicle, bool spawnWithFuel = true)
-		{
-			int selectedCondition = vehicle.ConditionInt;
-			if (selectedCondition == -1)
-			{
-				// Randomise vehicle condition.
-				int maxCondition = (int)Enum.GetValues(typeof(Item.Condition)).Cast<Item.Condition>().Max();
-				selectedCondition = UnityEngine.Random.Range(0, maxCondition);
-			}
-
-			// Set vehicle license plate text on the prefab as GetComponentsInChildren()
-			// doesn't find the plate of the spawned vehicle.
-			if (vehicle.Plate != string.Empty)
-			{
-				rendszamscript[] plateScripts = vehicle.GameObject.GetComponentsInChildren<rendszamscript>();
-				foreach (rendszamscript plateScript in plateScripts)
-				{
-					if (plateScript == null)
-						continue;
-
-					plateScript.Same(vehicle.Plate);
-				}
-			}
-
-			GameObject spawnedVehicle = null;
-			bool amt = false;
-			// AMT support.
-			if (vehicle.Amt != null)
-			{
-				amt = true;
-				Vector3 position = mainscript.M.player.lookPoint + Vector3.up * 0.75f;
-				Quaternion rotation = Quaternion.FromToRotation(Vector3.forward, -mainscript.M.player.transform.right);
-
-				spawnedVehicle = vehicle.Amt.spawnMethod.Invoke(vehicle.Amt.modItem, new object[] { position, rotation, vehicle.ConditionInt, vehicle.Color }) as GameObject;
-			}
-			else
-				spawnedVehicle = Spawn(vehicle.GameObject, vehicle.Color, selectedCondition, vehicle.Variant);
-
-			// Error occurred during vehicle spawn, return early.
-			if (spawnedVehicle == null) return null;
-
-			// Reset prefab plate so it doesn't persist between spawns when unset.
-			if (vehicle.Plate != string.Empty)
-			{
-				rendszamscript[] plateScripts = vehicle.GameObject.GetComponentsInChildren<rendszamscript>();
-				foreach (rendszamscript plateScript in plateScripts)
-				{
-					if (plateScript == null)
-						continue;
-
-					plateScript.same = false;
-				}
-			}
-
-			tankscript fuelTank = spawnedVehicle.GetComponent<tankscript>();
-			bool amtTank = false;
-			// AMT fluid support.
-			if (amt)
-			{
-				Type propertiesType = vehicle.Amt.modItem.GetType().Assembly.GetType("Amt.Vehicles.VehicleProperties");
-				Component properties = spawnedVehicle.GetComponent(propertiesType);
-				mainscript.fluidcontainer container = properties.GetType().GetField("fuelContainer", BindingFlags.Instance | BindingFlags.Public).GetValue(properties) as mainscript.fluidcontainer;
-				if (container != null)
-				{
-					fuelTank = new tankscript
-					{
-						F = container,
-					};
-					amtTank = true;
-				}
-			}
-			else if (fuelTank == null)
-				// Find fuel tank objects.
-				fuelTank = spawnedVehicle.GetComponentInChildren<tankscript>();
-
-			if (fuelTank != null || amtTank)
-			{
-
-				// Fuel type and value are default, just spawn the item.
-				bool alterFluids = false;
-				if (vehicle.FuelMixes >= 1 && (vehicle.FuelTypeInts[0] != -1 || vehicle.FuelValues[0] != -1f))
-					alterFluids = true;
-
-				// Support for spawning without any fuel.
-				if (!spawnWithFuel)
-				{
-					fuelTank.F.fluids.Clear();
-					alterFluids = false;
-				}
-
-				if (alterFluids)
-				{
-					// Store the current fuel types and amounts to return either to default.
-					List<mainscript.fluidenum> currentFuelTypes = new List<mainscript.fluidenum>();
-					List<float> currentFuelAmounts = new List<float>();
-					foreach (mainscript.fluid fluid in fuelTank.F.fluids)
-					{
-						currentFuelTypes.Add(fluid.type);
-						currentFuelAmounts.Add(fluid.amount);
-					}
-
-					fuelTank.F.fluids.Clear();
-
-					for (int i = 0; i < vehicle.FuelMixes; i++)
-					{
-						float amount = currentFuelAmounts.Count > i ? currentFuelAmounts[i] : 0;
-						mainscript.fluidenum type = currentFuelTypes.Count > i ? currentFuelTypes[i] : mainscript.fluidenum.gas;
-
-						if (vehicle.FuelValues[i] > -1)
-							amount = vehicle.FuelValues[i];
-
-						if (vehicle.FuelTypeInts[i] > -1)
-							type = (mainscript.fluidenum)vehicle.FuelTypeInts[i];
-
-						fuelTank.F.ChangeOne(amount, type);
-					}
-				}
-			}
-
-			return spawnedVehicle;
-		}
-
-		/// <summary>
 		/// Spawn a point of interest
 		/// </summary>
-		/// <param name="POI">The point of interest to spawn</param>
+		/// <param name="poi">The point of interest to spawn</param>
 		/// <param name="spawnItems">Whether the POI should spawn items</param>
 		/// <param name="position">Position override</param>
 		/// <param name="rotation">Rotation override</param>
