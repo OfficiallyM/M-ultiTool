@@ -1,33 +1,38 @@
-﻿using System.Collections.Generic;
-using System.Runtime.Serialization;
+﻿using Newtonsoft.Json;
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace MultiTool.UI
 {
-	[DataContract]
 	internal class Theme
 	{
-		[DataMember] public string Name { get; set; }
-		[DataMember] public bool IsCore { get; set; } = false;
+		public string Name { get; set; }
+		public bool IsCore { get; set; } = false;
 
-		[DataMember] public Color ButtonPrimaryColour { get; set; } = Color.white;
-		[DataMember] public Color ButtonPrimaryHoverColour { get; set; } = Color.grey;
-		[DataMember] public Color ButtonSecondaryColour { get; set; } = Color.white;
-		[DataMember] public Color ButtonSecondaryHoverColour { get; set; } = Color.grey;
-		[DataMember] public Color BoxColour { get; set; } = new Color(0, 0, 0, 0.4f);
-		[DataMember] public Color BoxHoverColour { get; set; } = new Color(0, 0, 0, 0.5f);
+		public Color ButtonPrimaryColour { get; set; } = Color.white;
+		public Color ButtonPrimaryHoverColour { get; set; } = Color.grey;
+		public Color ButtonSecondaryColour { get; set; } = Color.white;
+		public Color ButtonSecondaryHoverColour { get; set; } = Color.grey;
+		public Color BoxColour { get; set; } = new Color(0, 0, 0, 0.4f);
+		public Color BoxHoverColour { get; set; } = new Color(0, 0, 0, 0.5f);
 
-		[DataMember] public Color ButtonPrimaryTextColour { get; set; } = Color.black;
-		[DataMember] public Color ButtonSecondaryTextColour { get; set; } = Color.black;
-		[DataMember] public Color TextColour { get; set; } = Color.white;
-		[DataMember] public Color AccessibilityOnColour { get; set; } = Color.green;
-		[DataMember] public Color AccessibilityOffColour { get; set; } = Color.red;
+		public Color ButtonPrimaryTextColour { get; set; } = Color.black;
+		public Color ButtonSecondaryTextColour { get; set; } = Color.black;
+		public Color TextColour { get; set; } = Color.white;
+		public Color AccessibilityOnColour { get; set; } = Color.green;
+		public Color AccessibilityOffColour { get; set; } = Color.red;
 
+		[JsonIgnore]
 		public Texture2D ButtonPrimary { get; set; }
+		[JsonIgnore]
 		public Texture2D ButtonPrimaryHover { get; set; }
+		[JsonIgnore]
 		public Texture2D ButtonSecondary { get; set; }
+		[JsonIgnore]
 		public Texture2D ButtonSecondaryHover { get; set; }
+		[JsonIgnore]
 		public Texture2D Box { get; set; }
+		[JsonIgnore]
 		public Texture2D BoxHover { get; set; }
 
 		public void CreateTextures()
@@ -41,10 +46,9 @@ namespace MultiTool.UI
 		}
 	}
 
-	[DataContract]
 	internal class Themes
 	{
-		[DataMember] public List<Theme> Data { get; set; }
+		public List<Theme> Data { get; set; }
 
 		public Themes()
 		{
@@ -56,18 +60,14 @@ namespace MultiTool.UI
 		/// </summary>
 		/// <param name="theme">Theme to add</param>
 		public void Add(Theme theme)
-		{
-			Data.Add(theme);
-		}
+			=> Data.Add(theme);
 
 		/// <summary>
 		/// Remove a theme.
 		/// </summary>
 		/// <param name="theme">Theme to remove</param>
 		public void Remove(Theme theme)
-		{
-			Data.Remove(theme);
-		}
+			=> Data.Remove(theme);
 
 		/// <summary>
 		/// Get a theme by name.
