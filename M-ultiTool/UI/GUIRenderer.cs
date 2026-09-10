@@ -263,7 +263,7 @@ namespace MultiTool.UI
 						UnityEngine.Object.Destroy(starterVehicle.gameObject);
 						starterVehicle.transform.position += Vector3.down * 15f;
 
-						Vehicle vehicle = _services.Database.Vehicles.Where(v => v.GameObject.name.ToLower().Contains(starterVehicleName.ToLower())).FirstOrDefault();
+						Data.Item vehicle = _services.Database.Vehicles.Where(v => v.GameObject.name.ToLower().Contains(starterVehicleName.ToLower())).FirstOrDefault();
 						if (vehicle != null)
 						{
 							finalStarterVehicle = SpawnUtilities.Spawn(vehicle.GameObject, color, _startVehicleCondition, -1, position, rotation);
@@ -506,8 +506,8 @@ namespace MultiTool.UI
 
 				case "basics":
 					// Condition.
-					GUILayout.Label($"Condition: {(Data.Item.Condition)_startVehicleCondition}");
-					int maxCondition = (int)Enum.GetValues(typeof(Data.Item.Condition)).Cast<Data.Item.Condition>().Max();
+					GUILayout.Label($"Condition: {(Condition)_startVehicleCondition}");
+					int maxCondition = (int)Enum.GetValues(typeof(Condition)).Cast<Condition>().Max();
 					float rawCondition = GUILayout.HorizontalSlider(_startVehicleCondition, -1, maxCondition);
 					_startVehicleCondition = Mathf.RoundToInt(rawCondition);
 

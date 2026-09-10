@@ -17,7 +17,7 @@ namespace MultiTool.Data
 	{
 		private ServiceContext _services;
 
-		public List<Vehicle> Vehicles { get; private set; } = new List<Vehicle>();
+		public List<Item> Vehicles { get; private set; } = new List<Item>();
 		public List<Item> Items { get; private set; } = new List<Item>();
 		public List<Poi> Pois { get; private set; } = new List<Poi>();
 
@@ -86,24 +86,24 @@ namespace MultiTool.Data
 
 							for (int i = 0; i < variants; i++)
 							{
-								Vehicle vehicle = new Vehicle()
+								Item vehicle = new Item()
 								{
-									GameObject = gameObject,
-									Variant = i,
-									Thumbnail = ThumbnailGenerator.GetThumbnail(gameObject, i),
 									Name = _services.Translator.T($"vehicle.{gameObject.name.ToKey()}.{i}", gameObject.name),
+									Variant = i,
+									GameObject = gameObject,
+									Thumbnail = ThumbnailGenerator.GetThumbnail(gameObject, i),
 								};
 								Vehicles.Add(vehicle);
 							}
 						}
 						else
 						{
-							Vehicle vehicle = new Vehicle()
+							Item vehicle = new Item()
 							{
-								GameObject = gameObject,
-								Variant = -1,
-								Thumbnail = ThumbnailGenerator.GetThumbnail(gameObject),
 								Name = _services.Translator.T($"vehicle.{gameObject.name.ToKey()}", gameObject.name),
+								Variant = -1,
+								GameObject = gameObject,
+								Thumbnail = ThumbnailGenerator.GetThumbnail(gameObject),
 							};
 							Vehicles.Add(vehicle);
 						}
@@ -131,7 +131,12 @@ namespace MultiTool.Data
 					// Remove vehicles and trailers from items array.
 					if (item && !GameUtilities.IsVehicleOrTrailer(item) && item.name != null && item.name != "ErrorPrefab")
 					{
-						Items.Add(new Item() { GameObject = item, Thumbnail = ThumbnailGenerator.GetThumbnail(item), Category = GetCategory(item) });
+						Items.Add(new Item() {
+							Name = _services.Translator.T($"item.{item.name.ToKey()}", item.name),
+							Category = GetCategory(item),
+							GameObject = item,
+							Thumbnail = ThumbnailGenerator.GetThumbnail(item),
+						});
 					}
 				}
 				catch (Exception ex)
@@ -264,9 +269,9 @@ namespace MultiTool.Data
 		/// Load all AMT vehicles.
 		/// </summary>
 		/// <returns>List of vehicles</returns>
-		private List<Vehicle> LoadAMTVehicles()
+		private List<Item> LoadAMTVehicles()
 		{
-			List<Vehicle> amtVehicles = new List<Vehicle>();
+			List<Item> amtVehicles = new List<Item>();
 			if (AMTSetup())
 			{
 				foreach (object item in _amtItems)
@@ -288,7 +293,12 @@ namespace MultiTool.Data
 								spawnMethod = spawn,
 							};
 
-							amtVehicles.Add(new Vehicle() { GameObject = gameObject, Name = key, Thumbnail = ThumbnailGenerator.GetThumbnail(gameObject), Amt = data });
+							amtVehicles.Add(new Item() {
+								Name = _services.Translator.T($"vehicle.{key.ToKey()}", key),
+								GameObject = gameObject,
+								Thumbnail = ThumbnailGenerator.GetThumbnail(gameObject),
+								Amt = data,
+							});
 						}
 					}
 					catch (Exception ex)
@@ -331,7 +341,13 @@ namespace MultiTool.Data
 								spawnMethod = spawn,
 							};
 
-							items.Add(new Item() { GameObject = gameObject, Thumbnail = ThumbnailGenerator.GetThumbnail(gameObject), Amt = data, Category = category });
+							items.Add(new Item() {
+								Name = _services.Translator.T($"item.{gameObject.name.ToKey()}", gameObject.name),
+								Category = category,
+								GameObject = gameObject,
+								Thumbnail = ThumbnailGenerator.GetThumbnail(gameObject),
+								Amt = data,
+							});
 						}
 					}
 					catch (Exception ex)
@@ -353,7 +369,12 @@ namespace MultiTool.Data
 			{
 				try
 				{
-					items.Add(new Item() { GameObject = item, Thumbnail = ThumbnailGenerator.GetThumbnail(item), Category = category });
+					items.Add(new Item() {
+						Name = _services.Translator.T($"item.{item.name.ToKey()}", item.name),
+						Category = category,
+						GameObject = item,
+						Thumbnail = ThumbnailGenerator.GetThumbnail(item),
+					});
 				}
 				catch (Exception ex)
 				{

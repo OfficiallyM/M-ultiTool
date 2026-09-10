@@ -1,4 +1,5 @@
-﻿using MultiTool.Services;
+﻿using MultiTool.Data;
+using MultiTool.Services;
 using UnityEngine;
 
 namespace MultiTool.UI
@@ -13,6 +14,7 @@ namespace MultiTool.UI
 		public abstract string Name { get; }
 		public virtual bool HasConfigPane { get { return false; } }
 		public virtual string ConfigTitle { get; set; }
+		public virtual ISpawnConfig SpawnConfig { get; } = null;
 		public virtual bool HasCache { get { return false; } }
 		public virtual int CacheRefreshTime { get { return 1; } }
 		public virtual bool ShowInNavigation { get { return true; } }
@@ -27,6 +29,8 @@ namespace MultiTool.UI
 
 		internal virtual string Source { get; set; }
 		internal virtual string Id { get; set; }
+
+		internal Vector2 ConfigScroll { get; set; }
 
 		private bool _disabled = false;
 		private int _errors = 0;

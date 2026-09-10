@@ -42,10 +42,10 @@ namespace MultiTool.UI.Tabs.VehicleConfiguration
 
 			// Condition.
 			GUILayout.Label("Condition", "LabelHeader");
-			int maxCondition = (int)Enum.GetValues(typeof(Item.Condition)).Cast<Item.Condition>().Max();
+			int maxCondition = (int)Enum.GetValues(typeof(Condition)).Cast<Condition>().Max();
 			float rawCondition = GUILayout.HorizontalSlider(_conditionInt, 0, maxCondition);
 			_conditionInt = Mathf.RoundToInt(rawCondition);
-			GUILayout.Label(((Item.Condition)_conditionInt).ToString());
+			GUILayout.Label(((Condition)_conditionInt).ToString());
 
 			_applyConditionToAttached = GUILayout.Toggle(_applyConditionToAttached, "Apply to attached");
 
