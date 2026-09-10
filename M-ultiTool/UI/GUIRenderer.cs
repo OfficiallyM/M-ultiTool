@@ -33,9 +33,6 @@ namespace MultiTool.UI
 		internal string ThemeTabId = null;
 		internal string DebugTabId = null;
 
-		internal int ResolutionX;
-		internal int ResolutionY;
-
 		internal float MainMenuWidth;
 		internal float MainMenuHeight;
 		internal float MainMenuX;
@@ -71,22 +68,12 @@ namespace MultiTool.UI
 		{
 			Styling.Bootstrap();
 			GUI.skin = Styling.GetActiveSkin();
-
-			// Find screen resolution.
-			ResolutionX = Screen.width;
-			ResolutionY = Screen.height;
-			int resX = settingsscript.s.S.IResolutionX;
-			int resY = settingsscript.s.S.IResolutionY;
-			if (resX != ResolutionX)
-			{
-				ResolutionX = resX;
-				ResolutionY = resY;
-
-				MainMenuWidth = ResolutionX - 80f;
-				MainMenuHeight = ResolutionY - 80f;
-				MainMenuX = 40f;
-				MainMenuY = 40f;
-			}
+				
+			// Set menu size.
+			MainMenuWidth = Screen.width - 80f;
+			MainMenuHeight = Screen.height - 80f;
+			MainMenuX = 40f;
+			MainMenuY = 40f;
 
 			// In game.
 			if (mainscript.M != null)
@@ -139,14 +126,6 @@ namespace MultiTool.UI
 
 				// Ensure UI loads hidden.
 				Show = false;
-
-				ResolutionX = settingsscript.s.S.IResolutionX;
-				ResolutionY = settingsscript.s.S.IResolutionY;
-
-				MainMenuWidth = ResolutionX - 80f;
-				MainMenuHeight = ResolutionY - 80f;
-				MainMenuX = 40f;
-				MainMenuY = 40f;
 
 				// Add default navigation tabs.
 				Tabs.AddTab(new Tabs.VehiclesTab());
@@ -347,9 +326,6 @@ namespace MultiTool.UI
 			// as OnMenuLoad() is called before anything is started.
 			if (!_mainMenuLoaded)
 			{
-				ResolutionX = settingsscript.s.S.IResolutionX;
-				ResolutionY = settingsscript.s.S.IResolutionY;
-
 				// Default language to English until we can pull it from mainscript.
 				_services.Translator.SetLanguage("English");
 
@@ -373,7 +349,7 @@ namespace MultiTool.UI
 		/// </summary>
 		private void RenderPauseMenu()
 		{
-			MultiTool.Binds.RenderRebindMenu("M-ultiTool menu key", new int[] { (int)Keybinds.Inputs.menu }, ResolutionX - 350f, 50f, 300f, 100f);
+			MultiTool.Binds.RenderRebindMenu("M-ultiTool menu key", new int[] { (int)Keybinds.Inputs.menu }, Screen.width - 350f, 50f, 300f, 100f);
 		}
 
 		/// <summary>
@@ -441,9 +417,9 @@ namespace MultiTool.UI
 		/// </summary>
 		private void GameMainMenuUI()
 		{
-			float width = ResolutionX / 3;
-			float height = ResolutionY - 200f;
-			float x = ResolutionX - ResolutionX / 3;
+			float width = Screen.width / 3;
+			float height = Screen.height - 200f;
+			float x = Screen.width - Screen.width / 3;
 			float y = 100f;
 
 			// Don't render the UI if any game menus are open.
@@ -451,7 +427,7 @@ namespace MultiTool.UI
 
 			if (!Show)
 			{
-				GUILayout.BeginArea(new Rect(ResolutionX - 200f, ResolutionY / 3 - 10f, 200f, 60f));
+				GUILayout.BeginArea(new Rect(Screen.width - 200f, Screen.height / 3 - 10f, 200f, 60f));
 				if (GUILayout.Button("M-ultiTool", "ButtonBlackTranslucent", GUILayout.MinHeight(60)))
 				{
 					Show = true;

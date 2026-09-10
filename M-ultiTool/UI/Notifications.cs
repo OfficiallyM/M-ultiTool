@@ -113,7 +113,7 @@ namespace MultiTool.UI
 		/// </summary>
 		public static void Render()
 		{
-			Rect dimensions = new Rect(10, 10, MultiTool.Renderer.ResolutionX - 20, MultiTool.Renderer.ResolutionY - 20);
+			Rect dimensions = new Rect(10, 10, Screen.width - 20, Screen.height - 20);
 
 			GUILayout.BeginArea(dimensions);
 			GUILayout.BeginVertical();

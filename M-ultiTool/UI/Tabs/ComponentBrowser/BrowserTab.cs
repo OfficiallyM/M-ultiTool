@@ -62,7 +62,7 @@ namespace MultiTool.UI.Tabs.ComponentBrowser
 
 		// Help modal.
 		private bool _showHelpModal = false;
-		private Rect _helpModalRect = new Rect(100, 100, MultiTool.Renderer.ResolutionX / 3, MultiTool.Renderer.ResolutionY / 3);
+		private Rect _helpModalRect = new Rect(100, 100, Screen.width / 3, Screen.height / 3);
 
 		// Configuration.
 		private Dictionary<int, string> _layers = new Dictionary<int, string>();
