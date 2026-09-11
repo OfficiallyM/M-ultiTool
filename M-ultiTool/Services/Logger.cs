@@ -39,9 +39,9 @@ namespace MultiTool.Services
 		public static void Log(string msg, LogLevel logLevel = LogLevel.Info, string sender = null)
 		{
 			if (sender != null)
-				sender = $"[{sender}]";
+				sender = $" [{sender}]";
 			if (_logFile != string.Empty)
-				File.AppendAllText(_logFile, $"{DateTime.Now.ToString("s")} [{logLevel}] {(sender ?? "")} {msg}\r\n");
+				File.AppendAllText(_logFile, $"{DateTime.Now.ToString("s")} [{logLevel}]{(sender ?? "")} {msg}\r\n");
 		}
 	}
 }
