@@ -62,6 +62,16 @@ namespace MultiTool.Data
 			LoadVehicles();
 			LoadItems();
 			LoadPOIs();
+
+			// Second passes over loaded data to trigger thumbnail generation.
+			foreach (var vehicle in Vehicles)
+				vehicle.Thumbnail = ThumbnailGenerator.GetThumbnail(vehicle.GameObject, t => vehicle.Thumbnail = t, vehicle.Variant);
+
+			foreach (var item in Items)
+				item.Thumbnail = ThumbnailGenerator.GetThumbnail(item.GameObject, t => item.Thumbnail = t);
+
+			foreach (var poi in Pois)
+				poi.Thumbnail = ThumbnailGenerator.GetThumbnail(poi.Obj, t => poi.Thumbnail = t, POI: true);
 		}
 
 		public List<string> GetCategories()
@@ -91,7 +101,6 @@ namespace MultiTool.Data
 									Name = _services.Translator.T($"vehicle.{gameObject.name.ToKey()}.{i}", gameObject.name),
 									Variant = i,
 									GameObject = gameObject,
-									Thumbnail = ThumbnailGenerator.GetThumbnail(gameObject, i),
 								};
 								Vehicles.Add(vehicle);
 							}
@@ -103,7 +112,6 @@ namespace MultiTool.Data
 								Name = _services.Translator.T($"vehicle.{gameObject.name.ToKey()}", gameObject.name),
 								Variant = -1,
 								GameObject = gameObject,
-								Thumbnail = ThumbnailGenerator.GetThumbnail(gameObject),
 							};
 							Vehicles.Add(vehicle);
 						}
@@ -135,7 +143,6 @@ namespace MultiTool.Data
 							Name = _services.Translator.T($"item.{item.name.ToKey()}", item.name),
 							Category = GetCategory(item),
 							GameObject = item,
-							Thumbnail = ThumbnailGenerator.GetThumbnail(item),
 						});
 					}
 				}
@@ -164,12 +171,10 @@ namespace MultiTool.Data
 
 				try
 				{
-					// TODO: Some building thumbnails are a bit fucked.
 					Pois.Add(new Poi()
 					{
-						Obj = building,
-						Thumbnail = ThumbnailGenerator.GetThumbnail(building, POI: true),
 						Name = _services.Translator.T($"poi.{building.name.ToKey()}", building.name),
+						Obj = building,
 					});
 				}
 				catch (Exception ex)
@@ -183,9 +188,8 @@ namespace MultiTool.Data
 			{
 				Pois.Add(new Poi()
 				{
-					Obj = objClass.prefab,
-					Thumbnail = ThumbnailGenerator.GetThumbnail(objClass.prefab, POI: true),
 					Name = _services.Translator.T($"poi.{objClass.prefab.name.ToKey()}", objClass.prefab.name),
+					Obj = objClass.prefab,
 				});
 			}
 
@@ -197,9 +201,8 @@ namespace MultiTool.Data
 
 				Pois.Add(new Poi()
 				{
-					Obj = objClass.prefab,
-					Thumbnail = ThumbnailGenerator.GetThumbnail(objClass.prefab, POI: true),
 					Name = _services.Translator.T($"poi.{objClass.prefab.name.ToKey()}", objClass.prefab.name),
+					Obj = objClass.prefab,
 				});
 			}
 
@@ -217,9 +220,8 @@ namespace MultiTool.Data
 				{
 					Pois.Add(new Poi()
 					{
-						Obj = obj,
-						Thumbnail = ThumbnailGenerator.GetThumbnail(obj, POI: true),
 						Name = _services.Translator.T($"poi.{obj.name.ToKey()}", obj.name),
+						Obj = obj,
 					});
 				}
 			}
@@ -296,7 +298,6 @@ namespace MultiTool.Data
 							amtVehicles.Add(new Item() {
 								Name = _services.Translator.T($"vehicle.{key.ToKey()}", key),
 								GameObject = gameObject,
-								Thumbnail = ThumbnailGenerator.GetThumbnail(gameObject),
 								Amt = data,
 							});
 						}
@@ -345,7 +346,6 @@ namespace MultiTool.Data
 								Name = _services.Translator.T($"item.{gameObject.name.ToKey()}", gameObject.name),
 								Category = category,
 								GameObject = gameObject,
-								Thumbnail = ThumbnailGenerator.GetThumbnail(gameObject),
 								Amt = data,
 							});
 						}
@@ -373,7 +373,6 @@ namespace MultiTool.Data
 						Name = _services.Translator.T($"item.{item.name.ToKey()}", item.name),
 						Category = category,
 						GameObject = item,
-						Thumbnail = ThumbnailGenerator.GetThumbnail(item),
 					});
 				}
 				catch (Exception ex)
