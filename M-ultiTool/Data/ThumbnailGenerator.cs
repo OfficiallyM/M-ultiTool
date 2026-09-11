@@ -1,23 +1,32 @@
 ﻿using MultiTool.Services;
 using MultiTool.Utilities;
 using System;
+using System.Collections;
+using System.Collections.Generic;
 using System.IO;
 using TLDLoader;
 using UnityEngine;
 
 namespace MultiTool.Data
 {
-	// TODO: Dogshit. Replace with modloader generator.
-	// Needs to keep 200x200 and support for variants and conditions.
-	// This might be the time for a rewrite of the core. Database, vehicles, items, spawning
-	// to make the data passing not all weird and tied together.
-	// This is all to fix variant refresh not having enough time to kick in so rendering the wrong thing
-	// so needs doing in a coroutine.
 	internal static class ThumbnailGenerator
 	{
 		private static ServiceContext _services;
+		private struct PendingThumbnail
+		{
+			public GameObject GameObject;
+			public int? Variant;
+			public bool POI;
+			public Action<Texture2D> OnGenerated;
+		}
+
+		private class Runner : MonoBehaviour { }
+
+		private static readonly Queue<PendingThumbnail> _pending = new Queue<PendingThumbnail>();
+		private static Runner _runner;
+		private static bool _isProcessing = false;
+		private const int _perFrame = 2;
 		private static string _cacheDir = null;
-		private static bool _regenerateCache = false;
 
 		public static void Bootstrap(ServiceContext services)
 		{
@@ -29,64 +38,59 @@ namespace MultiTool.Data
 		}
 
 		/// <summary>
-		/// Format name to cache format.
-		/// </summary>
-		/// <param name="name">Name to format</param>
-		/// <returns>Formatted name</returns>
-		private static string FormatName(string name)
-		{
-			return name.ToUpper().Replace("/", "or");
-		}
-
-		/// <summary>
 		/// Trigger a full cache rebuild.
 		/// </summary>
 		internal static void RebuildCache()
 		{
 			DirectoryInfo cacheDirectory = new DirectoryInfo(_cacheDir);
 			foreach (FileInfo file in cacheDirectory.GetFiles())
-			{
 				file.Delete();
-			}
 
 			_services.Database.FetchData();
-
-			Services.Logger.Log($"Successfully rebuilt thumbnail cache ({cacheDirectory.GetFiles().Length} thumbnails cached)");
 		}
 
 		/// <summary>
-		/// Load thumbnail from cache or generate if it doesn't exist
+		/// Retrieves or generates a thumbnail texture for the specified GameObject.
 		/// </summary>
-		/// <param name="item">Item to generate the thumbnail for</param>
-		/// <param name="variant">Optional variant index for the item</param>
-		/// <returns>Texture2D thumbnail of the item</returns>
-		public static Texture2D GetThumbnail(GameObject item, int? variant = null, bool POI = false)
+		/// <param name="item">The GameObject to generate a thumbnail for.</param>
+		/// <param name="onGenerated">Callback invoked when the thumbnail generation completes, receiving the generated Texture2D.</param>
+		/// <param name="variant">Optional variant identifier used to differentiate cached thumbnails for the same item. If null, the cache key uses only the item name.</param>
+		/// <param name="POI">If true, indicates this is a Point of Interest thumbnail; otherwise, false.</param>
+		/// <returns>
+		/// A Texture2D containing the cached thumbnail if available; otherwise, null.
+		/// The actual generated texture is provided asynchronously via the <paramref name="onGenerated"/> callback.
+		/// </returns>
+		public static Texture2D GetThumbnail(GameObject item, Action<Texture2D> onGenerated, int? variant = null, bool POI = false)
 		{
-			string fileName = FormatName(item.name);
-			if (variant != null)
+			string path = Path.Combine(_cacheDir, CacheFileName(item.name, variant));
+			if (File.Exists(path))
 			{
-				fileName += $"-{variant.Value - 1}";
-			}
-			fileName += ".png";
-			if (!_regenerateCache && File.Exists(Path.Combine(_cacheDir, fileName)))
-			{
-				RenderTexture renderTexture = new RenderTexture(200, 200, 16);
-				Texture2D texture2D = new Texture2D(renderTexture.width, renderTexture.height);
-				byte[] cacheImage = File.ReadAllBytes(Path.Combine(_cacheDir, fileName));
-				ImageConversion.LoadImage(texture2D, cacheImage);
+				Texture2D texture2D = new Texture2D(200, 200);
+				ImageConversion.LoadImage(texture2D, File.ReadAllBytes(path));
 				texture2D.Apply();
 				return texture2D;
 			}
 
-			return GenerateThumbnail(item, variant, POI);
+			_pending.Enqueue(new PendingThumbnail { GameObject = item, Variant = variant, POI = POI, OnGenerated = onGenerated });
+			EnsureProcessing();
+			return null;
 		}
 
-		/// <summary>
-		/// Item thumbnail generator
-		/// </summary>
-		/// <param name="item">The item to generate a thumbnail for</param>
-		/// <param name="variant">Optional variant index for the item</param>
-		/// <returns>Texture2D thumbnail of the item</returns>
+		private static void EnsureProcessing()
+		{
+			if (_isProcessing) return;
+			_isProcessing = true;
+
+			if (_runner == null)
+			{
+				GameObject runnerObject = new GameObject("ThumbnailGenerator Runner");
+				UnityEngine.Object.DontDestroyOnLoad(runnerObject);
+				_runner = runnerObject.AddComponent<Runner>();
+			}
+
+			_runner.StartCoroutine(ProcessQueue());
+		}
+
 		private static Texture2D GenerateThumbnail(GameObject item, int? variant = null, bool POI = false)
 		{
 			GameObject gameObject = new GameObject("THUMBNAIL GENERATOR FOR " + item.name.ToUpper());
@@ -186,7 +190,7 @@ namespace MultiTool.Data
 			camera.gameObject.layer = gameObject.layer;
 			camera.transform.SetParent(gameObject.transform, false);
 			camera.transform.localPosition = new Vector3(1f, 1f, 1f) * num;
-			if (POI && obj == null)
+			if (obj == null)
 			{
 				camera.transform.LookAt(gameObject2.transform.position);
 				num = 1f;
@@ -221,15 +225,62 @@ namespace MultiTool.Data
 			UnityEngine.Object.Destroy(gameObject2);
 
 			// Write texture to cache.
-			string fileName = item.name.ToUpper().Replace("/", "or");
-			if (variant != null)
-			{
-				fileName += $"-{variant.Value - 1}";
-			}
-			fileName += ".png";
-			File.WriteAllBytes(Path.Combine(_cacheDir, fileName), texture2D.EncodeToPNG());
+			File.WriteAllBytes(Path.Combine(_cacheDir, CacheFileName(item.name, variant)), texture2D.EncodeToPNG());
 
 			return texture2D;
+		}
+
+		private static IEnumerator ProcessQueue()
+		{
+			int total = _pending.Count;
+			try
+			{
+				while (_pending.Count > 0)
+				{
+					for (int i = 0; i < _perFrame && _pending.Count > 0; i++)
+					{
+						PendingThumbnail next = _pending.Dequeue();
+						Texture2D texture = null;
+						try
+						{
+							texture = GenerateThumbnail(next.GameObject, next.Variant, next.POI);
+						}
+						catch (Exception ex)
+						{
+							Services.Logger.Log($"Thumbnail generation failed for {next.GameObject?.name ?? "Unknown"} - {ex}", Services.Logger.LogLevel.Error);
+						}
+
+						try
+						{
+							next.OnGenerated?.Invoke(texture);
+						}
+						catch (Exception ex)
+						{
+							Services.Logger.Log($"Thumbnail callback failed for {next.GameObject?.name ?? "Unknown"} - {ex}", Services.Logger.LogLevel.Error);
+						}
+					}
+					yield return null;
+				}
+			}
+			finally
+			{
+				Services.Logger.Log($"Thumbnail generation complete ({total} generated)");
+				_isProcessing = false;
+			}
+		}
+
+		private static string FormatName(string name)
+		{
+			return name.ToUpper().Replace("/", "or");
+		}
+
+		private static string CacheFileName(string name, int? variant = null)
+		{
+			string fileName = FormatName(name);
+			if (variant != null)
+				fileName += $"-{variant.Value - 1}";
+			fileName += ".png";
+			return fileName;
 		}
 	}
 }
