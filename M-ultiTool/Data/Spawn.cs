@@ -19,7 +19,7 @@ namespace MultiTool.Data
 		/// Wrapper around the default spawn function to handle condition and fuel for items.
 		/// </summary>
 		/// <param name="item">The object to spawn</param>
-		/// /// <param name="spawnConfig">Configuration for the spawned item</param>
+		/// <param name="spawnConfig">Configuration for the spawned item</param>
 		/// <param name="position"></param>
 		/// <param name="rotation"></param>
 		/// <returns>Spawned GameObject</returns>
