@@ -90,7 +90,7 @@ namespace MultiTool.UI
 					{
 						// Override to allow menu to close with text input focused.
 						Event e = Event.current;
-						if (e.type == EventType.KeyDown && e.keyCode == MultiTool.Binds.GetKeyByAction((int)Keybinds.Inputs.menu).AssignedKey)
+						if (e.type == EventType.KeyDown && e.keyCode == _services.Keybinds.GetKeyByAction((int)Keybinds.Inputs.menu).AssignedKey)
 						{
 							ToggleMenu();
 							e.Use();
@@ -163,7 +163,7 @@ namespace MultiTool.UI
 				DebugTabId = Tabs.AddTab(new Tabs.DebugTab());
 
 				// Load keybinds.
-				MultiTool.Binds.OnLoad();
+				_services.Keybinds.OnLoad();
 			}
 			catch (Exception ex)
 			{
@@ -196,7 +196,7 @@ namespace MultiTool.UI
 			// Trigger update for tabs and notifications.
 			Tabs.Update();
 
-			if (!_menuKeyConsumed && Input.GetKeyDown(MultiTool.Binds.GetKeyByAction((int)Keybinds.Inputs.menu).AssignedKey) && !mainscript.M.menu.Menu.activeSelf && !mainscript.M.settingsOpen && !mainscript.M.menu.saveScreen.gameObject.activeSelf)
+			if (!_menuKeyConsumed && Input.GetKeyDown(_services.Keybinds.GetKeyByAction((int)Keybinds.Inputs.menu).AssignedKey) && !mainscript.M.menu.Menu.activeSelf && !mainscript.M.settingsOpen && !mainscript.M.menu.saveScreen.gameObject.activeSelf)
 				ToggleMenu();
 
 			if (Show && !mainscript.M.menu.Menu.activeSelf && Input.GetButtonDown("Cancel"))
@@ -367,7 +367,7 @@ namespace MultiTool.UI
 		/// </summary>
 		private void RenderPauseMenu()
 		{
-			MultiTool.Binds.RenderRebindMenu("M-ultiTool menu key", new int[] { (int)Keybinds.Inputs.menu }, Screen.width - 350f, 50f, 300f, 100f);
+			_services.Keybinds.RenderRebindMenu("M-ultiTool menu key", new int[] { (int)Keybinds.Inputs.menu }, Screen.width - 350f, 50f, 300f, 100f);
 		}
 
 		/// <summary>

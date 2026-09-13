@@ -167,7 +167,7 @@ namespace MultiTool.Services
 			try
 			{
 				// Load the keybinds from the config.
-				Keys = MultiTool.Configuration.Config.Keybinds;
+				Keys = MultiTool.Context.Configuration.Config.Keybinds;
 			}
 			catch (Exception ex)
 			{
@@ -252,7 +252,7 @@ namespace MultiTool.Services
 				if (GUILayout.Button("Reset"))
 				{
 					key.Reset();
-					MultiTool.Configuration.Update(c => { c.Keybinds = Keys; });
+					MultiTool.Context.Configuration.Update(c => { c.Keybinds = Keys; });
 				}
 				GUILayout.FlexibleSpace();
 				GUILayout.EndHorizontal();
@@ -272,7 +272,7 @@ namespace MultiTool.Services
 						{
 							key.Set(keyCode);
 							_rebindAction = -1;
-							MultiTool.Configuration.Update(c => { c.Keybinds = Keys; });
+							MultiTool.Context.Configuration.Update(c => { c.Keybinds = Keys; });
 						}
 					}
 				}

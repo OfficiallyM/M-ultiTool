@@ -28,11 +28,6 @@ namespace MultiTool
 		// with that name would shadow it and silently break every one of those call sites.
 		internal static ServiceContext Context;
 
-		// Shorthand access for widely used services.
-		// TODO: Remove these once the stuff in this file is ported to tools.
-		internal static Keybinds Binds => Context.Keybinds;
-		internal static Configuration Configuration => Context.Configuration;
-
 		internal static Mod ModInstance;
 		internal static bool IsOnMainMenu = true;
 
@@ -49,7 +44,7 @@ namespace MultiTool
 				Context = new ServiceContext();
 				ThumbnailGenerator.Bootstrap(Context);
 				SaveUtilities.Bootstrap(Context);
-				Configuration.Bootstrap();
+				Context.Configuration.Bootstrap();
 				Renderer = new GUIRenderer(Context);
 				Tools = new ToolController(Context);
 			}
@@ -64,7 +59,7 @@ namespace MultiTool
 		public override void OnMenuLoad()
 		{
 			if (_hasBootstrapFailed) return;
-			Configuration.Update(c => { c.Version = Version; });
+			Context.Configuration.Update(c => { c.Version = Version; });
 			IsOnMainMenu = true;
 			Renderer.OnMenuLoad();
 		}

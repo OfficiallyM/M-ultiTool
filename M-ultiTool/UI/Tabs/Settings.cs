@@ -30,7 +30,7 @@ namespace MultiTool.UI.Tabs
 			// Render the keybind pane.
 			try
 			{
-				MultiTool.Binds.RenderRebindMenu("Rebind keys", (int[])Enum.GetValues(typeof(Keybinds.Inputs)), dimensions.x + 10f, dimensions.y + 10f, dimensions.width * 0.25f, dimensions.height - 20f);
+				Services.Keybinds.RenderRebindMenu("Rebind keys", (int[])Enum.GetValues(typeof(Keybinds.Inputs)), dimensions.x + 10f, dimensions.y + 10f, dimensions.width * 0.25f, dimensions.height - 20f);
 			}
 			catch (Exception ex)
 			{
@@ -117,7 +117,7 @@ namespace MultiTool.UI.Tabs
 			GUILayout.BeginHorizontal();
 			if (GUILayout.Button("Apply", GUILayout.MaxWidth(200)))
 			{
-				MultiTool.Configuration.Update(c => { c.ScrollWidth = _scrollWidth; });
+				Services.Configuration.Update(c => { c.ScrollWidth = _scrollWidth; });
 			}
 
 			GUILayout.Space(10);
@@ -125,7 +125,7 @@ namespace MultiTool.UI.Tabs
 			if (GUILayout.Button("Reset", "ButtonSecondary", GUILayout.MaxWidth(200)))
 			{
 				_scrollWidth = 10f;
-				MultiTool.Configuration.Update(c => { c.ScrollWidth = _scrollWidth; });
+				Services.Configuration.Update(c => { c.ScrollWidth = _scrollWidth; });
 			}
 			GUILayout.EndHorizontal();
 
@@ -135,7 +135,7 @@ namespace MultiTool.UI.Tabs
 			if (factor != _noclipSpeedFactor)
 			{
 				_noclipSpeedFactor = factor;
-				MultiTool.Configuration.Update(c => { c.NoclipFastMoveFactor = _noclipSpeedFactor; });
+				Services.Configuration.Update(c => { c.NoclipFastMoveFactor = _noclipSpeedFactor; });
 			}
 			GUILayout.Label(_noclipSpeedFactor.ToString());
 
@@ -149,7 +149,7 @@ namespace MultiTool.UI.Tabs
 					if (GUILayout.Button(Accessibility.GetAccessibleString(Accessibility.GetAccessibilityModeName(i), (int)Accessibility.GetAccessibilityMode() == i), GUILayout.MaxWidth(200)))
 					{
 						Accessibility.SetAccessibilityMode(i);
-						MultiTool.Configuration.Update(c => { c.Accessibility = i; });
+						Services.Configuration.Update(c => { c.Accessibility = i; });
 					}
 				}
 			}
@@ -161,46 +161,46 @@ namespace MultiTool.UI.Tabs
 			{
 				doesAffectColors = !doesAffectColors;
 				Accessibility.SetDoesAffectColors(doesAffectColors);
-				MultiTool.Configuration.Update(c => { c.AccessibilityModeAffectsColor = doesAffectColors; });
+				Services.Configuration.Update(c => { c.AccessibilityModeAffectsColor = doesAffectColors; });
 			}
 
 			GUILayout.Label("Basic collider colour");
 
-			Color basicCollider = MultiTool.Configuration.Config.BasicColliderColor;
+			Color basicCollider = Services.Configuration.Config.BasicColliderColor;
 
 			basicCollider = Colour.RenderColourSliders(settingsWidth / 2, basicCollider, true);
-			MultiTool.Configuration.Update(c => { c.BasicColliderColor = basicCollider; });
+			Services.Configuration.Update(c => { c.BasicColliderColor = basicCollider; });
 
 			if (GUILayout.Button("Reset to default", GUILayout.MaxWidth(200)))
 			{
 				basicCollider = new Color(1f, 0.0f, 0.0f, 0.8f);
-				MultiTool.Configuration.Update(c => { c.BasicColliderColor = basicCollider; });
+				Services.Configuration.Update(c => { c.BasicColliderColor = basicCollider; });
 			}
 
 			GUILayout.Label("Trigger collider colour");
 
-			Color triggerCollider = MultiTool.Configuration.Config.TriggerColliderColor;
+			Color triggerCollider = Services.Configuration.Config.TriggerColliderColor;
 
 			triggerCollider = Colour.RenderColourSliders(settingsWidth / 2, triggerCollider, true);
-			MultiTool.Configuration.Update(c => { c.TriggerColliderColor = triggerCollider; });
+			Services.Configuration.Update(c => { c.TriggerColliderColor = triggerCollider; });
 
 			if (GUILayout.Button("Reset to default", GUILayout.MaxWidth(200)))
 			{
 				triggerCollider = new Color(0.0f, 1f, 0.0f, 0.8f);
-				MultiTool.Configuration.Update(c => { c.TriggerColliderColor = triggerCollider; });
+				Services.Configuration.Update(c => { c.TriggerColliderColor = triggerCollider; });
 			}
 
 			GUILayout.Label("Interior collider colour");
 
-			Color interiorCollider = MultiTool.Configuration.Config.InteriorColliderColor;
+			Color interiorCollider = Services.Configuration.Config.InteriorColliderColor;
 
 			interiorCollider = Colour.RenderColourSliders(settingsWidth / 2, interiorCollider, true);
-			MultiTool.Configuration.Update(c => { c.InteriorColliderColor = interiorCollider; });
+			Services.Configuration.Update(c => { c.InteriorColliderColor = interiorCollider; });
 
 			if (GUILayout.Button("Reset to default", GUILayout.MaxWidth(200)))
 			{
 				interiorCollider = new Color(0f, 0f, 1f, 0.8f);
-				MultiTool.Configuration.Update(c => { c.InteriorColliderColor = interiorCollider; });
+				Services.Configuration.Update(c => { c.InteriorColliderColor = interiorCollider; });
 			}
 			GUILayout.Space(10);
 

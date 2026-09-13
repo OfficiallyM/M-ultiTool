@@ -138,7 +138,7 @@ namespace MultiTool.UI
 			_activeTheme = theme;
 
 			// Save in config.
-			MultiTool.Configuration.Update(c => { c.Theme = _activeTheme.Name; });
+			MultiTool.Context.Configuration.Update(c => { c.Theme = _activeTheme.Name; });
 
 			_skin = CreateSkinForTheme(_activeTheme);
 		}
@@ -511,12 +511,12 @@ namespace MultiTool.UI
 		/// </summary>
 		private static void LoadSelectedTheme()
 		{
-			string name = MultiTool.Configuration.Config.Theme;
+			string name = MultiTool.Context.Configuration.Config.Theme;
 			Theme theme = _themes.GetByName(name);
 			// Selected theme doesn't exist, fallback to greyscale.
 			if (theme == null)
 			{
-				MultiTool.Configuration.Update(c => { c.Theme = "Greyscale"; });
+				MultiTool.Context.Configuration.Update(c => { c.Theme = "Greyscale"; });
 				theme = _themes.GetByName("Greyscale");
 			}
 

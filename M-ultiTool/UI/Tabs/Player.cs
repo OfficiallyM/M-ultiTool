@@ -403,7 +403,7 @@ namespace MultiTool.UI.Tabs
 
 			GUILayout.Label("Teleporting", "LabelHeader");
 
-			if (GUILayout.Button(Accessibility.GetAccessibleString("Click to teleport", activePlayerData.ClickTeleport) + $"\n(Press {MultiTool.Binds.GetPrettyName((int)Keybinds.Inputs.action1)})", "ButtonPrimaryWrap", GUILayout.MaxWidth(200)))
+			if (GUILayout.Button(Accessibility.GetAccessibleString("Click to teleport", activePlayerData.ClickTeleport) + $"\n(Press {Services.Keybinds.GetPrettyName((int)Keybinds.Inputs.action1)})", "ButtonPrimaryWrap", GUILayout.MaxWidth(200)))
 			{
 				activePlayerData.ClickTeleport = !activePlayerData.ClickTeleport;
 				update = true;
@@ -487,7 +487,7 @@ namespace MultiTool.UI.Tabs
 			// Click to teleport.
 			if (activePlayerData.ClickTeleport &&
 				!MultiTool.Renderer.Show &&
-				Input.GetKeyDown(MultiTool.Binds.GetKeyByAction((int)Keybinds.Inputs.action1).AssignedKey) &&
+				Input.GetKeyDown(Services.Keybinds.GetKeyByAction((int)Keybinds.Inputs.action1).AssignedKey) &&
 				Physics.Raycast(player.Cam.transform.position + player.Cam.transform.forward, player.Cam.transform.forward, out RaycastHit hitInfo, float.PositiveInfinity)
 			)
 				GameUtilities.TeleportPlayerWithParent(hitInfo.point + Vector3.up * 2f);
