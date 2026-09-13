@@ -29,8 +29,8 @@ namespace MultiTool.UI
 
 			try
 			{
-				if (MultiTool.Configuration.Config.Palette.Count > 0)
-					_palette = MultiTool.Configuration.Config.Palette;
+				if (MultiTool.Context.Configuration.Config.Palette.Count > 0)
+					_palette = MultiTool.Context.Configuration.Config.Palette;
 				PopulatePaletteCache();
 			}
 			catch (Exception ex)
@@ -151,7 +151,7 @@ namespace MultiTool.UI
 
 								// Update palette index colour.
 								_palette[index] = selectedColour;
-								MultiTool.Configuration.Update(c => { c.Palette = _palette; });
+								MultiTool.Context.Configuration.Update(c => { c.Palette = _palette; });
 
 								// Update texture cache.
 								UpdateCacheIndex(index, selectedColour);

@@ -165,8 +165,8 @@ namespace MultiTool.UI
 		private static void LoadFromConfig()
 		{
 			if (_hasLoadedFromConfig) return;
-			_accessibilityMode = (AccessibilityMode)MultiTool.Configuration.Config.Accessibility;
-			_doesAffectColors = MultiTool.Configuration.Config.AccessibilityModeAffectsColor;
+			_accessibilityMode = (AccessibilityMode)MultiTool.Context.Configuration.Config.Accessibility;
+			_doesAffectColors = MultiTool.Context.Configuration.Config.AccessibilityModeAffectsColor;
 			_hasLoadedFromConfig = true;
 		}
 	}
