@@ -25,6 +25,7 @@ namespace MultiTool.Save
 
 		private static readonly JsonSerializerSettings _settings = new JsonSerializerSettings
 		{
+			ReferenceLoopHandling = ReferenceLoopHandling.Ignore,
 			NullValueHandling = NullValueHandling.Ignore,
 			TypeNameHandling = TypeNameHandling.Auto,
 			SerializationBinder = new SaveSerializationBinder(),
