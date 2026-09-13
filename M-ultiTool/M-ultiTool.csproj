@@ -38,6 +38,9 @@
     <Reference Include="UnityEngine.JSONSerializeModule">
       <HintPath>C:/Program Files (x86)\Steam\SteamApps\common\The Long Drive\TheLongDrive_Data\Managed\UnityEngine.JSONSerializeModule.dll</HintPath>
     </Reference>
+    <Reference Include="UnityEngine.ParticleSystemModule">
+      <HintPath>C:\Program Files (x86)\Steam\steamapps\common\The Long Drive\TheLongDrive_Data\Managed\UnityEngine.ParticleSystemModule.dll</HintPath>
+    </Reference>
     <Reference Include="UnityEngine.PhysicsModule">
       <HintPath>C:/Program Files (x86)\Steam\SteamApps\common\The Long Drive\TheLongDrive_Data\Managed\UnityEngine.PhysicsModule.dll</HintPath>
     </Reference>

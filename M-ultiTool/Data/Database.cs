@@ -65,13 +65,15 @@ namespace MultiTool.Data
 
 			// Second passes over loaded data to trigger thumbnail generation.
 			foreach (var vehicle in Vehicles)
-				vehicle.Thumbnail = ThumbnailGenerator.GetThumbnail(vehicle.GameObject, t => vehicle.Thumbnail = t, vehicle.Variant);
+				vehicle.Thumbnail = ThumbnailGenerator.GetThumbnail(vehicle.GameObject, t => vehicle.Thumbnail = t, vehicle.Variant, ThumbnailGenerator.ThumbnailType.Vehicle);
 
 			foreach (var item in Items)
 				item.Thumbnail = ThumbnailGenerator.GetThumbnail(item.GameObject, t => item.Thumbnail = t);
 
 			foreach (var poi in Pois)
-				poi.Thumbnail = ThumbnailGenerator.GetThumbnail(poi.Obj, t => poi.Thumbnail = t, POI: true);
+				poi.Thumbnail = ThumbnailGenerator.GetThumbnail(poi.Obj, t => poi.Thumbnail = t, type: ThumbnailGenerator.ThumbnailType.Poi);
+
+			ThumbnailGenerator.TriggerProcessing();
 		}
 
 		public List<string> GetCategories()
@@ -110,7 +112,6 @@ namespace MultiTool.Data
 							Item vehicle = new Item()
 							{
 								Name = _services.Translator.T($"vehicle.{gameObject.name.ToKey()}", gameObject.name),
-								Variant = -1,
 								GameObject = gameObject,
 							};
 							Vehicles.Add(vehicle);
