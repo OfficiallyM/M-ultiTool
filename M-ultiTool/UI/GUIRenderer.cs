@@ -100,6 +100,24 @@ namespace MultiTool.UI
 						MainMenu();
 					}
 				}
+
+				if (ThumbnailGenerator.IsProcessing && !mainscript.M.menu.Menu.activeSelf)
+				{
+					GUILayout.BeginArea(new Rect(0, 0, Screen.width, Screen.height));
+					GUILayout.BeginVertical();
+					GUILayout.Space(Screen.height * 0.1f);
+					GUILayout.BeginHorizontal();
+					GUILayout.FlexibleSpace();
+					GUILayout.BeginVertical("box");
+					GUILayout.Label("M-ultiTool", "LabelMessage");
+					GUILayout.Space(10);
+					GUILayout.Label("Generating thumbnails, please wait...", "LabelMessage");
+					GUILayout.EndVertical();
+					GUILayout.FlexibleSpace();
+					GUILayout.EndHorizontal();
+					GUILayout.EndVertical();
+					GUILayout.EndArea();
+				}
 			}
 			// Main menu.
 			else

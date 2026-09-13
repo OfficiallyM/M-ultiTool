@@ -53,7 +53,7 @@ namespace MultiTool.Extensions
 			=> s.Replace("(Clone)", string.Empty);
 
 		/// <summary>
-		/// Converts a string to a key format by removing "(Clone)", converting to lowercase, and replacing spaces with underscores.
+		/// Converts a string to a key format by removing "(Clone)", converting to lowercase, and replacing spaces and slashes with underscores.
 		/// </summary>
 		/// <param name="s">String to convert to key format</param>
 		/// <returns>String formatted as a key</returns>
@@ -62,7 +62,9 @@ namespace MultiTool.Extensions
 			return s
 				.Prettify()
 				.ToLowerInvariant()
-				.Replace(" ", "_");
+				.Replace(" ", "_")
+				.Replace("/", "_")
+				.Replace("\\", "_");
 		}
 
 		/// <summary>

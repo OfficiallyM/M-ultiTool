@@ -1,4 +1,5 @@
-﻿using MultiTool.Services;
+﻿using MultiTool.Extensions;
+using MultiTool.Services;
 using MultiTool.Utilities;
 using System;
 using System.Collections;
@@ -6,17 +7,26 @@ using System.Collections.Generic;
 using System.IO;
 using TLDLoader;
 using UnityEngine;
+using Logger = MultiTool.Services.Logger;
 
 namespace MultiTool.Data
 {
 	internal static class ThumbnailGenerator
 	{
 		private static ServiceContext _services;
+
+		public enum ThumbnailType
+		{
+			Item,
+			Vehicle,
+			Poi,
+		} 
+
 		private struct PendingThumbnail
 		{
 			public GameObject GameObject;
 			public int? Variant;
-			public bool POI;
+			public ThumbnailType Type;
 			public Action<Texture2D> OnGenerated;
 		}
 
@@ -24,9 +34,10 @@ namespace MultiTool.Data
 
 		private static readonly Queue<PendingThumbnail> _pending = new Queue<PendingThumbnail>();
 		private static Runner _runner;
-		private static bool _isProcessing = false;
-		private const int _perFrame = 2;
+		private const int _perFrame = 10;
 		private static string _cacheDir = null;
+
+		public static bool IsProcessing = false;
 
 		public static void Bootstrap(ServiceContext services)
 		{
@@ -55,12 +66,12 @@ namespace MultiTool.Data
 		/// <param name="item">The GameObject to generate a thumbnail for.</param>
 		/// <param name="onGenerated">Callback invoked when the thumbnail generation completes, receiving the generated Texture2D.</param>
 		/// <param name="variant">Optional variant identifier used to differentiate cached thumbnails for the same item. If null, the cache key uses only the item name.</param>
-		/// <param name="POI">If true, indicates this is a Point of Interest thumbnail; otherwise, false.</param>
+		/// <param name="type">Specifies which item type the thumbnail is for.</param>
 		/// <returns>
 		/// A Texture2D containing the cached thumbnail if available; otherwise, null.
 		/// The actual generated texture is provided asynchronously via the <paramref name="onGenerated"/> callback.
 		/// </returns>
-		public static Texture2D GetThumbnail(GameObject item, Action<Texture2D> onGenerated, int? variant = null, bool POI = false)
+		public static Texture2D GetThumbnail(GameObject item, Action<Texture2D> onGenerated, int? variant = null, ThumbnailType type = ThumbnailType.Item)
 		{
 			string path = Path.Combine(_cacheDir, CacheFileName(item.name, variant));
 			if (File.Exists(path))
@@ -71,15 +82,15 @@ namespace MultiTool.Data
 				return texture2D;
 			}
 
-			_pending.Enqueue(new PendingThumbnail { GameObject = item, Variant = variant, POI = POI, OnGenerated = onGenerated });
-			EnsureProcessing();
+			_pending.Enqueue(new PendingThumbnail { GameObject = item, Variant = variant, Type = type, OnGenerated = onGenerated });
 			return null;
 		}
 
-		private static void EnsureProcessing()
+		public static void TriggerProcessing()
 		{
-			if (_isProcessing) return;
-			_isProcessing = true;
+			if (IsProcessing) return;
+			if (_pending.Count == 0) return;
+			IsProcessing = true;
 
 			if (_runner == null)
 			{
@@ -91,21 +102,24 @@ namespace MultiTool.Data
 			_runner.StartCoroutine(ProcessQueue());
 		}
 
-		private static Texture2D GenerateThumbnail(GameObject item, int? variant = null, bool POI = false)
+		private static Texture2D GenerateThumbnail(PendingThumbnail pending)
 		{
-			GameObject gameObject = new GameObject("THUMBNAIL GENERATOR FOR " + item.name.ToUpper());
-			gameObject.transform.position = new Vector3(UnityEngine.Random.Range(-200f, 200f), UnityEngine.Random.Range(-1000f, -9999f), UnityEngine.Random.Range(-200f, 200f));
-			gameObject.layer = 1;
-			gameObject.SetActive(false);
-			GameObject gameObject2 = UnityEngine.Object.Instantiate(item, gameObject.transform, false);
+			GameObject root = new GameObject("THUMBNAIL GENERATOR FOR " + pending.GameObject.name.ToUpper());
+			root.transform.position = new Vector3(UnityEngine.Random.Range(-200f, 200f), UnityEngine.Random.Range(-200f, -1000f), UnityEngine.Random.Range(-200f, 200f));
+			root.layer = 1;
+			root.SetActive(false);
+			GameObject instance = UnityEngine.Object.Instantiate(pending.GameObject, root.transform, false);
+			string pendingName = pending.GameObject.name.ToLowerInvariant();
+			instance.transform.localPosition = Vector3.zero;
+			instance.layer = root.layer;
 
 			// Change model variant.
-			if (variant != null)
+			if (pending.Variant != null)
 			{
-				randomTypeSelector component = item.GetComponent<randomTypeSelector>();
+				randomTypeSelector component = pending.GameObject.GetComponent<randomTypeSelector>();
 				if (component != null)
 				{
-					component.rtipus = variant.Value;
+					component.rtipus = pending.Variant.Value;
 					component.started = true;
 					component.Refresh();
 				}
@@ -114,48 +128,94 @@ namespace MultiTool.Data
 			// Render all thumbnails in pristine and in white.
 			try
 			{
-				partconditionscript condition = gameObject2.GetComponent<partconditionscript>();
+				partconditionscript condition = instance.GetComponent<partconditionscript>();
 				if (condition != null)
 					GameUtilities.SetConditionAndPaint(0, Color.white, condition);
 			}
 			catch { }
 
-			gameObject2.transform.SetParent(gameObject.transform, false);
-			gameObject2.transform.localPosition = Vector3.zero;
-			gameObject2.layer = gameObject.layer;
+			// Ensure the object doesn't spawn any other cameras to conflict
+			// with ours.
+			try
+			{
+				foreach (var existingCamera in instance.GetComponentsInChildren<Camera>())
+				{
+					UnityEngine.Object.Destroy(existingCamera);
+				}
+			}
+			catch { }
 
-			object obj = null;
-			float num = 0.001f;
+			// Rotate left doors and gauges 180 degrees to face the camera.
+			if (pendingName.Contains("ldoor") || pending.GameObject.GetComponent<meterscript>() != null)
+			{
+				Vector3 angle = instance.transform.localEulerAngles;
+				angle.y = 180f;
+				instance.transform.localEulerAngles = angle;
+			}
 
+			Bounds? bounds = null;
 			try
 			{
 				Material material = null;
-				foreach (Renderer renderer in gameObject2.GetComponentsInChildren<Renderer>(true))
+				foreach (Renderer renderer in instance.GetComponentsInChildren<Renderer>(true))
 				{
 					try
 					{
 						if (renderer.gameObject.layer == 18)
 						{
 							renderer.gameObject.SetActive(renderer.enabled = false);
+							continue;
 						}
+
+						// Particle systems aren't body geometry and can report a bounds at
+						// world origin so exclude them.
+						if (renderer is ParticleSystemRenderer)
+							continue;
+
+						// Guard against any other renderer reporting a zero-size bounds.
+						if (renderer.bounds.size == Vector3.zero)
+							continue;
+
+						if (pending.Type == ThumbnailType.Poi)
+						{
+							// Skip ropes as they produce unusual boundaries.
+							if (renderer.name.ToLowerInvariant() == "rope")
+								continue;
+
+							// Hide white circles from below buildings.
+							if (renderer.name.ToLowerInvariant().Contains("helppos"))
+							{
+								renderer.enabled = false;
+								continue;
+							}
+						}
+						else
+						{
+							// Hide weird collider renderers from some vehicles.
+							if (GameUtilities.IsVehicleOrTrailer(pending.GameObject) && renderer.gameObject.GetComponent<Collider>() != null)
+								renderer.enabled = false;
+						}
+
+						// Reject any renderers that are implausibly far away.
+						float distanceFromRoot = Vector3.Distance(renderer.bounds.center, instance.transform.position);
+						if (distanceFromRoot > 500f)
+							continue;
+
 						if (renderer.material == null && material != null)
-						{
 							renderer.material = material;
-						}
 						else
-						{
 							material = renderer.material;
-						}
-						renderer.gameObject.layer = gameObject.layer;
-						if (obj == null)
+						renderer.gameObject.layer = root.layer;
+						if (bounds == null)
 						{
-							obj = new Bounds(renderer.bounds.center, renderer.bounds.size);
+							bounds = renderer.bounds;
 						}
 						else
 						{
-							((Bounds)obj).Encapsulate(renderer.bounds);
+							Bounds expanded = bounds.Value;
+							expanded.Encapsulate(renderer.bounds);
+							bounds = expanded;
 						}
-						num = Mathf.Max(num, renderer.bounds.size.magnitude);
 					}
 					catch
 					{
@@ -165,74 +225,53 @@ namespace MultiTool.Data
 			catch
 			{
 			}
-			try
-			{
-				foreach (MonoBehaviour monoBehaviour in gameObject2.GetComponentsInChildren<MonoBehaviour>(true))
-				{
-					if (Array.IndexOf(new Type[]
-					{
-						typeof(Transform),
-						typeof(Renderer),
-						typeof(MeshRenderer),
-						typeof(SkinnedMeshRenderer),
-						typeof(MeshFilter)
-					}, monoBehaviour.GetType()) == -1)
-					{
-						monoBehaviour.enabled = false;
-					}
-					UnityEngine.Object.Destroy(monoBehaviour.gameObject);
-				}
-			}
-			catch
-			{
-			}
+
 			Camera camera = new GameObject("CAMERA").AddComponent<Camera>();
-			camera.gameObject.layer = gameObject.layer;
-			camera.transform.SetParent(gameObject.transform, false);
-			camera.transform.localPosition = new Vector3(1f, 1f, 1f) * num;
-			if (obj == null)
-			{
-				camera.transform.LookAt(gameObject2.transform.position);
-				num = 1f;
-			}
-			else
-			{
-				camera.transform.LookAt((num >= ((Bounds)obj).size.magnitude + 1f) ? gameObject2.transform.position : ((Bounds)obj).center);
-				num = Mathf.Max(((Bounds)obj).size.magnitude, num * 1.5f);
-			}
-			camera.farClipPlane = Mathf.Max(10f, num * 1.5f);
-			camera.nearClipPlane = 0.0001f;
+			camera.gameObject.AddComponent<Light>().type = LightType.Directional;
+			camera.gameObject.layer = root.layer;
 			camera.clearFlags = CameraClearFlags.Color;
 			camera.backgroundColor = Color.clear;
-			camera.orthographic = true;
-			camera.orthographicSize = num / 3f;
-			camera.gameObject.AddComponent<Light>().type = LightType.Directional;
+			camera.fieldOfView = 30f;
+			camera.aspect = 1f;
+			camera.cullingMask = 1 << root.layer;
+
+			var direction = new Vector3(1f, -0.3f, -1f).normalized;
+			Vector3 lookTarget = bounds?.center ?? instance.transform.position;
+			float extentMagnitude = Mathf.Max(bounds?.extents.magnitude ?? 1f, 0.1f);
+			float distance = extentMagnitude / Mathf.Tan(camera.fieldOfView * 0.5f * Mathf.Deg2Rad);
+
+			camera.transform.position = lookTarget - direction * distance;
+			camera.transform.LookAt(lookTarget);
+			camera.nearClipPlane = 0.0001f;
+			camera.farClipPlane = distance * 3f;
+			camera.transform.SetParent(instance.transform, true);
+
 			RenderTexture renderTexture = new RenderTexture(200, 200, 16);
 			camera.forceIntoRenderTexture = true;
 			camera.targetTexture = renderTexture;
-			gameObject.SetActive(true);
+			root.SetActive(true);
 			camera.Render();
 			RenderTexture active = RenderTexture.active;
 			RenderTexture.active = renderTexture;
 			Texture2D texture2D = new Texture2D(renderTexture.width, renderTexture.height);
-			texture2D.ReadPixels(new Rect(0f, 0f, (float)texture2D.width, (float)texture2D.height), 0, 0);
+			texture2D.ReadPixels(new Rect(0f, 0f, texture2D.width, texture2D.height), 0, 0);
 			texture2D.Apply();
 			RenderTexture.active = active;
-			gameObject.SetActive(false);
-			gameObject2.SetActive(false);
+
+			root.SetActive(false);
+			instance.SetActive(false);
 			UnityEngine.Object.Destroy(renderTexture);
-			UnityEngine.Object.Destroy(gameObject);
-			UnityEngine.Object.Destroy(gameObject2);
+			UnityEngine.Object.Destroy(root);
+			UnityEngine.Object.Destroy(instance);
 
 			// Write texture to cache.
-			File.WriteAllBytes(Path.Combine(_cacheDir, CacheFileName(item.name, variant)), texture2D.EncodeToPNG());
+			File.WriteAllBytes(Path.Combine(_cacheDir, CacheFileName(pending.GameObject.name, pending.Variant)), texture2D.EncodeToPNG());
 
 			return texture2D;
 		}
 
 		private static IEnumerator ProcessQueue()
 		{
-			int total = _pending.Count;
 			try
 			{
 				while (_pending.Count > 0)
@@ -243,20 +282,12 @@ namespace MultiTool.Data
 						Texture2D texture = null;
 						try
 						{
-							texture = GenerateThumbnail(next.GameObject, next.Variant, next.POI);
-						}
-						catch (Exception ex)
-						{
-							Services.Logger.Log($"Thumbnail generation failed for {next.GameObject?.name ?? "Unknown"} - {ex}", Services.Logger.LogLevel.Error);
-						}
-
-						try
-						{
+							texture = GenerateThumbnail(next);
 							next.OnGenerated?.Invoke(texture);
 						}
 						catch (Exception ex)
 						{
-							Services.Logger.Log($"Thumbnail callback failed for {next.GameObject?.name ?? "Unknown"} - {ex}", Services.Logger.LogLevel.Error);
+							Logger.Log($"Thumbnail generation failed for {next.GameObject?.name ?? "Unknown"} - {ex}", Logger.LogLevel.Error);
 						}
 					}
 					yield return null;
@@ -264,23 +295,18 @@ namespace MultiTool.Data
 			}
 			finally
 			{
-				Services.Logger.Log($"Thumbnail generation complete ({total} generated)");
-				_isProcessing = false;
+				IsProcessing = false;
 			}
-		}
-
-		private static string FormatName(string name)
-		{
-			return name.ToUpper().Replace("/", "or");
 		}
 
 		private static string CacheFileName(string name, int? variant = null)
 		{
-			string fileName = FormatName(name);
+			name = name.Trim();
 			if (variant != null)
-				fileName += $"-{variant.Value - 1}";
-			fileName += ".png";
-			return fileName;
+				name += $"_{variant.Value}";
+			name = name.ToKey();
+			name += ".png";
+			return name;
 		}
 	}
 }
