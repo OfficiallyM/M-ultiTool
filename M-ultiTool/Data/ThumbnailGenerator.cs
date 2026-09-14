@@ -34,7 +34,7 @@ namespace MultiTool.Data
 
 		private static readonly Queue<PendingThumbnail> _pending = new Queue<PendingThumbnail>();
 		private static Runner _runner;
-		private const int _perFrame = 10;
+		private const int PerFrame = 10;
 		private static string _cacheDir = null;
 
 		public static bool IsProcessing = false;
@@ -276,7 +276,7 @@ namespace MultiTool.Data
 			{
 				while (_pending.Count > 0)
 				{
-					for (int i = 0; i < _perFrame && _pending.Count > 0; i++)
+					for (int i = 0; i < PerFrame && _pending.Count > 0; i++)
 					{
 						PendingThumbnail next = _pending.Dequeue();
 						Texture2D texture = null;

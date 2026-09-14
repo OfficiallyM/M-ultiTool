@@ -21,7 +21,7 @@ namespace MultiTool.Save
 		private static float _lastFlushTime;
 
 		// How long to let writes batch up before actually serializing and hitting the save plate.
-		private const float _flushIntervalSeconds = 2f;
+		private const float FlushIntervalSeconds = 2f;
 
 		private static readonly JsonSerializerSettings _settings = new JsonSerializerSettings
 		{
@@ -61,7 +61,7 @@ namespace MultiTool.Save
 		public static void Tick()
 		{
 			if (!_dirty) return;
-			if (Time.unscaledTime - _lastFlushTime < _flushIntervalSeconds) return;
+			if (Time.unscaledTime - _lastFlushTime < FlushIntervalSeconds) return;
 
 			Flush();
 		}
