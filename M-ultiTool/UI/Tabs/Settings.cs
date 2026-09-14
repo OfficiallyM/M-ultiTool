@@ -46,6 +46,7 @@ namespace MultiTool.UI.Tabs
 
 			GUILayout.Space(20);
 
+			GUILayout.Label("Theming", "LabelHeader");
 			GUILayout.Label("Theme select");
 			foreach (string themeName in Styling.GetThemeNames())
 			{
@@ -107,8 +108,9 @@ namespace MultiTool.UI.Tabs
 				Styling.Import(_themeImport);
 				_themeImport = null;
 			}
-			GUILayout.Space(10);
+			GUILayout.Space(20);
 
+			GUILayout.Label("Noclip", "LabelHeader");
 			GUILayout.Label("Noclip speed increase factor:");
 			float factor = GUILayout.HorizontalSlider(_noclipSpeedFactor, 2f, 100f);
 			factor = Mathf.Round(factor);
@@ -118,7 +120,9 @@ namespace MultiTool.UI.Tabs
 				Services.Configuration.Update(c => { c.NoclipFastMoveFactor = _noclipSpeedFactor; });
 			}
 			GUILayout.Label(_noclipSpeedFactor.ToString());
+			GUILayout.Space(20);
 
+			GUILayout.Label("Accessibility", "LabelHeader");
 			if (GUILayout.Button("Accessibility mode", GUILayout.MaxWidth(200)))
 				_accessibilityShow = !_accessibilityShow;
 
@@ -143,11 +147,11 @@ namespace MultiTool.UI.Tabs
 				Accessibility.SetDoesAffectColors(doesAffectColors);
 				Services.Configuration.Update(c => { c.AccessibilityModeAffectsColor = doesAffectColors; });
 			}
+			GUILayout.Space(20);
 
+			GUILayout.Label("Visual collider colours", "LabelHeader");
 			GUILayout.Label("Basic collider colour");
-
 			Color basicCollider = Services.Configuration.Config.BasicColliderColor;
-
 			basicCollider = Colour.RenderColourSliders(settingsWidth / 2, basicCollider, true);
 			Services.Configuration.Update(c => { c.BasicColliderColor = basicCollider; });
 
@@ -158,9 +162,7 @@ namespace MultiTool.UI.Tabs
 			}
 
 			GUILayout.Label("Trigger collider colour");
-
 			Color triggerCollider = Services.Configuration.Config.TriggerColliderColor;
-
 			triggerCollider = Colour.RenderColourSliders(settingsWidth / 2, triggerCollider, true);
 			Services.Configuration.Update(c => { c.TriggerColliderColor = triggerCollider; });
 
@@ -171,9 +173,7 @@ namespace MultiTool.UI.Tabs
 			}
 
 			GUILayout.Label("Interior collider colour");
-
 			Color interiorCollider = Services.Configuration.Config.InteriorColliderColor;
-
 			interiorCollider = Colour.RenderColourSliders(settingsWidth / 2, interiorCollider, true);
 			Services.Configuration.Update(c => { c.InteriorColliderColor = interiorCollider; });
 
@@ -182,8 +182,9 @@ namespace MultiTool.UI.Tabs
 				interiorCollider = new Color(0f, 0f, 1f, 0.8f);
 				Services.Configuration.Update(c => { c.InteriorColliderColor = interiorCollider; });
 			}
-			GUILayout.Space(10);
+			GUILayout.Space(20);
 
+			GUILayout.Label("Debugging", "LabelHeader");
 			if (GUILayout.Button("Go to mod debug", GUILayout.MaxWidth(200)))
 				GUIRenderer.Tabs.SetActive(MultiTool.Renderer.DebugTabId, false);
 
