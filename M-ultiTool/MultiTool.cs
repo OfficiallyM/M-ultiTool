@@ -1,5 +1,4 @@
-﻿using MultiTool.Config;
-using MultiTool.Data;
+﻿using MultiTool.Data;
 using MultiTool.Save;
 using MultiTool.Services;
 using MultiTool.Tools;
