@@ -45,6 +45,7 @@ namespace MultiTool.Tools
 			if (MultiTool.Renderer.Show) return;
 
 			tosaveitemscript selectedObject = null;
+			bool updateSelected = false;
 			if (_processObjectSelection)
 			{
 				if (Input.GetKeyDown(_services.Keybinds.GetKeyByAction((int)Keybinds.Inputs.action1).AssignedKey))
@@ -65,13 +66,14 @@ namespace MultiTool.Tools
 					{
 						selectedObject = null;
 					}
+					updateSelected = true;
 				}
 			}
 
 			foreach (var tool in _processingTools)
 			{
 				if (tool.IsDisabled) continue;
-				if (tool.UsesObjectSelection)
+				if (tool.UsesObjectSelection && updateSelected)
 					tool.SelectedObject = selectedObject;
 
 				try

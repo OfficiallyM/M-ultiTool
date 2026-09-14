@@ -96,7 +96,7 @@ namespace MultiTool.Tools
 			bool update = false;
 
 			Vector3 scale = SelectedObject.transform.localScale;
-			Vector3 defaultScale = SaveRepository.Get<ScaleRecord>(r => r.ID == SelectedObject.idInSave)?.DefaultScale ?? Vector3.one;
+			Vector3 defaultScale = SaveRepository.Get<ScaleRecord>(r => r.ID == SelectedObject.idInSave)?.DefaultScale ?? SelectedObject.transform.localScale;
 
 			// Scale up.
 			bool scaleUp = Input.GetKey(Services.Keybinds.GetKeyByAction((int)Keybinds.Inputs.up).AssignedKey);
@@ -155,22 +155,21 @@ namespace MultiTool.Tools
 			// Reset scale to default.
 			if (Input.GetKeyDown(Services.Keybinds.GetKeyByAction((int)Keybinds.Inputs.action4).AssignedKey))
 			{
-				// TODO: Store default scale after refactoring save system. For now, assume it's 1.
 				switch (_axis)
 				{
 					case "all":
-						SelectedObject.transform.localScale = new Vector3(1, 1, 1);
+						SelectedObject.transform.localScale = defaultScale;
 						break;
 					case "x":
-						scale.x = 1;
+						scale.x = defaultScale.x;
 						SelectedObject.transform.localScale = scale;
 						break;
 					case "y":
-						scale.y = 1;
+						scale.y = defaultScale.y;
 						SelectedObject.transform.localScale = scale;
 						break;
 					case "z":
-						scale.z = 1;
+						scale.z = defaultScale.z;
 						SelectedObject.transform.localScale = scale;
 						break;
 				}
