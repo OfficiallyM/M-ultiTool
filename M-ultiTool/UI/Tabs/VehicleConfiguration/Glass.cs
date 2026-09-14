@@ -13,6 +13,7 @@ namespace MultiTool.UI.Tabs.VehicleConfiguration
 
 		private Vector2 _position;
 		private Color _color;
+		private Color _sunroofColor;
 
 		public override void RenderTab(Rect dimensions)
 		{
@@ -82,23 +83,23 @@ namespace MultiTool.UI.Tabs.VehicleConfiguration
 				{
 					MeshRenderer meshRenderer = outerGlass.GetComponent<MeshRenderer>();
 
-					_color = Colour.RenderColourSliders(dimensions.width / 2, _color, true);
+					_sunroofColor = Colour.RenderColourSliders(dimensions.width / 2, _sunroofColor, true);
 
 					GUILayout.BeginHorizontal();
 					if (GUILayout.Button("Randomise colour", GUILayout.MaxWidth(200)))
 					{
-						_color.r = UnityEngine.Random.Range(0f, 255f) / 255f;
-						_color.g = UnityEngine.Random.Range(0f, 255f) / 255f;
-						_color.b = UnityEngine.Random.Range(0f, 255f) / 255f;
+						_sunroofColor.r = UnityEngine.Random.Range(0f, 255f) / 255f;
+						_sunroofColor.g = UnityEngine.Random.Range(0f, 255f) / 255f;
+						_sunroofColor.b = UnityEngine.Random.Range(0f, 255f) / 255f;
 					}
 
 					GUILayout.Space(10);
 
 					if (GUILayout.Button("Apply", GUILayout.MaxWidth(200)))
 					{
-						meshRenderer.material.color = _color;
+						meshRenderer.material.color = _sunroofColor;
 
-						GlassRecord record = new GlassRecord { ID = save.idInSave, Color = _color, Type = "sunroof" };
+						GlassRecord record = new GlassRecord { ID = save.idInSave, Color = _sunroofColor, Type = "sunroof" };
 						SaveRepository.Upsert(record, r => r.ID == record.ID && r.Type == record.Type);
 					}
 					GUILayout.EndHorizontal();
