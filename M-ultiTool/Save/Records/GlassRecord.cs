@@ -52,10 +52,19 @@ namespace MultiTool.Save.Records
 						GameObject car = save.gameObject;
 						Transform sunRoofSlot = car.transform.FindRecursive("SunRoofSlot");
 						Transform outerGlass = sunRoofSlot.FindRecursive("sunroof outer glass", exact: false);
+						Transform innerGlass = sunRoofSlot.FindRecursive("sunroof inner glass", exact: false);
 						if (outerGlass != null)
 						{
 							MeshRenderer meshRenderer = outerGlass.GetComponent<MeshRenderer>();
+							MeshRenderer innerMesh = innerGlass.GetComponent<MeshRenderer>();
 							meshRenderer.material.color = Color;
+
+							if (innerGlass != null && InnerAlpha.HasValue)
+							{
+								Color innerColor = Color;
+								innerColor.a = InnerAlpha.Value;
+								innerMesh.material.color = innerColor;
+							}
 						}
 						break;
 				}

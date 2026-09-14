@@ -14,8 +14,12 @@ namespace MultiTool.UI.Tabs.VehicleConfiguration
 
 		private Vector2 _position;
 		private Color _color;
-		private float _innerGlassAlpha = 0.2f;
+		private float _innerGlassAlpha = 0f;
 		private Color _sunroofColor;
+		private bool _overrideSunroofInner = false;
+		private float _sunroofInnerGlassAlpha = 0f;
+
+		// TODO: Load existing values on vehicle enter.
 
 		public override void RenderTab(Rect dimensions)
 		{
@@ -95,11 +99,45 @@ namespace MultiTool.UI.Tabs.VehicleConfiguration
 				GUILayout.Label("Sunroof settings", "LabelHeader");
 
 				Transform outerGlass = sunRoofSlot.FindRecursive("sunroof outer glass", exact: false);
+				Transform innerGlass = sunRoofSlot.FindRecursive("sunroof inner glass", exact: false);
 				if (outerGlass != null)
 				{
 					MeshRenderer meshRenderer = outerGlass.GetComponent<MeshRenderer>();
+					MeshRenderer innerMeshRenderer = innerGlass.GetComponent<MeshRenderer>();
 
-					_sunroofColor = Colour.RenderColourSliders(dimensions.width / 2, _sunroofColor, true);
+					var newSunroofColor = Colour.RenderColourSliders(dimensions.width / 2, _sunroofColor, true);
+
+					if (innerGlass != null)
+					{
+						GUILayout.Label("Sunroof inner glass", "LabelSubHeader");
+						if (GUILayout.Button(Accessibility.GetAccessibleString("Override inner glass", _overrideSunroofInner), GUILayout.MaxWidth(200)))
+							_overrideSunroofInner = !_overrideSunroofInner;
+						if (_overrideSunroofInner)
+						{
+							if (newSunroofColor.a != _sunroofColor.a)
+							{
+								_sunroofInnerGlassAlpha = newSunroofColor.a;
+								if (newSunroofColor.a > 0.2f)
+									_sunroofInnerGlassAlpha = 0.2f;
+							}
+
+							GUILayout.Label("Alpha:");
+							float sunroofInnerAlpha = GUILayout.HorizontalSlider(_sunroofInnerGlassAlpha * 255, 0, 255);
+							sunroofInnerAlpha = Mathf.Round(sunroofInnerAlpha);
+							bool sunroofInnerAlphaParse = float.TryParse(GUILayout.TextField(sunroofInnerAlpha.ToString()), out sunroofInnerAlpha);
+							if (!sunroofInnerAlphaParse)
+								Logger.Log($"{sunroofInnerAlphaParse} is not a number", Logger.LogLevel.Error);
+							sunroofInnerAlpha = Mathf.Clamp(sunroofInnerAlpha, 0f, 255f);
+							_sunroofInnerGlassAlpha = sunroofInnerAlpha / 255f;
+						}
+					}
+					else
+					{
+						_overrideSunroofInner = false;
+					}
+
+					_sunroofColor = newSunroofColor;
+					GUILayout.Space(10);
 
 					GUILayout.BeginHorizontal();
 					if (GUILayout.Button("Randomise colour", GUILayout.MaxWidth(200)))
@@ -114,8 +152,19 @@ namespace MultiTool.UI.Tabs.VehicleConfiguration
 					if (GUILayout.Button("Apply", GUILayout.MaxWidth(200)))
 					{
 						meshRenderer.material.color = _sunroofColor;
+						if (_overrideSunroofInner)
+						{
+							Color innerColor = _sunroofColor;
+							innerColor.a = _sunroofInnerGlassAlpha;
+							innerMeshRenderer.material.color = innerColor;
+						}
+						else
+						{
+							// Reset to default if apply to inner is disabled.
+							innerMeshRenderer.material.color = new Color(0f, 0f, 0f, 0.9412f);
+						}
 
-						GlassRecord record = new GlassRecord { ID = save.idInSave, Color = _sunroofColor, Type = "sunroof" };
+						GlassRecord record = new GlassRecord { ID = save.idInSave, Color = _sunroofColor, InnerAlpha = _overrideSunroofInner ? (float?)_sunroofInnerGlassAlpha : null, Type = "sunroof" };
 						SaveRepository.Upsert(record, r => r.ID == record.ID && r.Type == record.Type);
 					}
 					GUILayout.EndHorizontal();
