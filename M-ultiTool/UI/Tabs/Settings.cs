@@ -15,13 +15,11 @@ namespace MultiTool.UI.Tabs
 		private Vector2 _position;
 		private string _themeImport;
 		private string _themeExport;
-		private float _scrollWidth;
 		private float _noclipSpeedFactor;
 		private bool _accessibilityShow = false;
 
 		public override void OnRegister()
 		{
-			_scrollWidth = Services.Configuration.Config.ScrollWidth;
 			_noclipSpeedFactor = Services.Configuration.Config.NoclipFastMoveFactor;
 		}
 
@@ -110,24 +108,6 @@ namespace MultiTool.UI.Tabs
 				_themeImport = null;
 			}
 			GUILayout.Space(10);
-
-			GUILayout.Label($"Scroll bar width: {_scrollWidth.ToString()}");
-			_scrollWidth = GUILayout.HorizontalSlider(_scrollWidth, 5f, 30f);
-
-			GUILayout.BeginHorizontal();
-			if (GUILayout.Button("Apply", GUILayout.MaxWidth(200)))
-			{
-				Services.Configuration.Update(c => { c.ScrollWidth = _scrollWidth; });
-			}
-
-			GUILayout.Space(10);
-
-			if (GUILayout.Button("Reset", "ButtonSecondary", GUILayout.MaxWidth(200)))
-			{
-				_scrollWidth = 10f;
-				Services.Configuration.Update(c => { c.ScrollWidth = _scrollWidth; });
-			}
-			GUILayout.EndHorizontal();
 
 			GUILayout.Label("Noclip speed increase factor:");
 			float factor = GUILayout.HorizontalSlider(_noclipSpeedFactor, 2f, 100f);

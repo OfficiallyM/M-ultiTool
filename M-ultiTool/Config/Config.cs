@@ -43,9 +43,6 @@ namespace MultiTool.Config
 						Config = new ConfigSerializable
 						{
 							Keybinds = old.Keybinds,
-							ScrollWidth = old.ScrollWidth != 0
-								? old.ScrollWidth
-								: 10f,
 							Accessibility = old.Accessibility,
 							AccessibilityModeAffectsColor = old.AccessibilityModeAffectsColor ?? true,
 							NoclipFastMoveFactor = old.NoclipFastMoveFactor != 0
