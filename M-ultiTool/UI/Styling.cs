@@ -316,10 +316,10 @@ namespace MultiTool.UI
 			_blue = GUIExtensions.ColorTexture(1, 1, new Color(0, 0.38f, 0.77f));
 
 			// Override scrollbar width and height.
-			skin.verticalScrollbar.fixedWidth = MultiTool.Context.Configuration.Config.ScrollWidth;
-			skin.verticalScrollbarThumb.fixedWidth = MultiTool.Context.Configuration.Config.ScrollWidth;
-			skin.horizontalScrollbar.fixedHeight = MultiTool.Context.Configuration.Config.ScrollWidth;
-			skin.horizontalScrollbarThumb.fixedHeight = MultiTool.Context.Configuration.Config.ScrollWidth;
+			skin.verticalScrollbar.fixedWidth = 5f;
+			skin.verticalScrollbarThumb.fixedWidth = 5f;
+			skin.horizontalScrollbar.fixedHeight = 5f;
+			skin.horizontalScrollbarThumb.fixedHeight = 5f;
 
 			// Button styling.
 			_buttonStyle = new GUIStyle(skin.button);

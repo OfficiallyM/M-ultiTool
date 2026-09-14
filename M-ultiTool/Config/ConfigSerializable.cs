@@ -10,7 +10,6 @@ namespace MultiTool.Config
 	{
 		public string Version { get; set; }
 		public List<Key> Keybinds { get; set; } = new List<Key>();
-		public float ScrollWidth { get; set; } = 10f;
 		public int Accessibility { get; set; }
 		public bool AccessibilityModeAffectsColor { get; set; } = true;
 		public float NoclipFastMoveFactor { get; set; } = 10f;
@@ -26,7 +25,6 @@ namespace MultiTool.Config
 	{
 		[DataMember(Name = "version")] public string Version { get; set; }
 		[DataMember(Name = "keybinds")] public List<Key> Keybinds { get; set; }
-		[DataMember(Name = "scrollWidth")] public float ScrollWidth { get; set; }
 		[DataMember(Name = "accessibility")] public int Accessibility { get; set; }
 		[DataMember(Name = "accessibilityModeAffectsColor")] public bool? AccessibilityModeAffectsColor { get; set; }
 		[DataMember(Name = "noclipFastMoveFactor")] public float NoclipFastMoveFactor { get; set; }
