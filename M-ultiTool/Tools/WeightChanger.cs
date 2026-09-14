@@ -119,7 +119,7 @@ namespace MultiTool.Tools
 			bool update = false;
 
 			float currentMass = mass.OwnMass();
-			float defaultMass = SaveRepository.Get<WeightRecord>(r => r.ID == SelectedObject.idInSave)?.DefaultMass ?? 1;
+			float defaultMass = SaveRepository.Get<WeightRecord>(r => r.ID == SelectedObject.idInSave)?.DefaultMass ?? mass.OwnMass();
 
 			// Mass increase.
 			bool massUp = Input.GetKey(Services.Keybinds.GetKeyByAction((int)Keybinds.Inputs.up).AssignedKey);
