@@ -4,6 +4,7 @@ using MultiTool.Save.Records;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using Logger = MultiTool.Services.Logger;
 
 namespace MultiTool.UI.Tabs.VehicleConfiguration
 {
@@ -13,6 +14,7 @@ namespace MultiTool.UI.Tabs.VehicleConfiguration
 
 		private Vector2 _position;
 		private Color _color;
+		private float _innerGlassAlpha = 0.2f;
 		private Color _sunroofColor;
 
 		public override void RenderTab(Rect dimensions)
@@ -27,7 +29,25 @@ namespace MultiTool.UI.Tabs.VehicleConfiguration
 
 			GUILayout.Label("Window settings", "LabelHeader");
 
-			_color = Colour.RenderColourSliders(dimensions.width / 2, _color, true);
+			Color newColor = Colour.RenderColourSliders(dimensions.width / 2, _color, true);
+			if (newColor.a != _color.a)
+			{
+				_innerGlassAlpha = newColor.a;
+				if (newColor.a > 0.2f)
+					_innerGlassAlpha = 0.2f;
+			}
+			_color = newColor;
+
+			// Alpha.
+			GUILayout.Label("Inner glass alpha", "LabelSubHeader");
+			GUILayout.Label("Alpha:");
+			float alpha = GUILayout.HorizontalSlider(_innerGlassAlpha * 255, 0, 255);
+			alpha = Mathf.Round(alpha);
+			bool alphaParse = float.TryParse(GUILayout.TextField(alpha.ToString()), out alpha);
+			if (!alphaParse)
+				Logger.Log($"{alphaParse} is not a number", Logger.LogLevel.Error);
+			alpha = Mathf.Clamp(alpha, 0f, 255f);
+			_innerGlassAlpha = alpha / 255f;
 
 			GUILayout.BeginHorizontal();
 			if (GUILayout.Button("Randomise colour", GUILayout.MaxWidth(200)))
@@ -54,19 +74,15 @@ namespace MultiTool.UI.Tabs.VehicleConfiguration
 							break;
 
 						// Inner glass.
-						// TODO: Add setting for inner glass alpha.
 						case "GlassNoReflection":
-							// Use a more transparent version of the selected colour
-							// for the inner glass to ensure it's still see-through.
 							Color innerColor = _color;
-							if (innerColor.a > 0.2f)
-								innerColor.a = 0.2f;
+							innerColor.a = _innerGlassAlpha;
 							meshRenderer.material.color = innerColor;
 							break;
 					}
 				}
 
-				GlassRecord record = new GlassRecord { ID = save.idInSave, Color = _color, Type = "windows" };
+				GlassRecord record = new GlassRecord { ID = save.idInSave, Color = _color, InnerAlpha = _innerGlassAlpha, Type = "windows" };
 				SaveRepository.Upsert(record, r => r.ID == record.ID && r.Type == record.Type);
 			}
 			GUILayout.EndHorizontal();

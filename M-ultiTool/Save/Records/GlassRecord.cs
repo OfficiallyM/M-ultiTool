@@ -10,6 +10,7 @@ namespace MultiTool.Save.Records
 	internal class GlassRecord : SaveRecord, ISaveApplier
 	{
 		public Color Color { get; set; }
+		public float? InnerAlpha { get; set; }
 		public string Type { get; set; }
 
 		public void Apply(tosaveitemscript save)
@@ -34,10 +35,12 @@ namespace MultiTool.Save.Records
 
 								// Inner glass.
 								case "GlassNoReflection":
+									Color innerColor = Color;
+									if (InnerAlpha.HasValue)
+										innerColor.a = InnerAlpha.Value;
 									// Use a more transparent version of the selected colour
 									// for the inner glass to ensure it's still see-through.
-									Color innerColor = Color;
-									if (innerColor.a > 0.2f)
+									else if (innerColor.a > 0.2f)
 										innerColor.a = 0.2f;
 									meshRenderer.material.color = innerColor;
 									break;
