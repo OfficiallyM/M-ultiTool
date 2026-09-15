@@ -12,14 +12,13 @@ namespace MultiTool.UI.Tabs.VehicleConfiguration
 	{
 		public override string Name => "Glass";
 
+		private int _lastCarId = 0;
 		private Vector2 _position;
 		private Color _color;
 		private float _innerGlassAlpha = 0f;
 		private Color _sunroofColor;
 		private bool _overrideSunroofInner = false;
 		private float _sunroofInnerGlassAlpha = 0f;
-
-		// TODO: Load existing values on vehicle enter.
 
 		public override void RenderTab(Rect dimensions)
 		{
@@ -29,6 +28,28 @@ namespace MultiTool.UI.Tabs.VehicleConfiguration
 
 			carscript car = mainscript.M.player.Car;
 			tosaveitemscript save = car.GetComponent<tosaveitemscript>();
+			if (save.idInSave != _lastCarId)
+			{
+				GlassRecord existingWindow = SaveRepository.Get<GlassRecord>(r => r.ID == save.idInSave && r.Type == "windows");
+				GlassRecord existingSunroof = SaveRepository.Get<GlassRecord>(r => r.ID == save.idInSave && r.Type == "sunroof");
+				if (existingWindow != null)
+				{
+					_color = existingWindow.Color;
+					if (existingWindow.InnerAlpha.HasValue)
+						_innerGlassAlpha = existingWindow.InnerAlpha.Value;
+				}
+				if (existingSunroof != null)
+				{
+					_sunroofColor = existingSunroof.Color;
+					if (existingSunroof.InnerAlpha.HasValue)
+					{
+						_overrideSunroofInner = true;
+						_sunroofInnerGlassAlpha = existingSunroof.InnerAlpha.Value;
+					}
+				}
+				_lastCarId = save.idInSave;
+			}
+
 			Transform sunRoofSlot = car.transform.FindRecursive("SunRoofSlot");
 
 			GUILayout.Label("Window settings", "LabelHeader");
