@@ -1,5 +1,6 @@
 ﻿using MultiTool.Extensions;
 using MultiTool.Save;
+using MultiTool.Save.Records;
 using MultiTool.Services;
 using MultiTool.Tools;
 using MultiTool.UI.Tabs.VehicleConfiguration;
@@ -278,35 +279,6 @@ namespace MultiTool.UI.Tabs
 			GUILayout.EndHorizontal();
 			GUILayout.Space(10);
 
-			// Fire speed.
-			// TODO: Rewrite saving.
-			//if (mainscript.M.player.inHandP != null && mainscript.M.player.inHandP.weapon != null)
-			//{
-			//	tosaveitemscript save = mainscript.M.player.inHandP.weapon.GetComponent<tosaveitemscript>();
-
-			//	if (weaponData != null)
-			//	{
-			//		GUILayout.Label($"Fire rate: {weaponData.fireRate} (Default: {weaponData.defaultFireRate})");
-			//		GUILayout.BeginHorizontal();
-			//		float fireRate = GUILayout.HorizontalSlider(weaponData.fireRate, 0.001f, 0.5f);
-			//		if (GUILayout.Button("Reset", GUILayout.MaxWidth(200)))
-			//		{
-			//			weaponData.fireRate = weaponData.defaultFireRate;
-			//			update = true;
-			//		}
-			//		else
-			//		{
-			//			fireRate = (float)Math.Round(fireRate, 3);
-			//			if (fireRate != weaponData.fireRate)
-			//			{
-			//				weaponData.fireRate = fireRate;
-			//				update = true;
-			//			}
-			//		}
-			//      GUILayout.EndHorizontal();
-			//	}
-			//}
-
 			// Mass.
 			GUILayout.Label($"Mass: {activePlayerData.Mass} (Default: {_defaultPlayerData.Mass})");
 			float.TryParse(GUILayout.TextField(activePlayerData.Mass.ToString(), GUILayout.MaxWidth(200)), out float mass);
@@ -400,6 +372,7 @@ namespace MultiTool.UI.Tabs
 				}
 			}
 			GUILayout.EndHorizontal();
+			GUILayout.Space(10);
 
 			GUILayout.Label("Teleporting", "LabelHeader");
 
@@ -449,6 +422,58 @@ namespace MultiTool.UI.Tabs
 							GameUtilities.TeleportPlayer(transform.position + Vector3.down * 1f, transform.eulerAngles);
 					}
 				}
+			}
+			GUILayout.Space(10);
+
+			GUILayout.Label("Held item settings", "LabelHeader");
+
+			// Fire rate.
+			if (mainscript.M.player.inHandP != null)
+			{
+				var weapon = mainscript.M.player.inHandP?.weapon;
+				var save = weapon?.GetComponent<tosaveitemscript>();
+
+				if (weapon != null && save != null)
+				{
+					bool weaponUpdate = false;
+					var record = SaveRepository.Get<WeaponRecord>(r => r.ID == save.idInSave);
+					var fireRate = record?.FireRate ?? weapon.minShootTime;
+					var defaultFireRate = record?.DefaultFireRate ?? weapon.minShootTime;
+					GUILayout.Label($"Fire rate: {fireRate} (Default: {defaultFireRate}) - Applies to current weapon only");
+					GUILayout.BeginHorizontal();
+					float newFireRate = GUILayout.HorizontalSlider(fireRate, 0.001f, 0.5f);
+					if (GUILayout.Button("Reset", GUILayout.MaxWidth(200)))
+					{
+						fireRate = defaultFireRate;
+						weaponUpdate = true;
+					}
+					else
+					{
+						newFireRate = (float)Math.Round(newFireRate, 3);
+						if (newFireRate != fireRate)
+						{
+							fireRate = newFireRate;
+							weaponUpdate = true;
+						}
+					}
+					GUILayout.EndHorizontal();
+
+					if (weaponUpdate)
+					{
+						weapon.minShootTime = fireRate;
+
+						WeaponRecord newRecord = new WeaponRecord { ID = save.idInSave, FireRate = fireRate, DefaultFireRate = defaultFireRate };
+						SaveRepository.Upsert(newRecord, r => r.ID == newRecord.ID);
+					}
+				}
+				else
+				{
+					GUILayout.Label("Item not configurable", "LabelSubHeader");
+				}
+			}
+			else
+			{
+				GUILayout.Label("No item in hand", "LabelSubHeader");
 			}
 
 			GUILayout.EndVertical();

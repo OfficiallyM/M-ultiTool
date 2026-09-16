@@ -278,8 +278,6 @@ namespace MultiTool.Utilities
 		{
 			mainscript.conditionmaterial material = mainscript.M.conditionmaterials.Where(m => m.tipus == type).FirstOrDefault();
 			if (material == null) return;
-			// Default to new condition material for now.
-			// TODO: Make this user customisable?
 			mesh.material = material.New;
 			if (color != null)
 			{

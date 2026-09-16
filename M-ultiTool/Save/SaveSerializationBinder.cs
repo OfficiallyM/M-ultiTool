@@ -28,6 +28,7 @@ namespace MultiTool.Save
 			{ "wheelTuning", typeof(WheelTuningRecord) },
 			{ "weight", typeof(WeightRecord) },
 			{ "tank", typeof(TankRecord) },
+			{ "weapon", typeof(WeaponRecord) },
 		};
 
 		private static readonly Dictionary<Type, string> _namesByType =
