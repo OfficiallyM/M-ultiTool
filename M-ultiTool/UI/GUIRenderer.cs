@@ -168,7 +168,7 @@ namespace MultiTool.UI
 			catch (Exception ex)
 			{
 				Logger.Log($"Error during OnLoad() - {ex}", Logger.LogLevel.Critical);
-				Notifications.Send(MultiTool.ModInstance.Name, "Critical error occurred. Please report to M-.");
+				Notifications.Send(MultiTool.ModInstance.Name, "Critical error occurred. Please report to M-.", type: Notification.NotificationType.Error);
 			}
 
 			_loaded = true;
