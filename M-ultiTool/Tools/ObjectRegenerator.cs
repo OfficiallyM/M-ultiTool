@@ -76,7 +76,6 @@ namespace MultiTool.Tools
 
 				// Recreate object.
 				GameObject spawned = SpawnUtilities.Spawn(prefab, new ItemSpawnConfig(), position, rotation);
-				SelectedObject = spawned.GetComponent<tosaveitemscript>();
 
 				// Handle attached children.
 				foreach (attachablescript attached in gameObject.GetComponentsInChildren<attachablescript>())
@@ -111,6 +110,8 @@ namespace MultiTool.Tools
 					component.removeFromMemory = true;
 				}
 				UnityEngine.Object.Destroy(gameObject);
+
+				SelectedObject = spawned.GetComponent<tosaveitemscript>();
 
 				// Mount the new part if it was previously mounted.
 				// TODO: Doesn't actually mount.
