@@ -152,7 +152,9 @@ namespace MultiTool.Data
 							fuelTank.F.ChangeOne(amount, type);
 						}
 					}
-				}				
+				}
+
+				return spawned;
 			}
 			catch (Exception ex)
 			{
