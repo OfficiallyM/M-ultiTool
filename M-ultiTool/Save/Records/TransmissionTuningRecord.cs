@@ -16,7 +16,10 @@ namespace MultiTool.Save.Records
 
 			try
 			{
-				GameUtilities.ApplyTransmissionTuning(save.GetComponent<carscript>(), Tuning);
+				var car = save.GetComponent<carscript>();
+				GameUtilities.ApplyTransmissionTuning(car, Tuning);
+				// Reset gear to neutral when loading to avoid the car being stuck in an invalid gear.
+				car.gear = 0;
 			}
 			catch (Exception ex)
 			{
